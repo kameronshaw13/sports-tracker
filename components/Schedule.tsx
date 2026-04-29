@@ -1,8 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 import useSWR from "swr";
 import { TeamConfig } from "@/lib/teams";
+import GameDetail from "./GameDetail";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -18,9 +20,20 @@ function formatTime(iso: string) {
 type Props = { team: TeamConfig };
 
 export default function Schedule({ team }: Props) {
+  const [selected, setSelected] = useState<string | null>(null);
   const { data, error, isLoading } = useSWR(`/api/scoreboard?team=${team.key}`, fetcher, {
     refreshInterval: 60_000,
   });
+
+  if (selected) {
+    return (
+      <GameDetail
+        league={team.league}
+        eventId={selected}
+        onClose={() => setSelected(null)}
+      />
+    );
+  }
 
   if (isLoading) return <SkeletonList />;
   if (error || !data?.events) return <ErrorBox message="Couldn't load schedule" />;
@@ -35,21 +48,21 @@ export default function Schedule({ team }: Props) {
       {inProgress.length > 0 && (
         <Section title="Live now" accent={team.primary}>
           {inProgress.map((ev: any) => (
-            <GameRow key={ev.id} ev={ev} team={team} variant="live" />
+            <GameRow key={ev.id} ev={ev} team={team} variant="live" onClick={() => setSelected(ev.id)} />
           ))}
         </Section>
       )}
       {upcoming.length > 0 && (
         <Section title={`Upcoming (${upcoming.length})`}>
-          {upcoming.slice(0, 10).map((ev: any) => (
-            <GameRow key={ev.id} ev={ev} team={team} variant="upcoming" />
+          {upcoming.slice(0, 12).map((ev: any) => (
+            <GameRow key={ev.id} ev={ev} team={team} variant="upcoming" onClick={() => setSelected(ev.id)} />
           ))}
         </Section>
       )}
       {completed.length > 0 && (
         <Section title="Recent results">
-          {completed.slice(0, 15).map((ev: any) => (
-            <GameRow key={ev.id} ev={ev} team={team} variant="result" />
+          {completed.slice(0, 25).map((ev: any) => (
+            <GameRow key={ev.id} ev={ev} team={team} variant="result" onClick={() => setSelected(ev.id)} />
           ))}
         </Section>
       )}
@@ -73,22 +86,30 @@ function Section({ title, children, accent }: any) {
   );
 }
 
-function GameRow({ ev, team, variant }: any) {
+function GameRow({ ev, team, variant, onClick }: any) {
   const opp = ev.opponent;
   const won = ev.us?.winner;
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
+    <button
+      onClick={onClick}
+      className="w-full text-left flex items-center gap-3 px-4 py-3 border-b last:border-b-0 transition-colors hover:bg-[var(--surface-2)]"
+      style={{ borderColor: "var(--border)" }}
+    >
       <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "var(--surface-2)" }}>
-        {opp?.logo && (
-          <Image src={opp.logo} alt={opp.abbr} width={28} height={28} className="object-contain" />
-        )}
+        {opp?.logo && <Image src={opp.logo} alt={opp.abbr} width={28} height={28} className="object-contain" />}
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold flex items-center gap-2">
+        <div className="text-sm font-semibold flex items-center gap-2 flex-wrap">
           <span style={{ color: "var(--text-3)" }}>{ev.home ? "vs" : "@"}</span>
           <span className="truncate">{opp?.name}</span>
+          {ev.playoff && (
+            <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
+              style={{ background: team.primary, color: team.textOnPrimary }}>
+              Playoffs
+            </span>
+          )}
         </div>
         <div className="text-xs" style={{ color: "var(--text-3)" }}>
           {formatDate(ev.date)}
@@ -102,9 +123,7 @@ function GameRow({ ev, team, variant }: any) {
         {variant === "live" && (
           <>
             <div className="text-base font-bold tabular-nums">
-              {ev.us?.score ?? 0}
-              <span style={{ color: "var(--text-3)" }}> – </span>
-              {opp?.score ?? 0}
+              {ev.us?.score ?? 0}<span style={{ color: "var(--text-3)" }}> – </span>{opp?.score ?? 0}
             </div>
             <div className="text-xs font-semibold" style={{ color: team.primary }}>
               {ev.status?.detail || "Live"}
@@ -114,14 +133,9 @@ function GameRow({ ev, team, variant }: any) {
         {variant === "result" && (
           <>
             <div className="text-base font-bold tabular-nums">
-              {ev.us?.score ?? "—"}
-              <span style={{ color: "var(--text-3)" }}> – </span>
-              {opp?.score ?? "—"}
+              {ev.us?.score ?? "—"}<span style={{ color: "var(--text-3)" }}> – </span>{opp?.score ?? "—"}
             </div>
-            <div
-              className="text-xs font-semibold"
-              style={{ color: won ? "var(--success)" : "var(--danger)" }}
-            >
+            <div className="text-xs font-semibold" style={{ color: won ? "var(--success)" : "var(--danger)" }}>
               {won ? "W" : "L"}
             </div>
           </>
@@ -132,7 +146,7 @@ function GameRow({ ev, team, variant }: any) {
           </div>
         )}
       </div>
-    </div>
+    </button>
   );
 }
 

@@ -14,10 +14,9 @@ export async function GET(req: NextRequest) {
 
   const team = TEAMS[teamKey];
   try {
-    const data = await getTeamPage(team.league, team.espnTeamId);
+    const data = await getTeamPage(team.league, team.abbr);
     const t = data?.team;
 
-    // Normalize what we actually need into a small, predictable shape
     const result = {
       id: t?.id,
       name: t?.displayName,
@@ -33,12 +32,6 @@ export async function GET(req: NextRequest) {
             name: t.nextEvent[0].name,
             shortName: t.nextEvent[0].shortName,
             status: t.nextEvent[0].status?.type?.description,
-            competitors: t.nextEvent[0].competitions?.[0]?.competitors?.map((c: any) => ({
-              id: c.id,
-              homeAway: c.homeAway,
-              team: { name: c.team?.displayName, abbreviation: c.team?.abbreviation, logo: c.team?.logos?.[0]?.href },
-              score: c.score,
-            })),
           }
         : null,
     };

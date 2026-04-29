@@ -1,14 +1,13 @@
-// ESPN league slugs and team IDs for the four favorite teams.
-// ESPN logos: https://a.espncdn.com/i/teamlogos/{sport}/500/{abbr}.png
+// ESPN's API accepts BOTH numeric team IDs and lowercase abbreviations.
+// We use abbreviations because they're stable (numeric IDs sometimes change for expansion teams).
 
 export type TeamConfig = {
   key: string;
   name: string;
   short: string;
-  abbr: string;
+  abbr: string;             // The lowercase abbreviation IS the ESPN team ID
   league: "mlb" | "nfl" | "nba" | "nhl";
   sport: "baseball" | "football" | "basketball" | "hockey";
-  espnTeamId: string;
   primary: string;
   secondary: string;
   textOnPrimary: string;
@@ -19,10 +18,9 @@ export const TEAMS: Record<string, TeamConfig> = {
     key: "orioles",
     name: "Baltimore Orioles",
     short: "Orioles",
-    abbr: "BAL",
+    abbr: "bal",
     league: "mlb",
     sport: "baseball",
-    espnTeamId: "1",
     primary: "#DF4601",
     secondary: "#000000",
     textOnPrimary: "#FFFFFF",
@@ -31,10 +29,9 @@ export const TEAMS: Record<string, TeamConfig> = {
     key: "chargers",
     name: "Los Angeles Chargers",
     short: "Chargers",
-    abbr: "LAC",
+    abbr: "lac",
     league: "nfl",
     sport: "football",
-    espnTeamId: "24",
     primary: "#0080C6",
     secondary: "#FFC20E",
     textOnPrimary: "#FFFFFF",
@@ -43,10 +40,9 @@ export const TEAMS: Record<string, TeamConfig> = {
     key: "nuggets",
     name: "Denver Nuggets",
     short: "Nuggets",
-    abbr: "DEN",
+    abbr: "den",
     league: "nba",
     sport: "basketball",
-    espnTeamId: "7",
     primary: "#0E2240",
     secondary: "#FEC524",
     textOnPrimary: "#FFFFFF",
@@ -55,10 +51,9 @@ export const TEAMS: Record<string, TeamConfig> = {
     key: "kraken",
     name: "Seattle Kraken",
     short: "Kraken",
-    abbr: "SEA",
+    abbr: "sea",
     league: "nhl",
     sport: "hockey",
-    espnTeamId: "124292", // ESPN ID for Seattle Kraken
     primary: "#001628",
     secondary: "#99D9D9",
     textOnPrimary: "#FFFFFF",
@@ -71,7 +66,7 @@ export function getTeam(key: string): TeamConfig | undefined {
   return TEAMS[key];
 }
 
-// ESPN logo URL by sport + abbreviation
+// Logo URL - ESPN's CDN uses lowercase abbreviation
 export function logoUrl(team: TeamConfig): string {
   const sportPath = team.sport === "baseball" ? "mlb"
     : team.sport === "football" ? "nfl"

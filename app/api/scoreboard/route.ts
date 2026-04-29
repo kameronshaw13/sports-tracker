@@ -14,11 +14,16 @@ export async function GET(req: NextRequest) {
 
   const team = TEAMS[teamKey];
   try {
-    const data = await getTeamSchedule(team.league, team.espnTeamId);
+    const data = await getTeamSchedule(team.league, team.abbr);
     const events = (data?.events || []).map((ev: any) => {
       const comp = ev.competitions?.[0];
-      const us = comp?.competitors?.find((c: any) => c.id === team.espnTeamId);
-      const them = comp?.competitors?.find((c: any) => c.id !== team.espnTeamId);
+      // Match "us" by abbreviation rather than numeric ID — works for any team
+      const us = comp?.competitors?.find(
+        (c: any) => c.team?.abbreviation?.toLowerCase() === team.abbr.toLowerCase()
+      );
+      const them = comp?.competitors?.find(
+        (c: any) => c.team?.abbreviation?.toLowerCase() !== team.abbr.toLowerCase()
+      );
       const status = ev.status || comp?.status;
       return {
         id: ev.id,
@@ -26,8 +31,9 @@ export async function GET(req: NextRequest) {
         name: ev.name,
         shortName: ev.shortName,
         weekText: ev.week?.text || ev.seasonType?.name || null,
+        playoff: ev._isPlayoff || ev.seasonType?.id === "3" || false,
         status: {
-          state: status?.type?.state, // 'pre' | 'in' | 'post'
+          state: status?.type?.state,
           completed: status?.type?.completed,
           description: status?.type?.description,
           detail: status?.type?.shortDetail,

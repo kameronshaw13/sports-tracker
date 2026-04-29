@@ -4,29 +4,35 @@ import { TEAMS } from "@/lib/teams";
 
 export const revalidate = 15;
 
+const VALID_LEAGUES = ["mlb", "nfl", "nba", "nhl"];
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const teamKey = searchParams.get("team");
   const eventId = searchParams.get("event");
+  // Accept either a league directly OR a teamKey (for backwards compat)
+  let league = searchParams.get("league");
+  const teamKey = searchParams.get("team");
 
-  if (!teamKey || !TEAMS[teamKey]) {
-    return NextResponse.json({ error: "Unknown team" }, { status: 400 });
+  if (!league && teamKey && TEAMS[teamKey]) {
+    league = TEAMS[teamKey].league;
+  }
+
+  if (!league || !VALID_LEAGUES.includes(league)) {
+    return NextResponse.json({ error: "Invalid league" }, { status: 400 });
   }
   if (!eventId) {
     return NextResponse.json({ error: "Missing event id" }, { status: 400 });
   }
 
-  const team = TEAMS[teamKey];
   try {
-    const data = await getGameSummary(team.league, eventId);
+    const data = await getGameSummary(league, eventId);
 
     const header = data?.header;
     const comp = header?.competitions?.[0];
     const competitors = comp?.competitors || [];
-    const us = competitors.find((c: any) => c.id === team.espnTeamId);
-    const them = competitors.find((c: any) => c.id !== team.espnTeamId);
+    const home = competitors.find((c: any) => c.homeAway === "home");
+    const away = competitors.find((c: any) => c.homeAway === "away");
 
-    // Plays — most recent last from ESPN. We reverse so newest is first.
     const plays = (data?.plays || []).slice().reverse().slice(0, 50).map((p: any) => ({
       id: p.id,
       text: p.text,
@@ -38,8 +44,19 @@ export async function GET(req: NextRequest) {
       homeScore: p.homeScore,
     }));
 
+    const formatTeam = (c: any) => c && {
+      id: c.id,
+      name: c.team?.displayName,
+      abbr: c.team?.abbreviation,
+      logo: c.team?.logos?.[0]?.href,
+      score: c.score,
+      record: c.record?.[0]?.summary || c.records?.[0]?.summary,
+      winner: c.winner,
+    };
+
     const result = {
       eventId,
+      league,
       status: {
         state: comp?.status?.type?.state,
         completed: comp?.status?.type?.completed,
@@ -48,18 +65,13 @@ export async function GET(req: NextRequest) {
         period: comp?.status?.period,
         clock: comp?.status?.displayClock,
       },
-      home: them && them.homeAway === "home"
-        ? { id: them.id, name: them.team?.displayName, abbr: them.team?.abbreviation, logo: them.team?.logos?.[0]?.href, score: them.score }
-        : us
-          ? { id: us.id, name: us.team?.displayName, abbr: us.team?.abbreviation, logo: us.team?.logos?.[0]?.href, score: us.score }
-          : null,
-      away: us && us.homeAway === "away"
-        ? { id: us.id, name: us.team?.displayName, abbr: us.team?.abbreviation, logo: us.team?.logos?.[0]?.href, score: us.score }
-        : them
-          ? { id: them.id, name: them.team?.displayName, abbr: them.team?.abbreviation, logo: them.team?.logos?.[0]?.href, score: them.score }
-          : null,
+      home: formatTeam(home),
+      away: formatTeam(away),
       plays,
       situation: data?.situation || null,
+      venue: comp?.venue?.fullName || null,
+      broadcast: comp?.broadcasts?.[0]?.names?.[0] || null,
+      date: header?.competitions?.[0]?.date,
     };
 
     return NextResponse.json(result);

@@ -14,12 +14,10 @@ export async function GET(req: NextRequest) {
 
   const team = TEAMS[teamKey];
   try {
-    const data = await getTeamRoster(team.league, team.espnTeamId);
+    const data = await getTeamRoster(team.league, team.abbr);
 
-    // Roster shape varies by league. Try both common formats.
     let athletes: any[] = [];
     if (Array.isArray(data?.athletes)) {
-      // NFL/NBA/NHL: athletes grouped by position (offense/defense/etc) or position abbr
       for (const group of data.athletes) {
         if (Array.isArray(group?.items)) {
           athletes.push(...group.items.map((a: any) => ({ ...a, _groupLabel: group.position || group.label || null })));

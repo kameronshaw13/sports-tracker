@@ -1,13 +1,9 @@
 // Wrapper around ESPN's undocumented public API.
-// No auth required. These endpoints are reverse-engineered from espn.com.
-// They can change without notice — that's the tradeoff of free data.
 
 const SITE_API = "https://site.api.espn.com/apis/site/v2/sports";
 const SITE_WEB_API = "https://site.web.api.espn.com/apis/site/v2/sports";
 
-type SportLeague = { sport: string; league: string };
-
-const PATHS: Record<string, SportLeague> = {
+const PATHS: Record<string, { sport: string; league: string }> = {
   mlb: { sport: "baseball", league: "mlb" },
   nfl: { sport: "football", league: "nfl" },
   nba: { sport: "basketball", league: "nba" },
@@ -29,16 +25,44 @@ async function fetchJson(url: string, revalidate = 30): Promise<any> {
   return res.json();
 }
 
-// Team page — includes record, next event, recent results, basic stats
+// Team page — record, next event, etc. teamId can be numeric or lowercase abbr.
 export async function getTeamPage(league: string, teamId: string) {
   const url = `${SITE_API}/${path(league)}/teams/${teamId}`;
   return fetchJson(url, 60);
 }
 
-// Schedule for a team
+// Schedule for a team. ESPN defaults to regular season; pass seasontype to get
+// preseason (1), regular (2), or postseason (3). We fetch both regular AND
+// postseason and merge so playoff games show up.
 export async function getTeamSchedule(league: string, teamId: string) {
-  const url = `${SITE_API}/${path(league)}/teams/${teamId}/schedule`;
-  return fetchJson(url, 300);
+  const base = `${SITE_API}/${path(league)}/teams/${teamId}/schedule`;
+
+  // Fetch regular season (default) and postseason in parallel
+  const [regular, post] = await Promise.allSettled([
+    fetchJson(base, 300),
+    fetchJson(`${base}?seasontype=3`, 300),
+  ]);
+
+  const regEvents = regular.status === "fulfilled" ? regular.value?.events || [] : [];
+  const postEvents = post.status === "fulfilled" ? post.value?.events || [] : [];
+
+  // Tag postseason events so the UI can label them
+  const taggedPost = postEvents.map((e: any) => ({ ...e, _isPlayoff: true }));
+
+  // Merge, deduplicate by id (in case overlap), sort by date
+  const seen = new Set<string>();
+  const merged = [...regEvents, ...taggedPost].filter((e) => {
+    if (!e.id || seen.has(e.id)) return false;
+    seen.add(e.id);
+    return true;
+  });
+  merged.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  // Return the merged result in the same shape ESPN uses
+  return {
+    ...(regular.status === "fulfilled" ? regular.value : {}),
+    events: merged,
+  };
 }
 
 // Roster
@@ -50,7 +74,6 @@ export async function getTeamRoster(league: string, teamId: string) {
 // Game summary (boxscore + play-by-play)
 export async function getGameSummary(league: string, eventId: string) {
   const url = `${SITE_WEB_API}/${path(league)}/summary?event=${eventId}`;
-  // Live games: short cache. Final games: long cache.
   return fetchJson(url, 15);
 }
 
@@ -61,7 +84,6 @@ export async function getScoreboard(league: string, date?: string) {
   return fetchJson(url, 30);
 }
 
-// Standings — these endpoints are different per league, so we use the team page record instead
 export async function getStandings(league: string) {
   const url = `${SITE_API}/${path(league)}/standings`;
   return fetchJson(url, 600);
