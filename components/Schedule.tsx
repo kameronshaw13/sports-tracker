@@ -1,0 +1,155 @@
+"use client";
+
+import Image from "next/image";
+import useSWR from "swr";
+import { TeamConfig } from "@/lib/teams";
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+function formatDate(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+}
+function formatTime(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+}
+
+type Props = { team: TeamConfig };
+
+export default function Schedule({ team }: Props) {
+  const { data, error, isLoading } = useSWR(`/api/scoreboard?team=${team.key}`, fetcher, {
+    refreshInterval: 60_000,
+  });
+
+  if (isLoading) return <SkeletonList />;
+  if (error || !data?.events) return <ErrorBox message="Couldn't load schedule" />;
+
+  const events = data.events;
+  const inProgress = events.filter((e: any) => e.status?.state === "in");
+  const upcoming = events.filter((e: any) => e.status?.state === "pre");
+  const completed = events.filter((e: any) => e.status?.state === "post").reverse();
+
+  return (
+    <div className="space-y-6">
+      {inProgress.length > 0 && (
+        <Section title="Live now" accent={team.primary}>
+          {inProgress.map((ev: any) => (
+            <GameRow key={ev.id} ev={ev} team={team} variant="live" />
+          ))}
+        </Section>
+      )}
+      {upcoming.length > 0 && (
+        <Section title={`Upcoming (${upcoming.length})`}>
+          {upcoming.slice(0, 10).map((ev: any) => (
+            <GameRow key={ev.id} ev={ev} team={team} variant="upcoming" />
+          ))}
+        </Section>
+      )}
+      {completed.length > 0 && (
+        <Section title="Recent results">
+          {completed.slice(0, 15).map((ev: any) => (
+            <GameRow key={ev.id} ev={ev} team={team} variant="result" />
+          ))}
+        </Section>
+      )}
+    </div>
+  );
+}
+
+function Section({ title, children, accent }: any) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-2">
+        {accent && <span className="w-2 h-2 rounded-full live-dot" style={{ background: accent }} />}
+        <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--text-2)" }}>
+          {title}
+        </h2>
+      </div>
+      <div className="rounded-xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function GameRow({ ev, team, variant }: any) {
+  const opp = ev.opponent;
+  const won = ev.us?.winner;
+
+  return (
+    <div className="flex items-center gap-3 px-4 py-3 border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
+      <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "var(--surface-2)" }}>
+        {opp?.logo && (
+          <Image src={opp.logo} alt={opp.abbr} width={28} height={28} className="object-contain" />
+        )}
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-semibold flex items-center gap-2">
+          <span style={{ color: "var(--text-3)" }}>{ev.home ? "vs" : "@"}</span>
+          <span className="truncate">{opp?.name}</span>
+        </div>
+        <div className="text-xs" style={{ color: "var(--text-3)" }}>
+          {formatDate(ev.date)}
+          {variant === "upcoming" && ` · ${formatTime(ev.date)}`}
+          {ev.broadcast && ` · ${ev.broadcast}`}
+          {ev.weekText && ` · ${ev.weekText}`}
+        </div>
+      </div>
+
+      <div className="text-right flex-shrink-0">
+        {variant === "live" && (
+          <>
+            <div className="text-base font-bold tabular-nums">
+              {ev.us?.score ?? 0}
+              <span style={{ color: "var(--text-3)" }}> – </span>
+              {opp?.score ?? 0}
+            </div>
+            <div className="text-xs font-semibold" style={{ color: team.primary }}>
+              {ev.status?.detail || "Live"}
+            </div>
+          </>
+        )}
+        {variant === "result" && (
+          <>
+            <div className="text-base font-bold tabular-nums">
+              {ev.us?.score ?? "—"}
+              <span style={{ color: "var(--text-3)" }}> – </span>
+              {opp?.score ?? "—"}
+            </div>
+            <div
+              className="text-xs font-semibold"
+              style={{ color: won ? "var(--success)" : "var(--danger)" }}
+            >
+              {won ? "W" : "L"}
+            </div>
+          </>
+        )}
+        {variant === "upcoming" && (
+          <div className="text-xs font-medium px-2 py-1 rounded-md" style={{ background: "var(--surface-2)", color: "var(--text-2)" }}>
+            {formatTime(ev.date)}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SkeletonList() {
+  return (
+    <div className="space-y-2">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: "var(--surface)" }} />
+      ))}
+    </div>
+  );
+}
+
+function ErrorBox({ message }: { message: string }) {
+  return (
+    <div className="p-6 rounded-xl text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>
+      {message}
+    </div>
+  );
+}
