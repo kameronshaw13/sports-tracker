@@ -217,7 +217,6 @@ function describeKey(league: string, key: string): string {
     // NHL skaters
     G: "Goals",
     A: "Assists",
-    "+/-": "Plus/Minus", // same key
     SOG: "Shots on Goal",
     S: "Shots",
     HT: "Hits",
