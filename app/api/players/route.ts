@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTeamRoster, getAthleteStats } from "@/lib/espn";
-import { TEAMS } from "@/lib/teams";
+import { parseTeamKey } from "@/lib/teams";
 import { relevantStatKeys } from "@/lib/playerColumns";
 
 export const revalidate = 3600;
+
+// v16: this route used to gate on `TEAMS[teamKey]` — the static map of the
+// original four favorites. That meant any team added via Manage Teams or
+// navigated to from a box score (e.g. mlb-nyy, nba-lal) returned 400
+// "Unknown team", so the Player Stats table on the Stats tab was empty for
+// every non-default team. Switched to `parseTeamKey()` — the same helper the
+// rest of the API routes already use — which only validates that the key is
+// well-formed (`{league}-{abbr}`). The downstream ESPN calls work for any
+// real team because they only need league + abbr.
 
 type Stat = { value: number | null; displayValue: string };
 
@@ -14,7 +23,7 @@ type Player = {
   position?: string;
   headshot?: string;
   hasStats: boolean;
-  // Stats are now keyed by `${category}.${name}` to avoid cross-category
+  // Stats are keyed by `${category}.${name}` to avoid cross-category
   // collisions. ESPN reuses names like "interceptions" across passing and
   // defensiveInterceptions categories with very different meanings.
   stats: Record<string, Stat>;
@@ -66,27 +75,32 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const teamKey = searchParams.get("team");
 
-  if (!teamKey || !TEAMS[teamKey]) {
-    return NextResponse.json({ error: "Unknown team" }, { status: 400 });
+  const parsed = parseTeamKey(teamKey);
+  if (!parsed) {
+    return NextResponse.json(
+      { error: "Invalid team key (expected format: league-abbr, e.g. mlb-bal)" },
+      { status: 400 }
+    );
   }
 
-  const team = TEAMS[teamKey];
-  const relevant = relevantStatKeys(team.league);
+  const relevant = relevantStatKeys(parsed.league);
 
   try {
-    const rosterData = await getTeamRoster(team.league, team.abbr);
+    const rosterData = await getTeamRoster(parsed.league, parsed.abbr);
     const athletes = flattenRoster(rosterData);
 
     if (athletes.length === 0) {
       return NextResponse.json({
         teamKey,
-        league: team.league,
+        league: parsed.league,
         players: [],
+        total: 0,
+        withStats: 0,
       });
     }
 
     const settled = await Promise.allSettled(
-      athletes.map((a: any) => getAthleteStats(team.league, String(a.id)))
+      athletes.map((a: any) => getAthleteStats(parsed.league, String(a.id)))
     );
 
     const players: Player[] = athletes.map((a: any, i: number) => {
@@ -108,7 +122,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       teamKey,
-      league: team.league,
+      league: parsed.league,
       players,
       total: players.length,
       withStats: players.filter((p) => p.hasStats).length,

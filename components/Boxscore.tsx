@@ -13,10 +13,13 @@ type Props = {
 };
 
 export default function Boxscore({ league, eventId, isLive }: Props) {
+  // v17: bumped live poll from 30s → 15s so it matches the GameDetail summary
+  // poll. The manual refresh button on GameDetail also forces this hook to
+  // refetch via SWR's global mutate, so users never have to wait.
   const { data, error, isLoading } = useSWR(
     eventId ? `/api/boxscore?league=${league}&event=${eventId}` : null,
     fetcher,
-    { refreshInterval: isLive ? 30_000 : 0 }
+    { refreshInterval: isLive ? 15_000 : 0 }
   );
 
   const [activeTeamIdx, setActiveTeamIdx] = useState(0);
@@ -77,7 +80,7 @@ export default function Boxscore({ league, eventId, isLive }: Props) {
 
         <div className="space-y-3">
           {team.groups.map((group: any, gi: number) => (
-            <StatGroup key={gi} group={group} />
+            <StatGroup key={gi} group={group} league={league} />
           ))}
         </div>
       </div>
@@ -111,12 +114,22 @@ function LeaderCard({ cat, teamLogo, teamAbbr }: any) {
   );
 }
 
-function StatGroup({ group }: { group: any }) {
+// v17: per-league column behavior.
+// - NBA / NHL: show every stat ESPN returns. The user explicitly wants the
+//   richer slate (NBA: AST/TOV/STL/BLK/+− alongside PTS; NHL: PTS/AST/SOG/etc).
+//   Horizontal scroll handles overflow on narrow screens.
+// - MLB / NFL: keep the original 6-column cap. Their box scores have many
+//   sparsely-populated columns and showing them all makes the table feel
+//   noisy without adding signal.
+function StatGroup({ group, league }: { group: any; league: string }) {
   // Show top 5 athletes per group to keep it scannable; expand on click
   const [expanded, setExpanded] = useState(false);
   const visible = expanded ? group.athletes : group.athletes.slice(0, 5);
 
   if (group.athletes.length === 0) return null;
+
+  const showAllColumns = league === "nba" || league === "nhl";
+  const columnKeys: string[] = showAllColumns ? group.keys : group.keys.slice(0, 6);
 
   return (
     <div className="rounded-xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
@@ -124,26 +137,41 @@ function StatGroup({ group }: { group: any }) {
         {group.name}
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-xs">
+        <table className="w-full text-xs" style={{ minWidth: showAllColumns ? "fit-content" : undefined }}>
           <thead>
             <tr style={{ color: "var(--text-3)" }}>
-              <th className="text-left px-3 py-2 font-medium">Player</th>
-              {group.keys.slice(0, 6).map((k: string) => (
-                <th key={k} className="text-right px-2 py-2 font-medium tabular-nums">{k}</th>
+              <th
+                className="text-left px-3 py-2 font-medium sticky left-0 z-10"
+                style={{ background: "var(--surface)" }}
+                title="Player"
+              >
+                Player
+              </th>
+              {columnKeys.map((k) => (
+                <th
+                  key={k}
+                  className="text-right px-2 py-2 font-medium tabular-nums whitespace-nowrap"
+                  title={describeKey(league, k)}
+                >
+                  {k}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {visible.map((a: any) => (
               <tr key={a.id} style={{ borderTop: "1px solid var(--border)" }}>
-                <td className="px-3 py-2 whitespace-nowrap">
+                <td
+                  className="px-3 py-2 whitespace-nowrap sticky left-0 z-10"
+                  style={{ background: "var(--surface)" }}
+                >
                   <div className="font-medium">{a.shortName || a.name}</div>
                   {a.position && (
                     <span className="text-[10px]" style={{ color: "var(--text-3)" }}>{a.position}</span>
                   )}
                 </td>
-                {group.keys.slice(0, 6).map((k: string) => (
-                  <td key={k} className="text-right px-2 py-2 tabular-nums" style={{ color: "var(--text-2)" }}>
+                {columnKeys.map((k) => (
+                  <td key={k} className="text-right px-2 py-2 tabular-nums whitespace-nowrap" style={{ color: "var(--text-2)" }}>
                     {a.stats[k] ?? "—"}
                   </td>
                 ))}
@@ -163,4 +191,52 @@ function StatGroup({ group }: { group: any }) {
       )}
     </div>
   );
+}
+
+// Hover/long-press tooltip text for short stat headers. ESPN's `descriptions`
+// array would technically be the source of truth, but it's not always present
+// per group, so we fall back to a small per-league dictionary covering the
+// common abbreviations the user is likely to ask about.
+function describeKey(league: string, key: string): string {
+  const all: Record<string, string> = {
+    // NBA
+    MIN: "Minutes",
+    FG: "Field Goals",
+    "3PT": "Three-pointers",
+    FT: "Free Throws",
+    OREB: "Offensive Rebounds",
+    DREB: "Defensive Rebounds",
+    REB: "Rebounds",
+    AST: "Assists",
+    STL: "Steals",
+    BLK: "Blocks",
+    TO: "Turnovers",
+    PF: "Personal Fouls",
+    "+/-": "Plus/Minus",
+    PTS: "Points",
+    // NHL skaters
+    G: "Goals",
+    A: "Assists",
+    "+/-": "Plus/Minus", // same key
+    SOG: "Shots on Goal",
+    S: "Shots",
+    HT: "Hits",
+    BS: "Blocked Shots",
+    GVA: "Giveaways",
+    TKA: "Takeaways",
+    FOW: "Faceoffs Won",
+    FOL: "Faceoffs Lost",
+    TOI: "Time on Ice",
+    PIM: "Penalty Minutes",
+    PPG: "Power Play Goals",
+    SHG: "Short-handed Goals",
+    GWG: "Game Winning Goals",
+    // NHL goalies
+    SA: "Shots Against",
+    GA: "Goals Against",
+    SV: "Saves",
+    "SV%": "Save Percentage",
+    SO: "Shutouts",
+  };
+  return all[key] || key;
 }

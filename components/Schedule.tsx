@@ -17,9 +17,13 @@ function formatTime(iso: string) {
   return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 }
 
-type Props = { team: TeamConfig };
+type Props = {
+  team: TeamConfig;
+  // Forwarded into GameDetail when the user drills into a game from the schedule.
+  onTeamLogoClick?: (league: string, abbr: string) => void;
+};
 
-export default function Schedule({ team }: Props) {
+export default function Schedule({ team, onTeamLogoClick }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const { data, error, isLoading } = useSWR(`/api/scoreboard?team=${team.key}`, fetcher, {
     refreshInterval: 60_000,
@@ -31,6 +35,7 @@ export default function Schedule({ team }: Props) {
         league={team.league}
         eventId={selected}
         onClose={() => setSelected(null)}
+        onTeamClick={onTeamLogoClick}
       />
     );
   }

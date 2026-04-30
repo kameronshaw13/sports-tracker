@@ -3,34 +3,76 @@
 import Image from "next/image";
 import { useState } from "react";
 import useSWR from "swr";
-import { TEAMS, TEAM_ORDER, TeamConfig, logoUrl } from "@/lib/teams";
+import { TeamConfig, logoUrl } from "@/lib/teams";
+import { useFavoriteTeams } from "@/lib/useFavorites";
 import GameDetail from "./GameDetail";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 type Props = {
-  onTeamClick: (teamKey: string) => void;
+  onTeamClick: (team: TeamConfig) => void;
+  onManage: () => void;
+  onTeamLogoClick?: (league: string, abbr: string) => void;
 };
 
-export default function HomeDashboard({ onTeamClick }: Props) {
+export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick }: Props) {
   const [drillIn, setDrillIn] = useState<{ league: string; eventId: string } | null>(null);
+  const { favorites } = useFavoriteTeams();
 
   if (drillIn) {
-    return <GameDetail league={drillIn.league} eventId={drillIn.eventId} onClose={() => setDrillIn(null)} />;
+    return (
+      <GameDetail
+        league={drillIn.league}
+        eventId={drillIn.eventId}
+        onClose={() => setDrillIn(null)}
+        onTeamClick={onTeamLogoClick}
+      />
+    );
+  }
+
+  // favorites is null on first render (before localStorage is read)
+  if (!favorites) {
+    return <div className="h-32 rounded-2xl animate-pulse" style={{ background: "var(--surface)" }} />;
+  }
+
+  if (favorites.length === 0) {
+    return (
+      <div className="rounded-2xl p-8 text-center" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+        <p className="text-sm mb-4" style={{ color: "var(--text-2)" }}>
+          You haven't picked any favorite teams yet.
+        </p>
+        <button
+          onClick={onManage}
+          className="px-4 py-2 rounded-xl text-sm font-medium"
+          style={{ background: "var(--text)", color: "var(--bg)" }}
+        >
+          + Pick your teams
+        </button>
+      </div>
+    );
   }
 
   return (
     <div>
-      <h2 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-2)" }}>
-        Your teams
-      </h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--text-2)" }}>
+          Your teams
+        </h2>
+        <button
+          onClick={onManage}
+          className="text-xs font-medium px-2.5 py-1 rounded-lg"
+          style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}
+        >
+          Manage
+        </button>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {TEAM_ORDER.map((key) => (
+        {favorites.map((team) => (
           <TeamCard
-            key={key}
-            team={TEAMS[key]}
-            onTeamClick={() => onTeamClick(key)}
-            onGameClick={(eventId) => setDrillIn({ league: TEAMS[key].league, eventId })}
+            key={team.key}
+            team={team}
+            onTeamClick={() => onTeamClick(team)}
+            onGameClick={(eventId) => setDrillIn({ league: team.league, eventId })}
           />
         ))}
       </div>
@@ -65,7 +107,6 @@ function TeamCard({
   return (
     <div className="rounded-2xl overflow-hidden"
       style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-      {/* Header — tap to enter team */}
       <button
         onClick={onTeamClick}
         className="w-full text-left px-4 py-3 flex items-center gap-3 transition-opacity hover:opacity-90"
@@ -87,7 +128,6 @@ function TeamCard({
         <span className="text-xs opacity-75">→</span>
       </button>
 
-      {/* Game block — tap to drill into game */}
       <button
         onClick={() => featured?.id && onGameClick(featured.id)}
         disabled={!featured}

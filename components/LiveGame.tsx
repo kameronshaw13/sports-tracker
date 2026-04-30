@@ -6,9 +6,14 @@ import GameDetail from "./GameDetail";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-type Props = { team: TeamConfig };
+type Props = {
+  team: TeamConfig;
+  // Forwarded into GameDetail so the user can tap an opponent logo to navigate
+  // to that team's page (e.g. tap Astros while viewing the live Orioles game).
+  onTeamLogoClick?: (league: string, abbr: string) => void;
+};
 
-export default function LiveGame({ team }: Props) {
+export default function LiveGame({ team, onTeamLogoClick }: Props) {
   const { data: scheduleData, isLoading } = useSWR(`/api/scoreboard?team=${team.key}`, fetcher);
   const events = scheduleData?.events || [];
   const liveEvent = events.find((e: any) => e.status?.state === "in");
@@ -33,5 +38,11 @@ export default function LiveGame({ team }: Props) {
     );
   }
 
-  return <GameDetail league={team.league} eventId={targetId} />;
+  return (
+    <GameDetail
+      league={team.league}
+      eventId={targetId}
+      onTeamClick={onTeamLogoClick}
+    />
+  );
 }

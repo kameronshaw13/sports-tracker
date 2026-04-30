@@ -1,23 +1,29 @@
 "use client";
 
 import Image from "next/image";
-import { TEAMS, TEAM_ORDER, logoUrl } from "@/lib/teams";
+import { TeamConfig, logoUrl } from "@/lib/teams";
+import { useFavoriteTeams } from "@/lib/useFavorites";
 
 type Props = {
-  active: string;
-  onSelect: (key: string) => void;
+  activeKey: string;
+  onSelect: (team: TeamConfig) => void;
+  onManage: () => void;
 };
 
-export default function TeamSelector({ active, onSelect }: Props) {
+export default function TeamSelector({ activeKey, onSelect, onManage }: Props) {
+  const { favorites } = useFavoriteTeams();
+
+  // Reserve space while loading from localStorage to avoid layout jump
+  if (!favorites) return <div className="h-[68px]" />;
+
   return (
     <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-      {TEAM_ORDER.map((key) => {
-        const team = TEAMS[key];
-        const isActive = active === key;
+      {favorites.map((team) => {
+        const isActive = activeKey === team.key;
         return (
           <button
-            key={key}
-            onClick={() => onSelect(key)}
+            key={team.key}
+            onClick={() => onSelect(team)}
             className="flex-shrink-0 flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
             style={{
               background: isActive ? team.primary : "var(--surface)",
@@ -47,6 +53,21 @@ export default function TeamSelector({ active, onSelect }: Props) {
           </button>
         );
       })}
+
+      {/* Manage chip */}
+      <button
+        onClick={onManage}
+        className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 py-3 rounded-xl transition-all"
+        style={{
+          background: "transparent",
+          border: "1px dashed var(--border)",
+          color: "var(--text-2)",
+          minWidth: 90,
+        }}
+      >
+        <span className="text-xl leading-none">+</span>
+        <span className="text-[11px] uppercase tracking-wide font-medium">Manage</span>
+      </button>
     </div>
   );
 }

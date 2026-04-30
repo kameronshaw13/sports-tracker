@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTeamSchedule } from "@/lib/espn";
-import { TEAMS } from "@/lib/teams";
+import { parseTeamKey } from "@/lib/teams";
 
 export const revalidate = 300;
 
@@ -8,21 +8,24 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const teamKey = searchParams.get("team");
 
-  if (!teamKey || !TEAMS[teamKey]) {
-    return NextResponse.json({ error: "Unknown team" }, { status: 400 });
+  const parsed = parseTeamKey(teamKey);
+  if (!parsed) {
+    return NextResponse.json(
+      { error: "Invalid team key (expected format: league-abbr, e.g. mlb-bal)" },
+      { status: 400 }
+    );
   }
 
-  const team = TEAMS[teamKey];
   try {
-    const data = await getTeamSchedule(team.league, team.abbr);
+    const data = await getTeamSchedule(parsed.league, parsed.abbr);
     const events = (data?.events || []).map((ev: any) => {
       const comp = ev.competitions?.[0];
       // Match "us" by abbreviation rather than numeric ID — works for any team
       const us = comp?.competitors?.find(
-        (c: any) => c.team?.abbreviation?.toLowerCase() === team.abbr.toLowerCase()
+        (c: any) => c.team?.abbreviation?.toLowerCase() === parsed.abbr.toLowerCase()
       );
       const them = comp?.competitors?.find(
-        (c: any) => c.team?.abbreviation?.toLowerCase() !== team.abbr.toLowerCase()
+        (c: any) => c.team?.abbreviation?.toLowerCase() !== parsed.abbr.toLowerCase()
       );
       const status = ev.status || comp?.status;
       return {
@@ -54,7 +57,7 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    return NextResponse.json({ team: team.name, events });
+    return NextResponse.json({ team: parsed.abbr.toUpperCase(), events });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Fetch failed" }, { status: 500 });
   }

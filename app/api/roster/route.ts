@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTeamRoster, getTeamPage } from "@/lib/espn";
-import { TEAMS } from "@/lib/teams";
+import { parseTeamKey } from "@/lib/teams";
 
 export const revalidate = 3600;
 
@@ -78,16 +78,18 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const teamKey = searchParams.get("team");
 
-  if (!teamKey || !TEAMS[teamKey]) {
-    return NextResponse.json({ error: "Unknown team" }, { status: 400 });
+  const parsed = parseTeamKey(teamKey);
+  if (!parsed) {
+    return NextResponse.json(
+      { error: "Invalid team key (expected format: league-abbr, e.g. mlb-bal)" },
+      { status: 400 }
+    );
   }
-
-  const team = TEAMS[teamKey];
 
   // Try the dedicated roster endpoint first
   let players: any[] = [];
   try {
-    const data = await getTeamRoster(team.league, team.abbr);
+    const data = await getTeamRoster(parsed.league, parsed.abbr);
     players = parseAthletes(data).map(normalizePlayer).filter((p) => p.name);
   } catch (e) {
     // ignore, will try fallback
@@ -96,7 +98,7 @@ export async function GET(req: NextRequest) {
   // Fallback: team page with enable=roster
   if (players.length === 0) {
     try {
-      const data = await getTeamPage(team.league, team.abbr, ["roster"]);
+      const data = await getTeamPage(parsed.league, parsed.abbr, ["roster"]);
       players = parseAthletes(data).map(normalizePlayer).filter((p) => p.name);
     } catch (e) {
       // also failed
@@ -104,8 +106,12 @@ export async function GET(req: NextRequest) {
   }
 
   if (players.length === 0) {
-    return NextResponse.json({ team: team.name, players: [], warning: "Roster data not available from ESPN for this team" });
+    return NextResponse.json({
+      team: parsed.abbr.toUpperCase(),
+      players: [],
+      warning: "Roster data not available from ESPN for this team",
+    });
   }
 
-  return NextResponse.json({ team: team.name, players });
+  return NextResponse.json({ team: parsed.abbr.toUpperCase(), players });
 }

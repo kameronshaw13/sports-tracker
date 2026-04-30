@@ -14,7 +14,14 @@ const LEAGUES = [
   { id: "nhl", label: "NHL", color: "#000000" },
 ];
 
-export default function LeaguesView() {
+type Props = {
+  // Forwarded to GameDetail when the user drills into a game and taps a team
+  // logo on the box score. Team rows in this view's game list are NOT
+  // clickable — only the whole game card opens the box score.
+  onTeamLogoClick?: (league: string, abbr: string) => void;
+};
+
+export default function LeaguesView({ onTeamLogoClick }: Props) {
   const [activeLeague, setActiveLeague] = useState("mlb");
   const [dayOffset, setDayOffset] = useState(0);
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
@@ -32,6 +39,7 @@ export default function LeaguesView() {
         league={activeLeague}
         eventId={selectedEvent}
         onClose={() => setSelectedEvent(null)}
+        onTeamClick={onTeamLogoClick}
       />
     );
   }
@@ -142,6 +150,9 @@ function Section({ title, children, accent }: any) {
   );
 }
 
+// GameCard is a single button — tapping ANYWHERE on it opens the box score.
+// Team rows are display-only here. (Logos inside the box score itself ARE
+// clickable, via GameDetail.)
 function GameCard({ game, variant, onClick }: { game: any; variant: "live" | "upcoming" | "final"; onClick: () => void }) {
   const { home, away, status } = game;
   return (

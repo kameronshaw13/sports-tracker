@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import useSWR from "swr";
+import { useCallback, useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
 import Boxscore from "./Boxscore";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -10,14 +11,40 @@ type Props = {
   league: string;
   eventId: string;
   onClose?: () => void;
+  // When provided, home/away team blocks become clickable and call this with
+  // the team's league + abbr — used to navigate from a box score to that
+  // team's page. e.g. tap Astros logo while viewing Orioles vs Astros → Astros page.
+  onTeamClick?: (league: string, abbr: string) => void;
 };
 
-export default function GameDetail({ league, eventId, onClose }: Props) {
-  const { data, error, isLoading } = useSWR(
-    `/api/summary?league=${league}&event=${eventId}`,
-    fetcher,
-    { refreshInterval: 15_000 }
-  );
+export default function GameDetail({ league, eventId, onClose, onTeamClick }: Props) {
+  const summaryKey = `/api/summary?league=${league}&event=${eventId}`;
+  const boxscoreKey = `/api/boxscore?league=${league}&event=${eventId}`;
+
+  const { data, error, isLoading } = useSWR(summaryKey, fetcher, {
+    refreshInterval: 15_000,
+  });
+
+  // v17: manual refresh button. SWR's global mutate is used so we can refresh
+  // BOTH the summary (scoreboard + plays) AND the boxscore (player stats)
+  // in a single click — even though the boxscore lives in a child component
+  // with its own SWR hook. Without this the boxscore would only update on its
+  // own 15s timer regardless of when the user tapped.
+  const { mutate } = useSWRConfig();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      await Promise.all([mutate(summaryKey), mutate(boxscoreKey)]);
+    } catch {
+      // swallow — SWR will surface the error in `error` if a fetch fails
+    }
+    // Keep the spinner visible for ~500ms even if the network is fast, so the
+    // user gets clear visual feedback that the tap registered.
+    setTimeout(() => setRefreshing(false), 500);
+  }, [mutate, summaryKey, boxscoreKey, refreshing]);
 
   if (isLoading) {
     return (
@@ -29,9 +56,12 @@ export default function GameDetail({ league, eventId, onClose }: Props) {
   }
   if (error || !data) {
     return (
-      <div className="p-8 rounded-xl text-sm text-center"
-        style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>
-        Couldn't load game data.
+      <div className="space-y-4">
+        <TopBar onClose={onClose} onRefresh={handleRefresh} refreshing={refreshing} />
+        <div className="p-8 rounded-xl text-sm text-center"
+          style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>
+          Couldn't load game data.
+        </div>
       </div>
     );
   }
@@ -41,18 +71,16 @@ export default function GameDetail({ league, eventId, onClose }: Props) {
   const isFinal = status?.state === "post";
   const stateLabel = isLive ? "Live" : isFinal ? "Final" : "Upcoming";
 
+  // Build click handlers only when we have both a callback AND a valid abbr.
+  // The handlers go through league + abbr (not numeric ESPN id) since that's
+  // how the rest of the app keys teams.
+  const onAwayClick = onTeamClick && away?.abbr ? () => onTeamClick(league, away.abbr) : undefined;
+  const onHomeClick = onTeamClick && home?.abbr ? () => onTeamClick(league, home.abbr) : undefined;
+
   return (
     <div className="space-y-4">
-      {/* Top bar with optional back button */}
-      {onClose && (
-        <button
-          onClick={onClose}
-          className="flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded-lg"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}
-        >
-          ← Back
-        </button>
-      )}
+      {/* Top bar: optional back button on the left, refresh always on the right */}
+      <TopBar onClose={onClose} onRefresh={handleRefresh} refreshing={refreshing} />
 
       {/* Scoreboard */}
       <div className="rounded-2xl p-5" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
@@ -72,9 +100,9 @@ export default function GameDetail({ league, eventId, onClose }: Props) {
         </div>
 
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-          <TeamBlock t={away} align="left" />
+          <TeamBlock t={away} align="left" onClick={onAwayClick} />
           <div className="text-center text-xs font-medium" style={{ color: "var(--text-3)" }}>vs</div>
-          <TeamBlock t={home} align="right" />
+          <TeamBlock t={home} align="right" onClick={onHomeClick} />
         </div>
 
         {(data.venue || data.broadcast) && (
@@ -113,10 +141,90 @@ export default function GameDetail({ league, eventId, onClose }: Props) {
   );
 }
 
-function TeamBlock({ t, align }: { t: any; align: "left" | "right" }) {
-  if (!t) return <div />;
+// Top bar holding the optional back button and the always-visible refresh
+// button. We render an empty <div /> when there's no back button so the
+// refresh button stays right-aligned via justify-between.
+function TopBar({
+  onClose,
+  onRefresh,
+  refreshing,
+}: {
+  onClose?: () => void;
+  onRefresh: () => void;
+  refreshing: boolean;
+}) {
   return (
-    <div className={`flex items-center gap-3 ${align === "right" ? "flex-row-reverse text-right" : ""}`}>
+    <div className="flex items-center justify-between">
+      {onClose ? (
+        <button
+          onClick={onClose}
+          className="flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded-lg"
+          style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}
+        >
+          ← Back
+        </button>
+      ) : (
+        <div />
+      )}
+      <button
+        onClick={onRefresh}
+        disabled={refreshing}
+        aria-label="Refresh"
+        className="flex items-center justify-center w-9 h-9 rounded-lg transition-opacity"
+        style={{
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
+          color: "var(--text-2)",
+          opacity: refreshing ? 0.6 : 1,
+        }}
+      >
+        <RefreshIcon spinning={refreshing} />
+      </button>
+    </div>
+  );
+}
+
+// Inline SVG to avoid pulling in an icon library. The `animate-spin` class is
+// built into Tailwind so we just toggle it.
+function RefreshIcon({ spinning }: { spinning: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.25"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={spinning ? "animate-spin" : ""}
+      aria-hidden="true"
+    >
+      <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16" />
+      <path d="M3 21v-5h5" />
+    </svg>
+  );
+}
+
+// Renders a team's block (logo + abbr + score + record). Becomes a button
+// when an onClick is provided. We deliberately use a button (not a wrapping
+// <a> or div with onClick) so it gets keyboard focus + accessible semantics
+// for free.
+function TeamBlock({
+  t,
+  align,
+  onClick,
+}: {
+  t: any;
+  align: "left" | "right";
+  onClick?: () => void;
+}) {
+  if (!t) return <div />;
+
+  const inner = (
+    <>
       {t.logo && (
         <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--surface-2)" }}>
           <Image src={t.logo} alt={t.abbr} width={44} height={44} className="object-contain" />
@@ -127,8 +235,24 @@ function TeamBlock({ t, align }: { t: any; align: "left" | "right" }) {
         <div className="text-3xl font-bold tabular-nums">{t.score ?? "—"}</div>
         {t.record && <div className="text-xs" style={{ color: "var(--text-3)" }}>{t.record}</div>}
       </div>
-    </div>
+    </>
   );
+
+  const className = `flex items-center gap-3 ${align === "right" ? "flex-row-reverse text-right" : ""}`;
+
+  if (onClick) {
+    return (
+      <button
+        onClick={onClick}
+        className={`${className} rounded-lg -m-1 p-1 transition-colors hover:bg-[var(--surface-2)] cursor-pointer`}
+        aria-label={`Go to ${t.abbr} page`}
+      >
+        {inner}
+      </button>
+    );
+  }
+
+  return <div className={className}>{inner}</div>;
 }
 
 function PlayRow({ play }: { play: any }) {

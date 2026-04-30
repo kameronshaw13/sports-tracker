@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGameSummary } from "@/lib/espn";
-import { TEAMS } from "@/lib/teams";
+import { parseTeamKey } from "@/lib/teams";
 
 export const revalidate = 15;
 
@@ -13,8 +13,9 @@ export async function GET(req: NextRequest) {
   let league = searchParams.get("league");
   const teamKey = searchParams.get("team");
 
-  if (!league && teamKey && TEAMS[teamKey]) {
-    league = TEAMS[teamKey].league;
+  if (!league && teamKey) {
+    const parsed = parseTeamKey(teamKey);
+    if (parsed) league = parsed.league;
   }
 
   if (!league || !VALID_LEAGUES.includes(league)) {
