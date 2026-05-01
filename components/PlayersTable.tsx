@@ -12,8 +12,14 @@ export type Player = {
   name: string;
   jersey?: string;
   position?: string;
+  primaryPosition?: string;
+  pitchingRole?: "SP" | "RP";
   headshot?: string;
   hasStats: boolean;
+  // v20: trade-in detection — set true for players who joined this team
+  // mid-season. Adds an asterisk next to the name and a footnote.
+  tradedIn?: boolean;
+  tradedInDetail?: string; // e.g. "45 G with PHI"
   stats: Record<string, Stat>; // keyed by `${category}.${name}`
 };
 
@@ -28,7 +34,6 @@ function statKey(category: string, name: string): string {
 
 function applyFormat(value: number | null, displayValue: string, format?: string): string {
   if (displayValue && displayValue !== "—") {
-    // Strip leading zero on baseball averages (".287" not "0.287")
     if (format === "avg" && /^0?\.\d+$/.test(displayValue)) {
       return displayValue.startsWith("0") ? displayValue.slice(1) : displayValue;
     }
@@ -52,22 +57,29 @@ export default function PlayersTable({ section, players }: Props) {
     const qualifierKey = statKey(section.qualifier.category, section.qualifier.name);
 
     return players.filter((p) => {
-      // Position whitelist: drops e.g. WR who made one tackle from defense table
-      if (positionSet) {
-        const pos = (p.position || "").toUpperCase();
-        if (!positionSet.has(pos)) return false;
-      }
-      // Qualifier check: must have the qualifier stat with a positive value
       const s = p.stats[qualifierKey];
-      if (!s) return false;
-      return s.value != null && s.value > 0;
+      if (!s || s.value == null || s.value <= 0) return false;
+
+      if (positionSet) {
+        // MLB has edge cases where a position player pitches in a blowout, or
+        // a true two-way player has both hitting and pitching lines. Keep the
+        // batting table driven by batting stats, while pitcher tables can use
+        // a separate pitchingRole without overwriting the player's real spot.
+        if (section.id === "batting") return true;
+
+        const candidates = [p.position, p.primaryPosition, p.pitchingRole]
+          .filter(Boolean)
+          .map((x) => String(x).toUpperCase());
+        if (!candidates.some((pos) => positionSet.has(pos))) return false;
+      }
+
+      return true;
     });
   }, [players, section.positions, section.qualifier.category, section.qualifier.name]);
 
   const [sortColName, setSortColName] = useState<string>(section.defaultSort.column);
   const [sortDir, setSortDir] = useState<"asc" | "desc">(section.defaultSort.dir);
 
-  // Find the column object for the current sort to know its category
   const sortCol = useMemo(
     () => section.columns.find((c) => c.name === sortColName) || section.columns[0],
     [section.columns, sortColName]
@@ -86,6 +98,14 @@ export default function PlayersTable({ section, players }: Props) {
     });
     return copy;
   }, [eligible, sortCol, sortDir]);
+
+  // v20: collect any traded-in players that are visible so we can render a
+  // footnote summarizing the asterisks at the bottom of the table.
+  const asteriskNotes = useMemo(() => {
+    return sorted
+      .filter((p) => p.tradedIn)
+      .map((p) => ({ name: p.name, detail: p.tradedInDetail }));
+  }, [sorted]);
 
   function handleSortClick(colName: string) {
     if (colName === sortColName) {
@@ -177,6 +197,15 @@ export default function PlayersTable({ section, players }: Props) {
                     <div className="min-w-0">
                       <div className="font-semibold truncate max-w-[140px] sm:max-w-[180px]">
                         {p.name}
+                        {p.tradedIn && (
+                          <span
+                            className="ml-0.5"
+                            style={{ color: "var(--text-2)" }}
+                            title={p.tradedInDetail || "Played for another team this season"}
+                          >
+                            *
+                          </span>
+                        )}
                       </div>
                       <div className="text-[11px]" style={{ color: "var(--text-3)" }}>
                         {p.jersey && `#${p.jersey}`}
@@ -205,6 +234,22 @@ export default function PlayersTable({ section, players }: Props) {
           </tbody>
         </table>
       </div>
+
+      {/* v20 footnote — only renders when at least one player on this table
+          was flagged as traded-in. */}
+      {asteriskNotes.length > 0 && (
+        <div
+          className="px-3 py-2 text-[11px] leading-relaxed"
+          style={{ color: "var(--text-3)", borderTop: "1px solid var(--border)" }}
+        >
+          <span style={{ fontWeight: 600 }}>* </span>
+          {asteriskNotes
+            .map((n) => (n.detail ? `${n.name} (${n.detail})` : n.name))
+            .join(" · ")}
+          {" — totals include games with prior team this season."}
+        </div>
+      )}
+
       <div
         className="px-3 py-2 text-[11px]"
         style={{ color: "var(--text-3)", borderTop: "1px solid var(--border)" }}
@@ -216,7 +261,13 @@ export default function PlayersTable({ section, players }: Props) {
 }
 
 function Headshot({ player }: { player: Player }) {
-  const isEspn = player.headshot?.includes("espncdn.com");
+  const [failed, setFailed] = useState(false);
+  const initials = player.name
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("");
+
   return (
     <div
       className="rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
@@ -227,7 +278,7 @@ function Headshot({ player }: { player: Player }) {
         border: "1px solid var(--border)",
       }}
     >
-      {player.headshot && isEspn ? (
+      {player.headshot && !failed ? (
         <Image
           src={player.headshot}
           alt={player.name}
@@ -235,14 +286,11 @@ function Headshot({ player }: { player: Player }) {
           height={32}
           className="object-cover"
           style={{ width: 32, height: 32 }}
+          onError={() => setFailed(true)}
         />
       ) : (
         <span className="text-[10px] font-semibold" style={{ color: "var(--text-3)" }}>
-          {player.name
-            .split(" ")
-            .map((n) => n[0])
-            .slice(0, 2)
-            .join("")}
+          {initials}
         </span>
       )}
     </div>

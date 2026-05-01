@@ -5,20 +5,29 @@ import useSWR from "swr";
 import { TeamConfig } from "@/lib/teams";
 import { SECTIONS_BY_LEAGUE, Section } from "@/lib/playerColumns";
 import PlayersTable, { Player } from "@/components/PlayersTable";
+import { useFreshKey } from "@/lib/freshKey";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 type Props = { team: TeamConfig };
 
 export default function Stats({ team }: Props) {
-  const { data: teamData } = useSWR(`/api/team?team=${team.key}`, fetcher);
-  const { data: scheduleData } = useSWR(`/api/scoreboard?team=${team.key}`, fetcher);
+  // v21.1: every mount of the Stats tab now busts the route cache, so the
+  // user sees fresh data each time they navigate here.
+  const freshKey = useFreshKey();
+  const { data: teamData } = useSWR(
+    `/api/team?team=${team.key}&_t=${freshKey}`,
+    fetcher
+  );
+  const { data: scheduleData } = useSWR(
+    `/api/scoreboard?team=${team.key}&_t=${freshKey}`,
+    fetcher
+  );
   const { data: playersData, isLoading: playersLoading } = useSWR(
-    `/api/players?team=${team.key}`,
+    `/api/players?team=${team.key}&_t=${freshKey}`,
     fetcher
   );
 
-  // ---- Team summary (carried forward) ----
   const events = scheduleData?.events || [];
   const completed = events.filter((e: any) => e.status?.state === "post");
   const wins = completed.filter((e: any) => e.us?.winner).length;
@@ -109,8 +118,6 @@ export default function Stats({ team }: Props) {
   );
 }
 
-// MLB: Batting toggle shows just batting; Pitching toggle shows Starters then
-// Relievers stacked.
 function MlbBattingPitching({ sections, players }: { sections: Section[]; players: Player[] }) {
   const battingSection = sections.find((s) => s.id === "batting");
   const startersSection = sections.find((s) => s.id === "starters");
@@ -180,7 +187,6 @@ function MlbBattingPitching({ sections, players }: { sections: Section[]; player
   );
 }
 
-// NFL/NBA/NHL: stacked sections, each with a header
 function StackedSections({ sections, players }: { sections: Section[]; players: Player[] }) {
   return (
     <div className="space-y-6">

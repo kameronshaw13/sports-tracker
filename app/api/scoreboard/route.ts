@@ -40,6 +40,10 @@ export async function GET(req: NextRequest) {
           completed: status?.type?.completed,
           description: status?.type?.description,
           detail: status?.type?.shortDetail,
+          // v18: canonical ESPN status name. Used by Schedule.tsx to detect
+          // STATUS_POSTPONED / STATUS_CANCELED / STATUS_SUSPENDED so the row
+          // renders "Postponed" instead of an erroneous "0-0 L".
+          statusName: status?.type?.name || null,
         },
         home: us?.homeAway === "home",
         opponent: {

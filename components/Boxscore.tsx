@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import useSWR from "swr";
+import { useFreshKey } from "@/lib/freshKey";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -13,11 +14,10 @@ type Props = {
 };
 
 export default function Boxscore({ league, eventId, isLive }: Props) {
-  // v17: bumped live poll from 30s → 15s so it matches the GameDetail summary
-  // poll. The manual refresh button on GameDetail also forces this hook to
-  // refetch via SWR's global mutate, so users never have to wait.
+  // v17 behavior preserved: live polling at 15s for parity with summary.
+  const freshKey = useFreshKey();
   const { data, error, isLoading } = useSWR(
-    eventId ? `/api/boxscore?league=${league}&event=${eventId}` : null,
+    eventId ? `/api/boxscore?league=${league}&event=${eventId}&_t=${freshKey}` : null,
     fetcher,
     { refreshInterval: isLive ? 15_000 : 0 }
   );
@@ -114,22 +114,90 @@ function LeaderCard({ cat, teamLogo, teamAbbr }: any) {
   );
 }
 
-// v17: per-league column behavior.
-// - NBA / NHL: show every stat ESPN returns. The user explicitly wants the
-//   richer slate (NBA: AST/TOV/STL/BLK/+− alongside PTS; NHL: PTS/AST/SOG/etc).
-//   Horizontal scroll handles overflow on narrow screens.
-// - MLB / NFL: keep the original 6-column cap. Their box scores have many
-//   sparsely-populated columns and showing them all makes the table feel
-//   noisy without adding signal.
+// v18: per-league column behavior.
+//
+// - NHL skaters: ESPN dumps ~15 columns (G, A, +/-, S, HT, BS, GVA, TKA,
+//   FOW, FOL, TOI, PIM, PPG, SHG, GWG). The user wanted Goals/Ast/SOG/TOI
+//   first plus a small curated set after. We pick from a preferred order
+//   and fall through to the remaining ESPN keys if any preferred ones are
+//   missing — no silently-empty columns.
+//
+// - NHL goalies: keep clean SA/GA/SV/SV%/TOI ordering.
+//
+// - NBA: still show every column (matches v17). NBA boxscores are dense
+//   in a useful way (PTS/REB/AST/STL/BLK/+−/etc.) and the user liked that.
+//
+// - MLB / NFL: keep the 6-column cap. Their boxscores have many sparsely
+//   populated columns; showing them all just creates a wall of dashes.
+
+const NHL_SKATER_PREFERRED = ["G", "A", "SOG", "S", "TOI", "+/-", "PIM", "HT", "H", "BS"];
+const NHL_GOALIE_PREFERRED = ["SA", "GA", "SV", "SV%", "TOI", "PIM"];
+
+// Pick which keys to show given the group and league. Preserves the "first
+// match wins" ordering of the preferred list and dedupes (e.g. ESPN sometimes
+// uses S vs SOG for shots — we accept either but only show one).
+function pickColumnKeys(group: any, league: string): string[] {
+  const allKeys: string[] = Array.isArray(group?.keys) ? group.keys : [];
+  if (allKeys.length === 0) return [];
+
+  if (league === "nhl") {
+    const isGoalies = looksLikeGoalies(group, allKeys);
+    const preferred = isGoalies ? NHL_GOALIE_PREFERRED : NHL_SKATER_PREFERRED;
+
+    const out: string[] = [];
+    const seenLabels = new Set<string>();
+
+    // First pass: take preferred keys in order, skipping ones the data
+    // doesn't have. We treat S and SOG as the same column conceptually so
+    // we don't end up with both.
+    for (const key of preferred) {
+      if (!allKeys.includes(key)) continue;
+      const label = canonicalLabel(key);
+      if (seenLabels.has(label)) continue;
+      out.push(key);
+      seenLabels.add(label);
+      // Skater cap: 8 columns total (G, A, SOG, TOI, +/-, PIM, HT/H, BS)
+      // Goalie cap: 6 columns
+      if (out.length >= (isGoalies ? 6 : 8)) break;
+    }
+
+    return out;
+  }
+
+  if (league === "nba") {
+    // NBA: show every column (v17 behavior)
+    return allKeys;
+  }
+
+  // MLB / NFL: 6-column cap (pre-v17 behavior preserved)
+  return allKeys.slice(0, 6);
+}
+
+// NHL group-type detection. ESPN labels groups inconsistently — could be
+// "Skaters" / "Goalies", or "Forwards" / "Defense" / "Goalies", or unlabeled.
+// We match on the keys to be safe: SA + SV combo = goalies.
+function looksLikeGoalies(group: any, keys: string[]): boolean {
+  const name = String(group?.name || group?.displayName || "").toLowerCase();
+  if (name.includes("goalie") || name === "g") return true;
+  // Fallback: column signature
+  return keys.includes("SA") && keys.includes("SV");
+}
+
+// Treat "S" and "SOG" as the same logical column — both mean "shots on goal"
+// in ESPN's NHL boxscore.
+function canonicalLabel(key: string): string {
+  if (key === "S" || key === "SOG") return "SOG";
+  if (key === "HT" || key === "H") return "HT";
+  return key;
+}
+
 function StatGroup({ group, league }: { group: any; league: string }) {
-  // Show top 5 athletes per group to keep it scannable; expand on click
   const [expanded, setExpanded] = useState(false);
   const visible = expanded ? group.athletes : group.athletes.slice(0, 5);
 
   if (group.athletes.length === 0) return null;
 
-  const showAllColumns = league === "nba" || league === "nhl";
-  const columnKeys: string[] = showAllColumns ? group.keys : group.keys.slice(0, 6);
+  const columnKeys = pickColumnKeys(group, league);
 
   return (
     <div className="rounded-xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
@@ -137,23 +205,18 @@ function StatGroup({ group, league }: { group: any; league: string }) {
         {group.name}
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-xs" style={{ minWidth: showAllColumns ? "fit-content" : undefined }}>
+        <table className="w-full text-xs">
           <thead>
             <tr style={{ color: "var(--text-3)" }}>
               <th
                 className="text-left px-3 py-2 font-medium sticky left-0 z-10"
                 style={{ background: "var(--surface)" }}
-                title="Player"
               >
                 Player
               </th>
-              {columnKeys.map((k) => (
-                <th
-                  key={k}
-                  className="text-right px-2 py-2 font-medium tabular-nums whitespace-nowrap"
-                  title={describeKey(league, k)}
-                >
-                  {k}
+              {columnKeys.map((k: string) => (
+                <th key={k} className="text-right px-2 py-2 font-medium tabular-nums whitespace-nowrap" title={describeKey(league, k)}>
+                  {canonicalLabel(k)}
                 </th>
               ))}
             </tr>
@@ -162,7 +225,7 @@ function StatGroup({ group, league }: { group: any; league: string }) {
             {visible.map((a: any) => (
               <tr key={a.id} style={{ borderTop: "1px solid var(--border)" }}>
                 <td
-                  className="px-3 py-2 whitespace-nowrap sticky left-0 z-10"
+                  className="px-3 py-2 whitespace-nowrap sticky left-0"
                   style={{ background: "var(--surface)" }}
                 >
                   <div className="font-medium">{a.shortName || a.name}</div>
@@ -170,8 +233,8 @@ function StatGroup({ group, league }: { group: any; league: string }) {
                     <span className="text-[10px]" style={{ color: "var(--text-3)" }}>{a.position}</span>
                   )}
                 </td>
-                {columnKeys.map((k) => (
-                  <td key={k} className="text-right px-2 py-2 tabular-nums whitespace-nowrap" style={{ color: "var(--text-2)" }}>
+                {columnKeys.map((k: string) => (
+                  <td key={k} className="text-right px-2 py-2 tabular-nums" style={{ color: "var(--text-2)" }}>
                     {a.stats[k] ?? "—"}
                   </td>
                 ))}
@@ -195,8 +258,7 @@ function StatGroup({ group, league }: { group: any; league: string }) {
 
 // Hover/long-press tooltip text for short stat headers. ESPN's `descriptions`
 // array would technically be the source of truth, but it's not always present
-// per group, so we fall back to a small per-league dictionary covering the
-// common abbreviations the user is likely to ask about.
+// per group, so we fall back to a small per-league dictionary.
 function describeKey(league: string, key: string): string {
   const all: Record<string, string> = {
     // NBA
@@ -220,6 +282,7 @@ function describeKey(league: string, key: string): string {
     SOG: "Shots on Goal",
     S: "Shots",
     HT: "Hits",
+    H: "Hits",
     BS: "Blocked Shots",
     GVA: "Giveaways",
     TKA: "Takeaways",

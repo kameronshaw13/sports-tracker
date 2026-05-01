@@ -3,7 +3,11 @@
 import Image from "next/image";
 import { useCallback, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
+import { useFreshKey } from "@/lib/freshKey";
 import Boxscore from "./Boxscore";
+import Gamecast from "./Gamecast";
+import GameRecap from "./GameRecap";
+import PlayByPlay from "./PlayByPlay";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -13,276 +17,353 @@ type Props = {
   onClose?: () => void;
   // When provided, home/away team blocks become clickable and call this with
   // the team's league + abbr — used to navigate from a box score to that
-  // team's page. e.g. tap Astros logo while viewing Orioles vs Astros → Astros page.
+  // team's page. e.g. tap Astros logo while viewing Orioles vs Astros → Astros.
   onTeamClick?: (league: string, abbr: string) => void;
 };
 
+// v19: Game detail is now tab-based.
+//
+// Tabs depend on game state:
+//   - Live or pre-game: [Gamecast] [Box Score] [Play-by-Play]
+//   - Final:            [Recap]    [Box Score] [Play-by-Play]
+//
+// "Gamecast" becomes "Recap" for finished games — same tab slot, different
+// content. Gamecast hosts the live visualizations (strike zone, shot map,
+// field position) which are stubbed in v19 and built in v20. Recap is
+// available immediately as a template-generated summary.
+
+type TabId = "main" | "boxscore" | "plays";
+
 export default function GameDetail({ league, eventId, onClose, onTeamClick }: Props) {
-  const summaryKey = `/api/summary?league=${league}&event=${eventId}`;
-  const boxscoreKey = `/api/boxscore?league=${league}&event=${eventId}`;
+  // v21.1: freshKey busts route cache per mount. The keys are still stable
+  // for the lifetime of THIS GameDetail instance, so SWR's manual mutate
+  // (used by the Refresh button) keeps working.
+  const freshKey = useFreshKey();
+  const summaryKey = `/api/summary?league=${league}&event=${eventId}&_t=${freshKey}`;
+  const boxscoreKey = `/api/boxscore?league=${league}&event=${eventId}&_t=${freshKey}`;
+  const recapKey = `/api/recap?league=${league}&event=${eventId}&_t=${freshKey}`;
 
   const { data, error, isLoading } = useSWR(summaryKey, fetcher, {
     refreshInterval: 15_000,
   });
 
-  // v17: manual refresh button. SWR's global mutate is used so we can refresh
-  // BOTH the summary (scoreboard + plays) AND the boxscore (player stats)
-  // in a single click — even though the boxscore lives in a child component
-  // with its own SWR hook. Without this the boxscore would only update on its
-  // own 15s timer regardless of when the user tapped.
   const { mutate } = useSWRConfig();
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>("main");
 
   const handleRefresh = useCallback(async () => {
     if (refreshing) return;
     setRefreshing(true);
     try {
-      await Promise.all([mutate(summaryKey), mutate(boxscoreKey)]);
-    } catch {
-      // swallow — SWR will surface the error in `error` if a fetch fails
-    }
-    // Keep the spinner visible for ~500ms even if the network is fast, so the
-    // user gets clear visual feedback that the tap registered.
+      // v19: also invalidate the recap cache when the user manually refreshes
+      // — covers the case where someone refreshes right after a final whistle.
+      await Promise.all([mutate(summaryKey), mutate(boxscoreKey), mutate(recapKey)]);
+    } catch {}
     setTimeout(() => setRefreshing(false), 500);
-  }, [mutate, summaryKey, boxscoreKey, refreshing]);
+  }, [refreshing, mutate, summaryKey, boxscoreKey, recapKey]);
 
   if (isLoading) {
     return (
       <div className="space-y-3">
+        <div className="h-8 w-32 rounded animate-pulse" style={{ background: "var(--surface)" }} />
         <div className="h-32 rounded-2xl animate-pulse" style={{ background: "var(--surface)" }} />
-        <div className="h-12 rounded-xl animate-pulse" style={{ background: "var(--surface)" }} />
       </div>
     );
   }
+
   if (error || !data) {
     return (
-      <div className="space-y-4">
-        <TopBar onClose={onClose} onRefresh={handleRefresh} refreshing={refreshing} />
-        <div className="p-8 rounded-xl text-sm text-center"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>
-          Couldn't load game data.
+      <div className="space-y-3">
+        <BackButton onClose={onClose} />
+        <div
+          className="p-6 rounded-xl text-sm"
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            color: "var(--text-2)",
+          }}
+        >
+          Couldn't load this game.
         </div>
       </div>
     );
   }
 
-  const { home, away, status, plays } = data;
+  const { home, away, status, situation } = data;
   const isLive = status?.state === "in";
   const isFinal = status?.state === "post";
-  const stateLabel = isLive ? "Live" : isFinal ? "Final" : "Upcoming";
+  const isPre = status?.state === "pre";
 
-  // Build click handlers only when we have both a callback AND a valid abbr.
-  // The handlers go through league + abbr (not numeric ESPN id) since that's
-  // how the rest of the app keys teams.
-  const onAwayClick = onTeamClick && away?.abbr ? () => onTeamClick(league, away.abbr) : undefined;
-  const onHomeClick = onTeamClick && home?.abbr ? () => onTeamClick(league, home.abbr) : undefined;
+  // Detect non-played games. We hide the Recap tab for these — there's
+  // nothing meaningful to recap if the game was postponed.
+  const statusName = String(status?.statusName || "").toUpperCase();
+  const isNonPlayed = /POSTPONED|CANCELED|CANCELLED|SUSPENDED/.test(statusName);
+
+  const mainTabLabel = isFinal && !isNonPlayed ? "Recap" : "Gamecast";
 
   return (
     <div className="space-y-4">
-      {/* Top bar: optional back button on the left, refresh always on the right */}
-      <TopBar onClose={onClose} onRefresh={handleRefresh} refreshing={refreshing} />
-
-      {/* Scoreboard */}
-      <div className="rounded-2xl p-5" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            {isLive && <span className="w-2 h-2 rounded-full live-dot" style={{ background: "var(--danger)" }} />}
-            <span
-              className="text-xs uppercase tracking-widest font-semibold"
-              style={{ color: isLive ? "var(--danger)" : "var(--text-2)" }}
-            >
-              {stateLabel}
-            </span>
-          </div>
-          <span className="text-xs font-medium" style={{ color: "var(--text-2)" }}>
-            {status?.detail}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-          <TeamBlock t={away} align="left" onClick={onAwayClick} />
-          <div className="text-center text-xs font-medium" style={{ color: "var(--text-3)" }}>vs</div>
-          <TeamBlock t={home} align="right" onClick={onHomeClick} />
-        </div>
-
-        {(data.venue || data.broadcast) && (
-          <div className="mt-4 pt-3 border-t flex items-center justify-between text-xs"
-            style={{ borderColor: "var(--border)", color: "var(--text-3)" }}>
-            <span>{data.venue}</span>
-            {data.broadcast && <span>{data.broadcast}</span>}
-          </div>
-        )}
+      {/* Top row: back / refresh */}
+      <div className="flex items-center justify-between">
+        <BackButton onClose={onClose} />
+        <RefreshButton refreshing={refreshing} onClick={handleRefresh} />
       </div>
 
-      {/* Boxscore — only when game has started */}
-      {(isLive || isFinal) && (
-        <Boxscore league={league} eventId={eventId} isLive={isLive} />
-      )}
+      {/* Scoreboard header */}
+      <ScoreboardHeader
+        league={league}
+        home={home}
+        away={away}
+        status={status}
+        onTeamClick={onTeamClick}
+      />
 
-      {/* Play by play */}
-      <div>
-        <h2 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>
-          Play by play
-        </h2>
-        {plays && plays.length > 0 ? (
-          <div className="space-y-1.5">
-            {plays.map((p: any) => (
-              <PlayRow key={p.id} play={p} />
-            ))}
-          </div>
-        ) : (
-          <div className="p-8 rounded-xl text-sm text-center"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>
-            {status?.state === "pre" ? "Game hasn't started yet." : "No play-by-play available for this game."}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Top bar holding the optional back button and the always-visible refresh
-// button. We render an empty <div /> when there's no back button so the
-// refresh button stays right-aligned via justify-between.
-function TopBar({
-  onClose,
-  onRefresh,
-  refreshing,
-}: {
-  onClose?: () => void;
-  onRefresh: () => void;
-  refreshing: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      {onClose ? (
-        <button
-          onClick={onClose}
-          className="flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded-lg"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}
-        >
-          ← Back
-        </button>
-      ) : (
-        <div />
-      )}
-      <button
-        onClick={onRefresh}
-        disabled={refreshing}
-        aria-label="Refresh"
-        className="flex items-center justify-center w-9 h-9 rounded-lg transition-opacity"
-        style={{
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-          color: "var(--text-2)",
-          opacity: refreshing ? 0.6 : 1,
-        }}
+      {/* Tabs */}
+      <div
+        className="flex p-1 rounded-xl"
+        style={{ background: "var(--surface-2)" }}
+        role="tablist"
       >
-        <RefreshIcon spinning={refreshing} />
-      </button>
+        <TabBtn
+          label={mainTabLabel}
+          isActive={activeTab === "main"}
+          onClick={() => setActiveTab("main")}
+        />
+        <TabBtn
+          label="Box Score"
+          isActive={activeTab === "boxscore"}
+          onClick={() => setActiveTab("boxscore")}
+        />
+        <TabBtn
+          label="Play-by-Play"
+          isActive={activeTab === "plays"}
+          onClick={() => setActiveTab("plays")}
+        />
+      </div>
+
+      {/* Tab content */}
+      <div>
+        {activeTab === "main" && (
+          <>
+            {isFinal && !isNonPlayed && (
+              <GameRecap league={league} eventId={eventId} />
+            )}
+            {(isLive || isPre) && (
+              <Gamecast
+                league={league}
+                eventId={eventId}
+                isLive={isLive}
+                situation={situation}
+              />
+            )}
+            {isNonPlayed && (
+              <div
+                className="p-6 rounded-xl text-sm text-center"
+                style={{
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  color: "var(--text-2)",
+                }}
+              >
+                This game was {nonPlayedLabel(statusName).toLowerCase()}.
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === "boxscore" && (
+          <Boxscore league={league} eventId={eventId} isLive={isLive} />
+        )}
+
+        {activeTab === "plays" && (
+          <PlayByPlay
+            league={league}
+            eventId={eventId}
+            isLive={isLive}
+            homeAbbr={home?.abbr}
+            awayAbbr={away?.abbr}
+          />
+        )}
+      </div>
     </div>
   );
 }
 
-// Inline SVG to avoid pulling in an icon library. The `animate-spin` class is
-// built into Tailwind so we just toggle it.
-function RefreshIcon({ spinning }: { spinning: boolean }) {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.25"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={spinning ? "animate-spin" : ""}
-      aria-hidden="true"
-    >
-      <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8" />
-      <path d="M21 3v5h-5" />
-      <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16" />
-      <path d="M3 21v-5h5" />
-    </svg>
-  );
+function nonPlayedLabel(statusName: string): string {
+  if (statusName.includes("POSTPONED")) return "Postponed";
+  if (statusName.includes("CANCEL")) return "Canceled";
+  if (statusName.includes("SUSPENDED")) return "Suspended";
+  return "Not played";
 }
 
-// Renders a team's block (logo + abbr + score + record). Becomes a button
-// when an onClick is provided. We deliberately use a button (not a wrapping
-// <a> or div with onClick) so it gets keyboard focus + accessible semantics
-// for free.
-function TeamBlock({
-  t,
-  align,
+function TabBtn({
+  label,
+  isActive,
   onClick,
 }: {
-  t: any;
-  align: "left" | "right";
-  onClick?: () => void;
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
 }) {
-  if (!t) return <div />;
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={isActive}
+      onClick={onClick}
+      className="flex-1 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all"
+      style={{
+        background: isActive ? "var(--surface)" : "transparent",
+        color: isActive ? "var(--text)" : "var(--text-2)",
+        border: isActive ? "1px solid var(--border)" : "1px solid transparent",
+      }}
+    >
+      {label}
+    </button>
+  );
+}
 
+function BackButton({ onClose }: { onClose?: () => void }) {
+  if (!onClose) return <div />;
+  return (
+    <button
+      onClick={onClose}
+      className="text-sm font-medium px-3 py-1.5 rounded-lg"
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--border)",
+        color: "var(--text-2)",
+      }}
+    >
+      ← Back
+    </button>
+  );
+}
+
+function RefreshButton({
+  refreshing,
+  onClick,
+}: {
+  refreshing: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={refreshing}
+      aria-label="Refresh"
+      className="w-9 h-9 rounded-full flex items-center justify-center transition-opacity disabled:opacity-60"
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--border)",
+        color: "var(--text-2)",
+      }}
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        style={{
+          animation: refreshing ? "spin 0.8s linear infinite" : undefined,
+        }}
+      >
+        <path
+          d="M3 8a5 5 0 0 1 8.5-3.5L13 6m0-3v3h-3M13 8a5 5 0 0 1-8.5 3.5L3 10m0 3v-3h3"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <style jsx>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </button>
+  );
+}
+
+function ScoreboardHeader({
+  league,
+  home,
+  away,
+  status,
+  onTeamClick,
+}: {
+  league: string;
+  home: any;
+  away: any;
+  status: any;
+  onTeamClick?: (league: string, abbr: string) => void;
+}) {
+  const isLive = status?.state === "in";
+  return (
+    <div
+      className="rounded-2xl p-4"
+      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+    >
+      <div
+        className="text-xs font-semibold uppercase tracking-wider text-center mb-3"
+        style={{ color: isLive ? "var(--danger)" : "var(--text-2)" }}
+      >
+        {status?.detail || ""}
+      </div>
+      <div className="flex items-center justify-center gap-4">
+        <TeamBlock team={away} league={league} onClick={onTeamClick} />
+        <div
+          className="text-3xl font-bold tabular-nums"
+          style={{ color: "var(--text-3)" }}
+        >
+          –
+        </div>
+        <TeamBlock team={home} league={league} onClick={onTeamClick} />
+      </div>
+    </div>
+  );
+}
+
+function TeamBlock({
+  team,
+  league,
+  onClick,
+}: {
+  team: any;
+  league: string;
+  onClick?: (league: string, abbr: string) => void;
+}) {
+  if (!team) return null;
   const inner = (
     <>
-      {t.logo && (
-        <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--surface-2)" }}>
-          <Image src={t.logo} alt={t.abbr} width={44} height={44} className="object-contain" />
+      <div
+        className="w-14 h-14 rounded-xl flex items-center justify-center mb-1"
+        style={{ background: "var(--surface-2)" }}
+      >
+        {team.logo && (
+          <Image src={team.logo} alt={team.abbr} width={44} height={44} className="object-contain" />
+        )}
+      </div>
+      <div className="text-xs font-bold">{team.abbr}</div>
+      <div className="text-2xl font-bold tabular-nums mt-0.5">{team.score ?? "—"}</div>
+      {team.record && (
+        <div className="text-[10px]" style={{ color: "var(--text-3)" }}>
+          {team.record}
         </div>
       )}
-      <div>
-        <div className="text-xs font-medium" style={{ color: "var(--text-2)" }}>{t.abbr}</div>
-        <div className="text-3xl font-bold tabular-nums">{t.score ?? "—"}</div>
-        {t.record && <div className="text-xs" style={{ color: "var(--text-3)" }}>{t.record}</div>}
-      </div>
     </>
   );
 
-  const className = `flex items-center gap-3 ${align === "right" ? "flex-row-reverse text-right" : ""}`;
-
-  if (onClick) {
+  if (onClick && team.abbr) {
     return (
       <button
-        onClick={onClick}
-        className={`${className} rounded-lg -m-1 p-1 transition-colors hover:bg-[var(--surface-2)] cursor-pointer`}
-        aria-label={`Go to ${t.abbr} page`}
+        onClick={() => onClick(league, String(team.abbr).toLowerCase())}
+        className="flex-1 flex flex-col items-center text-center hover:opacity-80 transition-opacity"
       >
         {inner}
       </button>
     );
   }
-
-  return <div className={className}>{inner}</div>;
-}
-
-function PlayRow({ play }: { play: any }) {
-  return (
-    <div
-      className="flex items-start gap-3 px-4 py-2.5 rounded-lg"
-      style={{
-        background: play.scoringPlay ? "rgba(16, 185, 129, 0.08)" : "var(--surface)",
-        border: `1px solid ${play.scoringPlay ? "rgba(16, 185, 129, 0.25)" : "var(--border)"}`,
-      }}
-    >
-      <div className="flex-shrink-0 w-16 text-xs tabular-nums" style={{ color: "var(--text-3)" }}>
-        {play.clock && <div className="font-semibold">{play.clock}</div>}
-        {play.period && <div>{ordinal(play.period)}</div>}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-sm leading-snug">{play.text}</div>
-        {play.scoringPlay && play.awayScore != null && play.homeScore != null && (
-          <div className="text-xs font-semibold mt-0.5" style={{ color: "var(--success)" }}>
-            Score: {play.awayScore} – {play.homeScore}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ordinal(n: number): string {
-  if (n === 1) return "1st";
-  if (n === 2) return "2nd";
-  if (n === 3) return "3rd";
-  return `${n}th`;
+  return <div className="flex-1 flex flex-col items-center text-center">{inner}</div>;
 }

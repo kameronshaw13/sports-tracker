@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import useSWR from "swr";
 import { TeamConfig } from "@/lib/teams";
+import { useFreshKey } from "@/lib/freshKey";
 import GameDetail from "./GameDetail";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -17,17 +18,44 @@ function formatTime(iso: string) {
   return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 }
 
+// v18: detect non-played results.
+type NonPlayedKind = "postponed" | "canceled" | "suspended" | null;
+
+function classifyNonPlayed(status: any): NonPlayedKind {
+  const name = String(status?.statusName || "").toUpperCase();
+  if (name === "STATUS_POSTPONED") return "postponed";
+  if (name === "STATUS_CANCELED" || name === "STATUS_CANCELLED") return "canceled";
+  if (name === "STATUS_SUSPENDED") return "suspended";
+  const text = `${status?.description || ""} ${status?.detail || ""}`.toLowerCase();
+  if (text.includes("postpon")) return "postponed";
+  if (text.includes("cancel")) return "canceled";
+  if (text.includes("suspend")) return "suspended";
+  return null;
+}
+
+function nonPlayedLabel(kind: NonPlayedKind): string {
+  switch (kind) {
+    case "postponed": return "Postponed";
+    case "canceled": return "Canceled";
+    case "suspended": return "Suspended";
+    default: return "";
+  }
+}
+
 type Props = {
   team: TeamConfig;
-  // Forwarded into GameDetail when the user drills into a game from the schedule.
   onTeamLogoClick?: (league: string, abbr: string) => void;
 };
 
+// v21.1: freshKey appended to URL so each mount busts the route cache.
 export default function Schedule({ team, onTeamLogoClick }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
-  const { data, error, isLoading } = useSWR(`/api/scoreboard?team=${team.key}`, fetcher, {
-    refreshInterval: 60_000,
-  });
+  const freshKey = useFreshKey();
+  const { data, error, isLoading } = useSWR(
+    `/api/scoreboard?team=${team.key}&_t=${freshKey}`,
+    fetcher,
+    { refreshInterval: 60_000 }
+  );
 
   if (selected) {
     return (
@@ -94,6 +122,7 @@ function Section({ title, children, accent }: any) {
 function GameRow({ ev, team, variant, onClick }: any) {
   const opp = ev.opponent;
   const won = ev.us?.winner;
+  const nonPlayed: NonPlayedKind = variant === "result" ? classifyNonPlayed(ev.status) : null;
 
   return (
     <button
@@ -135,7 +164,19 @@ function GameRow({ ev, team, variant, onClick }: any) {
             </div>
           </>
         )}
-        {variant === "result" && (
+        {variant === "result" && nonPlayed && (
+          <span
+            className="text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-md inline-block"
+            style={{
+              background: "var(--surface-2)",
+              color: "var(--text-2)",
+              border: "1px solid var(--border)",
+            }}
+          >
+            {nonPlayedLabel(nonPlayed)}
+          </span>
+        )}
+        {variant === "result" && !nonPlayed && (
           <>
             <div className="text-base font-bold tabular-nums">
               {ev.us?.score ?? "—"}<span style={{ color: "var(--text-3)" }}> – </span>{opp?.score ?? "—"}

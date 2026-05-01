@@ -2,19 +2,23 @@
 
 import useSWR from "swr";
 import { TeamConfig } from "@/lib/teams";
+import { useFreshKey } from "@/lib/freshKey";
 import GameDetail from "./GameDetail";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 type Props = {
   team: TeamConfig;
-  // Forwarded into GameDetail so the user can tap an opponent logo to navigate
-  // to that team's page (e.g. tap Astros while viewing the live Orioles game).
   onTeamLogoClick?: (league: string, abbr: string) => void;
 };
 
+// v21.1: freshKey appended to URL so each mount busts the route cache.
 export default function LiveGame({ team, onTeamLogoClick }: Props) {
-  const { data: scheduleData, isLoading } = useSWR(`/api/scoreboard?team=${team.key}`, fetcher);
+  const freshKey = useFreshKey();
+  const { data: scheduleData, isLoading } = useSWR(
+    `/api/scoreboard?team=${team.key}&_t=${freshKey}`,
+    fetcher
+  );
   const events = scheduleData?.events || [];
   const liveEvent = events.find((e: any) => e.status?.state === "in");
   const nextEvent = events.find((e: any) => e.status?.state === "pre");

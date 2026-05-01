@@ -1,5 +1,8 @@
 "use client";
 
+// v20: third tab renamed from "Leagues" to "Scores". The internal id stays
+// "leagues" so we don't have to touch page.tsx's routing logic — this is
+// just a label change.
 export type ViewId = "home" | "teams" | "leagues";
 
 type Props = {
@@ -11,7 +14,7 @@ export default function TopNav({ active, onChange }: Props) {
   const items: { id: ViewId; label: string }[] = [
     { id: "home", label: "Home" },
     { id: "teams", label: "My Teams" },
-    { id: "leagues", label: "Leagues" },
+    { id: "leagues", label: "Scores" },
   ];
   return (
     <nav className="flex gap-1 p-1 rounded-xl mb-6" style={{ background: "var(--surface-2)" }}>

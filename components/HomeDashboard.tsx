@@ -5,6 +5,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { TeamConfig, logoUrl } from "@/lib/teams";
 import { useFavoriteTeams } from "@/lib/useFavorites";
+import { useFreshKey } from "@/lib/freshKey";
 import GameDetail from "./GameDetail";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -30,7 +31,6 @@ export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick }
     );
   }
 
-  // favorites is null on first render (before localStorage is read)
   if (!favorites) {
     return <div className="h-32 rounded-2xl animate-pulse" style={{ background: "var(--surface)" }} />;
   }
@@ -89,12 +89,18 @@ function TeamCard({
   onTeamClick: () => void;
   onGameClick: (eventId: string) => void;
 }) {
-  const { data: scheduleData } = useSWR(`/api/scoreboard?team=${team.key}`, fetcher, {
-    refreshInterval: 30_000,
-  });
-  const { data: teamData } = useSWR(`/api/team?team=${team.key}`, fetcher, {
-    refreshInterval: 60_000,
-  });
+  // v21.1: freshKey appended to URLs so each mount busts the route cache.
+  const freshKey = useFreshKey();
+  const { data: scheduleData } = useSWR(
+    `/api/scoreboard?team=${team.key}&_t=${freshKey}`,
+    fetcher,
+    { refreshInterval: 30_000 }
+  );
+  const { data: teamData } = useSWR(
+    `/api/team?team=${team.key}&_t=${freshKey}`,
+    fetcher,
+    { refreshInterval: 60_000 }
+  );
 
   const events = scheduleData?.events || [];
   const liveEvent = events.find((e: any) => e.status?.state === "in");
