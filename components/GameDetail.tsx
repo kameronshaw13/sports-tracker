@@ -115,6 +115,7 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick }: Pr
         home={home}
         away={away}
         status={status}
+        situation={situation}
         onTeamClick={onTeamClick}
       />
 
@@ -291,12 +292,14 @@ function ScoreboardHeader({
   home,
   away,
   status,
+  situation,
   onTeamClick,
 }: {
   league: string;
   home: any;
   away: any;
   status: any;
+  situation?: any;
   onTeamClick?: (league: string, abbr: string) => void;
 }) {
   const isLive = status?.state === "in";
@@ -311,6 +314,12 @@ function ScoreboardHeader({
       >
         {status?.detail || ""}
       </div>
+      {league === "mlb" && isLive && hasBaseballSituation(situation) && (
+        <div className="flex justify-center mb-3">
+          <BaseballSituationBlock situation={situation} />
+        </div>
+      )}
+
       <div className="flex items-center justify-center gap-4">
         <TeamBlock team={away} league={league} onClick={onTeamClick} />
         <div
@@ -322,6 +331,58 @@ function ScoreboardHeader({
         <TeamBlock team={home} league={league} onClick={onTeamClick} />
       </div>
     </div>
+  );
+}
+
+function hasBaseballSituation(s: any): boolean {
+  return s && (typeof s.balls === "number" || typeof s.strikes === "number" || typeof s.outs === "number");
+}
+
+function BaseballSituationBlock({ situation }: { situation: any }) {
+  const balls = situation.balls ?? 0;
+  const strikes = situation.strikes ?? 0;
+  const outs = situation.outs ?? 0;
+
+  return (
+    <div
+      className="flex items-center gap-3 rounded-full px-4 py-2 text-sm font-black tabular-nums"
+      style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-2)" }}
+    >
+      <BasesDiamond
+        onFirst={!!situation.onFirst}
+        onSecond={!!situation.onSecond}
+        onThird={!!situation.onThird}
+      />
+      <span>{balls}-{strikes}</span>
+      <span>{outs} {outs === 1 ? "out" : "outs"}</span>
+    </div>
+  );
+}
+
+function BasesDiamond({
+  onFirst,
+  onSecond,
+  onThird,
+}: {
+  onFirst: boolean;
+  onSecond: boolean;
+  onThird: boolean;
+}) {
+  const filled = "var(--text)";
+  const empty = "var(--surface-2)";
+  const stroke = "var(--text-3)";
+  return (
+    <svg width="34" height="28" viewBox="0 0 34 28" aria-label="Bases">
+      <g transform="translate(17 7) rotate(45)">
+        <rect x="-5" y="-5" width="10" height="10" rx="1.5" fill={onSecond ? filled : empty} stroke={stroke} strokeWidth="1.1" />
+      </g>
+      <g transform="translate(26 17) rotate(45)">
+        <rect x="-5" y="-5" width="10" height="10" rx="1.5" fill={onFirst ? filled : empty} stroke={stroke} strokeWidth="1.1" />
+      </g>
+      <g transform="translate(8 17) rotate(45)">
+        <rect x="-5" y="-5" width="10" height="10" rx="1.5" fill={onThird ? filled : empty} stroke={stroke} strokeWidth="1.1" />
+      </g>
+    </svg>
   );
 }
 
