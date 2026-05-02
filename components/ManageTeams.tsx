@@ -8,6 +8,16 @@ import { useFavoriteTeams } from "@/lib/useFavorites";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
+function scoreSearch(t: TeamConfig, q: string): number {
+  const name = t.name.toLowerCase();
+  const short = t.short.toLowerCase();
+  const abbr = t.abbr.toLowerCase();
+  if (abbr === q || short === q || name === q) return 100;
+  if (abbr.startsWith(q) || short.startsWith(q) || name.startsWith(q)) return 50;
+  if (name.includes(` ${q}`)) return 25;
+  return 1;
+}
+
 const LEAGUE_LABEL: Record<League, string> = {
   mlb: "MLB",
   nfl: "NFL",
@@ -31,16 +41,19 @@ export default function ManageTeams({ onClose }: Props) {
   const filtered = useMemo(() => {
     let list = allTeams;
     if (leagueFilter !== "all") list = list.filter((t) => t.league === leagueFilter);
-    if (search.trim()) {
-      const q = search.toLowerCase();
+    const q = search.trim().toLowerCase();
+    if (q) {
       list = list.filter(
         (t) =>
           t.name.toLowerCase().includes(q) ||
           t.abbr.includes(q) ||
           t.short.toLowerCase().includes(q)
       );
+      // Search results should put exact/strong matches at the top instead of
+      // leaving the user to scroll through hundreds of college teams.
+      list = [...list].sort((a, b) => scoreSearch(b, q) - scoreSearch(a, q) || a.name.localeCompare(b.name));
     }
-    return list;
+    return list.slice(0, q ? 80 : 220);
   }, [allTeams, leagueFilter, search]);
 
   return (
@@ -186,7 +199,7 @@ export default function ManageTeams({ onClose }: Props) {
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold truncate">{t.name}</div>
                     <div className="text-[11px] uppercase tracking-wide" style={{ opacity: 0.75 }}>
-                      {LEAGUE_LABEL[t.league]}
+                      {LEAGUE_LABEL[t.league]}{t.subdivision ? ` · ${t.subdivision}` : ""}
                     </div>
                   </div>
                   <div className="text-lg flex-shrink-0">{isFav ? "★" : "☆"}</div>

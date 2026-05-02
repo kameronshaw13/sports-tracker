@@ -44,9 +44,10 @@ function nonPlayedLabel(kind: NonPlayedKind): string {
 type Props = {
   team: TeamConfig;
   onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
 };
 
-export default function Schedule({ team, onTeamLogoClick }: Props) {
+export default function Schedule({ team, onTeamLogoClick, onPlayerClick }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const focusRef = useRef<HTMLDivElement | null>(null);
   const scrollBoxRef = useRef<HTMLDivElement | null>(null);
@@ -89,7 +90,7 @@ export default function Schedule({ team, onTeamLogoClick }: Props) {
       const box = scrollBoxRef.current;
       const focus = focusRef.current;
       if (!box || !focus) return;
-      box.scrollTo({ top: Math.max(0, focus.offsetTop - box.clientHeight / 2), behavior: "smooth" });
+      box.scrollTo({ top: Math.max(0, focus.offsetTop - 48), behavior: "smooth" });
     }, 150);
   }, [focusIndex, isLoading]);
 
@@ -100,6 +101,7 @@ export default function Schedule({ team, onTeamLogoClick }: Props) {
         eventId={selected}
         onClose={() => setSelected(null)}
         onTeamClick={onTeamLogoClick}
+        onPlayerClick={onPlayerClick}
       />
     );
   }

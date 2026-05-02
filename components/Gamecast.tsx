@@ -246,7 +246,7 @@ function LiveAtBatCard({
         </div>
       </div>
 
-      <div className="p-4 grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-3 items-stretch">
+      <div className="p-4 grid grid-cols-2 md:grid-cols-[1fr_auto_1fr] gap-3 items-stretch">
         <PlayerMiniCard label="Batter" person={batter} primaryStat={batterStatText(batter)} />
         <div className="hidden md:flex items-center justify-center text-xs font-bold" style={{ color: "var(--text-3)" }}>vs</div>
         <PlayerMiniCard label="Pitcher" person={pitcher} primaryStat={pitcherStatText(pitcher)} />

@@ -16,6 +16,7 @@ import ManageTeams from "@/components/ManageTeams";
 import PullToRefresh from "@/components/PullToRefresh";
 import GameDetail from "@/components/GameDetail";
 import AppSettingsButton from "@/components/AppSettingsButton";
+import PlayerDetail from "@/components/PlayerDetail";
 import {
   TeamConfig,
   League,
@@ -39,6 +40,7 @@ export default function Home() {
   const [leagueInitial, setLeagueInitial] = useState<string>("mlb");
   const [returnGame, setReturnGame] = useState<{ league: string; eventId: string } | null>(null);
   const [showReturnGame, setShowReturnGame] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; league: string; teamKey?: string } | null>(null);
 
   const { favorites } = useFavoriteTeams();
 
@@ -132,6 +134,7 @@ export default function Home() {
             <TopNav
               active={view}
               onChange={(v) => {
+                setSelectedPlayer(null);
                 setShowReturnGame(false);
                 setView(v);
                 setManageOpen(false);
@@ -142,16 +145,21 @@ export default function Home() {
         </div>
 
 
-        {showReturnGame && returnGame && (
+        {selectedPlayer && (
+          <PlayerDetail player={selectedPlayer} onBack={() => setSelectedPlayer(null)} />
+        )}
+
+        {!selectedPlayer && showReturnGame && returnGame && (
           <GameDetail
             league={returnGame.league}
             eventId={returnGame.eventId}
             onClose={() => setShowReturnGame(false)}
             onTeamClick={handleTeamLogoClick}
+            onPlayerClick={(p) => setSelectedPlayer(p)}
           />
         )}
 
-        {!showReturnGame && view === "home" && (
+        {!selectedPlayer && !showReturnGame && view === "home" && (
           <HomeDashboard
             onTeamClick={(team) => {
               setActiveTeam(team);
@@ -168,11 +176,11 @@ export default function Home() {
           />
         )}
 
-        {!showReturnGame && view === "teams" && manageOpen && (
+        {!selectedPlayer && !showReturnGame && view === "teams" && manageOpen && (
           <ManageTeams onClose={() => setManageOpen(false)} />
         )}
 
-        {!showReturnGame && view === "teams" && !manageOpen && (
+        {!selectedPlayer && !showReturnGame && view === "teams" && !manageOpen && (
           <>
             <div className="mb-6">
               <TeamSelector
@@ -204,10 +212,10 @@ export default function Home() {
                     <LiveGame team={activeTeam} onTeamLogoClick={handleTeamLogoClick} />
                   )}
                   {activeTab === "schedule" && (
-                    <Schedule team={activeTeam} onTeamLogoClick={handleTeamLogoClick} />
+                    <Schedule team={activeTeam} onTeamLogoClick={handleTeamLogoClick} onPlayerClick={(p) => setSelectedPlayer({ ...p, teamKey: activeTeam.key })} />
                   )}
-                  {activeTab === "roster" && <Roster team={activeTeam} />}
-                  {activeTab === "stats" && <Stats team={activeTeam} />}
+                  {activeTab === "roster" && <Roster team={activeTeam} onPlayerClick={(p) => setSelectedPlayer(p)} />}
+                  {activeTab === "stats" && <Stats team={activeTeam} onPlayerClick={(p) => setSelectedPlayer(p)} />}
                 </div>
               </div>
             ) : (
@@ -227,7 +235,7 @@ export default function Home() {
           </>
         )}
 
-        {!showReturnGame && view === "leagues" && <LeaguesView initialLeague={leagueInitial} onTeamLogoClick={handleTeamLogoClick} />}
+        {!selectedPlayer && !showReturnGame && view === "leagues" && <LeaguesView initialLeague={leagueInitial} onTeamLogoClick={handleTeamLogoClick} />}
 
         <footer
           className="mt-12 pt-6 text-xs text-center"

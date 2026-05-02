@@ -19,6 +19,29 @@ export async function GET(req: NextRequest) {
 
   try {
     const data = await getGameSummary(league, eventId);
+    const comp = data?.header?.competitions?.[0];
+    const competitors = comp?.competitors || [];
+
+    const extractTotal = (c: any, names: string[]) => {
+      const stats = c?.statistics || c?.stats || [];
+      const found = Array.isArray(stats) ? stats.find((x: any) => names.includes(String(x?.name || x?.abbreviation || x?.displayName || "").toLowerCase())) : null;
+      return found?.displayValue ?? found?.value ?? null;
+    };
+
+    const lineScore = league === "mlb" ? {
+      innings: Math.max(0, ...competitors.map((c: any) => Array.isArray(c?.linescores) ? c.linescores.length : 0)),
+      teams: competitors.map((c: any) => ({
+        id: c.id,
+        homeAway: c.homeAway,
+        abbr: c.team?.abbreviation,
+        logo: c.team?.logos?.[0]?.href || c.team?.logo,
+        runs: c.score ?? "0",
+        hits: extractTotal(c, ["hits", "h"]),
+        errors: extractTotal(c, ["errors", "e"]),
+        innings: (c.linescores || []).map((x: any) => x.displayValue ?? x.value ?? "0"),
+      })),
+    } : null;
+
     const teams = (data?.boxscore?.players || []).map((teamBox: any) => {
       const teamInfo = teamBox.team;
       const groups = (teamBox.statistics || []).map((stat: any) => {
@@ -70,6 +93,7 @@ export async function GET(req: NextRequest) {
         name: cat.displayName,
         shortName: cat.shortDisplayName,
         leader: cat.leaders?.[0] && {
+          id: cat.leaders[0].athlete?.id,
           name: cat.leaders[0].athlete?.displayName,
           headshot: cat.leaders[0].athlete?.headshot?.href || null,
           jersey: cat.leaders[0].athlete?.jersey,
@@ -79,7 +103,7 @@ export async function GET(req: NextRequest) {
       })).filter((c: any) => c.leader),
     }));
 
-    return NextResponse.json({ eventId, league, teams, leaders });
+    return NextResponse.json({ eventId, league, teams, leaders, lineScore });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Fetch failed" }, { status: 500 });
   }

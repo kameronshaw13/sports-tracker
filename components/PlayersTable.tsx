@@ -26,6 +26,7 @@ export type Player = {
 type Props = {
   section: Section;
   players: Player[];
+  onPlayerClick?: (player: Player) => void;
 };
 
 function statKey(category: string, name: string): string {
@@ -49,7 +50,7 @@ function applyFormat(value: number | null, displayValue: string, format?: string
   }
 }
 
-export default function PlayersTable({ section, players }: Props) {
+export default function PlayersTable({ section, players, onPlayerClick }: Props) {
   const eligible = useMemo(() => {
     const positionSet = section.positions
       ? new Set(section.positions.map((p) => p.toUpperCase()))
@@ -192,7 +193,7 @@ export default function PlayersTable({ section, players }: Props) {
                   className="sticky left-0 z-10 px-3 py-2 whitespace-nowrap"
                   style={{ background: "var(--surface)" }}
                 >
-                  <div className="flex items-center gap-2.5">
+                  <button type="button" onClick={() => onPlayerClick?.(p)} className="flex items-center gap-2.5 text-left hover:opacity-80 transition-opacity" disabled={!onPlayerClick}>
                     <Headshot player={p} />
                     <div className="min-w-0">
                       <div className="font-semibold truncate max-w-[140px] sm:max-w-[180px]">
@@ -213,7 +214,7 @@ export default function PlayersTable({ section, players }: Props) {
                         {p.position}
                       </div>
                     </div>
-                  </div>
+                  </button>
                 </td>
                 {section.columns.map((col) => {
                   const s = p.stats[statKey(col.category, col.name)];

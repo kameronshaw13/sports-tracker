@@ -261,6 +261,11 @@ export const SECTIONS_BY_LEAGUE: Record<string, Section[]> = {
   ],
 };
 
+// College sports use the same stat table structure as their pro analogs.
+// CFB mirrors NFL position/stat sections; CBB mirrors NBA player stat sections.
+SECTIONS_BY_LEAGUE.cfb = SECTIONS_BY_LEAGUE.nfl;
+SECTIONS_BY_LEAGUE.cbb = SECTIONS_BY_LEAGUE.nba;
+
 // Set of category.name keys we want to extract per league. Used by /api/players
 // to keep the per-player payload compact.
 export function relevantStatKeys(league: string): Set<string> {

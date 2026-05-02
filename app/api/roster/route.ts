@@ -462,7 +462,7 @@ async function handleOther(league: string, abbr: string) {
   try {
     const data = await getTeamRoster(league, abbr);
     for (const a of parseAthletes(data)) {
-      const c = classifyOther(a);
+      const c = (league === "cfb" || league === "cbb") ? { include: true, isInjured: false } : classifyOther(a);
       if (!c.include) continue;
       const p = normalizePlayer(league, a, c.isInjured, null);
       if (p) playersById.set(p.id, p);
@@ -474,7 +474,7 @@ async function handleOther(league: string, abbr: string) {
     try {
       const teamData = await getTeamPage(league, abbr, ["roster"]);
       for (const a of parseAthletes(teamData)) {
-        const c = classifyOther(a);
+        const c = (league === "cfb" || league === "cbb") ? { include: true, isInjured: false } : classifyOther(a);
         if (!c.include) continue;
         const p = normalizePlayer(league, a, c.isInjured, null);
         if (p) playersById.set(p.id, p);
@@ -482,9 +482,10 @@ async function handleOther(league: string, abbr: string) {
     } catch {}
   }
 
-  // Merge in top-level injuries[]. This is how NFL/NBA/NHL surface IR /
-  // multi-game injuries that aren't on the active roster payload.
-  try {
+  // Merge in top-level injuries[]. Skip college sports because ESPN does not
+  // provide a consistent public injury feed for CFB/CBB.
+  if (league !== "cfb" && league !== "cbb") {
+    try {
     const teamData = await getTeamPage(league, abbr, ["roster", "injuries"]);
     const topInjuries = teamData?.team?.injuries || teamData?.injuries || [];
     if (Array.isArray(topInjuries)) {
@@ -507,7 +508,8 @@ async function handleOther(league: string, abbr: string) {
         }
       }
     }
-  } catch {}
+    } catch {}
+  }
 
   return finalize(league, abbr, Array.from(playersById.values()));
 }

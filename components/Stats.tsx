@@ -9,9 +9,9 @@ import { useFreshKey } from "@/lib/freshKey";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-type Props = { team: TeamConfig };
+type Props = { team: TeamConfig; onPlayerClick?: (player: { id: string; name: string; league: string; teamKey: string }) => void };
 
-export default function Stats({ team }: Props) {
+export default function Stats({ team, onPlayerClick }: Props) {
   // v21.1: every mount of the Stats tab now busts the route cache, so the
   // user sees fresh data each time they navigate here.
   const freshKey = useFreshKey();
@@ -105,9 +105,9 @@ export default function Stats({ team }: Props) {
         {playersLoading || !playersData ? (
           <PlayersLoading />
         ) : team.league === "mlb" ? (
-          <MlbBattingPitching sections={sections} players={players} />
+          <MlbBattingPitching sections={sections} players={players} onPlayerClick={onPlayerClick ? (p) => onPlayerClick({ id: p.id, name: p.name, league: team.league, teamKey: team.key }) : undefined} />
         ) : (
-          <StackedSections sections={sections} players={players} />
+          <StackedSections sections={sections} players={players} onPlayerClick={onPlayerClick ? (p) => onPlayerClick({ id: p.id, name: p.name, league: team.league, teamKey: team.key }) : undefined} />
         )}
       </section>
 
@@ -118,7 +118,7 @@ export default function Stats({ team }: Props) {
   );
 }
 
-function MlbBattingPitching({ sections, players }: { sections: Section[]; players: Player[] }) {
+function MlbBattingPitching({ sections, players, onPlayerClick }: { sections: Section[]; players: Player[]; onPlayerClick?: (p: Player) => void }) {
   const battingSection = sections.find((s) => s.id === "batting");
   const startersSection = sections.find((s) => s.id === "starters");
   const relieversSection = sections.find((s) => s.id === "relievers");
@@ -154,7 +154,7 @@ function MlbBattingPitching({ sections, players }: { sections: Section[]; player
       </div>
 
       {active === "batting" && battingSection && (
-        <PlayersTable section={battingSection} players={players} />
+        <PlayersTable section={battingSection} players={players} onPlayerClick={onPlayerClick} />
       )}
 
       {active === "pitching" && (
@@ -167,7 +167,7 @@ function MlbBattingPitching({ sections, players }: { sections: Section[]; player
               >
                 {startersSection.label}
               </h4>
-              <PlayersTable section={startersSection} players={players} />
+              <PlayersTable section={startersSection} players={players} onPlayerClick={onPlayerClick} />
             </div>
           )}
           {relieversSection && (
@@ -178,7 +178,7 @@ function MlbBattingPitching({ sections, players }: { sections: Section[]; player
               >
                 {relieversSection.label}
               </h4>
-              <PlayersTable section={relieversSection} players={players} />
+              <PlayersTable section={relieversSection} players={players} onPlayerClick={onPlayerClick} />
             </div>
           )}
         </div>
@@ -187,7 +187,7 @@ function MlbBattingPitching({ sections, players }: { sections: Section[]; player
   );
 }
 
-function StackedSections({ sections, players }: { sections: Section[]; players: Player[] }) {
+function StackedSections({ sections, players, onPlayerClick }: { sections: Section[]; players: Player[]; onPlayerClick?: (p: Player) => void }) {
   return (
     <div className="space-y-6">
       {sections.map((section) => (
@@ -200,7 +200,7 @@ function StackedSections({ sections, players }: { sections: Section[]; players: 
               {section.label}
             </h4>
           )}
-          <PlayersTable section={section} players={players} />
+          <PlayersTable section={section} players={players} onPlayerClick={onPlayerClick} />
         </div>
       ))}
     </div>

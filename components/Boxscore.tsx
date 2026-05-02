@@ -11,9 +11,10 @@ type Props = {
   league: string;
   eventId: string;
   isLive: boolean;
+  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
 };
 
-export default function Boxscore({ league, eventId, isLive }: Props) {
+export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Props) {
   // v17 behavior preserved: live polling at 15s for parity with summary.
   const freshKey = useFreshKey();
   const { data, error, isLoading } = useSWR(
@@ -51,6 +52,8 @@ export default function Boxscore({ league, eventId, isLive }: Props) {
         </div>
       )}
 
+      {league === "mlb" && data.lineScore && <MlbLineScore lineScore={data.lineScore} />}
+
       {/* Boxscore */}
       <div>
         <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>
@@ -80,9 +83,46 @@ export default function Boxscore({ league, eventId, isLive }: Props) {
 
         <div className="space-y-3">
           {team.groups.map((group: any, gi: number) => (
-            <StatGroup key={gi} group={group} league={league} />
+            <StatGroup key={gi} group={group} league={league} onPlayerClick={onPlayerClick} />
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function MlbLineScore({ lineScore }: { lineScore: any }) {
+  const teams = [...(lineScore?.teams || [])].sort((a: any, b: any) => a.homeAway === "away" ? -1 : b.homeAway === "away" ? 1 : 0);
+  if (!teams.length) return null;
+  const innings = Number(lineScore.innings || 0);
+  return (
+    <div>
+      <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>
+        Line score
+      </h3>
+      <div className="rounded-xl overflow-x-auto" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+        <table className="w-full text-xs min-w-[520px]">
+          <thead>
+            <tr style={{ background: "var(--surface-2)", color: "var(--text-3)" }}>
+              <th className="text-left px-3 py-2 font-semibold">Team</th>
+              {Array.from({ length: innings }).map((_, i) => <th key={i} className="text-center px-2 py-2 font-semibold">{i + 1}</th>)}
+              <th className="text-center px-2 py-2 font-black">R</th>
+              <th className="text-center px-2 py-2 font-black">H</th>
+              <th className="text-center px-2 py-2 font-black">E</th>
+            </tr>
+          </thead>
+          <tbody>
+            {teams.map((t: any) => (
+              <tr key={t.id || t.abbr} style={{ borderTop: "1px solid var(--border)" }}>
+                <td className="px-3 py-2 font-bold">{t.abbr}</td>
+                {Array.from({ length: innings }).map((_, i) => <td key={i} className="text-center px-2 py-2 tabular-nums">{t.innings?.[i] ?? "–"}</td>)}
+                <td className="text-center px-2 py-2 font-black tabular-nums">{t.runs ?? "–"}</td>
+                <td className="text-center px-2 py-2 font-black tabular-nums">{t.hits ?? "–"}</td>
+                <td className="text-center px-2 py-2 font-black tabular-nums">{t.errors ?? "–"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -191,7 +231,7 @@ function canonicalLabel(key: string): string {
   return key;
 }
 
-function StatGroup({ group, league }: { group: any; league: string }) {
+function StatGroup({ group, league, onPlayerClick }: { group: any; league: string; onPlayerClick?: (player: { id: string; name: string; league: string }) => void }) {
   const [expanded, setExpanded] = useState(false);
   const visible = expanded ? group.athletes : group.athletes.slice(0, 5);
 
@@ -228,7 +268,7 @@ function StatGroup({ group, league }: { group: any; league: string }) {
                   className="px-3 py-2 whitespace-nowrap sticky left-0"
                   style={{ background: "var(--surface)" }}
                 >
-                  <div className="font-medium">{a.shortName || a.name}</div>
+                  <button type="button" onClick={() => onPlayerClick?.({ id: a.id, name: a.name || a.shortName, league })} disabled={!onPlayerClick} className="font-medium text-left hover:opacity-80">{a.shortName || a.name}</button>
                   {a.position && (
                     <span className="text-[10px]" style={{ color: "var(--text-3)" }}>{a.position}</span>
                   )}

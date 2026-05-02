@@ -17,13 +17,14 @@ type Props = {
   // the team's league + abbr — used to navigate from a box score to that
   // team's page. e.g. tap Astros logo while viewing Orioles vs Astros → Astros.
   onTeamClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
 };
 
 // Game detail is intentionally simple: Gamecast contains the live/scoring/plays views,
 // and Box Score contains the stat tables.
 type TabId = "main" | "boxscore";
 
-export default function GameDetail({ league, eventId, onClose, onTeamClick }: Props) {
+export default function GameDetail({ league, eventId, onClose, onTeamClick, onPlayerClick }: Props) {
   // v21.1: freshKey busts route cache per mount. The keys are still stable
   // for the lifetime of THIS GameDetail instance, so SWR's manual mutate
   // (used by the Refresh button) keeps working.
@@ -78,13 +79,14 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick }: Pr
   const { home, away, status, situation } = data;
   const isLive = status?.state === "in";
   const isPre = status?.state === "pre";
+  const isPost = status?.state === "post" || status?.completed;
 
   // Detect non-played games. We hide the Recap tab for these — there's
   // nothing meaningful to recap if the game was postponed.
   const statusName = String(status?.statusName || "").toUpperCase();
   const isNonPlayed = /POSTPONED|CANCELED|CANCELLED|SUSPENDED/.test(statusName);
 
-  const mainTabLabel = "Gamecast";
+  const mainTabLabel = isPost ? "Recap" : "Gamecast";
 
   return (
     <div className="space-y-4">
@@ -128,12 +130,16 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick }: Pr
         {activeTab === "main" && (
           <>
             {!isNonPlayed && (
-              <Gamecast
-                league={league}
-                eventId={eventId}
-                isLive={isLive}
-                situation={situation}
-              />
+              isPost ? (
+                <PostgameRecap league={league} eventId={eventId} onPlayerClick={onPlayerClick} />
+              ) : (
+                <Gamecast
+                  league={league}
+                  eventId={eventId}
+                  isLive={isLive}
+                  situation={situation}
+                />
+              )
             )}
             {isNonPlayed && (
               <div
@@ -151,11 +157,57 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick }: Pr
         )}
 
         {activeTab === "boxscore" && (
-          <Boxscore league={league} eventId={eventId} isLive={isLive} />
+          <Boxscore league={league} eventId={eventId} isLive={isLive} onPlayerClick={onPlayerClick} />
         )}
       </div>
     </div>
   );
+}
+
+function PostgameRecap({ league, eventId, onPlayerClick }: { league: string; eventId: string; onPlayerClick?: (player: { id: string; name: string; league: string }) => void }) {
+  const { data, isLoading, error } = useSWR(`/api/boxscore?league=${league}&event=${eventId}`, fetcher);
+  if (isLoading) return <div className="h-28 rounded-xl animate-pulse" style={{ background: "var(--surface)" }} />;
+  if (error || !data) return <UnavailableRecap />;
+  const leaders = (data.leaders || []).flatMap((team: any) =>
+    (team.categories || []).slice(0, 3).map((cat: any) => ({ ...cat, team: team.team }))
+  );
+  if (!leaders.length) return <UnavailableRecap />;
+  return (
+    <div className="space-y-3">
+      <div>
+        <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: "var(--text-2)" }}>Recap</h3>
+        <p className="text-xs" style={{ color: "var(--text-3)" }}>Top performers from the final box score.</p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {leaders.map((cat: any, idx: number) => (
+          <button
+            key={`${cat.team?.abbr}-${cat.name}-${idx}`}
+            type="button"
+            onClick={() => cat.leader?.id && onPlayerClick?.({ id: cat.leader.id, name: cat.leader.name, league })}
+            disabled={!onPlayerClick || !cat.leader?.id}
+            className="rounded-xl p-3 flex items-center gap-3 text-left hover:opacity-90 transition-opacity"
+            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+          >
+            <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0" style={{ background: "var(--surface-2)" }}>
+              {cat.leader?.headshot ? <Image src={cat.leader.headshot} alt={cat.leader.name} width={48} height={48} className="object-cover" /> : <span className="text-xs font-bold">{cat.team?.abbr}</span>}
+            </div>
+            <div className="min-w-0">
+              <div className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-3)" }}>
+                {cat.team?.logo && <Image src={cat.team.logo} alt="" width={12} height={12} className="object-contain" />}
+                {cat.shortName || cat.name}
+              </div>
+              <div className="text-sm font-bold truncate">{cat.leader?.name}</div>
+              <div className="text-xs" style={{ color: "var(--text-2)" }}>{cat.leader?.value}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function UnavailableRecap() {
+  return <div className="p-5 rounded-xl text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>No top performers are available yet.</div>;
 }
 
 function nonPlayedLabel(statusName: string): string {

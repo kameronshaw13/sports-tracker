@@ -1,10 +1,13 @@
-# Sports Tracker v16 update
+# sports-tracker v17 update
 
 Includes:
-- Keeps v14 MLB in-play pitch sequence fix.
-- Team clicks from game detail open the team page without adding it to My Teams.
-- Adds a Back to box score button when arriving from a game.
-- Schedule tab uses an internal vertical scroll box and filters to current season only.
-- Adds CFB and CBB to team picker, live scores, score pages, and API league handling.
-- Adds global Settings button for compact/expanded score cards and sport order.
-- Home live scores hide sports with no games and include a date selector.
+- Schedule auto-scroll tightened so the current/next game lands near the top of the scroll box instead of overshooting.
+- CFB/CBB stats enabled using the same stat-table structures as NFL/NBA.
+- College rosters stay position-grouped but skip injury sections.
+- Add Teams filters college football to FBS/FCS and prioritizes search matches.
+- MLB Gamecast batter and pitcher cards sit on the same row on mobile.
+- MLB box score includes inning line score with R/H/E.
+- Final games show a Recap view focused on top performers instead of generated recap text.
+- Roster, stats, and box score players are clickable and open player detail pages with header, bio, season stats, and recent game log when ESPN/MLB exposes it.
+
+Install with the same rsync flow as previous updates.

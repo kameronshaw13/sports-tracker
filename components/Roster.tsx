@@ -8,7 +8,7 @@ import { useFreshKey } from "@/lib/freshKey";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-type Props = { team: TeamConfig };
+type Props = { team: TeamConfig; onPlayerClick?: (player: { id: string; name: string; league: string; teamKey: string }) => void };
 
 type InjuryView = {
   status: string;
@@ -35,7 +35,7 @@ type PositionGroup = { id: string; label: string; players: Player[] };
 
 // v21 Roster: Tab 1 (Active) → position-grouped sections, Tab 2 (Injured) →
 // flat list with injury narrative. v21.1 adds freshKey for refresh-on-mount.
-export default function Roster({ team }: Props) {
+export default function Roster({ team, onPlayerClick }: Props) {
   const freshKey = useFreshKey();
   const { data, error, isLoading } = useSWR(
     `/api/roster?team=${team.key}&_t=${freshKey}`,
@@ -91,7 +91,8 @@ export default function Roster({ team }: Props) {
 
   const filteredInjured = injured.filter(matches);
 
-  const showInjuredTab = injured.length > 0;
+  const isCollege = team.league === "cfb" || team.league === "cbb";
+  const showInjuredTab = !isCollege && injured.length > 0;
 
   if (tab === "injured" && !showInjuredTab) {
     Promise.resolve().then(() => setTab("active"));
@@ -146,7 +147,7 @@ export default function Roster({ team }: Props) {
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {group.players.map((p) => (
-                      <ActivePlayerCard key={p.id} player={p} />
+                      <ActivePlayerCard key={p.id} player={p} onClick={onPlayerClick ? () => onPlayerClick({ id: p.id, name: p.name, league: team.league, teamKey: team.key }) : undefined} />
                     ))}
                   </div>
                 </PositionSection>
@@ -163,7 +164,7 @@ export default function Roster({ team }: Props) {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {filteredInjured.map((p) => (
-                <InjuredPlayerCard key={p.id} player={p} />
+                <InjuredPlayerCard key={p.id} player={p} onClick={onPlayerClick ? () => onPlayerClick({ id: p.id, name: p.name, league: team.league, teamKey: team.key }) : undefined} />
               ))}
             </div>
           )}
@@ -249,10 +250,12 @@ function PositionSection({
   );
 }
 
-function ActivePlayerCard({ player }: { player: Player }) {
+function ActivePlayerCard({ player, onClick }: { player: Player; onClick?: () => void }) {
+  const Comp: any = onClick ? "button" : "div";
   return (
-    <div
-      className="flex items-center gap-3 px-3 py-2 rounded-xl"
+    <Comp
+      onClick={onClick}
+      className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-xl hover:opacity-90 transition-opacity"
       style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
     >
       <Headshot player={player} size={48} />
@@ -267,11 +270,11 @@ function ActivePlayerCard({ player }: { player: Player }) {
           {player.height && <span>· {player.height}</span>}
         </div>
       </div>
-    </div>
+    </Comp>
   );
 }
 
-function InjuredPlayerCard({ player }: { player: Player }) {
+function InjuredPlayerCard({ player, onClick }: { player: Player; onClick?: () => void }) {
   const inj = player.injury;
   const badgeLabel = inj?.ilDesignation || inj?.status || player.statusLabel || "Injured";
   const colors = severityFor(badgeLabel);
@@ -280,9 +283,11 @@ function InjuredPlayerCard({ player }: { player: Player }) {
   if (inj?.detail) pieces.push(inj.detail);
   if (inj?.returnDate) pieces.push(`Expected back ${formatReturnDate(inj.returnDate)}`);
 
+  const Comp: any = onClick ? "button" : "div";
   return (
-    <div
-      className="flex items-start gap-3 px-3 py-2.5 rounded-xl"
+    <Comp
+      onClick={onClick}
+      className="w-full text-left flex items-start gap-3 px-3 py-2.5 rounded-xl hover:opacity-90 transition-opacity"
       style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
     >
       <Headshot player={player} size={48} />
@@ -318,7 +323,7 @@ function InjuredPlayerCard({ player }: { player: Player }) {
           </div>
         )}
       </div>
-    </div>
+    </Comp>
   );
 }
 
