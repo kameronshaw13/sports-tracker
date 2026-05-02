@@ -314,8 +314,6 @@ function extractPitchTexts(p: any): string[] {
     p?.pitches,
     p?.pitchSequence,
     p?.atBatPlayResult?.pitchSequence,
-    p?.playEvents,
-    p?.events,
   ];
   const result: string[] = [];
 
@@ -338,10 +336,22 @@ function extractPitchTexts(p: any): string[] {
 }
 
 function isPitchEvent(text: string, type?: string | null): boolean {
-  const value = `${type || ""} ${text || ""}`.toLowerCase();
+  const cleanText = String(text || "").replace(/\s+/g, " ").trim();
+  const value = `${type || ""} ${cleanText}`.toLowerCase();
   if (!value.trim()) return false;
-  if (isMinorBaseballEvent(text, type)) return false;
-  if (looksLikeAtBat(text, type)) return false;
+  if (isMinorBaseballEvent(cleanText, type)) return false;
+
+  // ESPN's MLB feed labels the contact pitch row like:
+  //   text: "Pitch 5 : Ball In Play"
+  //   type: "Ground Out" / "Fly Out" / "Single" / "Home Run"
+  // So checking looksLikeAtBat(type) before recognizing this as a pitch
+  // accidentally dropped the final BIP pitch from the sequence.
+  // Any row whose text starts with "Pitch N :" is a pitch row, even when
+  // the type describes the eventual batted-ball result.
+  if (/^pitch\s*\d+\s*:/i.test(cleanText)) return true;
+  if (/\bball\s+in\s+play\b|\bin\s+play\b/i.test(cleanText)) return true;
+
+  if (looksLikeAtBat(cleanText, type)) return false;
   return /\b(ball|strike|called strike|swinging strike|strike looking|strike swinging|foul|pitch|blocked|wild pitch|passed ball|pickoff|automatic ball|intent ball|bunt foul|missed bunt|hit by pitch)\b/.test(value);
 }
 
@@ -362,7 +372,7 @@ function isMinorBaseballEvent(text: string, type?: string | null): boolean {
 function looksLikeAtBat(text: string, type?: string | null): boolean {
   const value = `${type || ""} ${text}`.toLowerCase();
   if (isMinorBaseballEvent(text, type)) return false;
-  return /single|double|triple|home run|homers|ground|fly|line|pop|strikeout|struck out|walk|hit by pitch|reached|fielder|sacrifice|intentional|double play|forceout|bunt|error|out/.test(value);
+  return /single|double|triple|home run|homerun|homer(?:ed|ing|s)|ground|fly|line|pop|strikeout|struck out|walk|hit by pitch|reached|fielder|sacrifice|intentional|double play|forceout|bunt|error|out/.test(value);
 }
 
 function normalizeResult(text: string, type?: string | null): string {
@@ -379,10 +389,14 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
   const homeId = home?.id || "";
   const awayId = away?.id || "";
 
-  // ESPN's MLB feed can be flat and occasionally odd-ordered: pitch rows can
-  // arrive after the final at-bat result. Normalize into: half-inning -> at-bat
-  // -> pitch details. Delayed "Ball In Play" pitch rows are back-attached to the
-  // completed at-bat instead of being rendered as their own at-bat.
+  // ESPN MLB summary plays expose a stable at-bat id inside the play id.
+  // Example from the debug feed:
+  //   4018151570002020005  -> at-bat stem 0002, pitch row
+  //   4018151570002060022  -> at-bat stem 0002, Ball In Play pitch row
+  //   4018151570002990057  -> at-bat stem 0002, final result row
+  // The previous parser grouped by half-inning and tried to "back attach" BIP
+  // rows, which caused pitch bleed across batters. Grouping by this stem makes
+  // ESPN's own at-bat boundary the source of truth.
   const sortedPlays = [...rawPlays].sort((a, b) => {
     const ai = Number(a?.id);
     const bi = Number(b?.id);
@@ -391,7 +405,8 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
   });
 
   type PendingGroup = {
-    key: string;
+    atBatKey: string;
+    sortKey: number;
     period: number;
     halfInning: "top" | "bottom" | null;
     teamId: string | null;
@@ -399,15 +414,42 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
     batter: MlbPerson | null;
     pitcher: MlbPerson | null;
     pitches: string[];
+    resultPlay: any | null;
+    resultText: string;
+    resultType: string | null;
+    scoringPlay: boolean;
+    awayScore?: number;
+    homeScore?: number;
+    clock?: string | null;
     firstIndex: number;
   };
 
-  const rows: MlbAtBat[] = [];
-  const pendingByHalf = new Map<string, PendingGroup>();
+  const groups = new Map<string, PendingGroup>();
+  const minorRows: MlbAtBat[] = [];
   const pitcherByHalf = new Map<string, MlbPerson | null>();
 
   function halfKey(period: number, halfInning: "top" | "bottom" | null) {
     return `${period || 0}-${halfInning || "unknown"}`;
+  }
+
+  function readSortKey(p: any, fallback: number) {
+    const numericId = Number(p?.id);
+    if (Number.isFinite(numericId)) return numericId;
+    const seq = Number(p?.sequenceNumber);
+    if (Number.isFinite(seq)) return seq;
+    return fallback;
+  }
+
+  function atBatStemFromPlayId(p: any): string | null {
+    const id = String(p?.id || "");
+    const m = id.match(/(\d{10})$/);
+    if (!m) return null;
+    const code = m[1];
+    // last two digits are the ESPN row type; positions 1-4 identify inning/AB.
+    // 0000 / 9999 are inning transition rows, not at-bats.
+    const stem = code.slice(0, 4);
+    if (!stem || stem === "0000" || stem.endsWith("99")) return null;
+    return stem;
   }
 
   function getEventBase(p: any, idx: number) {
@@ -465,31 +507,6 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
     return enrichAndAttachStats({ name: possibleName, displayName: possibleName, shortName: possibleName }, statsMap, rosterLookup);
   }
 
-  function lastAtBatInHalf(key: string): MlbAtBat | null {
-    for (let i = rows.length - 1; i >= 0; i--) {
-      const row = rows[i];
-      if (!row.isAtBat) continue;
-      if (halfKey(row.period, row.halfInning) === key) return row;
-    }
-    return null;
-  }
-
-  function lastAtBatInPeriod(period: number): MlbAtBat | null {
-    for (let i = rows.length - 1; i >= 0; i--) {
-      const row = rows[i];
-      if (!row.isAtBat) continue;
-      if (row.period === period) return row;
-    }
-    return null;
-  }
-
-  function attachPitchToRecentAtBat(key: string, pitchTexts: string[], period?: number) {
-    const last = lastAtBatInHalf(key) || (period ? lastAtBatInPeriod(period) : null);
-    if (!last) return false;
-    pushUnique(last.pitches, pitchTexts);
-    return true;
-  }
-
   function parsePitcherBatterIntro(text: string): { pitcher: MlbPerson | null; batter: MlbPerson | null } | null {
     const m = text.match(/^([A-Z][a-zA-Z.'-]+(?:\s+[A-Z][a-zA-Z.'-]+){0,2})\s+pitches to\s+([A-Z][a-zA-Z.'-]+(?:\s+[A-Z][a-zA-Z.'-]+){0,2})\.?$/i);
     if (!m) return null;
@@ -499,108 +516,108 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
     };
   }
 
-  function isLeakedPitchResult(row: MlbAtBat) {
-    const value = String(row.result || row.text || "").trim();
-    return /^pitch\s*\d*\s*:/i.test(value) || /^pitch\b/i.test(value) || /^(ball\s+in\s+play|in\s+play)$/i.test(value);
+  function pitchTextFromRow(baseText: string, type?: string | null): string {
+    const clean = String(baseText || "").replace(/\s+/g, " ").trim();
+    if (clean) return clean;
+    return type || "Pitch";
   }
 
   function isLikelyScoringText(text: string, type?: string | null) {
     const value = `${type || ""} ${text || ""}`.toLowerCase();
-    return /home run|homer|homered|homers|grand slam/.test(value);
+    return /home run|homerun|homer(?:ed|ing|s)|grand slam|\bscored\b|\bscores\b/.test(value);
   }
 
-  for (const p of sortedPlays) {
-    const idx = rows.length;
-    const base = getEventBase(p, idx);
-    if (!base.text) continue;
-    if (isInningTransitionText(base.text, base.type)) continue;
+  function getOrCreateGroup(atBatKey: string, base: ReturnType<typeof getEventBase>, idx: number, sortKey: number): PendingGroup {
+    const existing = groups.get(atBatKey);
+    if (existing) return existing;
     const key = halfKey(base.period, base.halfInning);
-    const knownPitcher = pitcherByHalf.get(key) || null;
-    const existing = pendingByHalf.get(key);
-    const pending: PendingGroup = existing || {
-      key,
+    const group: PendingGroup = {
+      atBatKey,
+      sortKey,
       period: base.period,
       halfInning: base.halfInning,
       teamId: base.teamId,
       homeAway: base.homeAway,
       batter: base.batter,
-      pitcher: base.pitcher || knownPitcher,
+      pitcher: base.pitcher || pitcherByHalf.get(key) || null,
       pitches: [],
+      resultPlay: null,
+      resultText: "",
+      resultType: null,
+      scoringPlay: false,
+      awayScore: undefined,
+      homeScore: undefined,
+      clock: null,
       firstIndex: idx,
     };
+    groups.set(atBatKey, group);
+    return group;
+  }
 
-    if (base.batter && !pending.batter) pending.batter = base.batter;
-    if (base.pitcher && !pending.pitcher) pending.pitcher = base.pitcher;
-    if (!pending.teamId && base.teamId) pending.teamId = base.teamId;
-    if (!pending.homeAway && base.homeAway) pending.homeAway = base.homeAway;
+  for (const p of sortedPlays) {
+    const idx = minorRows.length + groups.size;
+    const base = getEventBase(p, idx);
+    if (!base.text) continue;
+    if (isInningTransitionText(base.text, base.type)) continue;
 
+    const key = halfKey(base.period, base.halfInning);
     const intro = parsePitcherBatterIntro(base.text);
-    if (intro) {
+    const atBatStem = atBatStemFromPlayId(p);
+    const sortKey = readSortKey(p, idx);
+
+    if (intro && atBatStem) {
+      const group = getOrCreateGroup(`${base.period}-${base.halfInning || "x"}-${atBatStem}`, base, idx, sortKey);
       if (intro.pitcher) {
-        pending.pitcher = intro.pitcher;
+        group.pitcher = intro.pitcher;
         pitcherByHalf.set(key, intro.pitcher);
       }
-      if (intro.batter) pending.batter = intro.batter;
-      pendingByHalf.set(key, pending);
+      if (intro.batter) group.batter = intro.batter;
+      if (!group.teamId && base.teamId) group.teamId = base.teamId;
+      if (!group.homeAway && base.homeAway) group.homeAway = base.homeAway;
       continue;
     }
 
-    const pitchTexts = extractPitchTexts(p);
-    const isFinalAtBat = looksLikeAtBat(base.text, base.type);
     const minor = isMinorBaseballEvent(base.text, base.type);
-    const pitchOnly = !isFinalAtBat && !minor && isPitchEvent(base.text, base.type);
-    const delayedBallInPlayPitch = pitchOnly && /ball\s+in\s+play|in\s+play/i.test(base.text);
+    const isFinalAtBat = looksLikeAtBat(base.text, base.type) && !/^pitch\s*\d*\s*:/i.test(base.text);
+    const isPitchRow = !minor && !isFinalAtBat && isPitchEvent(base.text, base.type);
 
-    if (pitchOnly) {
-      const pitchValues = pitchTexts.length ? pitchTexts : [base.text];
-      // "Pitch X: Ball In Play" is the last pitch of the current at-bat. ESPN
-      // often sends it after the completed result or with batter metadata, so
-      // always try to back-attach it before creating/updating a pending AB.
-      if (delayedBallInPlayPitch) {
-        if (attachPitchToRecentAtBat(key, pitchValues, base.period)) continue;
-        // If there is no batter result yet, keep it as pitch detail only. It should
-        // never render as its own at-bat row.
+    if (atBatStem && (intro || isPitchRow || isFinalAtBat)) {
+      const group = getOrCreateGroup(`${base.period}-${base.halfInning || "x"}-${atBatStem}`, base, idx, sortKey);
+      if (base.batter && !group.batter) group.batter = base.batter;
+      if (base.pitcher && !group.pitcher) group.pitcher = base.pitcher;
+      if (!group.teamId && base.teamId) group.teamId = base.teamId;
+      if (!group.homeAway && base.homeAway) group.homeAway = base.homeAway;
+      group.period = group.period || base.period;
+      group.halfInning = group.halfInning || base.halfInning;
+      group.sortKey = Math.min(group.sortKey, sortKey);
+
+      if (isPitchRow) {
+        const extracted = extractPitchTexts(p);
+        pushUnique(group.pitches, extracted.length ? extracted : [pitchTextFromRow(base.text, base.type)]);
+        continue;
       }
-      pushUnique(pending.pitches, pitchValues);
-      pendingByHalf.set(key, pending);
-      continue;
+
+      if (isFinalAtBat) {
+        const extracted = extractPitchTexts(p);
+        pushUnique(group.pitches, extracted);
+        group.resultPlay = p;
+        group.resultText = base.text;
+        group.resultType = base.type;
+        group.scoringPlay = !!p?.scoringPlay || isLikelyScoringText(base.text, base.type);
+        group.awayScore = p?.awayScore;
+        group.homeScore = p?.homeScore;
+        group.clock = p?.clock?.displayValue || null;
+        if (!group.batter) group.batter = inferBatterFromText(base.text);
+        if (!group.pitcher) group.pitcher = pitcherByHalf.get(key) || null;
+        if (group.pitcher) pitcherByHalf.set(key, group.pitcher);
+        continue;
+      }
     }
 
-    if (isFinalAtBat) {
-      const pitches = [...pending.pitches];
-      pushUnique(pitches, pitchTexts);
-      const batter = base.batter || pending.batter || inferBatterFromText(base.text);
-      const pitcher = base.pitcher || pending.pitcher || knownPitcher;
-      if (pitcher) pitcherByHalf.set(key, pitcher);
-      rows.push({
-        id: String(p?.id || `${base.period}-${base.halfInning || "x"}-${idx}`),
-        text: base.text,
-        result: normalizeResult(base.text, base.type),
-        period: base.period,
-        halfInning: base.halfInning,
-        teamId: base.teamId || pending.teamId,
-        homeAway: base.homeAway || pending.homeAway,
-        scoringPlay: !!p?.scoringPlay || isLikelyScoringText(base.text, base.type),
-        awayScore: p?.awayScore,
-        homeScore: p?.homeScore,
-        type: base.type,
-        clock: p?.clock?.displayValue || null,
-        batter,
-        pitcher,
-        pitches,
-        isAtBat: true,
-        isMinor: false,
-        isComplete: true,
-        sequence: rows.length,
-      });
-      pendingByHalf.delete(key);
-      continue;
-    }
-
-    if (minor) {
-      const pitcher = base.pitcher || inferPitcherFromText(base.text) || knownPitcher;
+    if (minor || !atBatStem) {
+      const pitcher = base.pitcher || inferPitcherFromText(base.text) || pitcherByHalf.get(key) || null;
       if (pitcher && /relieved|pitching change/i.test(base.text)) pitcherByHalf.set(key, pitcher);
-      rows.push({
+      minorRows.push({
         id: String(p?.id || `${base.period}-${base.halfInning || "x"}-${idx}`),
         text: base.text,
         result: normalizeResult(base.text, base.type),
@@ -619,96 +636,53 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
         isAtBat: false,
         isMinor: true,
         isComplete: true,
-        sequence: rows.length,
+        sequence: minorRows.length,
       });
-      continue;
     }
-
-    rows.push({
-      id: String(p?.id || `${base.period}-${base.halfInning || "x"}-${idx}`),
-      text: base.text,
-      result: normalizeResult(base.text, base.type),
-      period: base.period,
-      halfInning: base.halfInning,
-      teamId: base.teamId,
-      homeAway: base.homeAway,
-      scoringPlay: !!p?.scoringPlay || isLikelyScoringText(base.text, base.type),
-      awayScore: p?.awayScore,
-      homeScore: p?.homeScore,
-      type: base.type,
-      clock: p?.clock?.displayValue || null,
-      batter: base.batter,
-      pitcher: base.pitcher || knownPitcher,
-      pitches: [],
-      isAtBat: false,
-      isMinor: true,
-      isComplete: true,
-      sequence: rows.length,
-    });
   }
 
-  // Preserve a true in-progress at-bat, but do not render orphaned delayed
-  // Ball-In-Play pitch rows as standalone at-bats.
-  for (const pending of pendingByHalf.values()) {
-    if (!pending.pitches.length) continue;
-    const onlyBallInPlay = pending.pitches.every((pitch) => /ball\s+in\s+play|in\s+play/i.test(pitch));
-    if (onlyBallInPlay && attachPitchToRecentAtBat(pending.key, pending.pitches, pending.period)) continue;
+  const rows: MlbAtBat[] = [];
+  for (const group of groups.values()) {
+    if (!group.resultText && !group.pitches.length) continue;
     rows.push({
-      id: `live-${pending.key}-${pending.firstIndex}`,
-      text: "Current at-bat",
-      result: "Current at-bat",
-      period: pending.period,
-      halfInning: pending.halfInning,
-      teamId: pending.teamId,
-      homeAway: pending.homeAway,
-      scoringPlay: false,
-      batter: pending.batter,
-      pitcher: pending.pitcher,
-      pitches: pending.pitches,
+      id: String(group.resultPlay?.id || `live-${group.atBatKey}-${group.firstIndex}`),
+      text: group.resultText || "Current at-bat",
+      result: group.resultText ? normalizeResult(group.resultText, group.resultType) : "Current at-bat",
+      period: group.period,
+      halfInning: group.halfInning,
+      teamId: group.teamId,
+      homeAway: group.homeAway,
+      scoringPlay: group.scoringPlay,
+      awayScore: group.awayScore,
+      homeScore: group.homeScore,
+      type: group.resultType,
+      clock: group.clock || null,
+      batter: group.batter || (group.resultText ? inferBatterFromText(group.resultText) : null),
+      pitcher: group.pitcher,
+      pitches: group.pitches,
       isAtBat: true,
       isMinor: false,
-      isComplete: false,
-      sequence: rows.length,
+      isComplete: !!group.resultText,
+      sequence: group.sortKey,
     });
   }
 
-  const cleaned: MlbAtBat[] = [];
-  for (const row of rows) {
-    const leakedPitch = isLeakedPitchResult(row);
-    if (leakedPitch) {
-      const pitchValues = row.pitches?.length ? row.pitches : [row.result || row.text].filter(Boolean);
-      let attached = false;
+  const allRows = [...rows, ...minorRows].sort((a, b) => {
+    const ai = Number(a.id);
+    const bi = Number(b.id);
+    if (Number.isFinite(ai) && Number.isFinite(bi) && ai !== bi) return ai - bi;
+    return (a.sequence || 0) - (b.sequence || 0);
+  });
 
-      // Prefer the same half-inning, but ESPN can tag the final BIP pitch with
-      // transition metadata. Fall back to same inning, then nearest previous AB.
-      for (const mode of ["sameHalf", "samePeriod", "nearest"] as const) {
-        for (let i = cleaned.length - 1; i >= 0; i--) {
-          const prev = cleaned[i];
-          if (!prev.isAtBat || isLeakedPitchResult(prev)) continue;
-          if (mode === "sameHalf" && halfKey(prev.period, prev.halfInning) !== halfKey(row.period, row.halfInning)) continue;
-          if (mode === "samePeriod" && prev.period !== row.period) continue;
-          pushUnique(prev.pitches, pitchValues);
-          attached = true;
-          break;
-        }
-        if (attached) break;
-      }
-
-      // Never render leaked pitch events as their own row.
-      continue;
-    }
-    cleaned.push(row);
-  }
-
-  let lastAway: number | null = null;
-  let lastHome: number | null = null;
-  for (const row of cleaned) {
+  // Track running scores so any at-bat that increases the score is flagged as
+  // a scoring play, even when ESPN forgets to mark the BIP pitch row itself.
+  let lastAway = 0;
+  let lastHome = 0;
+  for (const row of allRows) {
     const awayScore = typeof row.awayScore === "number" ? row.awayScore : null;
     const homeScore = typeof row.homeScore === "number" ? row.homeScore : null;
     if (row.isAtBat && awayScore != null && homeScore != null) {
-      if ((lastAway != null && awayScore > lastAway) || (lastHome != null && homeScore > lastHome)) {
-        row.scoringPlay = true;
-      }
+      if (awayScore > lastAway || homeScore > lastHome) row.scoringPlay = true;
       lastAway = awayScore;
       lastHome = homeScore;
     } else if (awayScore != null && homeScore != null) {
@@ -717,7 +691,7 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
     }
   }
 
-  return cleaned.map((ab, sequence) => ({ ...ab, sequence }));
+  return allRows.map((ab, sequence) => ({ ...ab, sequence }));
 }
 
 function readCurrentMlbSituation(summary: any, atBats: MlbAtBat[], rosterLookup: Map<string, RosterPersonLite>) {
@@ -781,6 +755,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const eventId = searchParams.get("event");
   const league = searchParams.get("league");
+  const debug = searchParams.get("debug") === "1";
 
   if (!league || !VALID_LEAGUES.includes(league)) {
     return NextResponse.json({ error: "Invalid league" }, { status: 400 });
@@ -838,6 +813,51 @@ export async function GET(req: NextRequest) {
     const mlbRosterLookup = league === "mlb" ? await buildMlbRosterLookup(home, away) : new Map<string, RosterPersonLite>();
     const mlbAtBats = league === "mlb" ? await buildMlbAtBats(data, home, away) : [];
     const mlbSituation = league === "mlb" ? readCurrentMlbSituation(data, mlbAtBats, mlbRosterLookup) : null;
+
+    if (debug && league === "mlb") {
+      const rawPlays = Array.isArray(data?.plays) ? data.plays : [];
+      const normalizedRawPlays = rawPlays.map((p: any, index: number) => ({
+        index,
+        id: p?.id,
+        sequenceNumber: p?.sequenceNumber,
+        text: p?.text || p?.description || "",
+        type: p?.type?.text || p?.type?.abbreviation || null,
+        period: p?.period?.number || p?.period || null,
+        halfInning: readHalfInning(p),
+        scoringPlay: !!p?.scoringPlay,
+        awayScore: p?.awayScore,
+        homeScore: p?.homeScore,
+        extractedPitchTexts: extractPitchTexts(p),
+        hasPlayEvents: Array.isArray(p?.playEvents),
+        playEventsCount: Array.isArray(p?.playEvents) ? p.playEvents.length : 0,
+        hasEvents: Array.isArray(p?.events),
+        eventsCount: Array.isArray(p?.events) ? p.events.length : 0,
+      }));
+
+      return NextResponse.json({
+        league,
+        eventId,
+        home,
+        away,
+        rawPlayCount: rawPlays.length,
+        rawPlays: normalizedRawPlays,
+        builtAtBats: mlbAtBats.map((ab) => ({
+          sequence: ab.sequence,
+          id: ab.id,
+          period: ab.period,
+          halfInning: ab.halfInning,
+          result: ab.result,
+          isAtBat: ab.isAtBat,
+          isMinor: ab.isMinor,
+          isComplete: ab.isComplete,
+          pitches: ab.pitches,
+          batter: ab.batter?.displayName || ab.batter?.name || null,
+          pitcher: ab.pitcher?.displayName || ab.pitcher?.name || null,
+          awayScore: ab.awayScore,
+          homeScore: ab.homeScore,
+        })),
+      });
+    }
 
     return NextResponse.json({
       league,

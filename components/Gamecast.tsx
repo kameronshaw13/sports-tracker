@@ -105,6 +105,10 @@ export default function Gamecast({ league, eventId, isLive, situation: summarySi
   );
 }
 
+function isWaitingForBattedBallResult(ab: MlbAtBat) {
+  return ab.isComplete === false && ab.pitches?.some((pitch) => /ball\s+in\s+play|in\s+play/i.test(String(pitch || "")));
+}
+
 function MlbLiveGamecast({
   data,
   error,
@@ -122,9 +126,10 @@ function MlbLiveGamecast({
   const home: TeamMeta | undefined = data?.home;
   const away: TeamMeta | undefined = data?.away;
   const atBats: MlbAtBat[] = data?.mlb?.atBats || [];
+  const displayAtBats = atBats.filter((ab) => !isWaitingForBattedBallResult(ab));
   const espnSituation = data?.mlb?.situation || data?.situation || fallbackSituation || null;
-  const currentHalf = currentHalfInning(atBats, espnSituation);
-  const halfAtBats = atBats
+  const currentHalf = currentHalfInning(displayAtBats.length ? displayAtBats : atBats, espnSituation);
+  const halfAtBats = displayAtBats
     .filter((ab) => ab.period === currentHalf.period && ab.halfInning === currentHalf.half && (ab.isAtBat || ab.isMinor))
     .sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0));
   const halfAtBatRows = halfAtBats.filter((ab) => ab.isAtBat);
@@ -132,8 +137,8 @@ function MlbLiveGamecast({
   const lastCompletedInHalf = [...halfAtBatRows].reverse().find((ab) => ab.isComplete !== false) || null;
   const currentOrLast = liveAtBat || lastCompletedInHalf;
   const battingTeam = currentHalf.half === "top" ? away : home;
-  const sections = buildMlbSections(atBats, home, away, "newest-first");
-  const scoringSections = buildMlbSections(atBats.filter((ab) => ab.scoringPlay), home, away, "chronological").filter((s) => s.atBats.length > 0);
+  const sections = buildMlbSections(displayAtBats, home, away, "newest-first");
+  const scoringSections = buildMlbSections(displayAtBats.filter((ab) => ab.scoringPlay), home, away, "chronological").filter((s) => s.atBats.length > 0);
 
   if (isLoading) return <LoadingStack />;
 
@@ -421,7 +426,7 @@ function StatusPill({ label, tone }: { label: string; tone: "live" | "scoring" }
 function formatPitch(raw: string) {
   const text = String(raw || "").replace(/^Pitch\s*\d+\s*:\s*/i, "").replace(/\s+/g, " ").trim();
   const lower = text.toLowerCase();
-  if (/ball in play|in play/.test(lower)) return { label: "In play", bg: "rgba(59,130,246,0.14)", color: "var(--accent)", border: "1px solid rgba(59,130,246,0.3)" };
+  if (/ball in play|in play/.test(lower)) return { label: "In-play ball", bg: "rgba(59,130,246,0.14)", color: "var(--accent)", border: "1px solid rgba(59,130,246,0.3)" };
   if (/foul|foul tip|bunt foul/.test(lower)) return { label: "Foul", bg: "rgba(148,163,184,0.18)", color: "var(--text-2)", border: "1px solid rgba(148,163,184,0.35)" };
   if (/swinging|missed bunt/.test(lower)) return { label: "Strike Swinging", bg: "rgba(239,68,68,0.14)", color: "var(--danger)", border: "1px solid rgba(239,68,68,0.3)" };
   if (/called strike|strike looking|looking/.test(lower)) return { label: "Strike Looking", bg: "rgba(239,68,68,0.14)", color: "var(--danger)", border: "1px solid rgba(239,68,68,0.3)" };

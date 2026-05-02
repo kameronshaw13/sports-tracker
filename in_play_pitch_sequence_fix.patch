@@ -1,0 +1,101 @@
+diff --git a/app/api/plays/route.ts b/app/api/plays/route.ts
+index 8639c22..311743c 100644
+--- a/app/api/plays/route.ts
++++ b/app/api/plays/route.ts
+@@ -362,7 +362,7 @@ function isMinorBaseballEvent(text: string, type?: string | null): boolean {
+ function looksLikeAtBat(text: string, type?: string | null): boolean {
+   const value = `${type || ""} ${text}`.toLowerCase();
+   if (isMinorBaseballEvent(text, type)) return false;
+-  return /single|double|triple|home run|homers|ground|fly|line|pop|strikeout|struck out|walk|hit by pitch|reached|fielder|sacrifice|intentional|double play|forceout|bunt|error|out/.test(value);
++  return /single|double|triple|home run|homerun|homer(?:ed|ing|s)|ground|fly|line|pop|strikeout|struck out|walk|hit by pitch|reached|fielder|sacrifice|intentional|double play|forceout|bunt|error|out/.test(value);
+ }
+ 
+ function normalizeResult(text: string, type?: string | null): string {
+@@ -399,6 +399,7 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
+     batter: MlbPerson | null;
+     pitcher: MlbPerson | null;
+     pitches: string[];
++    awaitingResult: boolean;
+     firstIndex: number;
+   };
+ 
+@@ -506,7 +507,7 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
+ 
+   function isLikelyScoringText(text: string, type?: string | null) {
+     const value = `${type || ""} ${text || ""}`.toLowerCase();
+-    return /home run|homer|homered|homers|grand slam/.test(value);
++    return /home run|homerun|homer(?:ed|ing|s)|grand slam|\bscored\b|\bscores\b/.test(value);
+   }
+ 
+   for (const p of sortedPlays) {
+@@ -526,6 +527,7 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
+       batter: base.batter,
+       pitcher: base.pitcher || knownPitcher,
+       pitches: [],
++      awaitingResult: false,
+       firstIndex: idx,
+     };
+ 
+@@ -553,15 +555,14 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
+ 
+     if (pitchOnly) {
+       const pitchValues = pitchTexts.length ? pitchTexts : [base.text];
+-      // "Pitch X: Ball In Play" is the last pitch of the current at-bat. ESPN
+-      // often sends it after the completed result or with batter metadata, so
+-      // always try to back-attach it before creating/updating a pending AB.
+-      if (delayedBallInPlayPitch) {
+-        if (attachPitchToRecentAtBat(key, pitchValues, base.period)) continue;
+-        // If there is no batter result yet, keep it as pitch detail only. It should
+-        // never render as its own at-bat row.
+-      }
++
++      // Treat "Ball In Play" as the contact pitch of the CURRENT pending
++      // at-bat, not as a completed at-bat result. The actual result row
++      // (single, flyout, lineout, home run, etc.) is what closes the at-bat
++      // below. This preserves the full pitch sequence while avoiding orphan
++      // "Ball In Play" rows after 1-pitch / 5-pitch contact at-bats.
+       pushUnique(pending.pitches, pitchValues);
++      if (delayedBallInPlayPitch) pending.awaitingResult = true;
+       pendingByHalf.set(key, pending);
+       continue;
+     }
+@@ -647,12 +648,14 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
+     });
+   }
+ 
+-  // Preserve a true in-progress at-bat, but do not render orphaned delayed
+-  // Ball-In-Play pitch rows as standalone at-bats.
++  // Preserve a true in-progress at-bat, but if contact has already happened,
++  // wait for ESPN's result row instead of rendering "Ball In Play" as either
++  // its own at-bat or a fake completed at-bat. On the next poll, the result
++  // row will close the pending at-bat and keep the pitch sequence attached.
+   for (const pending of pendingByHalf.values()) {
+     if (!pending.pitches.length) continue;
+-    const onlyBallInPlay = pending.pitches.every((pitch) => /ball\s+in\s+play|in\s+play/i.test(pitch));
+-    if (onlyBallInPlay && attachPitchToRecentAtBat(pending.key, pending.pitches, pending.period)) continue;
++    const hasBallInPlay = pending.pitches.some((pitch) => /ball\s+in\s+play|in\s+play/i.test(pitch));
++    if (pending.awaitingResult || hasBallInPlay) continue;
+     rows.push({
+       id: `live-${pending.key}-${pending.firstIndex}`,
+       text: "Current at-bat",
+@@ -700,13 +703,17 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
+     cleaned.push(row);
+   }
+ 
+-  let lastAway: number | null = null;
+-  let lastHome: number | null = null;
++  // Track running scores so any at-bat that increases the score is flagged
++  // as a scoring play. Initialize to 0 (the game's state at first pitch) so
++  // the very first scoring at-bat — e.g. a leadoff home run — is detected
++  // even though there's no prior at-bat to compare against.
++  let lastAway = 0;
++  let lastHome = 0;
+   for (const row of cleaned) {
+     const awayScore = typeof row.awayScore === "number" ? row.awayScore : null;
+     const homeScore = typeof row.homeScore === "number" ? row.homeScore : null;
+     if (row.isAtBat && awayScore != null && homeScore != null) {
+-      if ((lastAway != null && awayScore > lastAway) || (lastHome != null && homeScore > lastHome)) {
++      if (awayScore > lastAway || homeScore > lastHome) {
+         row.scoringPlay = true;
+       }
+       lastAway = awayScore;
