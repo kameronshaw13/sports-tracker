@@ -6,8 +6,6 @@ import useSWR, { useSWRConfig } from "swr";
 import { useFreshKey } from "@/lib/freshKey";
 import Boxscore from "./Boxscore";
 import Gamecast from "./Gamecast";
-import GameRecap from "./GameRecap";
-import PlayByPlay from "./PlayByPlay";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -21,18 +19,9 @@ type Props = {
   onTeamClick?: (league: string, abbr: string) => void;
 };
 
-// v19: Game detail is now tab-based.
-//
-// Tabs depend on game state:
-//   - Live or pre-game: [Gamecast] [Box Score] [Play-by-Play]
-//   - Final:            [Recap]    [Box Score] [Play-by-Play]
-//
-// "Gamecast" becomes "Recap" for finished games — same tab slot, different
-// content. Gamecast hosts the live visualizations (strike zone, shot map,
-// field position) which are stubbed in v19 and built in v20. Recap is
-// available immediately as a template-generated summary.
-
-type TabId = "main" | "boxscore" | "plays";
+// Game detail is intentionally simple: Gamecast contains the live/scoring/plays views,
+// and Box Score contains the stat tables.
+type TabId = "main" | "boxscore";
 
 export default function GameDetail({ league, eventId, onClose, onTeamClick }: Props) {
   // v21.1: freshKey busts route cache per mount. The keys are still stable
@@ -41,7 +30,6 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick }: Pr
   const freshKey = useFreshKey();
   const summaryKey = `/api/summary?league=${league}&event=${eventId}&_t=${freshKey}`;
   const boxscoreKey = `/api/boxscore?league=${league}&event=${eventId}&_t=${freshKey}`;
-  const recapKey = `/api/recap?league=${league}&event=${eventId}&_t=${freshKey}`;
 
   const { data, error, isLoading } = useSWR(summaryKey, fetcher, {
     refreshInterval: 15_000,
@@ -55,12 +43,10 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick }: Pr
     if (refreshing) return;
     setRefreshing(true);
     try {
-      // v19: also invalidate the recap cache when the user manually refreshes
-      // — covers the case where someone refreshes right after a final whistle.
-      await Promise.all([mutate(summaryKey), mutate(boxscoreKey), mutate(recapKey)]);
+      await Promise.all([mutate(summaryKey), mutate(boxscoreKey)]);
     } catch {}
     setTimeout(() => setRefreshing(false), 500);
-  }, [refreshing, mutate, summaryKey, boxscoreKey, recapKey]);
+  }, [refreshing, mutate, summaryKey, boxscoreKey]);
 
   if (isLoading) {
     return (
@@ -91,7 +77,6 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick }: Pr
 
   const { home, away, status, situation } = data;
   const isLive = status?.state === "in";
-  const isFinal = status?.state === "post";
   const isPre = status?.state === "pre";
 
   // Detect non-played games. We hide the Recap tab for these — there's
@@ -99,7 +84,7 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick }: Pr
   const statusName = String(status?.statusName || "").toUpperCase();
   const isNonPlayed = /POSTPONED|CANCELED|CANCELLED|SUSPENDED/.test(statusName);
 
-  const mainTabLabel = isFinal && !isNonPlayed ? "Recap" : "Gamecast";
+  const mainTabLabel = "Gamecast";
 
   return (
     <div className="space-y-4">
@@ -135,21 +120,13 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick }: Pr
           isActive={activeTab === "boxscore"}
           onClick={() => setActiveTab("boxscore")}
         />
-        <TabBtn
-          label="Play-by-Play"
-          isActive={activeTab === "plays"}
-          onClick={() => setActiveTab("plays")}
-        />
       </div>
 
       {/* Tab content */}
       <div>
         {activeTab === "main" && (
           <>
-            {isFinal && !isNonPlayed && (
-              <GameRecap league={league} eventId={eventId} />
-            )}
-            {(isLive || isPre) && (
+            {!isNonPlayed && (
               <Gamecast
                 league={league}
                 eventId={eventId}
@@ -174,16 +151,6 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick }: Pr
 
         {activeTab === "boxscore" && (
           <Boxscore league={league} eventId={eventId} isLive={isLive} />
-        )}
-
-        {activeTab === "plays" && (
-          <PlayByPlay
-            league={league}
-            eventId={eventId}
-            isLive={isLive}
-            homeAbbr={home?.abbr}
-            awayAbbr={away?.abbr}
-          />
         )}
       </div>
     </div>

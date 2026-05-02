@@ -27,6 +27,7 @@ type Person = {
   name?: string | null;
   shortName?: string | null;
   displayName?: string | null;
+  headshot?: string | null;
   stats?: Record<string, string | number | null>;
 };
 
@@ -130,9 +131,11 @@ function MlbPlayByPlay({ atBats, home, away }: { atBats: MlbAtBat[]; home?: Team
                 <div className="text-sm font-bold truncate">
                   {section.half === "bottom" ? "Bottom" : "Top"} of the {inningWord(section.period)} · {section.team?.abbr || "Team"}
                 </div>
-                <div className="text-xs truncate" style={{ color: "var(--text-3)" }}>
-                  {section.pitcher ? `Pitching: ${section.pitcher}` : `${section.atBats.filter((x) => x.isAtBat).length} at-bats`}
-                </div>
+                {section.pitcher && (
+                  <div className="text-xs truncate" style={{ color: "var(--text-3)" }}>
+                    Pitching: {section.pitcher}
+                  </div>
+                )}
               </div>
             </div>
             <span className="text-xs font-bold transition-transform group-open:rotate-180" style={{ color: "var(--text-3)" }}>⌄</span>
@@ -162,54 +165,92 @@ function AtBatDetails({ atBat, team }: { atBat: MlbAtBat; team?: TeamMeta }) {
     <details className="group/ab" open={false}>
       <summary className="px-4 py-3 cursor-pointer list-none hover:bg-[var(--surface-2)] transition-colors">
         <div className="flex items-start gap-3">
-          <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: team?.color || "var(--surface-2)", color: "#fff" }}>
-            <span className="text-[10px] font-black">{team?.abbr?.slice(0, 2) || "AB"}</span>
+          <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: team?.color || "var(--surface-2)", color: "#fff" }}>
+            {atBat.batter?.headshot ? (
+              <Image src={atBat.batter.headshot} alt={batterName || "Batter"} width={32} height={32} className="object-cover" />
+            ) : (
+              <span className="text-[10px] font-black">{team?.abbr?.slice(0, 2) || "AB"}</span>
+            )}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              {batterName && <span className="text-sm font-bold">{batterName}</span>}
-              {isLiveAtBat && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(59,130,246,0.12)", color: "var(--accent)" }}>LIVE</span>}
-              {atBat.scoringPlay && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(239,68,68,0.12)", color: "var(--danger)" }}>SCORING</span>}
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              {batterName && <span className="text-sm font-black">{batterName}</span>}
+              {isLiveAtBat && <StatusPill label="LIVE" tone="live" />}
+              {atBat.scoringPlay && <StatusPill label="SCORING" tone="scoring" />}
             </div>
-            <div className="text-sm leading-snug mt-0.5" style={{ color: "var(--text-2)" }}>
-              {atBat.result}
+            <div className={`text-sm leading-snug ${atBat.scoringPlay ? "font-black" : "font-semibold"}`} style={{ color: "var(--text-2)" }}>
+              {cleanResultText(atBat.result)}
             </div>
-            <div className="flex items-center gap-2 mt-1 text-[11px]" style={{ color: "var(--text-3)" }}>
-              {pitchCount > 0 && <span>{pitchCount} pitch{pitchCount === 1 ? "" : "es"} · tap to view sequence</span>}
-              {(atBat.awayScore != null || atBat.homeScore != null) && <span>{atBat.awayScore ?? ""}-{atBat.homeScore ?? ""}</span>}
-            </div>
+            {(atBat.awayScore != null || atBat.homeScore != null) && (
+              <div className="mt-1 text-[11px] font-bold tabular-nums" style={{ color: "var(--text-3)" }}>{atBat.awayScore ?? ""}-{atBat.homeScore ?? ""}</div>
+            )}
           </div>
-          <span className="text-xs font-bold transition-transform group-open/ab:rotate-180 mt-1" style={{ color: "var(--text-3)" }}>⌄</span>
+          {pitchCount > 0 && <span className="text-xs font-bold transition-transform group-open/ab:rotate-180 mt-1" style={{ color: "var(--text-3)" }}>⌄</span>}
         </div>
       </summary>
 
       <div className="px-4 pb-4 pl-14">
         {atBat.pitches?.length ? (
           <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-            {atBat.pitches.map((pitch, idx) => (
-              <div key={`${atBat.id}-${idx}`} className="px-3 py-2 text-sm border-b last:border-b-0 flex items-center gap-2" style={{ borderColor: "var(--border)", background: "var(--surface-2)" }}>
-                <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: "var(--surface)", color: "var(--text-3)", border: "1px solid var(--border)" }}>{idx + 1}</span>
-                <span>{pitch}</span>
-              </div>
-            ))}
+            {atBat.pitches.map((pitch, idx) => {
+              const parsed = formatPitch(pitch);
+              return (
+                <div key={`${atBat.id}-${idx}`} className="px-3 py-2 text-sm border-b last:border-b-0 flex items-center gap-2" style={{ borderColor: "var(--border)", background: "var(--surface-2)" }}>
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black" style={{ background: parsed.bg, color: parsed.color, border: parsed.border }}>{idx + 1}</span>
+                  <span className="font-semibold">{parsed.label}</span>
+                </div>
+              );
+            })}
           </div>
-        ) : (
-          <div className="rounded-xl p-3 text-sm" style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-2)" }}>
-            ESPN has posted the at-bat result, but not a pitch-by-pitch sequence for this row.
-          </div>
-        )}
+        ) : null}
       </div>
     </details>
   );
 }
 
 function MinorEventRow({ atBat }: { atBat: MlbAtBat }) {
+  if (isHiddenMinorEvent(atBat.text)) return null;
   return (
-    <div className="px-4 py-2.5 flex items-center gap-2 text-xs" style={{ color: "var(--text-3)", background: "var(--surface)" }}>
-      <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--text-3)" }} />
-      <span>{atBat.text}</span>
+    <div className="px-4 py-2.5 text-xs" style={{ color: "var(--text-3)", background: "var(--surface)" }}>
+      {atBat.text}
     </div>
   );
+}
+
+function StatusPill({ label, tone }: { label: string; tone: "live" | "scoring" }) {
+  return (
+    <span
+      className="text-[10px] font-black px-2 py-0.5 rounded-full tracking-wide"
+      style={
+        tone === "scoring"
+          ? { background: "rgba(239,68,68,0.14)", color: "var(--danger)", border: "1px solid rgba(239,68,68,0.25)" }
+          : { background: "rgba(59,130,246,0.12)", color: "var(--accent)", border: "1px solid rgba(59,130,246,0.25)" }
+      }
+    >
+      {label}
+    </span>
+  );
+}
+
+function formatPitch(raw: string) {
+  const text = String(raw || "").replace(/^Pitch\s*\d+\s*:\s*/i, "").replace(/\s+/g, " ").trim();
+  const lower = text.toLowerCase();
+  if (/ball in play|in play/.test(lower)) return { label: "In play", bg: "rgba(59,130,246,0.14)", color: "var(--accent)", border: "1px solid rgba(59,130,246,0.3)" };
+  if (/foul|foul tip|bunt foul/.test(lower)) return { label: "Foul", bg: "rgba(148,163,184,0.18)", color: "var(--text-2)", border: "1px solid rgba(148,163,184,0.35)" };
+  if (/swinging|missed bunt/.test(lower)) return { label: "Strike Swinging", bg: "rgba(239,68,68,0.14)", color: "var(--danger)", border: "1px solid rgba(239,68,68,0.3)" };
+  if (/called strike|strike looking|looking/.test(lower)) return { label: "Strike Looking", bg: "rgba(239,68,68,0.14)", color: "var(--danger)", border: "1px solid rgba(239,68,68,0.3)" };
+  if (/strike/.test(lower)) return { label: "Strike", bg: "rgba(239,68,68,0.14)", color: "var(--danger)", border: "1px solid rgba(239,68,68,0.3)" };
+  if (/ball|intent ball|automatic ball/.test(lower)) return { label: "Ball", bg: "rgba(34,197,94,0.14)", color: "#16a34a", border: "1px solid rgba(34,197,94,0.3)" };
+  return { label: text || "Pitch", bg: "var(--surface)", color: "var(--text-2)", border: "1px solid var(--border)" };
+}
+
+function cleanResultText(text: string) {
+  return String(text || "Play").replace(/^Pitch\s*\d+\s*:\s*/i, "").replace(/\s+/g, " ").trim();
+}
+
+function isHiddenMinorEvent(text: string) {
+  const value = String(text || "").trim();
+  return /^(top|bottom|middle|end) of the \d+(st|nd|rd|th)? inning\.?$/i.test(value) || /^(middle|end) of the/i.test(value) || /\bpitches to\b/i.test(value);
 }
 
 function buildMlbSections(atBats: MlbAtBat[], home?: TeamMeta, away?: TeamMeta) {
