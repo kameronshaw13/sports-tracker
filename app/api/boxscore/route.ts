@@ -22,10 +22,10 @@ export async function GET(req: NextRequest) {
     const comp = data?.header?.competitions?.[0];
     const competitors = comp?.competitors || [];
 
-    const extractTotal = (c: any, names: string[]) => {
+    const extractTotal = (c: any, names: string[], fallback: string | number = "0") => {
       const stats = c?.statistics || c?.stats || [];
       const found = Array.isArray(stats) ? stats.find((x: any) => names.includes(String(x?.name || x?.abbreviation || x?.displayName || "").toLowerCase())) : null;
-      return found?.displayValue ?? found?.value ?? null;
+      return found?.displayValue ?? found?.value ?? fallback;
     };
 
     const lineScore = league === "mlb" ? {
@@ -36,8 +36,8 @@ export async function GET(req: NextRequest) {
         abbr: c.team?.abbreviation,
         logo: c.team?.logos?.[0]?.href || c.team?.logo,
         runs: c.score ?? "0",
-        hits: extractTotal(c, ["hits", "h"]),
-        errors: extractTotal(c, ["errors", "e"]),
+        hits: extractTotal(c, ["hits", "h"], "0"),
+        errors: extractTotal(c, ["errors", "e"], "0"),
         innings: (c.linescores || []).map((x: any) => x.displayValue ?? x.value ?? "0"),
       })),
     } : null;

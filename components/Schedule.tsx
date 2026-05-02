@@ -90,7 +90,8 @@ export default function Schedule({ team, onTeamLogoClick, onPlayerClick }: Props
       const box = scrollBoxRef.current;
       const focus = focusRef.current;
       if (!box || !focus) return;
-      box.scrollTo({ top: Math.max(0, focus.offsetTop - 48), behavior: "smooth" });
+      const targetTop = Math.max(0, focus.offsetTop - Math.min(220, Math.round(box.clientHeight * 0.35)));
+      box.scrollTo({ top: targetTop, behavior: "smooth" });
     }, 150);
   }, [focusIndex, isLoading]);
 

@@ -4,17 +4,6 @@ import { parseTeamKey } from "@/lib/teams";
 
 export const revalidate = 60;
 
-// ESPN puts team stats in different shapes depending on the league + endpoint:
-// - Sometimes data.team.statistics
-// - Sometimes data.team.record.items[0].stats (record-flavored stats)
-// - Sometimes data.team.stats (newer format)
-// - Sometimes nested under data.statistics.splits.categories[].stats
-//
-// Previously v13 only checked `team.statistics` and `team.stats`, AND filtered
-// out any stat with displayValue === "—" — but ESPN sometimes returns "0"
-// formatted as the placeholder string for a real zero (e.g. losses for an
-// undefeated team). The combined effect was that non-favorite teams (which
-// hit slightly different ESPN shapes) returned empty stats lists.
 function extractStats(team: any): { name: string; displayName: string; value: number; displayValue: string }[] {
   const out: any[] = [];
   const seen = new Set<string>();
@@ -34,39 +23,33 @@ function extractStats(team: any): { name: string; displayName: string; value: nu
     });
   };
 
-  // Source 1: team.statistics — common on most leagues
-  if (Array.isArray(team?.statistics)) {
-    team.statistics.forEach(push);
-  }
+  if (Array.isArray(team?.statistics)) team.statistics.forEach(push);
+  if (Array.isArray(team?.stats)) team.stats.forEach(push);
 
-  // Source 2: team.stats — sometimes used in newer responses
-  if (Array.isArray(team?.stats)) {
-    team.stats.forEach(push);
-  }
-
-  // Source 3: team.record.items[].stats — record-flavored stats are critical
-  // (W/L/PCT) and live here. Always merge them in.
   const recordItems = team?.record?.items;
   if (Array.isArray(recordItems)) {
     recordItems.forEach((item: any) => {
-      if (Array.isArray(item?.stats)) {
-        item.stats.forEach(push);
-      }
+      if (Array.isArray(item?.stats)) item.stats.forEach(push);
     });
   }
 
-  // Source 4: team.statistics.splits.categories[].stats — deep-nested shape
-  // some ESPN endpoints use, especially for "split" totals.
   const cats = team?.statistics?.splits?.categories;
   if (Array.isArray(cats)) {
     cats.forEach((cat: any) => {
-      if (Array.isArray(cat?.stats)) {
-        cat.stats.forEach(push);
-      }
+      if (Array.isArray(cat?.stats)) cat.stats.forEach(push);
     });
   }
 
   return out;
+}
+
+function bestRecord(team: any): string | null {
+  return (
+    team?.record?.items?.[0]?.summary ||
+    team?.recordSummary ||
+    team?.standingSummary?.match(/\b\d+-\d+(?:-\d+)?\b/)?.[0] ||
+    null
+  );
 }
 
 export async function GET(req: NextRequest) {
@@ -82,19 +65,17 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Fetch with stats enabled to get the real season stats array
     const data = await getTeamPage(parsed.league, parsed.abbr, ["stats"]);
     const t = data?.team;
-
     const stats = extractStats(t);
 
-    const result = {
+    return NextResponse.json({
       id: t?.id,
       name: t?.displayName,
       abbreviation: t?.abbreviation,
       logo: t?.logos?.[0]?.href,
       colors: { primary: t?.color, alternate: t?.alternateColor },
-      record: t?.record?.items?.[0]?.summary || null,
+      record: bestRecord(t),
       standingSummary: t?.standingSummary || null,
       stats,
       nextEvent: t?.nextEvent?.[0]
@@ -106,9 +87,7 @@ export async function GET(req: NextRequest) {
             status: t.nextEvent[0].status?.type?.description,
           }
         : null,
-    };
-
-    return NextResponse.json(result);
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Fetch failed" }, { status: 500 });
   }

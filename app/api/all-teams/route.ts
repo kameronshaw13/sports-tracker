@@ -53,12 +53,18 @@ function normalizeTeam(league: League, t: any, extra?: Partial<TeamConfig>): Tea
 }
 
 function shouldKeepCollegeBasketball(t: any): boolean {
-  // Keep Division I-style entries. ESPN's all-teams endpoint can include tiny
-  // lower-level/duplicate programs; teams without a displayName or logo tend to
-  // be the noisy ones that polluted search results.
   const name = String(t?.displayName || t?.name || "").toLowerCase();
   if (!name || !t?.abbreviation) return false;
-  if (/\b(d-?ii|d-?iii|division ii|division iii|naia|club)\b/.test(name)) return false;
+  if (/\b(d-?ii|d-?iii|division ii|division iii|naia|club|junior college|community college)\b/.test(name)) return false;
+  return true;
+}
+
+function shouldKeepFcsTeam(t: any): boolean {
+  const name = String(t?.displayName || t?.name || "").toLowerCase();
+  const slug = String(t?.slug || "").toLowerCase();
+  if (!name || !t?.abbreviation) return false;
+  if (/\b(d-?ii|d-?iii|division ii|division iii|naia|club|prep|junior college|community college)\b/.test(name)) return false;
+  if (/\b(d-?ii|d-?iii|naia|club|prep)\b/.test(slug)) return false;
   return true;
 }
 
@@ -70,7 +76,9 @@ async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
       const data = await fetchJson(url);
       const items: any[] = data?.sports?.[0]?.leagues?.[0]?.teams || [];
       for (const entry of items) {
-        const team = normalizeTeam("cfb", entry?.team, { subdivision } as any);
+        const raw = entry?.team;
+        if (subdivision === "FCS" && !shouldKeepFcsTeam(raw)) continue;
+        const team = normalizeTeam("cfb", raw, { subdivision } as any);
         if (team) out.push(team);
       }
     } catch {}
@@ -81,7 +89,7 @@ async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
 async function fetchLeagueTeams(league: League): Promise<TeamConfig[]> {
   if (league === "cfb") return fetchCollegeFootballTeams();
 
-  const groupParam = league === "cbb" ? "&groups=50" : ""; // ESPN's D-I men's basketball group
+  const groupParam = league === "cbb" ? "&groups=50" : "";
   const url = `https://site.api.espn.com/apis/site/v2/sports/${SPORT_PATH[league]}/teams?limit=1000${groupParam}`;
   const data = await fetchJson(url);
   const items: any[] = data?.sports?.[0]?.leagues?.[0]?.teams || [];

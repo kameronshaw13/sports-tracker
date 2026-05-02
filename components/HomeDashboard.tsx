@@ -25,9 +25,10 @@ type Props = {
   onManage: () => void;
   onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
   onViewLeague?: (league: string) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
 };
 
-export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, onViewLeague }: Props) {
+export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, onViewLeague, onPlayerClick }: Props) {
   const [drillIn, setDrillIn] = useState<{ league: string; eventId: string } | null>(null);
   const [dayOffset, setDayOffset] = useState(0);
   const { favorites } = useFavoriteTeams();
@@ -40,6 +41,7 @@ export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, 
         eventId={drillIn.eventId}
         onClose={() => setDrillIn(null)}
         onTeamClick={onTeamLogoClick}
+        onPlayerClick={onPlayerClick}
       />
     );
   }
@@ -54,7 +56,7 @@ export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, 
     <div className="space-y-7">
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--text-2)" }}>
+          <h2 className="text-sm font-semibold uppercase tracking-wider whitespace-nowrap" style={{ color: "var(--text-2)" }}>
             My Teams
           </h2>
           <button
@@ -202,6 +204,9 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
   const lastEvent = events.filter((e: any) => e.status?.state === "post").pop();
   const featured = liveEvent || nextEvent || lastEvent;
   const label = liveEvent ? "Live now" : nextEvent ? "Next game" : "Last game";
+  const liveStatus = team.league === "mlb" && featured?.status?.state === "in"
+    ? baseballSituationText(featured)
+    : featured?.status?.detail || "Live";
 
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
@@ -229,13 +234,65 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
             {featured.opponent?.logo && <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "var(--surface-2)" }}><Image src={featured.opponent.logo} alt={featured.opponent.abbr} width={28} height={28} className="object-contain" /></div>}
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold truncate"><span style={{ color: "var(--text-3)" }}>{featured.home ? "vs" : "@"}</span> {featured.opponent?.name}</div>
-              <div className="text-xs" style={{ color: "var(--text-3)" }}>{featured.status?.state === "pre" ? formatTime(featured.date) : featured.status?.detail || formatTime(featured.date)}</div>
+              <div className="text-xs" style={{ color: "var(--text-3)" }}>
+                {featured.status?.state === "pre" ? formatTime(featured.date) : featured.status?.state === "in" && team.league === "mlb" ? liveStatus : featured.status?.detail || formatTime(featured.date)}
+              </div>
+              {featured.status?.state === "in" && team.league === "mlb" && (
+                <div className="mt-1 flex items-center gap-2 text-[11px] font-semibold" style={{ color: "var(--text-2)" }}>
+                  <BasesMini situation={featured.situation} />
+                  <span>{countText(featured.situation)}</span>
+                  <span>{outsText(featured.situation)}</span>
+                </div>
+              )}
             </div>
-            {featured.status?.state !== "pre" && <div className="text-right"><div className="text-base font-bold tabular-nums">{featured.us?.score ?? "—"}<span style={{ color: "var(--text-3)" }}> – </span>{featured.opponent?.score ?? "—"}</div><div className="text-xs font-bold" style={{ color: featured.us?.winner ? "var(--success)" : featured.status?.state === "post" ? "var(--danger)" : team.primary }}>{featured.status?.state === "in" ? featured.status.detail || "Live" : featured.us?.winner ? "W" : "L"}</div></div>}
+            {featured.status?.state !== "pre" && (
+              <div className="text-right">
+                <div className="text-base font-bold tabular-nums">{featured.us?.score ?? "—"}<span style={{ color: "var(--text-3)" }}> – </span>{featured.opponent?.score ?? "—"}</div>
+                <div className="text-xs font-bold" style={{ color: featured.us?.winner ? "var(--success)" : featured.status?.state === "post" ? "var(--danger)" : team.primary }}>
+                  {featured.status?.state === "in" ? (team.league === "mlb" ? inningStateText(featured) : featured.status.detail || "Live") : featured.us?.winner ? "W" : "L"}
+                </div>
+              </div>
+            )}
           </div>
         ) : <div className="text-sm" style={{ color: "var(--text-3)" }}>No upcoming games</div>}
       </button>
     </div>
+  );
+}
+
+function baseballSituationText(game: any) {
+  const inning = inningStateText(game);
+  const count = countText(game?.situation);
+  return [inning, count].filter(Boolean).join(" · ") || game?.status?.detail || "Live";
+}
+
+function inningStateText(game: any) {
+  const detail = String(game?.status?.detail || "").trim();
+  if (detail) return detail;
+  return "Live";
+}
+
+function countText(situation: any) {
+  if (typeof situation?.balls !== "number" || typeof situation?.strikes !== "number") return "";
+  return `${situation.balls}-${situation.strikes}`;
+}
+
+function outsText(situation: any) {
+  if (typeof situation?.outs !== "number") return "";
+  return `${situation.outs} ${situation.outs === 1 ? "out" : "outs"}`;
+}
+
+function BasesMini({ situation }: { situation: any }) {
+  if (!situation) return null;
+  const filled = "var(--text)";
+  const empty = "transparent";
+  const stroke = "var(--text-3)";
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <rect x="7" y="1.5" width="4" height="4" transform="rotate(45 7 1.5)" fill={situation.onSecond ? filled : empty} stroke={stroke} strokeWidth="1" />
+      <rect x="12.5" y="7" width="4" height="4" transform="rotate(45 12.5 7)" fill={situation.onFirst ? filled : empty} stroke={stroke} strokeWidth="1" />
+      <rect x="1.5" y="7" width="4" height="4" transform="rotate(45 1.5 7)" fill={situation.onThird ? filled : empty} stroke={stroke} strokeWidth="1" />
+    </svg>
   );
 }
 

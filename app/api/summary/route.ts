@@ -63,6 +63,7 @@ export async function GET(req: NextRequest) {
         completed: comp?.status?.type?.completed,
         description: comp?.status?.type?.description,
         detail: comp?.status?.type?.shortDetail,
+        statusName: comp?.status?.type?.name || null,
         period: comp?.status?.period,
         clock: comp?.status?.displayClock,
       },

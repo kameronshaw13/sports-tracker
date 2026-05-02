@@ -32,10 +32,11 @@ type Props = {
   // Forwarded to GameDetail when the user drills into a game and taps a team
   // logo on the box score.
   onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
   initialLeague?: string;
 };
 
-export default function LeaguesView({ onTeamLogoClick, initialLeague = "mlb" }: Props) {
+export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLeague = "mlb" }: Props) {
   const [activeLeague, setActiveLeague] = useState(initialLeague);
   const [dayOffset, setDayOffset] = useState(0);
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
@@ -66,6 +67,7 @@ export default function LeaguesView({ onTeamLogoClick, initialLeague = "mlb" }: 
         eventId={selectedEvent}
         onClose={() => setSelectedEvent(null)}
         onTeamClick={onTeamLogoClick}
+        onPlayerClick={onPlayerClick}
       />
     );
   }

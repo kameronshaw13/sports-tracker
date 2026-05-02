@@ -173,6 +173,7 @@ export default function Home() {
               setView("leagues");
               setManageOpen(false);
             }}
+            onPlayerClick={(p) => setSelectedPlayer(p)}
           />
         )}
 
@@ -235,7 +236,7 @@ export default function Home() {
           </>
         )}
 
-        {!selectedPlayer && !showReturnGame && view === "leagues" && <LeaguesView initialLeague={leagueInitial} onTeamLogoClick={handleTeamLogoClick} />}
+        {!selectedPlayer && !showReturnGame && view === "leagues" && <LeaguesView initialLeague={leagueInitial} onTeamLogoClick={handleTeamLogoClick} onPlayerClick={(p) => setSelectedPlayer(p)} />}
 
         <footer
           className="mt-12 pt-6 text-xs text-center"

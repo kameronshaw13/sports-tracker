@@ -5,6 +5,26 @@ import { parseTeamKey } from "@/lib/teams";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+function normalizeSituation(situation: any) {
+  if (!situation) return null;
+  return {
+    balls: typeof situation.balls === "number" ? situation.balls : null,
+    strikes: typeof situation.strikes === "number" ? situation.strikes : null,
+    outs: typeof situation.outs === "number" ? situation.outs : null,
+    onFirst: !!situation.onFirst,
+    onSecond: !!situation.onSecond,
+    onThird: !!situation.onThird,
+    batter: situation.batter || null,
+    pitcher: situation.pitcher || null,
+    lastPlay: situation.lastPlay?.text || situation.lastPlay || null,
+    down: typeof situation.down === "number" ? situation.down : null,
+    distance: typeof situation.distance === "number" ? situation.distance : null,
+    yardLine: typeof situation.yardLine === "number" ? situation.yardLine : null,
+    shortDownDistanceText: situation.shortDownDistanceText || null,
+    possessionText: situation.possessionText || null,
+  };
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const teamKey = searchParams.get("team");
@@ -21,7 +41,6 @@ export async function GET(req: NextRequest) {
     const data = await getTeamSchedule(parsed.league, parsed.abbr);
     const events = (data?.events || []).map((ev: any) => {
       const comp = ev.competitions?.[0];
-      // Match "us" by abbreviation rather than numeric ID — works for any team
       const us = comp?.competitors?.find(
         (c: any) => c.team?.abbreviation?.toLowerCase() === parsed.abbr.toLowerCase()
       );
@@ -41,9 +60,6 @@ export async function GET(req: NextRequest) {
           completed: status?.type?.completed,
           description: status?.type?.description,
           detail: status?.type?.shortDetail,
-          // v18: canonical ESPN status name. Used by Schedule.tsx to detect
-          // STATUS_POSTPONED / STATUS_CANCELED / STATUS_SUSPENDED so the row
-          // renders "Postponed" instead of an erroneous "0-0 L".
           statusName: status?.type?.name || null,
         },
         home: us?.homeAway === "home",
@@ -59,6 +75,7 @@ export async function GET(req: NextRequest) {
           winner: us?.winner,
         },
         broadcast: comp?.broadcasts?.[0]?.names?.[0] || null,
+        situation: normalizeSituation(comp?.situation || ev?.situation),
       };
     });
 

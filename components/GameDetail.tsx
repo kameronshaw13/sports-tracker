@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useState } from "react";
-import useSWR, { useSWRConfig } from "swr";
+import { useState } from "react";
+import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
 import Boxscore from "./Boxscore";
 import Gamecast from "./Gamecast";
@@ -30,24 +30,12 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
   // (used by the Refresh button) keeps working.
   const freshKey = useFreshKey();
   const summaryKey = `/api/summary?league=${league}&event=${eventId}&_t=${freshKey}`;
-  const boxscoreKey = `/api/boxscore?league=${league}&event=${eventId}&_t=${freshKey}`;
 
   const { data, error, isLoading } = useSWR(summaryKey, fetcher, {
     refreshInterval: 15_000,
   });
 
-  const { mutate } = useSWRConfig();
-  const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("main");
-
-  const handleRefresh = useCallback(async () => {
-    if (refreshing) return;
-    setRefreshing(true);
-    try {
-      await Promise.all([mutate(summaryKey), mutate(boxscoreKey)]);
-    } catch {}
-    setTimeout(() => setRefreshing(false), 500);
-  }, [refreshing, mutate, summaryKey, boxscoreKey]);
 
   if (isLoading) {
     return (
@@ -78,7 +66,6 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
 
   const { home, away, status, situation } = data;
   const isLive = status?.state === "in";
-  const isPre = status?.state === "pre";
   const isPost = status?.state === "post" || status?.completed;
 
   // Detect non-played games. We hide the Recap tab for these — there's
@@ -90,10 +77,8 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
 
   return (
     <div className="space-y-4">
-      {/* Top row: back / refresh */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-start">
         <BackButton onClose={onClose} />
-        <RefreshButton refreshing={refreshing} onClick={handleRefresh} />
       </div>
 
       {/* Scoreboard header */}
@@ -138,6 +123,7 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
                   eventId={eventId}
                   isLive={isLive}
                   situation={situation}
+                  onPlayerClick={onPlayerClick}
                 />
               )
             )}
@@ -257,52 +243,6 @@ function BackButton({ onClose }: { onClose?: () => void }) {
       }}
     >
       ← Back
-    </button>
-  );
-}
-
-function RefreshButton({
-  refreshing,
-  onClick,
-}: {
-  refreshing: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={refreshing}
-      aria-label="Refresh"
-      className="w-9 h-9 rounded-full flex items-center justify-center transition-opacity disabled:opacity-60"
-      style={{
-        background: "var(--surface)",
-        border: "1px solid var(--border)",
-        color: "var(--text-2)",
-      }}
-    >
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 16 16"
-        fill="none"
-        style={{
-          animation: refreshing ? "spin 0.8s linear infinite" : undefined,
-        }}
-      >
-        <path
-          d="M3 8a5 5 0 0 1 8.5-3.5L13 6m0-3v3h-3M13 8a5 5 0 0 1-8.5 3.5L3 10m0 3v-3h3"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <style jsx>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </button>
   );
 }

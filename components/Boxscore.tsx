@@ -45,7 +45,7 @@ export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Pro
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {data.leaders.flatMap((teamLeaders: any) =>
               teamLeaders.categories.slice(0, 2).map((cat: any, i: number) => (
-                <LeaderCard key={`${teamLeaders.team.abbr}-${i}`} cat={cat} teamLogo={teamLeaders.team.logo} teamAbbr={teamLeaders.team.abbr} />
+                <LeaderCard key={`${teamLeaders.team.abbr}-${i}`} cat={cat} teamLogo={teamLeaders.team.logo} teamAbbr={teamLeaders.team.abbr} league={league} onPlayerClick={onPlayerClick} />
               ))
             )}
           </div>
@@ -117,8 +117,8 @@ function MlbLineScore({ lineScore }: { lineScore: any }) {
                 <td className="px-3 py-2 font-bold">{t.abbr}</td>
                 {Array.from({ length: innings }).map((_, i) => <td key={i} className="text-center px-2 py-2 tabular-nums">{t.innings?.[i] ?? "–"}</td>)}
                 <td className="text-center px-2 py-2 font-black tabular-nums">{t.runs ?? "–"}</td>
-                <td className="text-center px-2 py-2 font-black tabular-nums">{t.hits ?? "–"}</td>
-                <td className="text-center px-2 py-2 font-black tabular-nums">{t.errors ?? "–"}</td>
+                <td className="text-center px-2 py-2 font-black tabular-nums">{t.hits ?? "0"}</td>
+                <td className="text-center px-2 py-2 font-black tabular-nums">{t.errors ?? "0"}</td>
               </tr>
             ))}
           </tbody>
@@ -128,9 +128,16 @@ function MlbLineScore({ lineScore }: { lineScore: any }) {
   );
 }
 
-function LeaderCard({ cat, teamLogo, teamAbbr }: any) {
+function LeaderCard({ cat, teamLogo, teamAbbr, league, onPlayerClick }: any) {
+  const clickable = !!onPlayerClick && !!cat?.leader?.id;
+  const Wrapper: any = clickable ? "button" : "div";
   return (
-    <div className="rounded-xl p-3 flex items-center gap-3" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+    <Wrapper
+      type={clickable ? "button" : undefined}
+      onClick={clickable ? () => onPlayerClick?.({ id: cat.leader.id, name: cat.leader.name, league }) : undefined}
+      className="rounded-xl p-3 flex items-center gap-3 text-left"
+      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+    >
       <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0" style={{ background: "var(--surface-2)" }}>
         {cat.leader.headshot ? (
           <Image src={cat.leader.headshot} alt={cat.leader.name} width={48} height={48} className="object-cover" />
@@ -150,7 +157,7 @@ function LeaderCard({ cat, teamLogo, teamAbbr }: any) {
           {cat.leader.value}
         </div>
       </div>
-    </div>
+    </Wrapper>
   );
 }
 

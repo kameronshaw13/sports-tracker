@@ -12,6 +12,7 @@ type Props = {
   eventId: string;
   isLive: boolean;
   situation?: any;
+  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
 };
 
 type TeamMeta = {
@@ -59,7 +60,7 @@ type MlbSection = {
   atBats: MlbAtBat[];
 };
 
-export default function Gamecast({ league, eventId, isLive, situation: summarySituation }: Props) {
+export default function Gamecast({ league, eventId, isLive, situation: summarySituation, onPlayerClick }: Props) {
   const freshKey = useFreshKey();
   const { data, error, isLoading } = useSWR(
     eventId ? `/api/plays?league=${league}&event=${eventId}&_t=${freshKey}` : null,
@@ -75,6 +76,7 @@ export default function Gamecast({ league, eventId, isLive, situation: summarySi
         isLoading={isLoading}
         isLive={isLive}
         fallbackSituation={summarySituation}
+        onPlayerClick={onPlayerClick}
       />
     );
   }
@@ -115,12 +117,14 @@ function MlbLiveGamecast({
   isLoading,
   isLive,
   fallbackSituation,
+  onPlayerClick,
 }: {
   data: any;
   error: any;
   isLoading: boolean;
   isLive: boolean;
   fallbackSituation?: any;
+  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
 }) {
   const [activeSubTab, setActiveSubTab] = useState<"scoring" | "live" | "plays">("live");
   const home: TeamMeta | undefined = data?.home;
@@ -165,6 +169,7 @@ function MlbLiveGamecast({
             situation={espnSituation}
             currentAtBat={currentOrLast}
             battingTeam={battingTeam}
+            onPlayerClick={onPlayerClick}
           />
 
           <HalfInningCard
@@ -205,11 +210,13 @@ function LiveAtBatCard({
   situation,
   currentAtBat,
   battingTeam,
+  onPlayerClick,
 }: {
   isLive: boolean;
   situation: any;
   currentAtBat: MlbAtBat | null;
   battingTeam?: TeamMeta;
+  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
 }) {
   const hasLiveAtBat = currentAtBat?.isComplete === false;
   const title = hasLiveAtBat ? "Current At-bat" : currentAtBat ? "Last At-bat" : "Current At-bat";
@@ -247,9 +254,9 @@ function LiveAtBatCard({
       </div>
 
       <div className="p-4 grid grid-cols-2 md:grid-cols-[1fr_auto_1fr] gap-3 items-stretch">
-        <PlayerMiniCard label="Batter" person={batter} primaryStat={batterStatText(batter)} />
+        <PlayerMiniCard label="Batter" person={batter} primaryStat={batterStatText(batter)} onClick={batter?.id ? () => onPlayerClick?.({ id: String(batter.id), name: batter.displayName || batter.name || batter.shortName || "Batter", league: "mlb" }) : undefined} />
         <div className="hidden md:flex items-center justify-center text-xs font-bold" style={{ color: "var(--text-3)" }}>vs</div>
-        <PlayerMiniCard label="Pitcher" person={pitcher} primaryStat={pitcherStatText(pitcher)} />
+        <PlayerMiniCard label="Pitcher" person={pitcher} primaryStat={pitcherStatText(pitcher)} onClick={pitcher?.id ? () => onPlayerClick?.({ id: String(pitcher.id), name: pitcher.displayName || pitcher.name || pitcher.shortName || "Pitcher", league: "mlb" }) : undefined} />
       </div>
 
       <div className="px-4 pb-4">
@@ -444,11 +451,12 @@ function isHiddenMinorEvent(text: string) {
   return /^(top|bottom|middle|end) of the \d+(st|nd|rd|th)? inning\.?$/i.test(value) || /^(middle|end) of the/i.test(value) || /\bpitches to\b/i.test(value);
 }
 
-function PlayerMiniCard({ label, person, primaryStat }: { label: string; person?: Person | null; primaryStat?: string | null }) {
+function PlayerMiniCard({ label, person, primaryStat, onClick }: { label: string; person?: Person | null; primaryStat?: string | null; onClick?: () => void }) {
   const name = person?.displayName || person?.name || person?.shortName || "—";
   const hasPlayer = name !== "—";
+  const Wrapper: any = onClick ? "button" : "div";
   return (
-    <div className="rounded-xl p-3 flex items-center gap-3" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
+    <Wrapper type={onClick ? "button" : undefined} onClick={onClick} className="rounded-xl p-3 flex items-center gap-3 text-left" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
       <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center" style={{ background: "var(--surface)" }}>
         {person?.headshot ? (
           <Image src={person.headshot} alt={name} width={40} height={40} className="object-cover" />
@@ -461,7 +469,7 @@ function PlayerMiniCard({ label, person, primaryStat }: { label: string; person?
         <div className="text-sm font-bold truncate">{name}</div>
         {hasPlayer && primaryStat && <div className="text-xs" style={{ color: "var(--text-2)" }}>{primaryStat}</div>}
       </div>
-    </div>
+    </Wrapper>
   );
 }
 
