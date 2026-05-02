@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getScoreboard } from "@/lib/espn";
 
-export const revalidate = 30;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 const VALID_LEAGUES = ["mlb", "nfl", "nba", "nhl"];
 
 export async function GET(req: NextRequest) {
@@ -79,7 +80,7 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    return NextResponse.json({ league, date, events });
+    return NextResponse.json({ league, date, events }, { headers: { "Cache-Control": "no-store" } });
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message || "Fetch failed" },

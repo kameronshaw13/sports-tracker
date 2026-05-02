@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getTeamSchedule } from "@/lib/espn";
 import { parseTeamKey } from "@/lib/teams";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -61,7 +62,7 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    return NextResponse.json({ team: parsed.abbr.toUpperCase(), events });
+    return NextResponse.json({ team: parsed.abbr.toUpperCase(), events }, { headers: { "Cache-Control": "no-store" } });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Fetch failed" }, { status: 500 });
   }

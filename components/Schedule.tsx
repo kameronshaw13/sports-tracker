@@ -1,13 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { TeamConfig } from "@/lib/teams";
 import { useFreshKey } from "@/lib/freshKey";
 import GameDetail from "./GameDetail";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json());
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -18,7 +18,6 @@ function formatTime(iso: string) {
   return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 }
 
-// v18: detect non-played results.
 type NonPlayedKind = "postponed" | "canceled" | "suspended" | null;
 
 function classifyNonPlayed(status: any): NonPlayedKind {
@@ -47,15 +46,48 @@ type Props = {
   onTeamLogoClick?: (league: string, abbr: string) => void;
 };
 
-// v21.1: freshKey appended to URL so each mount busts the route cache.
 export default function Schedule({ team, onTeamLogoClick }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
+  const focusRef = useRef<HTMLDivElement | null>(null);
+  const hasAutoScrolled = useRef(false);
   const freshKey = useFreshKey();
   const { data, error, isLoading } = useSWR(
     `/api/scoreboard?team=${team.key}&_t=${freshKey}`,
     fetcher,
-    { refreshInterval: 60_000 }
+    {
+      refreshInterval: 30_000,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      dedupingInterval: 5_000,
+    }
   );
+
+  const events = useMemo(() => {
+    const list = [...(data?.events || [])];
+    list.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return list;
+  }, [data?.events]);
+
+  const focusIndex = useMemo(() => {
+    if (!events.length) return -1;
+    const liveIdx = events.findIndex((e: any) => e.status?.state === "in");
+    if (liveIdx >= 0) return liveIdx;
+    const nextIdx = events.findIndex((e: any) => e.status?.state === "pre");
+    if (nextIdx >= 0) return nextIdx;
+    return events.length - 1;
+  }, [events]);
+
+  useEffect(() => {
+    hasAutoScrolled.current = false;
+  }, [team.key]);
+
+  useEffect(() => {
+    if (hasAutoScrolled.current || !focusRef.current || isLoading) return;
+    hasAutoScrolled.current = true;
+    setTimeout(() => {
+      focusRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+    }, 150);
+  }, [focusIndex, isLoading]);
 
   if (selected) {
     return (
@@ -71,55 +103,51 @@ export default function Schedule({ team, onTeamLogoClick }: Props) {
   if (isLoading) return <SkeletonList />;
   if (error || !data?.events) return <ErrorBox message="Couldn't load schedule" />;
 
-  const events = data.events;
-  const inProgress = events.filter((e: any) => e.status?.state === "in");
-  const upcoming = events.filter((e: any) => e.status?.state === "pre");
-  const completed = events.filter((e: any) => e.status?.state === "post").reverse();
+  const pastCount = events.filter((e: any) => e.status?.state === "post").length;
+  const futureCount = events.filter((e: any) => e.status?.state === "pre").length;
 
   return (
-    <div className="space-y-6">
-      {inProgress.length > 0 && (
-        <Section title="Live now" accent={team.primary}>
-          {inProgress.map((ev: any) => (
-            <GameRow key={ev.id} ev={ev} team={team} variant="live" onClick={() => setSelected(ev.id)} />
-          ))}
-        </Section>
-      )}
-      {upcoming.length > 0 && (
-        <Section title={`Upcoming (${upcoming.length})`}>
-          {upcoming.slice(0, 12).map((ev: any) => (
-            <GameRow key={ev.id} ev={ev} team={team} variant="upcoming" onClick={() => setSelected(ev.id)} />
-          ))}
-        </Section>
-      )}
-      {completed.length > 0 && (
-        <Section title="Recent results">
-          {completed.slice(0, 25).map((ev: any) => (
-            <GameRow key={ev.id} ev={ev} team={team} variant="result" onClick={() => setSelected(ev.id)} />
-          ))}
-        </Section>
-      )}
-    </div>
-  );
-}
-
-function Section({ title, children, accent }: any) {
-  return (
-    <div>
-      <div className="flex items-center gap-2 mb-2">
-        {accent && <span className="w-2 h-2 rounded-full live-dot" style={{ background: accent }} />}
-        <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--text-2)" }}>
-          {title}
-        </h2>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--text-2)" }}>
+            Full schedule
+          </h2>
+          <p className="text-xs" style={{ color: "var(--text-3)" }}>
+            Scroll up for past results · scroll down for the rest of the season
+          </p>
+        </div>
+        <div className="text-xs text-right" style={{ color: "var(--text-3)" }}>
+          {pastCount} results<br />{futureCount} upcoming
+        </div>
       </div>
+
       <div className="rounded-xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-        {children}
+        {events.map((ev: any, idx: number) => {
+          const variant = ev.status?.state === "in" ? "live" : ev.status?.state === "post" ? "result" : "upcoming";
+          const isFocus = idx === focusIndex;
+          return (
+            <div key={ev.id} ref={isFocus ? focusRef : undefined}>
+              {isFocus && <FocusLabel variant={variant} />}
+              <GameRow ev={ev} team={team} variant={variant} focused={isFocus} onClick={() => setSelected(ev.id)} />
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-function GameRow({ ev, team, variant, onClick }: any) {
+function FocusLabel({ variant }: { variant: "live" | "result" | "upcoming" }) {
+  const label = variant === "live" ? "Live now" : variant === "upcoming" ? "Next game" : "Latest result";
+  return (
+    <div className="px-4 py-2 text-[11px] font-bold uppercase tracking-wider" style={{ background: "var(--surface-2)", color: "var(--text-2)", borderBottom: "1px solid var(--border)" }}>
+      {label}
+    </div>
+  );
+}
+
+function GameRow({ ev, team, variant, focused, onClick }: any) {
   const opp = ev.opponent;
   const won = ev.us?.winner;
   const nonPlayed: NonPlayedKind = variant === "result" ? classifyNonPlayed(ev.status) : null;
@@ -128,8 +156,12 @@ function GameRow({ ev, team, variant, onClick }: any) {
     <button
       onClick={onClick}
       className="w-full text-left flex items-center gap-3 px-4 py-3 border-b last:border-b-0 transition-colors hover:bg-[var(--surface-2)]"
-      style={{ borderColor: "var(--border)" }}
+      style={{ borderColor: "var(--border)", boxShadow: focused ? `inset 3px 0 0 ${team.primary}` : undefined }}
     >
+      <div className="w-14 flex-shrink-0 text-xs font-semibold" style={{ color: "var(--text-3)" }}>
+        <div>{formatDate(ev.date).split(",")[0]}</div>
+        <div>{new Date(ev.date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</div>
+      </div>
       <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "var(--surface-2)" }}>
         {opp?.logo && <Image src={opp.logo} alt={opp.abbr} width={28} height={28} className="object-contain" />}
       </div>
@@ -139,15 +171,13 @@ function GameRow({ ev, team, variant, onClick }: any) {
           <span style={{ color: "var(--text-3)" }}>{ev.home ? "vs" : "@"}</span>
           <span className="truncate">{opp?.name}</span>
           {ev.playoff && (
-            <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
-              style={{ background: team.primary, color: team.textOnPrimary }}>
+            <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ background: team.primary, color: team.textOnPrimary }}>
               Playoffs
             </span>
           )}
         </div>
         <div className="text-xs" style={{ color: "var(--text-3)" }}>
-          {formatDate(ev.date)}
-          {variant === "upcoming" && ` · ${formatTime(ev.date)}`}
+          {variant === "upcoming" ? formatTime(ev.date) : ev.status?.detail || formatTime(ev.date)}
           {ev.broadcast && ` · ${ev.broadcast}`}
           {ev.weekText && ` · ${ev.weekText}`}
         </div>
@@ -159,20 +189,11 @@ function GameRow({ ev, team, variant, onClick }: any) {
             <div className="text-base font-bold tabular-nums">
               {ev.us?.score ?? 0}<span style={{ color: "var(--text-3)" }}> – </span>{opp?.score ?? 0}
             </div>
-            <div className="text-xs font-semibold" style={{ color: team.primary }}>
-              {ev.status?.detail || "Live"}
-            </div>
+            <div className="text-xs font-semibold" style={{ color: team.primary }}>{ev.status?.detail || "Live"}</div>
           </>
         )}
         {variant === "result" && nonPlayed && (
-          <span
-            className="text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-md inline-block"
-            style={{
-              background: "var(--surface-2)",
-              color: "var(--text-2)",
-              border: "1px solid var(--border)",
-            }}
-          >
+          <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-md inline-block" style={{ background: "var(--surface-2)", color: "var(--text-2)", border: "1px solid var(--border)" }}>
             {nonPlayedLabel(nonPlayed)}
           </span>
         )}
@@ -181,9 +202,7 @@ function GameRow({ ev, team, variant, onClick }: any) {
             <div className="text-base font-bold tabular-nums">
               {ev.us?.score ?? "—"}<span style={{ color: "var(--text-3)" }}> – </span>{opp?.score ?? "—"}
             </div>
-            <div className="text-xs font-semibold" style={{ color: won ? "var(--success)" : "var(--danger)" }}>
-              {won ? "W" : "L"}
-            </div>
+            <div className="text-xs font-semibold" style={{ color: won ? "var(--success)" : "var(--danger)" }}>{won ? "W" : "L"}</div>
           </>
         )}
         {variant === "upcoming" && (
@@ -199,7 +218,7 @@ function GameRow({ ev, team, variant, onClick }: any) {
 function SkeletonList() {
   return (
     <div className="space-y-2">
-      {[...Array(5)].map((_, i) => (
+      {[...Array(8)].map((_, i) => (
         <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: "var(--surface)" }} />
       ))}
     </div>

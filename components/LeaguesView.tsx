@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
@@ -28,12 +28,20 @@ type Props = {
   // Forwarded to GameDetail when the user drills into a game and taps a team
   // logo on the box score.
   onTeamLogoClick?: (league: string, abbr: string) => void;
+  initialLeague?: string;
 };
 
-export default function LeaguesView({ onTeamLogoClick }: Props) {
-  const [activeLeague, setActiveLeague] = useState("mlb");
+export default function LeaguesView({ onTeamLogoClick, initialLeague = "mlb" }: Props) {
+  const [activeLeague, setActiveLeague] = useState(initialLeague);
   const [dayOffset, setDayOffset] = useState(0);
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialLeague && initialLeague !== activeLeague) {
+      setActiveLeague(initialLeague);
+      setDayOffset(0);
+    }
+  }, [initialLeague]);
 
   // v19: density toggle. Compact = 2/3/4 cards per row (mobile/tablet/desktop)
   // Expanded = 1/2 (mobile/desktop) — the original layout.
@@ -45,7 +53,7 @@ export default function LeaguesView({ onTeamLogoClick }: Props) {
   const { data, error, isLoading } = useSWR(
     `/api/league?league=${activeLeague}&date=${date}&_t=${freshKey}`,
     fetcher,
-    { refreshInterval: 30_000 }
+    { refreshInterval: 15_000, revalidateOnFocus: true, revalidateOnReconnect: true, dedupingInterval: 4_000 }
   );
 
   if (selectedEvent) {

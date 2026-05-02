@@ -1,15 +1,16 @@
-# sports-tracker-gamecast-pbp-v14-files
+# Sports Tracker v15 update
 
-Fixes the MLB pitch sequence parser for batted-ball at-bats.
+Builds on the working v14 pitch-sequence fix.
 
-## What changed
+Changes included:
+- Full team schedule timeline with all games shown.
+- Auto-scrolls near live / next game / latest result.
+- My Teams label on Home.
+- Home page Live Scores sections for MLB, NBA, NHL, NFL with View all links.
+- Removed the old My Sports / live games, scores, stats header copy.
+- Heart favorite button on team header for add/remove favorites.
+- Removed the transient add-favorite banner flow.
+- Pull-to-refresh wrapper for mobile.
+- Faster live refetching on focus/reconnect and no-store score API responses.
 
-- Treats ESPN rows like `Pitch 5 : Ball In Play` as pitch rows even when ESPN also sets the row type to `Ground Out`, `Fly Out`, `Single`, `Double`, `Home Run`, etc.
-- Keeps the v13 ESPN at-bat stem grouping that fixed cross-at-bat pitch bleeding.
-- Displays the batted-ball pitch as `In-play ball` and styles it blue in both Gamecast and Play-by-Play.
-
-## Files changed
-
-- `app/api/plays/route.ts`
-- `components/Gamecast.tsx`
-- `components/PlayByPlay.tsx`
+Run `npm run dev` after copying these files into your app.

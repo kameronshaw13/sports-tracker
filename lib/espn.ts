@@ -55,7 +55,7 @@ function currentSeasonYear(league: string): number {
 
 async function fetchJson(url: string, revalidate = 30): Promise<any> {
   const res = await fetch(url, {
-    next: { revalidate },
+    ...(revalidate <= 0 ? { cache: "no-store" as RequestCache } : { next: { revalidate } }),
     headers: { "User-Agent": "Mozilla/5.0 SportsTracker/1.0" },
   });
   if (!res.ok) throw new Error(`ESPN API ${res.status}: ${url}`);
@@ -87,13 +87,13 @@ export async function getTeamSchedule(league: string, teamId: string) {
   const year = currentSeasonYear(league);
 
   const requests = [
-    fetchJson(`${base}?season=${year}&seasontype=2`, 300),
-    fetchJson(`${base}?season=${year}&seasontype=3`, 300),
-    fetchJson(base, 300),
+    fetchJson(`${base}?season=${year}&seasontype=2`, 0),
+    fetchJson(`${base}?season=${year}&seasontype=3`, 0),
+    fetchJson(base, 0),
   ];
 
   if (league === "nfl" || league === "nba" || league === "nhl") {
-    requests.push(fetchJson(`${base}?season=${year - 1}&seasontype=3`, 300));
+    requests.push(fetchJson(`${base}?season=${year - 1}&seasontype=3`, 0));
   }
 
   const results = await Promise.allSettled(requests);
@@ -253,13 +253,13 @@ export async function getTeamLeaders(league: string, teamId: string) {
 
 export async function getGameSummary(league: string, eventId: string) {
   const url = `${SITE_WEB_API}/${path(league)}/summary?event=${eventId}`;
-  return fetchJson(url, 15);
+  return fetchJson(url, 0);
 }
 
 export async function getScoreboard(league: string, date?: string) {
   const dateParam = date ? `?dates=${date}` : "";
   const url = `${SITE_API}/${path(league)}/scoreboard${dateParam}`;
-  return fetchJson(url, 30);
+  return fetchJson(url, 0);
 }
 
 export async function getStandings(league: string) {

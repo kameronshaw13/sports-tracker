@@ -13,6 +13,7 @@ import Roster from "@/components/Roster";
 import Stats from "@/components/Stats";
 import LiveGame from "@/components/LiveGame";
 import ManageTeams from "@/components/ManageTeams";
+import PullToRefresh from "@/components/PullToRefresh";
 import {
   TeamConfig,
   League,
@@ -33,6 +34,7 @@ export default function Home() {
   const [activeTeam, setActiveTeam] = useState<TeamConfig | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("schedule");
   const [manageOpen, setManageOpen] = useState(false);
+  const [leagueInitial, setLeagueInitial] = useState<string>("mlb");
 
   const { favorites } = useFavoriteTeams();
 
@@ -64,7 +66,7 @@ export default function Home() {
   const { data: scheduleData } = useSWR(
     view === "teams" && activeTeam ? `/api/scoreboard?team=${activeTeam.key}` : null,
     fetcher,
-    { refreshInterval: 60_000 }
+    { refreshInterval: 15_000, revalidateOnFocus: true, revalidateOnReconnect: true }
   );
   const hasLive = scheduleData?.events?.some((e: any) => e.status?.state === "in") || false;
 
@@ -114,14 +116,8 @@ export default function Home() {
 
   return (
     <main className="min-h-screen p-4 sm:p-6">
+      <PullToRefresh>
       <div className="max-w-3xl mx-auto">
-        <header className="mb-6">
-          <h1 className="text-2xl font-bold">My Sports</h1>
-          <p className="text-sm" style={{ color: "var(--text-2)" }}>
-            Live games, scores, and stats
-          </p>
-        </header>
-
         <TopNav
           active={view}
           onChange={(v) => {
@@ -139,6 +135,11 @@ export default function Home() {
             }}
             onManage={openManage}
             onTeamLogoClick={handleTeamLogoClick}
+            onViewLeague={(league) => {
+              setLeagueInitial(league);
+              setView("leagues");
+              setManageOpen(false);
+            }}
           />
         )}
 
@@ -162,7 +163,6 @@ export default function Home() {
               // `key` forces a full remount whenever the active team changes,
               // so child components don't hold stale internal state.
               <div key={activeTeam.key}>
-                {activeTeam._transient && <TransientBanner team={activeTeam} />}
                 <TeamHeader team={activeTeam} />
                 <Tabs team={activeTeam} active={activeTab} onChange={setActiveTab} hasLive={hasLive} />
                 <div>
@@ -193,7 +193,7 @@ export default function Home() {
           </>
         )}
 
-        {view === "leagues" && <LeaguesView onTeamLogoClick={handleTeamLogoClick} />}
+        {view === "leagues" && <LeaguesView initialLeague={leagueInitial} onTeamLogoClick={handleTeamLogoClick} />}
 
         <footer
           className="mt-12 pt-6 text-xs text-center"
@@ -202,34 +202,7 @@ export default function Home() {
           Data from ESPN's public API. Live games refresh every 15 seconds.
         </footer>
       </div>
+      </PullToRefresh>
     </main>
-  );
-}
-
-// Banner shown above a transient team's page. Calls useFavoriteTeams in its
-// own scope — additions propagate via the global store so the team selector
-// and home dashboard see them immediately.
-function TransientBanner({ team }: { team: TeamConfig }) {
-  const { addTeam } = useFavoriteTeams();
-  const handleAdd = () => {
-    const { _transient, ...rest } = team;
-    addTeam(rest);
-  };
-  return (
-    <div
-      className="mb-4 rounded-xl px-4 py-3 flex items-center justify-between gap-3"
-      style={{ background: "var(--surface)", border: "1px dashed var(--border)" }}
-    >
-      <div className="text-xs" style={{ color: "var(--text-2)" }}>
-        Viewing <span className="font-semibold" style={{ color: "var(--text)" }}>{team.name}</span> · not in your teams
-      </div>
-      <button
-        onClick={handleAdd}
-        className="text-xs font-semibold px-3 py-1.5 rounded-lg flex-shrink-0"
-        style={{ background: team.primary, color: team.textOnPrimary }}
-      >
-        + Add to my teams
-      </button>
-    </div>
   );
 }
