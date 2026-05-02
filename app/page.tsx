@@ -14,6 +14,8 @@ import Stats from "@/components/Stats";
 import LiveGame from "@/components/LiveGame";
 import ManageTeams from "@/components/ManageTeams";
 import PullToRefresh from "@/components/PullToRefresh";
+import GameDetail from "@/components/GameDetail";
+import AppSettingsButton from "@/components/AppSettingsButton";
 import {
   TeamConfig,
   League,
@@ -35,6 +37,8 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>("schedule");
   const [manageOpen, setManageOpen] = useState(false);
   const [leagueInitial, setLeagueInitial] = useState<string>("mlb");
+  const [returnGame, setReturnGame] = useState<{ league: string; eventId: string } | null>(null);
+  const [showReturnGame, setShowReturnGame] = useState(false);
 
   const { favorites } = useFavoriteTeams();
 
@@ -79,7 +83,7 @@ export default function Home() {
   // isn't in favorites, mark it `_transient` so the favorites-sync useEffect
   // above leaves it alone.
   const handleTeamLogoClick = useCallback(
-    (league: string, abbr: string) => {
+    (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => {
       if (!VALID_LEAGUES.includes(league as League)) return;
       const key = makeKey(league as League, abbr);
 
@@ -107,6 +111,11 @@ export default function Home() {
         }
       }
 
+      if (sourceGame?.eventId) {
+        setReturnGame(sourceGame);
+        setShowReturnGame(false);
+      }
+
       setView("teams");
       setActiveTab("schedule");
       setManageOpen(false);
@@ -118,15 +127,31 @@ export default function Home() {
     <main className="min-h-screen p-4 sm:p-6">
       <PullToRefresh>
       <div className="max-w-3xl mx-auto">
-        <TopNav
-          active={view}
-          onChange={(v) => {
-            setView(v);
-            setManageOpen(false);
-          }}
-        />
+        <div className="flex items-start gap-2 mb-6">
+          <div className="flex-1">
+            <TopNav
+              active={view}
+              onChange={(v) => {
+                setShowReturnGame(false);
+                setView(v);
+                setManageOpen(false);
+              }}
+            />
+          </div>
+          <AppSettingsButton />
+        </div>
 
-        {view === "home" && (
+
+        {showReturnGame && returnGame && (
+          <GameDetail
+            league={returnGame.league}
+            eventId={returnGame.eventId}
+            onClose={() => setShowReturnGame(false)}
+            onTeamClick={handleTeamLogoClick}
+          />
+        )}
+
+        {!showReturnGame && view === "home" && (
           <HomeDashboard
             onTeamClick={(team) => {
               setActiveTeam(team);
@@ -143,11 +168,11 @@ export default function Home() {
           />
         )}
 
-        {view === "teams" && manageOpen && (
+        {!showReturnGame && view === "teams" && manageOpen && (
           <ManageTeams onClose={() => setManageOpen(false)} />
         )}
 
-        {view === "teams" && !manageOpen && (
+        {!showReturnGame && view === "teams" && !manageOpen && (
           <>
             <div className="mb-6">
               <TeamSelector
@@ -163,6 +188,15 @@ export default function Home() {
               // `key` forces a full remount whenever the active team changes,
               // so child components don't hold stale internal state.
               <div key={activeTeam.key}>
+                {returnGame && (
+                  <button
+                    onClick={() => setShowReturnGame(true)}
+                    className="mb-3 text-sm font-semibold px-3 py-2 rounded-xl"
+                    style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}
+                  >
+                    ← Back to box score
+                  </button>
+                )}
                 <TeamHeader team={activeTeam} />
                 <Tabs team={activeTeam} active={activeTab} onChange={setActiveTab} hasLive={hasLive} />
                 <div>
@@ -193,7 +227,7 @@ export default function Home() {
           </>
         )}
 
-        {view === "leagues" && <LeaguesView initialLeague={leagueInitial} onTeamLogoClick={handleTeamLogoClick} />}
+        {!showReturnGame && view === "leagues" && <LeaguesView initialLeague={leagueInitial} onTeamLogoClick={handleTeamLogoClick} />}
 
         <footer
           className="mt-12 pt-6 text-xs text-center"

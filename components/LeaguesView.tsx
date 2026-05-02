@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
+import { League } from "@/lib/teams";
+import { useAppSettings } from "@/lib/useAppSettings";
 import GameDetail from "./GameDetail";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -15,19 +17,21 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 const ACTIVE_PILL_BG = "#1E40AF";
 const ACTIVE_PILL_BORDER = "#1E3A8A";
 
-const LEAGUES = [
-  { id: "mlb", label: "MLB" },
-  { id: "nfl", label: "NFL" },
-  { id: "nba", label: "NBA" },
-  { id: "nhl", label: "NHL" },
-];
+const LEAGUE_LABELS: Record<League, string> = {
+  mlb: "MLB",
+  nfl: "NFL",
+  nba: "NBA",
+  nhl: "NHL",
+  cfb: "CFB",
+  cbb: "CBB",
+};
 
 type Density = "compact" | "expanded";
 
 type Props = {
   // Forwarded to GameDetail when the user drills into a game and taps a team
   // logo on the box score.
-  onTeamLogoClick?: (league: string, abbr: string) => void;
+  onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
   initialLeague?: string;
 };
 
@@ -43,9 +47,8 @@ export default function LeaguesView({ onTeamLogoClick, initialLeague = "mlb" }: 
     }
   }, [initialLeague]);
 
-  // v19: density toggle. Compact = 2/3/4 cards per row (mobile/tablet/desktop)
-  // Expanded = 1/2 (mobile/desktop) — the original layout.
-  const [density, setDensity] = useState<Density>("expanded");
+  const { settings } = useAppSettings();
+  const density = settings.density;
 
   // v21.1: freshKey appended so each mount of Scores busts the route cache.
   const freshKey = useFreshKey();
@@ -76,12 +79,12 @@ export default function LeaguesView({ onTeamLogoClick, initialLeague = "mlb" }: 
     <div className="space-y-4">
       {/* League pills — uniform blue active state */}
       <div className="flex gap-2 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 pb-1">
-        {LEAGUES.map((l) => {
-          const isActive = activeLeague === l.id;
+        {settings.sportOrder.map((leagueId) => {
+          const isActive = activeLeague === leagueId;
           return (
             <button
-              key={l.id}
-              onClick={() => setActiveLeague(l.id)}
+              key={leagueId}
+              onClick={() => setActiveLeague(leagueId)}
               className="flex-shrink-0 px-5 py-2 rounded-full text-sm font-semibold transition-all"
               style={{
                 background: isActive ? ACTIVE_PILL_BG : "var(--surface)",
@@ -89,7 +92,7 @@ export default function LeaguesView({ onTeamLogoClick, initialLeague = "mlb" }: 
                 color: isActive ? "#FFFFFF" : "var(--text)",
               }}
             >
-              {l.label}
+              {LEAGUE_LABELS[leagueId]}
             </button>
           );
         })}
@@ -122,21 +125,16 @@ export default function LeaguesView({ onTeamLogoClick, initialLeague = "mlb" }: 
         </button>
       </div>
 
-      {/* Jump-to-today + density toggle on one row */}
-      <div className="flex items-center justify-between gap-2">
-        {dayOffset !== 0 ? (
-          <button
-            onClick={() => setDayOffset(0)}
-            className="text-xs underline"
-            style={{ color: "var(--text-3)" }}
-          >
-            Jump to today
-          </button>
-        ) : (
-          <span />
-        )}
-        <DensityToggle density={density} setDensity={setDensity} />
-      </div>
+      {/* Jump-to-today lives here; compact/expanded + sport order now live in Settings. */}
+      {dayOffset !== 0 && (
+        <button
+          onClick={() => setDayOffset(0)}
+          className="text-xs underline"
+          style={{ color: "var(--text-3)" }}
+        >
+          Jump to today
+        </button>
+      )}
 
       {isLoading ? (
         <div className="space-y-2">
@@ -151,7 +149,7 @@ export default function LeaguesView({ onTeamLogoClick, initialLeague = "mlb" }: 
       ) : error ? (
         <ErrorState />
       ) : events.length === 0 ? (
-        <Empty msg={`No ${LEAGUES.find((l) => l.id === activeLeague)?.label} games on this date.`} />
+        <Empty msg={`No ${LEAGUE_LABELS[activeLeague as League]} games on this date.`} />
       ) : (
         <>
           {live.length > 0 && (

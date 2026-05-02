@@ -3,30 +3,35 @@
 import Image from "next/image";
 import { useState } from "react";
 import useSWR from "swr";
-import { TeamConfig, logoUrl } from "@/lib/teams";
+import { League, TeamConfig, logoUrl } from "@/lib/teams";
 import { useFavoriteTeams } from "@/lib/useFavorites";
 import { useFreshKey } from "@/lib/freshKey";
+import { useAppSettings } from "@/lib/useAppSettings";
 import GameDetail from "./GameDetail";
 
 const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json());
 
-const LEAGUE_SECTIONS = [
-  { id: "mlb", label: "MLB" },
-  { id: "nba", label: "NBA" },
-  { id: "nhl", label: "NHL" },
-  { id: "nfl", label: "NFL" },
-];
+const LEAGUE_LABELS: Record<League, string> = {
+  mlb: "MLB",
+  nba: "NBA",
+  nhl: "NHL",
+  nfl: "NFL",
+  cfb: "CFB",
+  cbb: "CBB",
+};
 
 type Props = {
   onTeamClick: (team: TeamConfig) => void;
   onManage: () => void;
-  onTeamLogoClick?: (league: string, abbr: string) => void;
+  onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
   onViewLeague?: (league: string) => void;
 };
 
 export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, onViewLeague }: Props) {
   const [drillIn, setDrillIn] = useState<{ league: string; eventId: string } | null>(null);
+  const [dayOffset, setDayOffset] = useState(0);
   const { favorites } = useFavoriteTeams();
+  const { settings } = useAppSettings();
 
   if (drillIn) {
     return (
@@ -42,6 +47,8 @@ export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, 
   if (!favorites) {
     return <div className="h-32 rounded-2xl animate-pulse" style={{ background: "var(--surface)" }} />;
   }
+
+  const date = formatDateParam(offsetDate(dayOffset));
 
   return (
     <div className="space-y-7">
@@ -76,20 +83,28 @@ export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, 
       </section>
 
       <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--text-2)" }}>
-            Live Scores
-          </h2>
-          <span className="text-xs" style={{ color: "var(--text-3)" }}>Updates automatically</span>
+        <div className="flex items-center justify-between mb-3 gap-3">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--text-2)" }}>
+              Live Scores
+            </h2>
+            <p className="text-xs" style={{ color: "var(--text-3)" }}>Changing this date only affects the scores below.</p>
+          </div>
+          <span className="text-xs flex-shrink-0" style={{ color: "var(--text-3)" }}>Auto-updates</span>
         </div>
-        <div className="space-y-5">
-          {LEAGUE_SECTIONS.map((league) => (
+
+        <DateControls dayOffset={dayOffset} setDayOffset={setDayOffset} />
+
+        <div className="space-y-5 mt-4">
+          {settings.sportOrder.map((league) => (
             <LeagueScoreStrip
-              key={league.id}
-              league={league.id}
-              label={league.label}
-              onViewAll={() => onViewLeague?.(league.id)}
-              onGameClick={(eventId) => setDrillIn({ league: league.id, eventId })}
+              key={`${league}-${date}`}
+              league={league}
+              label={LEAGUE_LABELS[league]}
+              date={date}
+              density={settings.density}
+              onViewAll={() => onViewLeague?.(league)}
+              onGameClick={(eventId) => setDrillIn({ league, eventId })}
             />
           ))}
         </div>
@@ -98,10 +113,22 @@ export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, 
   );
 }
 
-function LeagueScoreStrip({ league, label, onViewAll, onGameClick }: { league: string; label: string; onViewAll: () => void; onGameClick: (eventId: string) => void }) {
+function DateControls({ dayOffset, setDayOffset }: { dayOffset: number; setDayOffset: (n: number) => void }) {
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-2xl p-2" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+      <button onClick={() => setDayOffset(dayOffset - 1)} className="px-3 py-2 rounded-xl text-sm font-semibold" style={{ background: "var(--surface-2)", color: "var(--text-2)" }}>←</button>
+      <button onClick={() => setDayOffset(0)} className="flex-1 text-center">
+        <div className="text-sm font-bold">{prettyDate(dayOffset)}</div>
+        <div className="text-[11px]" style={{ color: "var(--text-3)" }}>{offsetDate(dayOffset).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</div>
+      </button>
+      <button onClick={() => setDayOffset(dayOffset + 1)} className="px-3 py-2 rounded-xl text-sm font-semibold" style={{ background: "var(--surface-2)", color: "var(--text-2)" }}>→</button>
+    </div>
+  );
+}
+
+function LeagueScoreStrip({ league, label, date, density, onViewAll, onGameClick }: { league: League; label: string; date: string; density: "compact" | "expanded"; onViewAll: () => void; onGameClick: (eventId: string) => void }) {
   const freshKey = useFreshKey();
-  const today = formatDateParam(new Date());
-  const { data, isLoading } = useSWR(`/api/league?league=${league}&date=${today}&_t=${freshKey}`, fetcher, {
+  const { data, isLoading } = useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, {
     refreshInterval: 15_000,
     revalidateOnFocus: true,
     revalidateOnReconnect: true,
@@ -110,7 +137,10 @@ function LeagueScoreStrip({ league, label, onViewAll, onGameClick }: { league: s
 
   const events = data?.events || [];
   const sorted = [...events].sort((a: any, b: any) => statusRank(a) - statusRank(b) || new Date(a.date).getTime() - new Date(b.date).getTime());
-  const shown = sorted.slice(0, 4);
+  const shown = sorted.slice(0, density === "compact" ? 6 : 4);
+
+  // Home should not output a sport section if there are no games for that sport/date.
+  if (!isLoading && shown.length === 0) return null;
 
   return (
     <div>
@@ -119,42 +149,38 @@ function LeagueScoreStrip({ league, label, onViewAll, onGameClick }: { league: s
         <button onClick={onViewAll} className="text-xs font-semibold" style={{ color: "var(--text-2)" }}>View all →</button>
       </div>
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {[...Array(2)].map((_, i) => <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: "var(--surface)" }} />)}
+        <div className={density === "compact" ? "grid grid-cols-2 sm:grid-cols-3 gap-2" : "grid grid-cols-1 sm:grid-cols-2 gap-2"}>
+          {[...Array(density === "compact" ? 3 : 2)].map((_, i) => <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: "var(--surface)" }} />)}
         </div>
-      ) : shown.length === 0 ? (
-        <button onClick={onViewAll} className="w-full text-left rounded-xl px-4 py-3 text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>
-          No {label} games today. View league schedule →
-        </button>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {shown.map((game: any) => <MiniGameCard key={game.id} game={game} onClick={() => onGameClick(game.id)} />)}
+        <div className={density === "compact" ? "grid grid-cols-2 sm:grid-cols-3 gap-2" : "grid grid-cols-1 sm:grid-cols-2 gap-2"}>
+          {shown.map((game: any) => <MiniGameCard key={game.id} game={game} compact={density === "compact"} onClick={() => onGameClick(game.id)} />)}
         </div>
       )}
     </div>
   );
 }
 
-function MiniGameCard({ game, onClick }: { game: any; onClick: () => void }) {
+function MiniGameCard({ game, compact, onClick }: { game: any; compact: boolean; onClick: () => void }) {
   const isLive = game.status?.state === "in";
   return (
     <button onClick={onClick} className="rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-[var(--surface-2)]" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[11px] font-bold" style={{ color: isLive ? "var(--danger)" : "var(--text-3)" }}>{game.status?.detail || formatTime(game.date)}</span>
-        {isLive && <span className="w-2 h-2 rounded-full live-dot" style={{ background: "var(--danger)" }} />}
+      <div className="flex items-center justify-between mb-1.5 gap-2">
+        <span className="text-[11px] font-bold truncate" style={{ color: isLive ? "var(--danger)" : "var(--text-3)" }}>{game.status?.detail || formatTime(game.date)}</span>
+        {isLive && <span className="w-2 h-2 rounded-full live-dot flex-shrink-0" style={{ background: "var(--danger)" }} />}
       </div>
-      <MiniTeam team={game.away} />
-      <MiniTeam team={game.home} />
+      <MiniTeam team={game.away} compact={compact} />
+      <MiniTeam team={game.home} compact={compact} />
     </button>
   );
 }
 
-function MiniTeam({ team }: { team: any }) {
+function MiniTeam({ team, compact }: { team: any; compact: boolean }) {
   if (!team) return null;
   return (
     <div className="flex items-center gap-2 py-0.5">
       <div className="w-5 h-5 flex items-center justify-center">{team.logo && <Image src={team.logo} alt={team.abbr} width={18} height={18} className="object-contain" />}</div>
-      <span className={`flex-1 text-xs truncate ${team.winner ? "font-bold" : "font-medium"}`}>{team.abbr || team.name}</span>
+      <span className={`flex-1 text-xs truncate ${team.winner ? "font-bold" : "font-medium"}`}>{compact ? team.abbr : team.name || team.abbr}</span>
       <span className={`text-sm tabular-nums ${team.winner ? "font-bold" : "font-semibold"}`} style={{ color: "var(--text)" }}>{team.score ?? "—"}</span>
     </div>
   );
@@ -203,9 +229,9 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
             {featured.opponent?.logo && <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "var(--surface-2)" }}><Image src={featured.opponent.logo} alt={featured.opponent.abbr} width={28} height={28} className="object-contain" /></div>}
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold truncate"><span style={{ color: "var(--text-3)" }}>{featured.home ? "vs" : "@"}</span> {featured.opponent?.name}</div>
-              <div className="text-xs" style={{ color: "var(--text-3)" }}>{featured.status?.state === "pre" ? formatTime(featured.date) : `${featured.us?.score ?? "—"} – ${featured.opponent?.score ?? "—"}`}</div>
+              <div className="text-xs" style={{ color: "var(--text-3)" }}>{featured.status?.state === "pre" ? formatTime(featured.date) : featured.status?.detail || formatTime(featured.date)}</div>
             </div>
-            {(featured.status?.state === "post" || featured.status?.state === "in") && <div className="text-base font-bold tabular-nums px-2" style={{ color: featured.us?.winner ? "var(--success)" : featured.status?.state === "post" ? "var(--danger)" : team.primary }}>{featured.status?.state === "in" ? featured.status.detail || "Live" : featured.us?.winner ? "W" : "L"}</div>}
+            {featured.status?.state !== "pre" && <div className="text-right"><div className="text-base font-bold tabular-nums">{featured.us?.score ?? "—"}<span style={{ color: "var(--text-3)" }}> – </span>{featured.opponent?.score ?? "—"}</div><div className="text-xs font-bold" style={{ color: featured.us?.winner ? "var(--success)" : featured.status?.state === "post" ? "var(--danger)" : team.primary }}>{featured.status?.state === "in" ? featured.status.detail || "Live" : featured.us?.winner ? "W" : "L"}</div></div>}
           </div>
         ) : <div className="text-sm" style={{ color: "var(--text-3)" }}>No upcoming games</div>}
       </button>
@@ -219,11 +245,24 @@ function statusRank(game: any) {
   return 2;
 }
 
+function offsetDate(offset: number) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d;
+}
+
 function formatDateParam(d: Date) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}${m}${day}`;
+}
+
+function prettyDate(offset: number): string {
+  if (offset === 0) return "Today";
+  if (offset === -1) return "Yesterday";
+  if (offset === 1) return "Tomorrow";
+  return offsetDate(offset).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
 }
 
 function formatTime(iso: string) {

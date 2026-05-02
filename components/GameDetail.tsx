@@ -16,7 +16,7 @@ type Props = {
   // When provided, home/away team blocks become clickable and call this with
   // the team's league + abbr — used to navigate from a box score to that
   // team's page. e.g. tap Astros logo while viewing Orioles vs Astros → Astros.
-  onTeamClick?: (league: string, abbr: string) => void;
+  onTeamClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
 };
 
 // Game detail is intentionally simple: Gamecast contains the live/scoring/plays views,
@@ -101,6 +101,7 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick }: Pr
         away={away}
         status={status}
         situation={situation}
+        eventId={eventId}
         onTeamClick={onTeamClick}
       />
 
@@ -260,14 +261,16 @@ function ScoreboardHeader({
   away,
   status,
   situation,
+  eventId,
   onTeamClick,
 }: {
   league: string;
+  eventId: string;
   home: any;
   away: any;
   status: any;
   situation?: any;
-  onTeamClick?: (league: string, abbr: string) => void;
+  onTeamClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
 }) {
   const isLive = status?.state === "in";
   return (
@@ -288,14 +291,14 @@ function ScoreboardHeader({
       )}
 
       <div className="flex items-center justify-center gap-4">
-        <TeamBlock team={away} league={league} onClick={onTeamClick} />
+        <TeamBlock team={away} league={league} eventId={eventId} onClick={onTeamClick} />
         <div
           className="text-3xl font-bold tabular-nums"
           style={{ color: "var(--text-3)" }}
         >
           –
         </div>
-        <TeamBlock team={home} league={league} onClick={onTeamClick} />
+        <TeamBlock team={home} league={league} eventId={eventId} onClick={onTeamClick} />
       </div>
     </div>
   );
@@ -356,11 +359,13 @@ function BasesDiamond({
 function TeamBlock({
   team,
   league,
+  eventId,
   onClick,
 }: {
   team: any;
   league: string;
-  onClick?: (league: string, abbr: string) => void;
+  eventId: string;
+  onClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
 }) {
   if (!team) return null;
   const inner = (
@@ -386,7 +391,7 @@ function TeamBlock({
   if (onClick && team.abbr) {
     return (
       <button
-        onClick={() => onClick(league, String(team.abbr).toLowerCase())}
+        onClick={() => onClick(league, String(team.abbr).toLowerCase(), { league, eventId })}
         className="flex-1 flex flex-col items-center text-center hover:opacity-80 transition-opacity"
       >
         {inner}

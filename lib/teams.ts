@@ -1,7 +1,7 @@
 // Pure types + helpers, safe to import from API routes (server) or components (client).
 // The localStorage hook lives in lib/useFavorites.ts (client-only).
 
-export type League = "mlb" | "nfl" | "nba" | "nhl";
+export type League = "mlb" | "nfl" | "nba" | "nhl" | "cfb" | "cbb";
 export type Sport = "baseball" | "football" | "basketball" | "hockey";
 
 export type TeamConfig = {
@@ -14,6 +14,7 @@ export type TeamConfig = {
   primary: string;      // "#DF4601" — always with leading #
   secondary: string;
   textOnPrimary: string;
+  logo?: string | null;
   // Marks a team being viewed but NOT saved as a favorite. Set by
   // page.tsx#handleTeamLogoClick when navigating to a non-favorite team
   // (e.g. tapping the Astros logo on an Orioles boxscore). Stripped before
@@ -21,13 +22,15 @@ export type TeamConfig = {
   _transient?: boolean;
 };
 
-export const VALID_LEAGUES: League[] = ["mlb", "nfl", "nba", "nhl"];
+export const VALID_LEAGUES: League[] = ["mlb", "nfl", "nba", "nhl", "cfb", "cbb"];
 
 const SPORTS: Record<League, Sport> = {
   mlb: "baseball",
   nfl: "football",
   nba: "basketball",
   nhl: "hockey",
+  cfb: "football",
+  cbb: "basketball",
 };
 
 export function getSport(league: League): Sport {
@@ -51,7 +54,11 @@ export function parseTeamKey(key: string | null | undefined): { league: League; 
   return { league: league as League, abbr };
 }
 
-export function logoUrl(team: { league: League; abbr: string }): string {
+export function logoUrl(team: { league: League; abbr: string; logo?: string | null }): string {
+  if (team.logo) return team.logo;
+  if (team.league === "cfb" || team.league === "cbb") {
+    return `https://a.espncdn.com/i/teamlogos/ncaa/500/${team.abbr.toLowerCase()}.png`;
+  }
   return `https://a.espncdn.com/i/teamlogos/${team.league}/500/${team.abbr.toLowerCase()}.png`;
 }
 

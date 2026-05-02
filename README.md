@@ -1,16 +1,10 @@
-# Sports Tracker v15 update
+# Sports Tracker v16 update
 
-Builds on the working v14 pitch-sequence fix.
-
-Changes included:
-- Full team schedule timeline with all games shown.
-- Auto-scrolls near live / next game / latest result.
-- My Teams label on Home.
-- Home page Live Scores sections for MLB, NBA, NHL, NFL with View all links.
-- Removed the old My Sports / live games, scores, stats header copy.
-- Heart favorite button on team header for add/remove favorites.
-- Removed the transient add-favorite banner flow.
-- Pull-to-refresh wrapper for mobile.
-- Faster live refetching on focus/reconnect and no-store score API responses.
-
-Run `npm run dev` after copying these files into your app.
+Includes:
+- Keeps v14 MLB in-play pitch sequence fix.
+- Team clicks from game detail open the team page without adding it to My Teams.
+- Adds a Back to box score button when arriving from a game.
+- Schedule tab uses an internal vertical scroll box and filters to current season only.
+- Adds CFB and CBB to team picker, live scores, score pages, and API league handling.
+- Adds global Settings button for compact/expanded score cards and sport order.
+- Home live scores hide sports with no games and include a date selector.

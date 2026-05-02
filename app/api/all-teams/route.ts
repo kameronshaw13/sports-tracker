@@ -20,6 +20,8 @@ const SPORT_PATH: Record<League, string> = {
   nfl: "football/nfl",
   nba: "basketball/nba",
   nhl: "hockey/nhl",
+  cfb: "football/college-football",
+  cbb: "basketball/mens-college-basketball",
 };
 
 async function fetchLeagueTeams(league: League): Promise<TeamConfig[]> {
@@ -46,6 +48,7 @@ async function fetchLeagueTeams(league: League): Promise<TeamConfig[]> {
         primary,
         secondary: ensureHash(t.alternateColor),
         textOnPrimary: pickTextColor(primary),
+        logo: t.logos?.[0]?.href || t.logo || null,
       } as TeamConfig;
     });
 }

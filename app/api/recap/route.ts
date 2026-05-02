@@ -13,7 +13,7 @@ import {
 // upstream cost (3 ESPN fetches per game) is paid at most once every 5 min.
 export const revalidate = 300;
 
-const VALID_LEAGUES = ["mlb", "nfl", "nba", "nhl"];
+const VALID_LEAGUES = ["mlb", "nfl", "nba", "nhl", "cfb", "cbb"];
 
 function teamShortName(name: string | undefined, fallback: string): string {
   if (!name) return fallback;

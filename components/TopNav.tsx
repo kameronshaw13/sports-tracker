@@ -17,7 +17,7 @@ export default function TopNav({ active, onChange }: Props) {
     { id: "leagues", label: "Scores" },
   ];
   return (
-    <nav className="flex gap-1 p-1 rounded-xl mb-6" style={{ background: "var(--surface-2)" }}>
+    <nav className="flex gap-1 p-1 rounded-xl" style={{ background: "var(--surface-2)" }}>
       {items.map((it) => {
         const isActive = active === it.id;
         return (

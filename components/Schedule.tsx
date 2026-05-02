@@ -43,12 +43,13 @@ function nonPlayedLabel(kind: NonPlayedKind): string {
 
 type Props = {
   team: TeamConfig;
-  onTeamLogoClick?: (league: string, abbr: string) => void;
+  onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
 };
 
 export default function Schedule({ team, onTeamLogoClick }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const focusRef = useRef<HTMLDivElement | null>(null);
+  const scrollBoxRef = useRef<HTMLDivElement | null>(null);
   const hasAutoScrolled = useRef(false);
   const freshKey = useFreshKey();
   const { data, error, isLoading } = useSWR(
@@ -85,7 +86,10 @@ export default function Schedule({ team, onTeamLogoClick }: Props) {
     if (hasAutoScrolled.current || !focusRef.current || isLoading) return;
     hasAutoScrolled.current = true;
     setTimeout(() => {
-      focusRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+      const box = scrollBoxRef.current;
+      const focus = focusRef.current;
+      if (!box || !focus) return;
+      box.scrollTo({ top: Math.max(0, focus.offsetTop - box.clientHeight / 2), behavior: "smooth" });
     }, 150);
   }, [focusIndex, isLoading]);
 
@@ -122,7 +126,7 @@ export default function Schedule({ team, onTeamLogoClick }: Props) {
         </div>
       </div>
 
-      <div className="rounded-xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+      <div ref={scrollBoxRef} className="rounded-xl overflow-y-auto overscroll-contain max-h-[64vh]" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
         {events.map((ev: any, idx: number) => {
           const variant = ev.status?.state === "in" ? "live" : ev.status?.state === "post" ? "result" : "upcoming";
           const isFocus = idx === focusIndex;

@@ -28,6 +28,8 @@ const PATHS: Record<string, { sport: string; league: string }> = {
   nfl: { sport: "football", league: "nfl" },
   nba: { sport: "basketball", league: "nba" },
   nhl: { sport: "hockey", league: "nhl" },
+  cfb: { sport: "football", league: "college-football" },
+  cbb: { sport: "basketball", league: "mens-college-basketball" },
 };
 
 function path(league: string): string {
@@ -49,8 +51,28 @@ function currentSeasonYear(league: string): number {
 
   if (league === "mlb") return year;
   if (league === "nfl") return month < 8 ? year - 1 : year;
-  if (league === "nba" || league === "nhl") return month >= 8 ? year + 1 : year;
+  if (league === "nba" || league === "nhl" || league === "cbb") return month >= 8 ? year + 1 : year;
+  if (league === "cfb") return month < 8 ? year - 1 : year;
   return year;
+}
+
+
+async function resolveTeamIdForEndpoint(league: string, teamId: string): Promise<string> {
+  if (league !== "cfb" && league !== "cbb") return teamId;
+  if (/^\d+$/.test(teamId)) return teamId;
+  try {
+    const data = await fetchJson(`${SITE_API}/${path(league)}/teams?limit=1000`, 3600);
+    const items: any[] = data?.sports?.[0]?.leagues?.[0]?.teams || [];
+    const lower = teamId.toLowerCase();
+    const match = items.map((x) => x?.team).find((t) =>
+      String(t?.abbreviation || "").toLowerCase() === lower ||
+      String(t?.shortDisplayName || "").toLowerCase() === lower ||
+      String(t?.nickname || "").toLowerCase() === lower
+    );
+    return String(match?.id || teamId);
+  } catch {
+    return teamId;
+  }
 }
 
 async function fetchJson(url: string, revalidate = 30): Promise<any> {
@@ -63,8 +85,9 @@ async function fetchJson(url: string, revalidate = 30): Promise<any> {
 }
 
 export async function getTeamPage(league: string, teamId: string, enable?: string[]) {
+  const resolvedTeamId = await resolveTeamIdForEndpoint(league, teamId);
   const enableQuery = enable && enable.length > 0 ? `?enable=${enable.join(",")}` : "";
-  const url = `${SITE_API}/${path(league)}/teams/${teamId}${enableQuery}`;
+  const url = `${SITE_API}/${path(league)}/teams/${resolvedTeamId}${enableQuery}`;
   return fetchJson(url, 60);
 }
 
@@ -83,24 +106,23 @@ export async function getTeamMeta(league: string, abbr: string): Promise<{ id: s
 }
 
 export async function getTeamSchedule(league: string, teamId: string) {
-  const base = `${SITE_API}/${path(league)}/teams/${teamId}/schedule`;
+  const resolvedTeamId = await resolveTeamIdForEndpoint(league, teamId);
+  const base = `${SITE_API}/${path(league)}/teams/${resolvedTeamId}/schedule`;
   const year = currentSeasonYear(league);
 
+  // Keep team schedules to the CURRENT season only. The previous version also
+  // fetched the prior postseason for NBA/NHL/NFL, which is why last year's
+  // playoffs were appearing above this year's schedule.
   const requests = [
     fetchJson(`${base}?season=${year}&seasontype=2`, 0),
     fetchJson(`${base}?season=${year}&seasontype=3`, 0),
-    fetchJson(base, 0),
   ];
-
-  if (league === "nfl" || league === "nba" || league === "nhl") {
-    requests.push(fetchJson(`${base}?season=${year - 1}&seasontype=3`, 0));
-  }
 
   const results = await Promise.allSettled(requests);
   const allEvents: any[] = [];
   results.forEach((r, i) => {
     if (r.status === "fulfilled" && r.value?.events) {
-      const isPlayoff = i === 1 || i === 3;
+      const isPlayoff = i === 1;
       r.value.events.forEach((ev: any) => {
         allEvents.push({ ...ev, _isPlayoff: isPlayoff || ev.seasonType?.id === "3" });
       });

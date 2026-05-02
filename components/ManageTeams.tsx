@@ -13,6 +13,8 @@ const LEAGUE_LABEL: Record<League, string> = {
   nfl: "NFL",
   nba: "NBA",
   nhl: "NHL",
+  cfb: "CFB",
+  cbb: "CBB",
 };
 
 type Props = { onClose: () => void };
@@ -48,7 +50,7 @@ export default function ManageTeams({ onClose }: Props) {
         <div>
           <h2 className="text-lg font-bold">Manage your teams</h2>
           <p className="text-xs" style={{ color: "var(--text-3)" }}>
-            Pick any teams across MLB, NFL, NBA, and NHL.
+            Pick any teams across MLB, NFL, NBA, NHL, CFB, and CBB.
           </p>
         </div>
         <button

@@ -4,7 +4,7 @@ import { parseTeamKey } from "@/lib/teams";
 
 export const revalidate = 15;
 
-const VALID_LEAGUES = ["mlb", "nfl", "nba", "nhl"];
+const VALID_LEAGUES = ["mlb", "nfl", "nba", "nhl", "cfb", "cbb"];
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
