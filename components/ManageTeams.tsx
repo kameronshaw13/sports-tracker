@@ -31,7 +31,7 @@ type Props = { onClose: () => void };
 
 export default function ManageTeams({ onClose }: Props) {
   const { favorites, addTeam, removeTeam, moveTeam, reset } = useFavoriteTeams();
-  const { data, isLoading } = useSWR<{ teams: TeamConfig[] }>(`/api/all-teams?v=20`, fetcher);
+  const { data, isLoading } = useSWR<{ teams: TeamConfig[] }>(`/api/all-teams?v=29`, fetcher);
   const [leagueFilter, setLeagueFilter] = useState<"all" | League>("all");
   const [search, setSearch] = useState("");
 

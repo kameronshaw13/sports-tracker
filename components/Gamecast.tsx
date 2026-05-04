@@ -12,7 +12,7 @@ type Props = {
   eventId: string;
   isLive: boolean;
   situation?: any;
-  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void;
 };
 
 type TeamMeta = {
@@ -84,27 +84,13 @@ export default function Gamecast({ league, eventId, isLive, situation: summarySi
   if (league === "nfl") {
     return (
       <div className="space-y-3">
-        <SportHeader title="Live field" subtitle="Drive and ball-position view from ESPN game data." />
-        {summarySituation ? <FieldPositionMini situation={summarySituation} /> : <UnavailableCard text="Field-position data is not available yet." />}
+        {summarySituation ? <FieldPositionMini situation={summarySituation} /> : null}
+        <GenericTabbedPlays data={data} error={error} isLoading={isLoading} emptyText="No football plays yet." />
       </div>
     );
   }
 
-  if (league === "nhl") {
-    return (
-      <div className="space-y-3">
-        <SportHeader title="Live gamecast" subtitle="Live hockey event feed from ESPN play-by-play." />
-        <GenericRecentPlays data={data} error={error} isLoading={isLoading} emptyText="No hockey plays yet." />
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      <SportHeader title="Live gamecast" subtitle="Live event feed from ESPN play-by-play." />
-      <GenericRecentPlays data={data} error={error} isLoading={isLoading} emptyText="No plays yet." />
-    </div>
-  );
+  return <GenericTabbedPlays data={data} error={error} isLoading={isLoading} emptyText={league === "nhl" ? "No hockey plays yet." : "No plays yet."} />;
 }
 
 function isWaitingForBattedBallResult(ab: MlbAtBat) {
@@ -124,7 +110,7 @@ function MlbLiveGamecast({
   isLoading: boolean;
   isLive: boolean;
   fallbackSituation?: any;
-  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void;
 }) {
   const [activeSubTab, setActiveSubTab] = useState<"scoring" | "live" | "plays">("live");
   const home: TeamMeta | undefined = data?.home;
@@ -216,7 +202,7 @@ function LiveAtBatCard({
   situation: any;
   currentAtBat: MlbAtBat | null;
   battingTeam?: TeamMeta;
-  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void;
 }) {
   const hasLiveAtBat = currentAtBat?.isComplete === false;
   const title = hasLiveAtBat ? "Current At-bat" : currentAtBat ? "Last At-bat" : "Current At-bat";
@@ -473,29 +459,89 @@ function PlayerMiniCard({ label, person, primaryStat, onClick }: { label: string
   );
 }
 
-function GenericRecentPlays({ data, error, isLoading, emptyText }: { data: any; error: any; isLoading: boolean; emptyText: string }) {
+function GenericTabbedPlays({ data, error, isLoading, emptyText }: { data: any; error: any; isLoading: boolean; emptyText: string }) {
+  const [tab, setTab] = useState<"live" | "scoring" | "plays">("live");
   const plays = data?.plays || [];
   if (isLoading) return <LoadingStack />;
   if (error || data?.error) return <UnavailableCard text="Play data is not available for this game yet." />;
   if (!plays.length) return <UnavailableCard text={emptyText} />;
 
+  const scoring = plays.filter((p: any) => p.scoringPlay);
+  const recent = [...plays].slice(-8).reverse();
+  const byPeriod = groupByPeriod(plays);
+
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-      {[...plays].reverse().slice(0, 8).map((p: any) => (
-        <div key={p.id} className="px-4 py-3 border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
-          <div className="text-sm font-semibold">{p.text}</div>
-          <div className="text-xs mt-1" style={{ color: "var(--text-3)" }}>{periodLabel(p.period)}</div>
+    <div className="space-y-3">
+      <div className="grid grid-cols-3 gap-1 rounded-xl p-1" style={{ background: "var(--surface-2)" }}>
+        <GamecastTab label="Live" active={tab === "live"} onClick={() => setTab("live")} />
+        <GamecastTab label="Scoring" active={tab === "scoring"} onClick={() => setTab("scoring")} />
+        <GamecastTab label="Plays" active={tab === "plays"} onClick={() => setTab("plays")} />
+      </div>
+      {tab === "live" && <GenericPlayList plays={recent} home={data?.home} away={data?.away} />}
+      {tab === "scoring" && (scoring.length ? <GenericPeriodGroups sections={groupByPeriod(scoring)} home={data?.home} away={data?.away} /> : <UnavailableCard text="No scoring plays yet." />)}
+      {tab === "plays" && (
+        <div className="space-y-3">
+          {byPeriod.map((section) => (
+            <div key={section.period}>
+              <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>{periodLabel(section.period)}</div>
+              <GenericPlayList plays={section.plays} home={data?.home} away={data?.away} />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function groupByPeriod(plays: any[]) {
+  const map = new Map<number, any[]>();
+  for (const p of plays) {
+    const period = Number(p.period || 0);
+    if (!map.has(period)) map.set(period, []);
+    map.get(period)!.push(p);
+  }
+  return Array.from(map.entries()).sort((a, b) => a[0] - b[0]).map(([period, sectionPlays]) => ({ period, plays: sectionPlays }));
+}
+
+function GenericPeriodGroups({ sections, home, away }: { sections: { period: number; plays: any[] }[]; home?: TeamMeta; away?: TeamMeta }) {
+  return (
+    <div className="space-y-3">
+      {sections.map((section) => (
+        <div key={section.period}>
+          <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>{periodLabel(section.period)}</div>
+          <GenericPlayList plays={section.plays} home={home} away={away} />
         </div>
       ))}
     </div>
   );
 }
 
-function SportHeader({ title, subtitle }: { title: string; subtitle: string }) {
+function GenericPlayList({ plays, home, away }: { plays: any[]; home?: TeamMeta; away?: TeamMeta }) {
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+      {plays.map((p: any) => {
+        const team = p.homeAway === "home" ? home : p.homeAway === "away" ? away : null;
+        return (
+          <div key={p.id} className="px-4 py-3 border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
+            <div className="flex items-start gap-2">
+              {team?.logo ? <Image src={team.logo} alt={team.abbr} width={22} height={22} className="mt-0.5 object-contain flex-shrink-0" unoptimized /> : team ? <span className="mt-1 w-2 h-2 rounded-full flex-shrink-0" style={{ background: team.color || "var(--text-3)" }} /> : null}
+              <div className="min-w-0">
+                <div className="text-sm font-semibold">{p.text}</div>
+                <div className="text-xs mt-1" style={{ color: "var(--text-3)" }}>{[p.clock, periodLabel(p.period), team?.abbr].filter(Boolean).join(" · ")}</div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function SportHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div>
       <h3 className="text-base font-bold">{title}</h3>
-      <p className="text-sm" style={{ color: "var(--text-2)" }}>{subtitle}</p>
+      {subtitle && <p className="text-sm" style={{ color: "var(--text-2)" }}>{subtitle}</p>}
     </div>
   );
 }

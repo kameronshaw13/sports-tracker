@@ -25,10 +25,11 @@ type Props = {
   onManage: () => void;
   onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
   onViewLeague?: (league: string) => void;
-  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void;
+  onOpenGame?: (league: string, eventId: string) => void;
 };
 
-export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, onViewLeague, onPlayerClick }: Props) {
+export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, onViewLeague, onPlayerClick, onOpenGame }: Props) {
   const [drillIn, setDrillIn] = useState<{ league: string; eventId: string } | null>(null);
   const [dayOffset, setDayOffset] = useState(0);
   const { favorites } = useFavoriteTeams();
@@ -78,7 +79,7 @@ export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, 
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {favorites.map((team) => (
-              <TeamCard key={team.key} team={team} onTeamClick={() => onTeamClick(team)} onGameClick={(eventId) => setDrillIn({ league: team.league, eventId })} />
+              <TeamCard key={team.key} team={team} onTeamClick={() => onTeamClick(team)} onGameClick={(eventId) => onOpenGame ? onOpenGame(team.league, eventId) : setDrillIn({ league: team.league, eventId })} />
             ))}
           </div>
         )}
@@ -90,9 +91,7 @@ export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, 
             <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--text-2)" }}>
               Live Scores
             </h2>
-            <p className="text-xs" style={{ color: "var(--text-3)" }}>Changing this date only affects the scores below.</p>
           </div>
-          <span className="text-xs flex-shrink-0" style={{ color: "var(--text-3)" }}>Auto-updates</span>
         </div>
 
         <DateControls dayOffset={dayOffset} setDayOffset={setDayOffset} />
@@ -106,7 +105,7 @@ export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, 
               date={date}
               density={settings.density}
               onViewAll={() => onViewLeague?.(league)}
-              onGameClick={(eventId) => setDrillIn({ league, eventId })}
+              onGameClick={(eventId) => onOpenGame ? onOpenGame(league, eventId) : setDrillIn({ league, eventId })}
             />
           ))}
         </div>

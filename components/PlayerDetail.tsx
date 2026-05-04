@@ -53,7 +53,7 @@ export default function PlayerDetail({ player, onBack }: Props) {
         <TabButton label="Game Log" active={tab === "gamelog"} onClick={() => setTab("gamelog")} />
       </div>
 
-      {tab === "stats" && (stats.length ? <StatsTable groups={stats} /> : <Empty text="No current-season stats available yet." />)}
+      {tab === "stats" && (stats.length ? <StatsRowTable stats={stats} /> : <Empty text="No current-season stats available yet." />)}
       {tab === "gamelog" && (gameLog.length ? <GameLogTable rows={gameLog} /> : <Empty text="No current-season game log available yet." />)}
     </div>
   );
@@ -66,17 +66,32 @@ function ErrorState({ onBack }: { onBack: () => void }) {
   return <div className="space-y-3"><BackButton onBack={onBack} /><Empty text="Could not load this player yet." /></div>;
 }
 function BackButton({ onBack }: { onBack: () => void }) {
-  return <button onClick={onBack} className="text-sm font-semibold px-3 py-2 rounded-xl" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>← Back</button>;
+  return <button onClick={onBack} className="text-sm font-semibold px-3 py-2 rounded-xl" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>←</button>;
 }
 function TabButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return <button onClick={onClick} className="px-3 py-2 rounded-lg text-sm font-bold" style={{ background: active ? "var(--surface)" : "transparent", border: active ? "1px solid var(--border)" : "1px solid transparent", color: active ? "var(--text)" : "var(--text-2)" }}>{label}</button>;
 }
-function StatsTable({ groups }: { groups: any[] }) {
-  return <div className="space-y-3">{groups.map((g, idx) => <div key={`${g.name}-${idx}`} className="rounded-xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}><div className="px-3 py-2 text-xs font-bold uppercase tracking-wider" style={{ background: "var(--surface-2)", color: "var(--text-2)" }}>{g.name || "Stats"}</div><table className="w-full text-sm"><tbody>{(g.stats || []).map((s: any) => <tr key={s.label} style={{ borderTop: "1px solid var(--border)" }}><td className="px-3 py-2 font-medium" style={{ color: "var(--text-2)" }}>{s.label}</td><td className="px-3 py-2 text-right font-black tabular-nums">{s.value}</td></tr>)}</tbody></table></div>)}</div>;
+function StatsRowTable({ stats }: { stats: any[] }) {
+  return (
+    <div className="rounded-xl overflow-x-auto" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+      <table className="w-full min-w-[680px] text-xs">
+        <thead>
+          <tr style={{ background: "var(--surface-2)", color: "var(--text-3)" }}>
+            {stats.map((s: any) => <th key={s.label} className="px-3 py-2 text-right whitespace-nowrap">{s.label}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          <tr style={{ borderTop: "1px solid var(--border)" }}>
+            {stats.map((s: any) => <td key={s.label} className="px-3 py-3 text-right font-black tabular-nums whitespace-nowrap">{s.value}</td>)}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
 }
 function GameLogTable({ rows }: { rows: any[] }) {
-  const statLabels = Array.from(new Set(rows.flatMap((r) => (r.stats || []).map((s: any) => s.label)))).slice(0, 7);
-  return <div className="rounded-xl overflow-x-auto" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}><table className="w-full text-xs min-w-[620px]"><thead><tr style={{ background: "var(--surface-2)", color: "var(--text-3)" }}><th className="text-left px-3 py-2">Date</th><th className="text-left px-3 py-2">Opp</th>{statLabels.map((l) => <th key={l} className="text-right px-2 py-2">{l}</th>)}</tr></thead><tbody>{rows.map((r: any) => <tr key={r.id} style={{ borderTop: "1px solid var(--border)" }}><td className="px-3 py-2 whitespace-nowrap">{formatDate(r.date)}</td><td className="px-3 py-2 whitespace-nowrap">{r.opponent || "—"}</td>{statLabels.map((l) => <td key={l} className="text-right px-2 py-2 tabular-nums">{(r.stats || []).find((s: any) => s.label === l)?.value ?? "—"}</td>)}</tr>)}</tbody></table></div>;
+  const statLabels = Array.from(new Set(rows.flatMap((r) => (r.stats || []).map((s: any) => s.label)))).slice(0, 8);
+  return <div className="rounded-xl overflow-x-auto" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}><table className="w-full text-xs min-w-[720px]"><thead><tr style={{ background: "var(--surface-2)", color: "var(--text-3)" }}><th className="text-left px-3 py-2">Date</th><th className="text-left px-3 py-2">Opp</th>{statLabels.map((l) => <th key={l} className="text-right px-2 py-2 whitespace-nowrap">{l}</th>)}</tr></thead><tbody>{rows.map((r: any) => <tr key={r.id} style={{ borderTop: "1px solid var(--border)" }}><td className="px-3 py-2 whitespace-nowrap">{formatDate(r.date)}</td><td className="px-3 py-2 whitespace-nowrap">{r.opponent || "—"}</td>{statLabels.map((l) => <td key={l} className="text-right px-2 py-2 tabular-nums whitespace-nowrap">{(r.stats || []).find((s: any) => s.label === l)?.value ?? "—"}</td>)}</tr>)}</tbody></table></div>;
 }
 function Empty({ text }: { text: string }) { return <div className="p-5 rounded-xl text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>{text}</div>; }
 function initials(name: string) { return String(name || "").split(" ").map((n) => n[0]).slice(0, 2).join(""); }

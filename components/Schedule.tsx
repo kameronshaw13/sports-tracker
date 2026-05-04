@@ -44,7 +44,7 @@ function nonPlayedLabel(kind: NonPlayedKind): string {
 type Props = {
   team: TeamConfig;
   onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
-  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void;
 };
 
 export default function Schedule({ team, onTeamLogoClick, onPlayerClick }: Props) {
@@ -129,7 +129,7 @@ export default function Schedule({ team, onTeamLogoClick, onPlayerClick }: Props
         </div>
       </div>
 
-      <div ref={scrollBoxRef} className="rounded-xl overflow-y-auto overscroll-contain max-h-[64vh]" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+      <div ref={scrollBoxRef} className="relative rounded-xl overflow-y-auto overscroll-contain max-h-[64vh]" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
         {events.map((ev: any, idx: number) => {
           const variant = ev.status?.state === "in" ? "live" : ev.status?.state === "post" ? "result" : "upcoming";
           const isFocus = idx === focusIndex;

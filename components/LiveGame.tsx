@@ -9,11 +9,11 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 type Props = {
   team: TeamConfig;
-  onTeamLogoClick?: (league: string, abbr: string) => void;
+  onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void;
 };
 
-// v21.1: freshKey appended to URL so each mount busts the route cache.
-export default function LiveGame({ team, onTeamLogoClick }: Props) {
+export default function LiveGame({ team, onTeamLogoClick, onPlayerClick }: Props) {
   const freshKey = useFreshKey();
   const { data: scheduleData, isLoading } = useSWR(
     `/api/scoreboard?team=${team.key}&_t=${freshKey}`,
@@ -47,6 +47,7 @@ export default function LiveGame({ team, onTeamLogoClick }: Props) {
       league={team.league}
       eventId={targetId}
       onTeamClick={onTeamLogoClick}
+      onPlayerClick={onPlayerClick}
     />
   );
 }

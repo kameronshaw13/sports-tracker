@@ -17,15 +17,11 @@ const PATHS: Record<string, { sport: string; league: string }> = {
   cbb: { sport: "basketball", league: "mens-college-basketball" },
 };
 
-const STAT_LABELS: Record<string, string[]> = {
-  mlb_batting: ["gamesPlayed", "atBats", "runs", "hits", "homeRuns", "RBIs", "walks", "strikeouts", "avg", "onBasePct", "slugAvg", "OPS"],
-  mlb_pitching: ["gamesPlayed", "gamesStarted", "wins", "losses", "saves", "innings", "hits", "earnedRuns", "walks", "strikeouts", "ERA", "WHIP"],
-  nfl: ["gamesPlayed", "passingYards", "passingTouchdowns", "interceptions", "rushingYards", "rushingTouchdowns", "receivingYards", "receivingTouchdowns", "totalTackles", "sacks"],
-  cfb: ["gamesPlayed", "passingYards", "passingTouchdowns", "interceptions", "rushingYards", "rushingTouchdowns", "receivingYards", "receivingTouchdowns", "totalTackles", "sacks"],
-  nba: ["gamesPlayed", "avgMinutes", "pointsPerGame", "reboundsPerGame", "assistsPerGame", "stealsPerGame", "blocksPerGame", "fieldGoalPct", "threePointPct", "freeThrowPct"],
-  cbb: ["gamesPlayed", "avgMinutes", "pointsPerGame", "reboundsPerGame", "assistsPerGame", "stealsPerGame", "blocksPerGame", "fieldGoalPct", "threePointPct", "freeThrowPct"],
-  nhl: ["gamesPlayed", "goals", "assists", "points", "plusMinus", "shots", "hits", "blockedShots", "savePct", "goalsAgainstAverage"],
-};
+type FlatMap = Record<string, string>;
+
+type StatCell = { label: string; value: string };
+
+type GameLogRow = { id: string; date: string; opponent: string; stats: StatCell[] };
 
 async function fetchJson(url: string) {
   const res = await fetch(url, { cache: "no-store", headers: { "User-Agent": "Mozilla/5.0 SportsTracker/1.0" } });
@@ -34,63 +30,217 @@ async function fetchJson(url: string) {
 }
 function espnPath(league: string) { const p = PATHS[league]; return `${p.sport}/${p.league}`; }
 function corePath(league: string) { const p = PATHS[league]; return `${p.sport}/leagues/${p.league}`; }
-function pretty(s: string) { return String(s).replace(/Pct$/," %").replace(/avg/i,"Avg ").replace(/([A-Z])/g," $1").replace(/^./,(c)=>c.toUpperCase()).trim(); }
-function statValue(v: any) { return v?.displayValue ?? v?.value ?? v ?? "—"; }
 
-function curateEspnStats(league: string, data: any) {
-  const wanted = STAT_LABELS[league] || [];
-  const found = new Map<string, any>();
+function pretty(name: string) {
+  return String(name).replace(/Pct$/," %").replace(/([A-Z])/g," $1").replace(/^./,(c)=>c.toUpperCase()).trim();
+}
+function statValue(v: any) { return v?.displayValue ?? v?.value ?? (v ?? "—"); }
+function flatSet(map: FlatMap, key: string, v: any) {
+  const val = statValue(v);
+  if (val !== undefined && val !== null && val !== "") map[key] = String(val);
+}
+function flatGet(map: FlatMap, keys: string[]) {
+  for (const key of keys) {
+    const v = map[key];
+    if (v != null && v !== "" && v !== "—") return String(v);
+  }
+  return "—";
+}
+function hasAny(map: FlatMap, keys: string[]) {
+  return keys.some((k) => map[k] != null && map[k] !== "" && map[k] !== "—");
+}
+
+function flattenEspnStatMap(data: any): FlatMap {
+  const out: FlatMap = {};
   for (const cat of data?.splits?.categories || []) {
+    const catName = String(cat?.name || "");
     for (const s of cat?.stats || []) {
-      if (!s?.name) continue;
-      found.set(s.name, s);
+      if (!catName || !s?.name) continue;
+      flatSet(out, `${catName}.${s.name}`, s);
+      flatSet(out, s.name, s);
     }
   }
-  const stats = wanted
-    .map((key) => found.get(key) ? { label: pretty(key), value: statValue(found.get(key)) } : null)
-    .filter(Boolean);
-  return stats.length ? [{ name: "Season Stats", stats }] : [];
+  return out;
 }
 
-function curateMlbStats(data: any) {
-  return (data?.stats || []).map((group: any) => {
-    const groupName = String(group.group?.displayName || group.group?.displayName || group.type?.displayName || "Stats");
-    const stat = group.splits?.[0]?.stat || {};
-    const key = /pitch/i.test(groupName) ? "mlb_pitching" : "mlb_batting";
-    const stats = (STAT_LABELS[key] || []).filter((k) => stat[k] != null).map((k) => ({ label: pretty(k), value: String(stat[k]) }));
-    return { name: groupName, stats };
-  }).filter((g: any) => g.stats.length);
+function buildStatRow(cells: [string, string][]) {
+  return cells.map(([label, value]) => ({ label, value })).filter((c) => c.value && c.value !== "—");
 }
 
-function flattenEspnGameLog(league: string, data: any) {
-  const wanted = STAT_LABELS[league] || [];
+const QB_POS = new Set(["QB"]);
+const RB_POS = new Set(["RB", "FB", "HB"]);
+const REC_POS = new Set(["WR", "TE"]);
+const DEF_POS = new Set(["DE", "DT", "NT", "DL", "LB", "ILB", "OLB", "MLB", "CB", "S", "FS", "SS", "DB"]);
+const K_POS = new Set(["K", "PK", "P"]);
+const GOALIE_POS = new Set(["G"]);
+const PITCHER_POS = new Set(["P", "SP", "RP", "CP", "CL"]);
+
+function pickPositionRow(league: string, position: string | undefined, map: FlatMap): StatCell[] {
+  const pos = String(position || "").toUpperCase();
+  if (league === "mlb") {
+    const isPitcher = PITCHER_POS.has(pos) || hasAny(map, ["pitching.ERA", "pitching.WHIP", "ERA", "WHIP"]);
+    return isPitcher
+      ? buildStatRow([
+          ["W", flatGet(map, ["pitching.wins", "wins"])],
+          ["L", flatGet(map, ["pitching.losses", "losses"])],
+          ["SV", flatGet(map, ["pitching.saves", "saves"])],
+          ["IP", flatGet(map, ["pitching.innings", "innings"])],
+          ["H", flatGet(map, ["pitching.hits", "hits"])],
+          ["ER", flatGet(map, ["pitching.earnedRuns", "earnedRuns"])],
+          ["BB", flatGet(map, ["pitching.walks", "walks"])],
+          ["K", flatGet(map, ["pitching.strikeouts", "strikeouts"])],
+          ["ERA", flatGet(map, ["pitching.ERA", "ERA"])],
+          ["WHIP", flatGet(map, ["pitching.WHIP", "WHIP"])],
+        ])
+      : buildStatRow([
+          ["G", flatGet(map, ["batting.gamesPlayed", "gamesPlayed"])],
+          ["AB", flatGet(map, ["batting.atBats", "atBats"])],
+          ["R", flatGet(map, ["batting.runs", "runs"])],
+          ["H", flatGet(map, ["batting.hits", "hits"])],
+          ["HR", flatGet(map, ["batting.homeRuns", "homeRuns"])],
+          ["RBI", flatGet(map, ["batting.RBIs", "RBIs", "rbi"])],
+          ["SB", flatGet(map, ["batting.stolenBases", "stolenBases"])],
+          ["AVG", flatGet(map, ["batting.avg", "avg"])],
+          ["OBP", flatGet(map, ["batting.onBasePct", "onBasePct", "obp"])],
+          ["SLG", flatGet(map, ["batting.slugAvg", "slugAvg", "slg"])],
+          ["OPS", flatGet(map, ["batting.OPS", "OPS", "ops"])],
+        ]);
+  }
+
+  if (league === "nba" || league === "cbb") {
+    return buildStatRow([
+      ["PTS/G", flatGet(map, ["offensive.avgPoints", "pointsPerGame", "avgPoints"])],
+      ["AST/G", flatGet(map, ["offensive.avgAssists", "assistsPerGame", "avgAssists"])],
+      ["REB/G", flatGet(map, ["general.avgRebounds", "reboundsPerGame", "avgRebounds"])],
+      ["BLK/G", flatGet(map, ["defensive.avgBlocks", "blocksPerGame", "avgBlocks"])],
+      ["STL/G", flatGet(map, ["defensive.avgSteals", "stealsPerGame", "avgSteals"])],
+      ["FG%", flatGet(map, ["offensive.fieldGoalPct", "fieldGoalPct"])],
+      ["3P%", flatGet(map, ["offensive.threePointPct", "threePointPct"])],
+      ["FT%", flatGet(map, ["offensive.freeThrowPct", "freeThrowPct"])],
+    ]);
+  }
+
+  if (league === "nhl") {
+    const isGoalie = GOALIE_POS.has(pos) || hasAny(map, ["defensive.saves", "saves", "defensive.savePct", "savePct"]);
+    return isGoalie
+      ? buildStatRow([
+          ["GP", flatGet(map, ["general.games", "gamesPlayed", "games"])],
+          ["W", flatGet(map, ["general.wins", "wins"])],
+          ["L", flatGet(map, ["general.losses", "losses"])],
+          ["SV", flatGet(map, ["defensive.saves", "saves"])],
+          ["SA", flatGet(map, ["defensive.shotsAgainst", "shotsAgainst"])],
+          ["SV%", flatGet(map, ["defensive.savePct", "savePct"])],
+          ["GAA", flatGet(map, ["defensive.avgGoalsAgainst", "goalsAgainstAverage", "avgGoalsAgainst"])],
+          ["SO", flatGet(map, ["defensive.shutouts", "shutouts"])],
+        ])
+      : buildStatRow([
+          ["GP", flatGet(map, ["general.games", "gamesPlayed", "games"])],
+          ["G", flatGet(map, ["offensive.goals", "goals"])],
+          ["A", flatGet(map, ["offensive.assists", "assists"])],
+          ["P", flatGet(map, ["offensive.points", "points"])],
+          ["+/-", flatGet(map, ["general.plusMinus", "plusMinus"])],
+          ["SOG", flatGet(map, ["offensive.shotsTotal", "shots"])],
+          ["PIM", flatGet(map, ["penalties.penaltyMinutes", "penaltyMinutes"])],
+        ]);
+  }
+
+  if (league === "nfl" || league === "cfb") {
+    if (QB_POS.has(pos)) {
+      return buildStatRow([
+        ["CMP", flatGet(map, ["passing.completions", "completions"])],
+        ["ATT", flatGet(map, ["passing.passingAttempts", "passingAttempts"])],
+        ["CMP%", flatGet(map, ["passing.completionPct", "completionPct"])],
+        ["YDS", flatGet(map, ["passing.passingYards", "passingYards"])],
+        ["TD", flatGet(map, ["passing.passingTouchdowns", "passingTouchdowns"])],
+        ["INT", flatGet(map, ["passing.interceptions", "interceptions"])],
+        ["RTG", flatGet(map, ["passing.QBRating", "QBRating"])],
+        ["RUSH YDS", flatGet(map, ["rushing.rushingYards", "rushingYards"])],
+        ["RUSH TD", flatGet(map, ["rushing.rushingTouchdowns", "rushingTouchdowns"])],
+      ]);
+    }
+    if (RB_POS.has(pos)) {
+      return buildStatRow([
+        ["ATT", flatGet(map, ["rushing.rushingAttempts", "rushingAttempts"])],
+        ["YDS", flatGet(map, ["rushing.rushingYards", "rushingYards"])],
+        ["AVG", flatGet(map, ["rushing.yardsPerRushAttempt", "yardsPerRushAttempt"])],
+        ["TD", flatGet(map, ["rushing.rushingTouchdowns", "rushingTouchdowns"])],
+        ["LONG", flatGet(map, ["rushing.longRushing", "longRushing"])],
+      ]);
+    }
+    if (REC_POS.has(pos)) {
+      return buildStatRow([
+        ["REC", flatGet(map, ["receiving.receptions", "receptions"])],
+        ["TGT", flatGet(map, ["receiving.receivingTargets", "receivingTargets"])],
+        ["YDS", flatGet(map, ["receiving.receivingYards", "receivingYards"])],
+        ["AVG", flatGet(map, ["receiving.yardsPerReception", "yardsPerReception"])],
+        ["TD", flatGet(map, ["receiving.receivingTouchdowns", "receivingTouchdowns"])],
+      ]);
+    }
+    if (K_POS.has(pos)) {
+      return buildStatRow([
+        ["FGM", flatGet(map, ["scoring.fieldGoals", "fieldGoals"])],
+        ["XPM", flatGet(map, ["scoring.kickExtraPointsMade", "kickExtraPointsMade"])],
+        ["PTS", flatGet(map, ["scoring.totalPoints", "totalPoints"])],
+      ]);
+    }
+    if (DEF_POS.has(pos) || hasAny(map, ["defensive.totalTackles", "totalTackles"])) {
+      return buildStatRow([
+        ["TKL", flatGet(map, ["defensive.totalTackles", "totalTackles"])],
+        ["SOLO", flatGet(map, ["defensive.soloTackles", "soloTackles"])],
+        ["AST", flatGet(map, ["defensive.assistTackles", "assistTackles"])],
+        ["SCK", flatGet(map, ["defensive.sacks", "sacks"])],
+        ["TFL", flatGet(map, ["defensive.tacklesForLoss", "tacklesForLoss"])],
+        ["INT", flatGet(map, ["defensiveInterceptions.interceptions", "interceptions" ])],
+        ["PD", flatGet(map, ["defensive.passesDefended", "passesDefended"])],
+        ["FF", flatGet(map, ["general.fumblesForced", "fumblesForced"])],
+        ["FR", flatGet(map, ["general.fumblesRecovered", "fumblesRecovered"])],
+      ]);
+    }
+  }
+
+  return buildStatRow(Object.entries(map).slice(0, 8).map(([k, v]) => [pretty(k.split(".").pop() || k), v]));
+}
+
+function flattenEspnGameLog(league: string, data: any): GameLogRow[] {
   const events = data?.events || data?.splits?.splits || [];
   if (!Array.isArray(events)) return [];
   return events.map((g: any) => {
     const raw = g.stats || g.stat || {};
     const stats = Array.isArray(raw)
-      ? raw.slice(0, 7).map((x: any) => ({ label: pretty(x.name || x.displayName || "Stat"), value: statValue(x) }))
-      : wanted.filter((k) => raw[k] != null).slice(0, 7).map((k) => ({ label: pretty(k), value: String(raw[k]) }));
+      ? raw.slice(0, 8).map((x: any) => ({ label: pretty(x.name || x.displayName || "Stat"), value: String(statValue(x)) }))
+      : Object.entries(raw).slice(0, 8).map(([k, v]: any) => ({ label: pretty(k), value: String(v) }));
     return {
       id: g.id || g.eventId || g.event?.id || `${g.date || ""}-${g.opponent?.id || ""}`,
       date: g.date || g.event?.date || g.gameDate,
       opponent: g.opponent?.abbreviation || g.opponent?.displayName || g.event?.shortName || "—",
       stats,
     };
-  }).filter((r: any) => r.date && r.stats.length).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 40);
+  }).filter((r: any) => r.date && r.stats.length).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-function flattenMlbGameLog(data: any) {
+function flattenMlbGameLog(data: any): GameLogRow[] {
   return (data?.stats || []).flatMap((group: any) => (group.splits || []).map((s: any) => {
     const stat = s.stat || {};
-    const key = /pitch/i.test(group.group?.displayName || "") ? "mlb_pitching" : "mlb_batting";
     return {
       id: `${s.date}-${s.opponent?.id || ""}-${group.group?.displayName || ""}`,
       date: s.date,
       opponent: s.opponent?.name || s.opponent?.abbreviation || "—",
-      stats: (STAT_LABELS[key] || []).filter((k) => stat[k] != null).slice(0, 7).map((k) => ({ label: pretty(k), value: String(stat[k]) })),
+      stats: Object.entries(stat).slice(0, 8).map(([k, v]: any) => ({ label: pretty(k), value: String(v) })),
     };
-  })).filter((r: any) => r.date && r.stats.length).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 40);
+  })).filter((r: any) => r.date && r.stats.length).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}
+
+function mlbSeasonMap(data: any): { positionHint?: string; stats: FlatMap } {
+  const map: FlatMap = {};
+  let positionHint: string | undefined;
+  for (const group of data?.stats || []) {
+    const stat = group?.splits?.[0]?.stat || {};
+    const groupName = String(group.group?.displayName || group.type?.displayName || "").toLowerCase();
+    const prefix = /pitch/i.test(groupName) ? "pitching" : "batting";
+    for (const [k, v] of Object.entries(stat)) flatSet(map, `${prefix}.${k}`, v);
+    if (prefix === "pitching") positionHint = "P";
+  }
+  return { positionHint, stats: map };
 }
 
 async function handleMlb(id: string, fallbackName: string) {
@@ -103,14 +253,20 @@ async function handleMlb(id: string, fallbackName: string) {
   const person = personRes.status === "fulfilled" ? personRes.value?.people?.[0] : null;
   const seasonData = seasonRes.status === "fulfilled" ? seasonRes.value : null;
   const gameLogData = gameLogRes.status === "fulfilled" ? gameLogRes.value : null;
-  return { profile: {
-    id,
-    name: person?.fullName || fallbackName || `Player ${id}`,
-    team: person?.currentTeam?.name || null,
-    position: person?.primaryPosition?.abbreviation || person?.primaryPosition?.name || null,
-    headshot: `https://img.mlbstatic.com/mlb-photos/image/upload/w_213,q_auto:best/v1/people/${id}/headshot/67/current`,
-    bio: [person?.height, person?.weight ? `${person.weight} lbs` : null, person?.birthDate ? `Born ${person.birthDate}` : null].filter(Boolean).join(" · "),
-  }, stats: curateMlbStats(seasonData), gameLog: flattenMlbGameLog(gameLogData) };
+  const { stats: map, positionHint } = mlbSeasonMap(seasonData);
+  const position = person?.primaryPosition?.abbreviation || person?.primaryPosition?.name || positionHint || null;
+  return {
+    profile: {
+      id,
+      name: person?.fullName || fallbackName || `Player ${id}`,
+      team: person?.currentTeam?.name || null,
+      position,
+      headshot: `https://img.mlbstatic.com/mlb-photos/image/upload/w_213,q_auto:best/v1/people/${id}/headshot/67/current`,
+      bio: [person?.height, person?.weight ? `${person.weight} lbs` : null, person?.birthDate ? `Born ${person.birthDate}` : null].filter(Boolean).join(" · "),
+    },
+    stats: pickPositionRow("mlb", position || undefined, map),
+    gameLog: flattenMlbGameLog(gameLogData),
+  };
 }
 
 async function handleEspn(league: string, id: string, fallbackName: string) {
@@ -124,14 +280,20 @@ async function handleEspn(league: string, id: string, fallbackName: string) {
   const statsData = statsRes.status === "fulfilled" ? statsRes.value : null;
   const logData = logRes.status === "fulfilled" ? logRes.value : null;
   const headshot = athlete?.headshot?.href || athlete?.headshot || (/^\d+$/.test(id) ? `https://a.espncdn.com/i/headshots/${league}/players/full/${id}.png` : null);
-  return { profile: {
-    id,
-    name: athlete?.displayName || athlete?.fullName || athlete?.name || fallbackName || `Player ${id}`,
-    team: athlete?.team?.displayName || athlete?.team?.name || null,
-    position: athlete?.position?.abbreviation || athlete?.position?.displayName || null,
-    headshot,
-    bio: [athlete?.height, athlete?.weight, athlete?.age ? `Age ${athlete.age}` : null].filter(Boolean).join(" · "),
-  }, stats: curateEspnStats(league, statsData), gameLog: flattenEspnGameLog(league, logData) };
+  const position = athlete?.position?.abbreviation || athlete?.position?.displayName || null;
+  const flat = flattenEspnStatMap(statsData);
+  return {
+    profile: {
+      id,
+      name: athlete?.displayName || athlete?.fullName || athlete?.name || fallbackName || `Player ${id}`,
+      team: athlete?.team?.displayName || athlete?.team?.name || null,
+      position,
+      headshot,
+      bio: [athlete?.height, athlete?.weight, athlete?.age ? `Age ${athlete.age}` : null].filter(Boolean).join(" · "),
+    },
+    stats: pickPositionRow(league, position || undefined, flat),
+    gameLog: flattenEspnGameLog(league, logData),
+  };
 }
 
 export async function GET(req: NextRequest) {

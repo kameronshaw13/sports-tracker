@@ -66,14 +66,13 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
 
   const { home, away, status, situation } = data;
   const isLive = status?.state === "in";
-  const isPost = status?.state === "post" || status?.completed;
 
   // Detect non-played games. We hide the Recap tab for these — there's
   // nothing meaningful to recap if the game was postponed.
   const statusName = String(status?.statusName || "").toUpperCase();
   const isNonPlayed = /POSTPONED|CANCELED|CANCELLED|SUSPENDED/.test(statusName);
 
-  const mainTabLabel = isPost ? "Recap" : "Gamecast";
+  const mainTabLabel = "Game Tracker";
 
   return (
     <div className="space-y-4">
@@ -81,16 +80,17 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
         <BackButton onClose={onClose} />
       </div>
 
-      {/* Scoreboard header */}
-      <ScoreboardHeader
-        league={league}
-        home={home}
-        away={away}
-        status={status}
-        situation={situation}
-        eventId={eventId}
-        onTeamClick={onTeamClick}
-      />
+      <div className="sticky top-0 z-30 -mx-4 px-4 py-2" style={{ background: "var(--bg)" }}>
+        <ScoreboardHeader
+          league={league}
+          home={home}
+          away={away}
+          status={status}
+          situation={situation}
+          eventId={eventId}
+          onTeamClick={onTeamClick}
+        />
+      </div>
 
       {/* Tabs */}
       <div
@@ -115,17 +115,13 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
         {activeTab === "main" && (
           <>
             {!isNonPlayed && (
-              isPost ? (
-                <PostgameRecap league={league} eventId={eventId} onPlayerClick={onPlayerClick} />
-              ) : (
-                <Gamecast
-                  league={league}
-                  eventId={eventId}
-                  isLive={isLive}
-                  situation={situation}
-                  onPlayerClick={onPlayerClick}
-                />
-              )
+              <Gamecast
+                league={league}
+                eventId={eventId}
+                isLive={isLive}
+                situation={situation}
+                onPlayerClick={onPlayerClick}
+              />
             )}
             {isNonPlayed && (
               <div
@@ -175,7 +171,7 @@ function PostgameRecap({ league, eventId, onPlayerClick }: { league: string; eve
             style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
           >
             <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0" style={{ background: "var(--surface-2)" }}>
-              {cat.leader?.headshot ? <Image src={cat.leader.headshot} alt={cat.leader.name} width={48} height={48} className="object-cover" /> : <span className="text-xs font-bold">{cat.team?.abbr}</span>}
+              {cat.leader?.headshot ? <Image src={cat.leader.headshot} alt={cat.leader.name} width={48} height={48} className="object-cover" /> : <span className="text-sm font-black">{cat.team?.abbr}</span>}
             </div>
             <div className="min-w-0">
               <div className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-3)" }}>
@@ -242,7 +238,7 @@ function BackButton({ onClose }: { onClose?: () => void }) {
         color: "var(--text-2)",
       }}
     >
-      ← Back
+      ←
     </button>
   );
 }
@@ -267,7 +263,7 @@ function ScoreboardHeader({
   const isLive = status?.state === "in";
   return (
     <div
-      className="rounded-2xl p-4"
+      className="rounded-3xl p-5"
       style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
     >
       <div
@@ -284,11 +280,18 @@ function ScoreboardHeader({
 
       <div className="flex items-center justify-center gap-4">
         <TeamBlock team={away} league={league} eventId={eventId} onClick={onTeamClick} />
-        <div
-          className="text-3xl font-bold tabular-nums"
-          style={{ color: "var(--text-3)" }}
-        >
-          –
+        <div className="flex flex-col items-center justify-center min-w-[72px]">
+          <div
+            className="text-3xl font-bold tabular-nums"
+            style={{ color: "var(--text-3)" }}
+          >
+            –
+          </div>
+          {status?.seriesGame && (
+            <div className="text-[10px] font-semibold uppercase tracking-wider mt-1" style={{ color: "var(--text-3)" }}>
+              {status.seriesGame}
+            </div>
+          )}
         </div>
         <TeamBlock team={home} league={league} eventId={eventId} onClick={onTeamClick} />
       </div>
@@ -363,18 +366,18 @@ function TeamBlock({
   const inner = (
     <>
       <div
-        className="w-14 h-14 rounded-xl flex items-center justify-center mb-1"
+        className="w-20 h-20 rounded-2xl flex items-center justify-center mb-2"
         style={{ background: "var(--surface-2)" }}
       >
         {team.logo && (
-          <Image src={team.logo} alt={team.abbr} width={44} height={44} className="object-contain" />
+          <Image src={team.logo} alt={team.abbr} width={64} height={64} className="object-contain" />
         )}
       </div>
-      <div className="text-xs font-bold">{team.abbr}</div>
-      <div className="text-2xl font-bold tabular-nums mt-0.5">{team.score ?? "—"}</div>
-      {team.record && (
+      <div className="text-sm font-black">{team.abbr}</div>
+      <div className="text-4xl font-black tabular-nums mt-1">{team.score ?? "—"}</div>
+      {(team.seriesRecord || team.record) && (
         <div className="text-[10px]" style={{ color: "var(--text-3)" }}>
-          {team.record}
+          {team.seriesRecord || team.record}
         </div>
       )}
     </>

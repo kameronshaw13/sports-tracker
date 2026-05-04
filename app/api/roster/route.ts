@@ -266,7 +266,6 @@ function normalizeMlbPlayer(
   // MLB headshots come from MLB.com's official CDN and are keyed by MLBAM id.
   // This works for active players, injured-list players, and optioned players
   // without needing an ESPN athlete id.
-  const espnId = espnProfile ? String(espnProfile.id || "") : "";
   const headshot = getMlbHeadshotUrl(entry.mlbId);
 
   // Build an ESPN-style "injury narrative" for the injured tab. We don't get
@@ -283,10 +282,9 @@ function normalizeMlbPlayer(
   };
   const injury = isInjured ? buildInjuryView(espnInj || mlbInj, ilDesignation) : null;
 
-  const id = espnId || `mlb-${entry.mlbId}`;
-
+  // Use MLBAM id so roster clicks open the same player profile as the team stats page.
   return {
-    id,
+    id: String(entry.mlbId),
     name: entry.name,
     jersey: entry.jersey || undefined,
     position: entry.positionName || entry.positionAbbr || undefined,

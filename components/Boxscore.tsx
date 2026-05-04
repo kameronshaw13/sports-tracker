@@ -11,7 +11,7 @@ type Props = {
   league: string;
   eventId: string;
   isLive: boolean;
-  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void;
 };
 
 export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Props) {
@@ -45,7 +45,7 @@ export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Pro
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {data.leaders.flatMap((teamLeaders: any) =>
               teamLeaders.categories.slice(0, 2).map((cat: any, i: number) => (
-                <LeaderCard key={`${teamLeaders.team.abbr}-${i}`} cat={cat} teamLogo={teamLeaders.team.logo} teamAbbr={teamLeaders.team.abbr} league={league} onPlayerClick={onPlayerClick} />
+                <LeaderCard key={`${teamLeaders.team.abbr}-${i}`} cat={cat} teamLogo={teamLeaders.team.logo} teamAbbr={teamLeaders.team.abbr} league={league} teamKey={teamLeaders.team.abbr ? `${league}-${String(teamLeaders.team.abbr).toLowerCase()}` : undefined} onPlayerClick={onPlayerClick} />
               ))
             )}
           </div>
@@ -83,7 +83,7 @@ export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Pro
 
         <div className="space-y-3">
           {team.groups.map((group: any, gi: number) => (
-            <StatGroup key={gi} group={group} league={league} onPlayerClick={onPlayerClick} />
+            <StatGroup key={gi} group={group} league={league} teamKey={team?.team?.abbr ? `${league}-${String(team.team.abbr).toLowerCase()}` : undefined} onPlayerClick={onPlayerClick} />
           ))}
         </div>
       </div>
@@ -100,25 +100,25 @@ function MlbLineScore({ lineScore }: { lineScore: any }) {
       <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>
         Line score
       </h3>
-      <div className="rounded-xl overflow-x-auto" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-        <table className="w-full text-xs min-w-[520px]">
+      <div className="rounded-xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+        <table className="w-full text-[10px] sm:text-xs table-fixed">
           <thead>
             <tr style={{ background: "var(--surface-2)", color: "var(--text-3)" }}>
-              <th className="text-left px-3 py-2 font-semibold">Team</th>
-              {Array.from({ length: innings }).map((_, i) => <th key={i} className="text-center px-2 py-2 font-semibold">{i + 1}</th>)}
-              <th className="text-center px-2 py-2 font-black">R</th>
-              <th className="text-center px-2 py-2 font-black">H</th>
-              <th className="text-center px-2 py-2 font-black">E</th>
+              <th className="text-left px-1.5 py-2 font-semibold">Team</th>
+              {Array.from({ length: innings }).map((_, i) => <th key={i} className="text-center px-1 py-2 font-semibold">{i + 1}</th>)}
+              <th className="text-center px-1 py-2 font-black">R</th>
+              <th className="text-center px-1 py-2 font-black">H</th>
+              <th className="text-center px-1 py-2 font-black">E</th>
             </tr>
           </thead>
           <tbody>
             {teams.map((t: any) => (
               <tr key={t.id || t.abbr} style={{ borderTop: "1px solid var(--border)" }}>
-                <td className="px-3 py-2 font-bold">{t.abbr}</td>
-                {Array.from({ length: innings }).map((_, i) => <td key={i} className="text-center px-2 py-2 tabular-nums">{t.innings?.[i] ?? "–"}</td>)}
-                <td className="text-center px-2 py-2 font-black tabular-nums">{t.runs ?? "–"}</td>
-                <td className="text-center px-2 py-2 font-black tabular-nums">{t.hits ?? "0"}</td>
-                <td className="text-center px-2 py-2 font-black tabular-nums">{t.errors ?? "0"}</td>
+                <td className="px-1.5 py-2 font-bold">{t.abbr}</td>
+                {Array.from({ length: innings }).map((_, i) => <td key={i} className="text-center px-1 py-2 tabular-nums">{t.innings?.[i] ?? "–"}</td>)}
+                <td className="text-center px-1 py-2 font-black tabular-nums">{t.runs ?? "–"}</td>
+                <td className="text-center px-1 py-2 font-black tabular-nums">{t.hits ?? "0"}</td>
+                <td className="text-center px-1 py-2 font-black tabular-nums">{t.errors ?? "0"}</td>
               </tr>
             ))}
           </tbody>
@@ -128,13 +128,13 @@ function MlbLineScore({ lineScore }: { lineScore: any }) {
   );
 }
 
-function LeaderCard({ cat, teamLogo, teamAbbr, league, onPlayerClick }: any) {
+function LeaderCard({ cat, teamLogo, teamAbbr, league, teamKey, onPlayerClick }: any) {
   const clickable = !!onPlayerClick && !!cat?.leader?.id;
   const Wrapper: any = clickable ? "button" : "div";
   return (
     <Wrapper
       type={clickable ? "button" : undefined}
-      onClick={clickable ? () => onPlayerClick?.({ id: cat.leader.id, name: cat.leader.name, league }) : undefined}
+      onClick={clickable ? () => onPlayerClick?.({ id: cat.leader.id, name: cat.leader.name, league, teamKey }) : undefined}
       className="rounded-xl p-3 flex items-center gap-3 text-left"
       style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
     >
@@ -238,7 +238,7 @@ function canonicalLabel(key: string): string {
   return key;
 }
 
-function StatGroup({ group, league, onPlayerClick }: { group: any; league: string; onPlayerClick?: (player: { id: string; name: string; league: string }) => void }) {
+function StatGroup({ group, league, teamKey, onPlayerClick }: { group: any; league: string; teamKey?: string; onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void }) {
   const [expanded, setExpanded] = useState(false);
   const visible = expanded ? group.athletes : group.athletes.slice(0, 5);
 
@@ -249,7 +249,7 @@ function StatGroup({ group, league, onPlayerClick }: { group: any; league: strin
   return (
     <div className="rounded-xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
       <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider" style={{ background: "var(--surface-2)", color: "var(--text-2)" }}>
-        {group.name}
+        {displayGroupName(league, group)}
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
@@ -269,24 +269,30 @@ function StatGroup({ group, league, onPlayerClick }: { group: any; league: strin
             </tr>
           </thead>
           <tbody>
-            {visible.map((a: any) => (
-              <tr key={a.id} style={{ borderTop: "1px solid var(--border)" }}>
-                <td
-                  className="px-3 py-2 whitespace-nowrap sticky left-0"
-                  style={{ background: "var(--surface)" }}
-                >
-                  <button type="button" onClick={() => onPlayerClick?.({ id: a.id, name: a.name || a.shortName, league })} disabled={!onPlayerClick} className="font-medium text-left hover:opacity-80">{a.shortName || a.name}</button>
-                  {a.position && (
-                    <span className="text-[10px]" style={{ color: "var(--text-3)" }}>{a.position}</span>
-                  )}
-                </td>
-                {columnKeys.map((k: string) => (
-                  <td key={k} className="text-right px-2 py-2 tabular-nums" style={{ color: "var(--text-2)" }}>
-                    {a.stats[k] ?? "—"}
+            {withBasketballSeparators(visible, league).map((row: any, idx: number) =>
+              row.__separator ? (
+                <tr key={`sep-${row.label}-${idx}`} style={{ borderTop: "1px solid var(--border)", background: "var(--surface-2)" }}>
+                  <td colSpan={columnKeys.length + 1} className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--text-2)" }}>{row.label}</td>
+                </tr>
+              ) : (
+                <tr key={row.id || idx} style={{ borderTop: "1px solid var(--border)" }}>
+                  <td
+                    className="px-3 py-2 whitespace-nowrap sticky left-0"
+                    style={{ background: "var(--surface)" }}
+                  >
+                    <button type="button" onClick={() => onPlayerClick?.({ id: row.id, name: row.name || row.shortName, league, teamKey })} disabled={!onPlayerClick || !row.id} className="font-medium text-left hover:opacity-80">{row.shortName || row.name}</button>
+                    {row.position && (
+                      <span className="text-[10px] block" style={{ color: "var(--text-3)" }}>{row.position}</span>
+                    )}
                   </td>
-                ))}
-              </tr>
-            ))}
+                  {columnKeys.map((k: string) => (
+                    <td key={k} className="text-right px-2 py-2 tabular-nums" style={{ color: "var(--text-2)" }}>
+                      {row.stats[k] ?? "—"}
+                    </td>
+                  ))}
+                </tr>
+              )
+            )}
           </tbody>
         </table>
       </div>
@@ -301,6 +307,24 @@ function StatGroup({ group, league, onPlayerClick }: { group: any; league: strin
       )}
     </div>
   );
+}
+
+function displayGroupName(league: string, group: any): string {
+  const raw = String(group?.name || "Stats");
+  if (league === "mlb") {
+    const lower = raw.toLowerCase();
+    if (lower.includes("bat") || lower.includes("hit")) return "Hitting";
+    if (lower.includes("pitch")) return "Pitching";
+  }
+  return raw;
+}
+
+function withBasketballSeparators(players: any[], league: string): any[] {
+  if (league !== "nba" && league !== "cbb") return players;
+  const starters = players.filter((p) => p.starter);
+  const bench = players.filter((p) => !p.starter);
+  if (!starters.length || !bench.length) return players;
+  return [{ __separator: true, label: "Starters" }, ...starters, { __separator: true, label: "Bench" }, ...bench];
 }
 
 // Hover/long-press tooltip text for short stat headers. ESPN's `descriptions`

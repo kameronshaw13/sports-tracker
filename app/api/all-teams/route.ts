@@ -16,141 +16,11 @@ const SPORT_PATH: Record<League, string> = {
 const COLLEGE_FOOTBALL_GROUPS = [
   { group: "80", subdivision: "FBS" },
   { group: "81", subdivision: "FCS" },
-];
+] as const;
 
-// Curated Division I FCS program names. ESPN's FCS group can contain lower-level
-// and transition/noise entries, so the picker now requires a match here before
-// an FCS team is shown.
 const FCS_ALLOWED = new Set([
-  'Abilene Christian',
-  'Alabama A&M',
-  'Alabama State',
-  'Albany',
-  'Alcorn State',
-  'Arkansas-Pine Bluff',
-  'Austin Peay',
-  'Bethune-Cookman',
-  'Brown',
-  'Bryant',
-  'Bucknell',
-  'Butler',
-  'Cal Poly',
-  'Campbell',
-  'Central Arkansas',
-  'Central Connecticut',
-  'Charleston Southern',
-  'Chattanooga',
-  'The Citadel',
-  'Colgate',
-  'Columbia',
-  'Cornell',
-  'Dartmouth',
-  'Davidson',
-  'Dayton',
-  'Delaware State',
-  'Drake',
-  'Duquesne',
-  'East Tennessee State',
-  'East Texas A&M',
-  'Eastern Illinois',
-  'Eastern Kentucky',
-  'Eastern Washington',
-  'Elon',
-  'Florida A&M',
-  'Fordham',
-  'Furman',
-  'Gardner-Webb',
-  'Georgetown',
-  'Grambling State',
-  'Hampton',
-  'Harvard',
-  'Holy Cross',
-  'Houston Christian',
-  'Howard',
-  'Idaho',
-  'Idaho State',
-  'Illinois State',
-  'Incarnate Word',
-  'Indiana State',
-  'Jackson State',
-  'Lafayette',
-  'Lamar',
-  'Lehigh',
-  'Lindenwood',
-  'LIU',
-  'Maine',
-  'Marist',
-  'McNeese',
-  'Mercer',
-  'Merrimack',
-  'Mississippi Valley State',
-  'Monmouth',
-  'Montana',
-  'Montana State',
-  'Morehead State',
-  'Morgan State',
-  'Murray State',
-  'New Hampshire',
-  'Nicholls',
-  'Norfolk State',
-  'North Alabama',
-  'North Carolina A&T',
-  'North Carolina Central',
-  'North Dakota',
-  'North Dakota State',
-  'Northern Arizona',
-  'Northern Colorado',
-  'Northern Iowa',
-  'Northwestern State',
-  'Penn',
-  'Portland State',
-  'Prairie View A&M',
-  'Presbyterian',
-  'Princeton',
-  'Rhode Island',
-  'Richmond',
-  'Robert Morris',
-  'Sacramento State',
-  'Sacred Heart',
-  'Saint Francis',
-  'Saint Thomas',
-  'Samford',
-  'San Diego',
-  'South Carolina State',
-  'South Dakota',
-  'South Dakota State',
-  'Southeast Missouri State',
-  'Southeastern Louisiana',
-  'Southern',
-  'Southern Illinois',
-  'Southern Utah',
-  'Stephen F. Austin',
-  'Stetson',
-  'Stonehill',
-  'Stony Brook',
-  'Tarleton State',
-  'Tennessee State',
-  'Tennessee Tech',
-  'Texas Southern',
-  'Towson',
-  'UC Davis',
-  'UT Martin',
-  'Utah Tech',
-  'UTRGV',
-  'Valparaiso',
-  'Villanova',
-  'VMI',
-  'Wagner',
-  'Weber State',
-  'Western Carolina',
-  'Western Illinois',
-  'William & Mary',
-  'Wofford',
-  'Yale',
-  'Youngstown State'
-].map((s) => normalizeName(s)).filter(Boolean));
-
-const FCS_ALLOWED_PHRASES = Array.from(FCS_ALLOWED);
+  'Abilene Christian','Alabama A&M','Alabama State','Albany','Alcorn State','Arkansas-Pine Bluff','Austin Peay','Bethune-Cookman','Brown','Bryant','Bucknell','Butler','Cal Poly','Campbell','Central Arkansas','Central Connecticut','Charleston Southern','Chattanooga','The Citadel','Colgate','Columbia','Cornell','Dartmouth','Davidson','Dayton','Delaware State','Drake','Duquesne','East Tennessee State','East Texas A&M','Eastern Illinois','Eastern Kentucky','Eastern Washington','Elon','Florida A&M','Fordham','Furman','Gardner-Webb','Georgetown','Grambling State','Hampton','Harvard','Holy Cross','Houston Christian','Howard','Idaho','Idaho State','Illinois State','Incarnate Word','Indiana State','Jackson State','Lafayette','Lamar','Lehigh','Lindenwood','LIU','Maine','Marist','McNeese','Mercer','Merrimack','Mississippi Valley State','Monmouth','Montana','Montana State','Morehead State','Morgan State','Murray State','New Hampshire','Nicholls','Norfolk State','North Alabama','North Carolina A&T','North Carolina Central','North Dakota','North Dakota State','Northern Arizona','Northern Colorado','Northern Iowa','Northwestern State','Penn','Portland State','Prairie View A&M','Presbyterian','Princeton','Rhode Island','Richmond','Robert Morris','Sacramento State','Sacred Heart','Saint Francis','Saint Thomas','Samford','San Diego','South Carolina State','South Dakota','South Dakota State','Southeast Missouri State','Southeastern Louisiana','Southern','Southern Illinois','Southern Utah','Stephen F. Austin','Stetson','Stonehill','Stony Brook','Tarleton State','Tennessee State','Tennessee Tech','Texas Southern','Towson','UC Davis','UT Martin','Utah Tech','UTRGV','Valparaiso','Villanova','VMI','Wagner','Weber State','Western Carolina','Western Illinois','William & Mary','Wofford','Yale','Youngstown State'
+].map(normalizeName));
 
 async function fetchJson(url: string) {
   const res = await fetch(url, { cache: "no-store", headers: { "User-Agent": "Mozilla/5.0 SportsTracker/1.0" } });
@@ -163,8 +33,12 @@ function normalizeName(value: any): string {
     .toLowerCase()
     .replace(/&/g, "and")
     .replace(/[’']/g, "")
+    .replace(/\bst\.?\b/g, "saint")
+    .replace(/\bthe\b/g, "")
+    .replace(/\buniversity\b/g, "")
+    .replace(/\bcollege\b/g, "")
+    .replace(/\bstate university\b/g, "state")
     .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\b(university|college|state university|the)\b/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -188,22 +62,54 @@ function normalizeTeam(league: League, t: any, extra?: Partial<TeamConfig>): Tea
 }
 
 function shouldKeepCollegeBasketball(t: any): boolean {
-  const name = String(t?.displayName || t?.name || "").toLowerCase();
+  const name = normalizeName(t?.displayName || t?.name);
   if (!name || !t?.abbreviation) return false;
-  if (/\b(d-?ii|d-?iii|division ii|division iii|naia|club|junior college|community college)\b/.test(name)) return false;
+  if (/\b(d ii|d iii|division ii|division iii|naia|club|junior college|community college)\b/.test(name)) return false;
   return true;
 }
 
-function shouldKeepFcsTeam(t: any): boolean {
-  const candidates = [t?.displayName, t?.name, t?.shortDisplayName, t?.nickname, t?.location, t?.slug].map(normalizeName).filter(Boolean);
-  const combined = candidates.join(" ");
-  if (!combined || !t?.abbreviation) return false;
-  if (/\b(d ii|d iii|division ii|division iii|naia|club|prep|junior college|community college)\b/.test(combined)) return false;
-  return FCS_ALLOWED_PHRASES.some((allowed) => combined.includes(allowed) || allowed.includes(combined));
+function teamNameCandidates(t: any): string[] {
+  return Array.from(new Set([
+    normalizeName(t?.displayName),
+    normalizeName(t?.name),
+    normalizeName(t?.shortDisplayName),
+    normalizeName(t?.location),
+    normalizeName([t?.location, t?.name].filter(Boolean).join(" ")),
+    normalizeName([t?.location, t?.nickname].filter(Boolean).join(" ")),
+  ].filter(Boolean)));
+}
+
+async function fetchCollegeBasketballSet(): Promise<Set<string>> {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/${SPORT_PATH.cbb}/teams?limit=1000&groups=50`;
+  const data = await fetchJson(url);
+  const items: any[] = data?.sports?.[0]?.leagues?.[0]?.teams || [];
+  const out = new Set<string>();
+  for (const entry of items) {
+    const t = entry?.team;
+    if (!shouldKeepCollegeBasketball(t)) continue;
+    for (const c of teamNameCandidates(t)) out.add(c);
+  }
+  return out;
+}
+
+function isDivisionOneFootballTeam(raw: any, d1BasketballNames: Set<string>): boolean {
+  const candidates = teamNameCandidates(raw);
+  if (!candidates.length || !raw?.abbreviation) return false;
+  const joined = candidates.join(" ");
+  if (/\b(d ii|d iii|division ii|division iii|naia|club|prep|junior college|community college)\b/.test(joined)) return false;
+  return candidates.some((c) => d1BasketballNames.has(c));
+}
+
+function isAllowedFcs(raw: any): boolean {
+  const candidates = teamNameCandidates(raw);
+  return candidates.some((c) => FCS_ALLOWED.has(c));
 }
 
 async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
+  const d1BasketballNames = await fetchCollegeBasketballSet();
   const out: TeamConfig[] = [];
+  const seen = new Set<string>();
+
   for (const { group, subdivision } of COLLEGE_FOOTBALL_GROUPS) {
     try {
       const url = `https://site.api.espn.com/apis/site/v2/sports/${SPORT_PATH.cfb}/teams?limit=700&groups=${group}`;
@@ -211,12 +117,17 @@ async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
       const items: any[] = data?.sports?.[0]?.leagues?.[0]?.teams || [];
       for (const entry of items) {
         const raw = entry?.team;
-        if (subdivision === "FCS" && !shouldKeepFcsTeam(raw)) continue;
+        if (!isDivisionOneFootballTeam(raw, d1BasketballNames)) continue;
+        if (subdivision === "FCS" && !isAllowedFcs(raw)) continue;
         const team = normalizeTeam("cfb", raw, { subdivision } as any);
-        if (team) out.push(team);
+        if (team && !seen.has(team.key)) {
+          seen.add(team.key);
+          out.push(team);
+        }
       }
     } catch {}
   }
+
   return out;
 }
 

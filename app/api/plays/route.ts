@@ -4,7 +4,7 @@ import { ensureHash } from "@/lib/teams";
 
 export const revalidate = 10;
 
-const VALID_LEAGUES = ["mlb", "nfl", "nba", "nhl"];
+const VALID_LEAGUES = ["mlb", "nfl", "nba", "nhl", "cfb", "cbb"];
 
 type TeamMeta = {
   id: string;
