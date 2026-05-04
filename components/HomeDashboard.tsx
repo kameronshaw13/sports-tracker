@@ -156,14 +156,14 @@ function LeagueScoreStrip({ league, label, date, density, onViewAll, onGameClick
         </div>
       ) : (
         <div className={density === "compact" ? "grid grid-cols-2 sm:grid-cols-3 gap-2" : "grid grid-cols-1 sm:grid-cols-2 gap-2"}>
-          {shown.map((game: any) => <MiniGameCard key={game.id} game={game} compact={density === "compact"} onClick={() => onGameClick(game.id)} />)}
+          {shown.map((game: any) => <MiniGameCard key={game.id} league={league} game={game} compact={density === "compact"} onClick={() => onGameClick(game.id)} />)}
         </div>
       )}
     </div>
   );
 }
 
-function MiniGameCard({ game, compact, onClick }: { game: any; compact: boolean; onClick: () => void }) {
+function MiniGameCard({ league, game, compact, onClick }: { league: League; game: any; compact: boolean; onClick: () => void }) {
   const isLive = game.status?.state === "in";
   return (
     <button onClick={onClick} className="rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-[var(--surface-2)]" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
@@ -173,6 +173,13 @@ function MiniGameCard({ game, compact, onClick }: { game: any; compact: boolean;
       </div>
       <MiniTeam team={game.away} compact={compact} />
       <MiniTeam team={game.home} compact={compact} />
+      {league === "mlb" && isLive && (
+        <div className="mt-2 pt-2 flex items-center gap-2 text-[11px] font-semibold" style={{ borderTop: "1px solid var(--border)", color: "var(--text-2)" }}>
+          <BasesMini situation={game.situation} />
+          <span>{countText(game.situation)}</span>
+          <span>{outsText(game.situation)}</span>
+        </div>
+      )}
     </button>
   );
 }
@@ -203,10 +210,22 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
   const nextEvent = events.find((e: any) => e.status?.state === "pre");
   const lastEvent = events.filter((e: any) => e.status?.state === "post").pop();
   const featured = liveEvent || nextEvent || lastEvent;
+  const { data: liveSummary } = useSWR(
+    featured?.status?.state === "in" ? `/api/summary?league=${team.league}&event=${featured.id}&_t=${freshKey}` : null,
+    fetcher,
+    { refreshInterval: 10_000, revalidateOnFocus: true, revalidateOnReconnect: true }
+  );
   const label = liveEvent ? "Live now" : nextEvent ? "Next game" : "Last game";
+  const liveSituation = liveSummary?.situation || featured?.situation || null;
   const liveStatus = team.league === "mlb" && featured?.status?.state === "in"
-    ? baseballSituationText(featured)
+    ? baseballSituationText({ ...featured, situation: liveSituation, status: liveSummary?.status || featured.status })
     : featured?.status?.detail || "Live";
+  const summaryHome = liveSummary?.home;
+  const summaryAway = liveSummary?.away;
+  const summaryUs = [summaryHome, summaryAway].find((t: any) => String(t?.abbr || "").toLowerCase() === team.abbr.toLowerCase());
+  const summaryOpp = [summaryHome, summaryAway].find((t: any) => String(t?.abbr || "").toLowerCase() !== team.abbr.toLowerCase());
+  const displayUsScore = summaryUs?.score ?? featured?.us?.score ?? "—";
+  const displayOppScore = summaryOpp?.score ?? featured?.opponent?.score ?? "—";
 
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
@@ -239,15 +258,15 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
               </div>
               {featured.status?.state === "in" && team.league === "mlb" && (
                 <div className="mt-1 flex items-center gap-2 text-[11px] font-semibold" style={{ color: "var(--text-2)" }}>
-                  <BasesMini situation={featured.situation} />
-                  <span>{countText(featured.situation)}</span>
-                  <span>{outsText(featured.situation)}</span>
+                  <BasesMini situation={liveSituation} />
+                  <span>{countText(liveSituation)}</span>
+                  <span>{outsText(liveSituation)}</span>
                 </div>
               )}
             </div>
             {featured.status?.state !== "pre" && (
               <div className="text-right">
-                <div className="text-base font-bold tabular-nums">{featured.us?.score ?? "—"}<span style={{ color: "var(--text-3)" }}> – </span>{featured.opponent?.score ?? "—"}</div>
+                <div className="text-base font-bold tabular-nums">{displayUsScore}<span style={{ color: "var(--text-3)" }}> – </span>{displayOppScore}</div>
                 <div className="text-xs font-bold" style={{ color: featured.us?.winner ? "var(--success)" : featured.status?.state === "post" ? "var(--danger)" : team.primary }}>
                   {featured.status?.state === "in" ? (team.league === "mlb" ? inningStateText(featured) : featured.status.detail || "Live") : featured.us?.winner ? "W" : "L"}
                 </div>

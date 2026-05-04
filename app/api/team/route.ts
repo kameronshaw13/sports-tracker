@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTeamPage } from "@/lib/espn";
+import { getTeamPage, getTeamSchedule } from "@/lib/espn";
 import { parseTeamKey } from "@/lib/teams";
 
 export const revalidate = 60;
@@ -52,6 +52,25 @@ function bestRecord(team: any): string | null {
   );
 }
 
+function recordFromSchedule(events: any[], abbr: string): string | null {
+  let wins = 0;
+  let losses = 0;
+  for (const ev of events || []) {
+    const comp = ev?.competitions?.[0];
+    const status = ev?.status || comp?.status;
+    if (status?.type?.state !== "post") continue;
+    const us = comp?.competitors?.find((c: any) => String(c?.team?.abbreviation || "").toLowerCase() === abbr.toLowerCase());
+    const them = comp?.competitors?.find((c: any) => String(c?.team?.abbreviation || "").toLowerCase() !== abbr.toLowerCase());
+    if (!us || !them) continue;
+    const ourScore = Number(us?.score?.value ?? us?.score);
+    const theirScore = Number(them?.score?.value ?? them?.score);
+    if (!Number.isFinite(ourScore) || !Number.isFinite(theirScore) || ourScore === theirScore) continue;
+    if (ourScore > theirScore) wins += 1;
+    else losses += 1;
+  }
+  return wins + losses > 0 ? `${wins}-${losses}` : null;
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const teamKey = searchParams.get("team");
@@ -68,6 +87,13 @@ export async function GET(req: NextRequest) {
     const data = await getTeamPage(parsed.league, parsed.abbr, ["stats"]);
     const t = data?.team;
     const stats = extractStats(t);
+    let record = bestRecord(t);
+    if (!record && (parsed.league === "cfb" || parsed.league === "cbb")) {
+      try {
+        const schedule = await getTeamSchedule(parsed.league, parsed.abbr);
+        record = recordFromSchedule(schedule?.events || [], parsed.abbr);
+      } catch {}
+    }
 
     return NextResponse.json({
       id: t?.id,
@@ -75,7 +101,7 @@ export async function GET(req: NextRequest) {
       abbreviation: t?.abbreviation,
       logo: t?.logos?.[0]?.href,
       colors: { primary: t?.color, alternate: t?.alternateColor },
-      record: bestRecord(t),
+      record,
       standingSummary: t?.standingSummary || null,
       stats,
       nextEvent: t?.nextEvent?.[0]

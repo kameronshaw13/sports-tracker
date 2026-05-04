@@ -6,7 +6,7 @@ import useSWR from "swr";
 import { League, TeamConfig, logoUrl, VALID_LEAGUES } from "@/lib/teams";
 import { useFavoriteTeams } from "@/lib/useFavorites";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json());
 
 function scoreSearch(t: TeamConfig, q: string): number {
   const name = t.name.toLowerCase();
@@ -31,7 +31,7 @@ type Props = { onClose: () => void };
 
 export default function ManageTeams({ onClose }: Props) {
   const { favorites, addTeam, removeTeam, moveTeam, reset } = useFavoriteTeams();
-  const { data, isLoading } = useSWR<{ teams: TeamConfig[] }>(`/api/all-teams`, fetcher);
+  const { data, isLoading } = useSWR<{ teams: TeamConfig[] }>(`/api/all-teams?v=20`, fetcher);
   const [leagueFilter, setLeagueFilter] = useState<"all" | League>("all");
   const [search, setSearch] = useState("");
 

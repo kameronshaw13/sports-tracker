@@ -126,20 +126,13 @@ export default function Home() {
   );
 
   return (
-    <main className="min-h-screen p-4 sm:p-6">
+    <main className="min-h-screen p-4 sm:p-6 pb-28">
       <PullToRefresh>
       <div className="max-w-3xl mx-auto">
-        <div className="flex items-start gap-2 mb-6">
-          <div className="flex-1">
-            <TopNav
-              active={view}
-              onChange={(v) => {
-                setSelectedPlayer(null);
-                setShowReturnGame(false);
-                setView(v);
-                setManageOpen(false);
-              }}
-            />
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <div>
+            <h1 className="text-2xl font-black leading-none">My Sports</h1>
+            <p className="text-xs mt-1" style={{ color: "var(--text-3)" }}>Live scores, teams, and analytics</p>
           </div>
           <AppSettingsButton />
         </div>
@@ -246,6 +239,17 @@ export default function Home() {
         </footer>
       </div>
       </PullToRefresh>
+      {!selectedPlayer && !showReturnGame && (
+        <TopNav
+          active={view}
+          onChange={(v) => {
+            setSelectedPlayer(null);
+            setShowReturnGame(false);
+            setView(v);
+            setManageOpen(false);
+          }}
+        />
+      )}
     </main>
   );
 }

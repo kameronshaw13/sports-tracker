@@ -23,9 +23,23 @@ export async function GET(req: NextRequest) {
     const competitors = comp?.competitors || [];
 
     const extractTotal = (c: any, names: string[], fallback: string | number = "0") => {
-      const stats = c?.statistics || c?.stats || [];
-      const found = Array.isArray(stats) ? stats.find((x: any) => names.includes(String(x?.name || x?.abbreviation || x?.displayName || "").toLowerCase())) : null;
-      return found?.displayValue ?? found?.value ?? fallback;
+      for (const name of names) {
+        const direct = c?.[name] ?? c?.score?.[name];
+        if (direct != null && direct !== "") return direct;
+      }
+      const stats = [c?.statistics, c?.stats, c?.team?.statistics, c?.team?.stats].flat().filter(Boolean);
+      const found = Array.isArray(stats) ? stats.find((x: any) => names.includes(String(x?.name || x?.abbreviation || x?.displayName || x?.shortDisplayName || "").toLowerCase())) : null;
+      if (found?.displayValue != null) return found.displayValue;
+      if (found?.value != null) return found.value;
+      // ESPN sometimes stores baseball totals as H/E on the competitor lineScore object.
+      const lineTotals = c?.linescore || c?.lineScore || c?.lineScores;
+      if (lineTotals) {
+        for (const name of names) {
+          const val = lineTotals?.[name] ?? lineTotals?.[name.toUpperCase()];
+          if (val != null && val !== "") return val;
+        }
+      }
+      return fallback;
     };
 
     const lineScore = league === "mlb" ? {
@@ -37,7 +51,7 @@ export async function GET(req: NextRequest) {
         logo: c.team?.logos?.[0]?.href || c.team?.logo,
         runs: c.score ?? "0",
         hits: extractTotal(c, ["hits", "h"], "0"),
-        errors: extractTotal(c, ["errors", "e"], "0"),
+        errors: extractTotal(c, ["errors", "error", "e"], "0"),
         innings: (c.linescores || []).map((x: any) => x.displayValue ?? x.value ?? "0"),
       })),
     } : null;

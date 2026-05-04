@@ -347,7 +347,7 @@ const NHL_BUCKETS: Bucket[] = [
 
 function bucketsFor(league: string): Bucket[] {
   if (league === "mlb") return MLB_BUCKETS;
-  if (league === "nfl") return NFL_BUCKETS;
+  if (league === "nfl" || league === "cfb") return NFL_BUCKETS;
   if (league === "nhl") return NHL_BUCKETS;
   return [];
 }

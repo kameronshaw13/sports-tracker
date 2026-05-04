@@ -392,7 +392,9 @@ async function handleOther(league: string, abbr: string) {
     const profile = athleteProfiles.get(id);
     if (!profile) return;
     const p = buildPlayer(league, profile, statsResults[i]);
-    if (p) players.push(p);
+    // For college sports, only show players who have appeared/recorded current-season stats.
+    // This removes redshirts and players whose only stats came from the prior year.
+    if (p && ((league === "cfb" || league === "cbb") ? p.hasStats : true)) players.push(p);
   });
 
   return NextResponse.json({ team: teamAbbr, league, total: players.length, players });

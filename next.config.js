@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    // Important for Vercel Hobby: avoids burning the 5K Image Optimization limit.
+    // External logos/headshots will load directly from ESPN/MLB instead.
+    unoptimized: true,
     remotePatterns: [
       // ESPN headshots / logos
       { protocol: "https", hostname: "a.espncdn.com" },

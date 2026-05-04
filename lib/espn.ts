@@ -186,6 +186,10 @@ export async function getSeasonTeamAthletes(
   const reg = await tryFetch(2);
   if (reg && reg.length > 0) return reg;
 
+  // For college sports, do NOT fall back to last year. That was pulling in
+  // redshirts/old contributors who have no current-year stats.
+  if (league === "cfb" || league === "cbb") return [];
+
   // Fall back to last year's regular season for offseason coverage.
   try {
     const url = `${CORE_API}/${corePath(league)}/seasons/${y - 1}/types/2/teams/${numericTeamId}/athletes?limit=200`;
@@ -234,6 +238,10 @@ export async function getAthleteStats(league: string, athleteId: string) {
 
   let data = await tryFetch(baseFor(year, 2));
   if (data) return data;
+
+  // College stats must be current-season only. Avoid showing last-year
+  // stats for redshirts or players who have not appeared this year.
+  if (league === "cfb" || league === "cbb") return null;
 
   data = await tryFetch(baseFor(year - 1, 2));
   if (data) return data;

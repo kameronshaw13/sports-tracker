@@ -1,40 +1,40 @@
 "use client";
 
-// v20: third tab renamed from "Leagues" to "Scores". The internal id stays
-// "leagues" so we don't have to touch page.tsx's routing logic — this is
-// just a label change.
 export type ViewId = "home" | "teams" | "leagues";
 
-type Props = {
-  active: ViewId;
-  onChange: (v: ViewId) => void;
-};
+type Props = { active: ViewId; onChange: (v: ViewId) => void };
 
 export default function TopNav({ active, onChange }: Props) {
-  const items: { id: ViewId; label: string }[] = [
-    { id: "home", label: "Home" },
-    { id: "teams", label: "My Teams" },
-    { id: "leagues", label: "Scores" },
+  const items: { id: ViewId; label: string; icon: string }[] = [
+    { id: "home", label: "Home", icon: "⌂" },
+    { id: "teams", label: "My Teams", icon: "★" },
+    { id: "leagues", label: "Scores", icon: "▦" },
   ];
   return (
-    <nav className="flex gap-1 p-1 rounded-xl" style={{ background: "var(--surface-2)" }}>
-      {items.map((it) => {
-        const isActive = active === it.id;
-        return (
-          <button
-            key={it.id}
-            onClick={() => onChange(it.id)}
-            className="flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all"
-            style={{
-              background: isActive ? "var(--surface)" : "transparent",
-              color: isActive ? "var(--text)" : "var(--text-2)",
-              border: isActive ? "1px solid var(--border)" : "1px solid transparent",
-            }}
-          >
-            {it.label}
-          </button>
-        );
-      })}
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2"
+      style={{ background: "color-mix(in srgb, var(--bg) 92%, transparent)", borderTop: "1px solid var(--border)", backdropFilter: "blur(14px)" }}
+    >
+      <div className="max-w-3xl mx-auto grid grid-cols-3 gap-2">
+        {items.map((it) => {
+          const isActive = active === it.id;
+          return (
+            <button
+              key={it.id}
+              onClick={() => onChange(it.id)}
+              className="rounded-2xl px-3 py-2 text-xs font-black transition-all flex flex-col items-center gap-0.5"
+              style={{
+                background: isActive ? "var(--surface)" : "transparent",
+                color: isActive ? "var(--text)" : "var(--text-2)",
+                border: isActive ? "1px solid var(--border)" : "1px solid transparent",
+              }}
+            >
+              <span className="text-lg leading-none">{it.icon}</span>
+              <span>{it.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </nav>
   );
 }
