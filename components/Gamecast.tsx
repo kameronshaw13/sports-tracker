@@ -12,7 +12,7 @@ type Props = {
   eventId: string;
   isLive: boolean;
   situation?: any;
-  onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
 };
 
 type TeamMeta = {
@@ -29,6 +29,7 @@ type Person = {
   shortName?: string | null;
   displayName?: string | null;
   headshot?: string | null;
+  mlbId?: number | string | null;
   stats?: Record<string, string | number | null>;
 };
 
@@ -110,7 +111,7 @@ function MlbLiveGamecast({
   isLoading: boolean;
   isLive: boolean;
   fallbackSituation?: any;
-  onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
 }) {
   const [activeSubTab, setActiveSubTab] = useState<"scoring" | "live" | "plays">("live");
   const home: TeamMeta | undefined = data?.home;
@@ -202,7 +203,7 @@ function LiveAtBatCard({
   situation: any;
   currentAtBat: MlbAtBat | null;
   battingTeam?: TeamMeta;
-  onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
 }) {
   const hasLiveAtBat = currentAtBat?.isComplete === false;
   const title = hasLiveAtBat ? "Current At-bat" : currentAtBat ? "Last At-bat" : "Current At-bat";
@@ -240,9 +241,9 @@ function LiveAtBatCard({
       </div>
 
       <div className="p-4 grid grid-cols-2 md:grid-cols-[1fr_auto_1fr] gap-3 items-stretch">
-        <PlayerMiniCard label="Batter" person={batter} primaryStat={batterStatText(batter)} onClick={batter?.id ? () => onPlayerClick?.({ id: String(batter.id), name: batter.displayName || batter.name || batter.shortName || "Batter", league: "mlb" }) : undefined} />
+        <PlayerMiniCard label="Batter" person={batter} primaryStat={batterStatText(batter)} onClick={playerClickHandler(batter, onPlayerClick, "Batter")} />
         <div className="hidden md:flex items-center justify-center text-xs font-bold" style={{ color: "var(--text-3)" }}>vs</div>
-        <PlayerMiniCard label="Pitcher" person={pitcher} primaryStat={pitcherStatText(pitcher)} onClick={pitcher?.id ? () => onPlayerClick?.({ id: String(pitcher.id), name: pitcher.displayName || pitcher.name || pitcher.shortName || "Pitcher", league: "mlb" }) : undefined} />
+        <PlayerMiniCard label="Pitcher" person={pitcher} primaryStat={pitcherStatText(pitcher)} onClick={playerClickHandler(pitcher, onPlayerClick, "Pitcher")} />
       </div>
 
       <div className="px-4 pb-4">
@@ -435,6 +436,13 @@ function cleanResultText(text: string) {
 function isHiddenMinorEvent(text: string) {
   const value = String(text || "").trim();
   return /^(top|bottom|middle|end) of the \d+(st|nd|rd|th)? inning\.?$/i.test(value) || /^(middle|end) of the/i.test(value) || /\bpitches to\b/i.test(value);
+}
+
+function playerClickHandler(person: Person | null | undefined, onPlayerClick: ((player: { id: string; name: string; league: string }) => void) | undefined, fallbackName: string) {
+  const id = person?.mlbId || person?.id;
+  const name = person?.displayName || person?.name || person?.shortName || fallbackName;
+  if (!id || !onPlayerClick) return undefined;
+  return () => onPlayerClick({ id: String(id), name, league: "mlb" });
 }
 
 function PlayerMiniCard({ label, person, primaryStat, onClick }: { label: string; person?: Person | null; primaryStat?: string | null; onClick?: () => void }) {

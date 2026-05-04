@@ -218,16 +218,17 @@ function flattenEspnGameLog(league: string, data: any): GameLogRow[] {
   }).filter((r: any) => r.date && r.stats.length).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-function flattenMlbGameLog(data: any): GameLogRow[] {
-  return (data?.stats || []).flatMap((group: any) => (group.splits || []).map((s: any) => {
-    const stat = s.stat || {};
-    return {
-      id: `${s.date}-${s.opponent?.id || ""}-${group.group?.displayName || ""}`,
-      date: s.date,
-      opponent: s.opponent?.name || s.opponent?.abbreviation || "—",
-      stats: Object.entries(stat).slice(0, 8).map(([k, v]: any) => ({ label: pretty(k), value: String(v) })),
-    };
-  })).filter((r: any) => r.date && r.stats.length).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+// MLB statsapi uses different stat-name conventions than ESPN's API:
+//   ESPN: RBIs, walks, strikeouts, onBasePct, slugAvg, OPS, ERA, WHIP, innings
+//   MLB:  rbi,  baseOnBalls, strikeOuts, obp,  slg,    ops, era, whip, inningsPitched
+// /api/players (the team-level route) already maps these correctly via
+// addMappedStat. We mirror the same translation here so that the
+// position-aware lookups in pickPositionRow find values under the canonical
+// names. Without this translation, MLB hitter stats showed empty AVG/OBP/
+// SLG/OPS/RBI columns and pitcher stats showed empty ERA/WHIP/IP/K.
+function setNumeric(map: FlatMap, key: string, raw: any) {
+  if (raw == null || raw === "") return;
+  map[key] = String(raw);
 }
 
 function mlbSeasonMap(data: any): { positionHint?: string; stats: FlatMap } {
@@ -236,36 +237,161 @@ function mlbSeasonMap(data: any): { positionHint?: string; stats: FlatMap } {
   for (const group of data?.stats || []) {
     const stat = group?.splits?.[0]?.stat || {};
     const groupName = String(group.group?.displayName || group.type?.displayName || "").toLowerCase();
-    const prefix = /pitch/i.test(groupName) ? "pitching" : "batting";
-    for (const [k, v] of Object.entries(stat)) flatSet(map, `${prefix}.${k}`, v);
-    if (prefix === "pitching") positionHint = "P";
+    const isPitching = /pitch/i.test(groupName);
+
+    if (isPitching) {
+      positionHint = "P";
+      setNumeric(map, "pitching.gamesPlayed", stat.gamesPlayed);
+      setNumeric(map, "pitching.gamesStarted", stat.gamesStarted);
+      setNumeric(map, "pitching.wins", stat.wins);
+      setNumeric(map, "pitching.losses", stat.losses);
+      setNumeric(map, "pitching.saves", stat.saves);
+      setNumeric(map, "pitching.holds", stat.holds);
+      setNumeric(map, "pitching.innings", stat.inningsPitched);
+      setNumeric(map, "pitching.hits", stat.hits);
+      setNumeric(map, "pitching.runs", stat.runs);
+      setNumeric(map, "pitching.earnedRuns", stat.earnedRuns);
+      setNumeric(map, "pitching.homeRuns", stat.homeRuns);
+      setNumeric(map, "pitching.walks", stat.baseOnBalls ?? stat.walks);
+      setNumeric(map, "pitching.strikeouts", stat.strikeOuts ?? stat.strikeouts);
+      setNumeric(map, "pitching.ERA", stat.era);
+      setNumeric(map, "pitching.WHIP", stat.whip);
+    } else {
+      setNumeric(map, "batting.gamesPlayed", stat.gamesPlayed);
+      setNumeric(map, "batting.atBats", stat.atBats);
+      setNumeric(map, "batting.runs", stat.runs);
+      setNumeric(map, "batting.hits", stat.hits);
+      setNumeric(map, "batting.doubles", stat.doubles);
+      setNumeric(map, "batting.triples", stat.triples);
+      setNumeric(map, "batting.homeRuns", stat.homeRuns);
+      setNumeric(map, "batting.RBIs", stat.rbi ?? stat.runsBattedIn);
+      setNumeric(map, "batting.stolenBases", stat.stolenBases);
+      setNumeric(map, "batting.walks", stat.baseOnBalls ?? stat.walks);
+      setNumeric(map, "batting.strikeouts", stat.strikeOuts ?? stat.strikeouts);
+      setNumeric(map, "batting.avg", stat.avg);
+      setNumeric(map, "batting.onBasePct", stat.obp);
+      setNumeric(map, "batting.slugAvg", stat.slg);
+      setNumeric(map, "batting.OPS", stat.ops);
+    }
   }
   return { positionHint, stats: map };
 }
 
+// Position-aware MLB game log. Picks columns appropriate for hitters vs.
+// pitchers, using the canonical column labels everyone is used to. For two-
+// way players (Ohtani-style) we render whichever group matches the player's
+// primary position to keep the column set consistent across rows.
+function flattenMlbGameLog(data: any, position?: string | null): GameLogRow[] {
+  const isPitcher = /^P$|^SP$|^RP$|^CP$|^CL$|pitcher/i.test(String(position || ""));
+
+  const rows: GameLogRow[] = [];
+  for (const group of data?.stats || []) {
+    const groupName = String(group.group?.displayName || group.type?.displayName || "").toLowerCase();
+    const isPitchingGroup = /pitch/i.test(groupName);
+    // If we know the player's role, only render rows from the matching group.
+    // If we don't, fall back to whichever group has data.
+    if (position && isPitcher !== isPitchingGroup) continue;
+
+    for (const s of group.splits || []) {
+      const stat = s.stat || {};
+      const cells: StatCell[] = isPitchingGroup
+        ? [
+            { label: "IP",  value: String(stat.inningsPitched ?? "—") },
+            { label: "H",   value: String(stat.hits ?? "—") },
+            { label: "R",   value: String(stat.runs ?? "—") },
+            { label: "ER",  value: String(stat.earnedRuns ?? "—") },
+            { label: "BB",  value: String(stat.baseOnBalls ?? "—") },
+            { label: "K",   value: String(stat.strikeOuts ?? "—") },
+            { label: "HR",  value: String(stat.homeRuns ?? "—") },
+            { label: "ERA", value: String(stat.era ?? "—") },
+          ]
+        : [
+            { label: "AB",  value: String(stat.atBats ?? "—") },
+            { label: "R",   value: String(stat.runs ?? "—") },
+            { label: "H",   value: String(stat.hits ?? "—") },
+            { label: "2B",  value: String(stat.doubles ?? "—") },
+            { label: "HR",  value: String(stat.homeRuns ?? "—") },
+            { label: "RBI", value: String(stat.rbi ?? "—") },
+            { label: "BB",  value: String(stat.baseOnBalls ?? "—") },
+            { label: "SO",  value: String(stat.strikeOuts ?? "—") },
+            { label: "AVG", value: String(stat.avg ?? "—") },
+          ];
+      const id = `${s.date || ""}-${s.opponent?.id || ""}-${groupName}`;
+      rows.push({
+        id,
+        date: s.date,
+        opponent: s.opponent?.abbreviation || s.opponent?.name || s.opponent?.displayName || "—",
+        stats: cells.filter((c) => c.value && c.value !== "—" && c.value !== "undefined"),
+      });
+    }
+  }
+  return rows
+    .filter((r) => r.date && r.stats.length)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}
+
+// MLB statsapi takes its own numeric IDs which are NOT the same as ESPN's
+// athlete IDs. The boxscore + plays routes are now enriched server-side to
+// hand the client an MLB ID for MLB players, but if an old client cached an
+// ESPN ID — or if the roster lookup misses — fall back to searching MLB
+// statsapi by name. This is what stops "Player ${id}" placeholder cards
+// when you tap a top-performer or at-bat batter on the box score.
+async function resolveMlbIdByName(name: string): Promise<string | null> {
+  if (!name) return null;
+  try {
+    const url = `${MLB_STATSAPI}/people/search?names=${encodeURIComponent(name)}&active=true`;
+    const data = await fetchJson(url);
+    const candidates: any[] = data?.people || [];
+    if (!candidates.length) return null;
+    // Prefer exact full-name match, then fall through to first result.
+    const target = name.toLowerCase().trim();
+    const exact = candidates.find((p) => String(p?.fullName || "").toLowerCase() === target);
+    const chosen = exact || candidates[0];
+    return chosen?.id ? String(chosen.id) : null;
+  } catch {
+    return null;
+  }
+}
+
 async function handleMlb(id: string, fallbackName: string) {
   const season = currentSeasonYear("mlb");
-  const [personRes, seasonRes, gameLogRes] = await Promise.allSettled([
-    fetchJson(`${MLB_STATSAPI}/people/${id}?hydrate=currentTeam`),
-    fetchJson(`${MLB_STATSAPI}/people/${id}/stats?stats=season&group=hitting,pitching&season=${season}&gameType=R`),
-    fetchJson(`${MLB_STATSAPI}/people/${id}/stats?stats=gameLog&group=hitting,pitching&season=${season}&gameType=R`),
+
+  // First attempt: assume `id` is a real MLB statsapi person ID.
+  let resolvedId = id;
+  let personRes = await Promise.resolve(null as any).then(() =>
+    fetchJson(`${MLB_STATSAPI}/people/${resolvedId}?hydrate=currentTeam`).catch(() => null)
+  );
+
+  // If MLB statsapi didn't recognize the ID, try resolving by name. This
+  // handles the case where an ESPN athlete ID slipped through.
+  if ((!personRes || !personRes?.people?.length) && fallbackName) {
+    const byName = await resolveMlbIdByName(fallbackName);
+    if (byName && byName !== resolvedId) {
+      resolvedId = byName;
+      personRes = await fetchJson(`${MLB_STATSAPI}/people/${resolvedId}?hydrate=currentTeam`).catch(() => null);
+    }
+  }
+
+  const [seasonRes, gameLogRes] = await Promise.allSettled([
+    fetchJson(`${MLB_STATSAPI}/people/${resolvedId}/stats?stats=season&group=hitting,pitching&season=${season}&gameType=R`),
+    fetchJson(`${MLB_STATSAPI}/people/${resolvedId}/stats?stats=gameLog&group=hitting,pitching&season=${season}&gameType=R`),
   ]);
-  const person = personRes.status === "fulfilled" ? personRes.value?.people?.[0] : null;
+  const person = personRes?.people?.[0] || null;
   const seasonData = seasonRes.status === "fulfilled" ? seasonRes.value : null;
   const gameLogData = gameLogRes.status === "fulfilled" ? gameLogRes.value : null;
   const { stats: map, positionHint } = mlbSeasonMap(seasonData);
   const position = person?.primaryPosition?.abbreviation || person?.primaryPosition?.name || positionHint || null;
   return {
     profile: {
-      id,
-      name: person?.fullName || fallbackName || `Player ${id}`,
+      id: resolvedId,
+      name: person?.fullName || fallbackName || `Player ${resolvedId}`,
       team: person?.currentTeam?.name || null,
       position,
-      headshot: `https://img.mlbstatic.com/mlb-photos/image/upload/w_213,q_auto:best/v1/people/${id}/headshot/67/current`,
+      headshot: `https://img.mlbstatic.com/mlb-photos/image/upload/w_213,q_auto:best/v1/people/${resolvedId}/headshot/67/current`,
       bio: [person?.height, person?.weight ? `${person.weight} lbs` : null, person?.birthDate ? `Born ${person.birthDate}` : null].filter(Boolean).join(" · "),
     },
     stats: pickPositionRow("mlb", position || undefined, map),
-    gameLog: flattenMlbGameLog(gameLogData),
+    gameLog: flattenMlbGameLog(gameLogData, position),
   };
 }
 
