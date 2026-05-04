@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { TeamConfig, League, VALID_LEAGUES, makeKey, ensureHash, pickTextColor, getSport } from "@/lib/teams";
+import { TeamConfig, League, VALID_LEAGUES, makeKey, ensureHash, pickTextColor, getSport, formatCollegeSchoolName } from "@/lib/teams";
 import { COLLEGE_FOOTBALL_TEAMS_2026 } from "@/lib/collegeFootballTeams2026";
 
 export const dynamic = "force-dynamic";
@@ -85,6 +85,10 @@ function espnCandidates(t: any) {
   ].filter(Boolean));
 }
 
+function displaySchoolName(name: string) {
+  return formatCollegeSchoolName(name);
+}
+
 function fallbackAbbr(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 24) || "team";
 }
@@ -118,7 +122,8 @@ async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
           }
         }
         if (!matchedRow) continue;
-        const team = normalizeTeam("cfb", raw, { subdivision: matchedRow.division, conference: matchedRow.conference } as any);
+        const schoolName = displaySchoolName(matchedRow.teamName);
+        const team = normalizeTeam("cfb", raw, { name: schoolName, short: schoolName, subdivision: matchedRow.division, conference: matchedRow.conference } as any);
         if (team) teams.push(team);
       }
       return teams;
@@ -146,8 +151,8 @@ async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
     seen.add(key);
     out.push({
       key,
-      name: row.teamName,
-      short: row.nickname,
+      name: displaySchoolName(row.teamName),
+      short: displaySchoolName(row.teamName),
       abbr,
       league: "cfb",
       sport: "football",

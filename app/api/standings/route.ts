@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { League, VALID_LEAGUES } from "@/lib/teams";
+import { League, VALID_LEAGUES, formatCollegeSchoolName } from "@/lib/teams";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
@@ -21,24 +21,36 @@ async function fetchJson(url: string) {
 
 function stat(entry: any, names: string[], fallback = "—") {
   const stats = entry?.stats || entry?.statistics || [];
+  const wanted = names.map((n) => n.toLowerCase());
   const found = Array.isArray(stats)
-    ? stats.find((s: any) => names.includes(String(s?.name || s?.abbreviation || s?.displayName || s?.shortDisplayName || "").toLowerCase()))
+    ? stats.find((s: any) => {
+        const keys = [s?.name, s?.abbreviation, s?.displayName, s?.shortDisplayName, s?.description]
+          .map((v) => String(v || "").toLowerCase().replace(/\s+/g, ""));
+        return keys.some((k) => wanted.includes(k));
+      })
     : null;
   return found?.displayValue ?? found?.value ?? fallback;
 }
 
-function teamInfo(entry: any) {
+function firstLogo(team: any) {
+  const logos = team?.logos || team?.logo;
+  if (Array.isArray(logos)) return logos[0]?.href || logos[0];
+  return typeof logos === "string" ? logos : null;
+}
+
+function teamInfo(entry: any, league: League) {
   const team = entry?.team || entry?.competitor?.team || entry?.competitor || entry;
+  const rawName = team?.displayName || team?.name || entry?.displayName || entry?.name || team?.shortDisplayName;
   return {
     id: team?.id || entry?.id,
-    name: team?.displayName || team?.name || entry?.displayName || entry?.name,
+    name: league === "cfb" ? formatCollegeSchoolName(team?.location || rawName) : rawName,
     abbr: team?.abbreviation || entry?.abbreviation,
-    logo: team?.logos?.[0]?.href || team?.logo,
+    logo: firstLogo(team),
   };
 }
 
-function rowFromEntry(entry: any) {
-  const t = teamInfo(entry);
+function rowFromEntry(entry: any, league: League) {
+  const t = teamInfo(entry, league);
   if (!t.name && !t.abbr) return null;
   return {
     id: t.id,
@@ -48,9 +60,9 @@ function rowFromEntry(entry: any) {
     wins: stat(entry, ["wins", "w"], "0"),
     losses: stat(entry, ["losses", "l"], "0"),
     ties: stat(entry, ["ties", "t"], ""),
-    pct: stat(entry, ["winpercent", "winpct", "pct", "win percentage"], "—"),
-    gb: stat(entry, ["gamesbehind", "games back", "gb", "gamesbehinddivision", "divisiongamesbehind"], "—"),
-    streak: stat(entry, ["streak"], "—"),
+    pct: stat(entry, ["winpercent", "winpct", "pct", "winpercentage", "percentage"], "—"),
+    gb: stat(entry, ["gamesbehind", "gamesback", "gb", "gamesbehinddivision", "divisiongamesbehind"], "—"),
+    streak: stat(entry, ["streak", "strk"], "—"),
   };
 }
 
@@ -60,19 +72,19 @@ function extractEntries(node: any): any[] {
 }
 
 function labelForNode(node: any, fallback: string) {
-  return node?.name || node?.displayName || node?.shortName || node?.abbreviation || fallback;
+  return node?.name || node?.displayName || node?.shortName || node?.abbreviation || node?.group?.name || node?.group?.displayName || fallback;
 }
 
-function walk(node: any, sections: any[], path: string[] = []) {
+function walk(node: any, sections: any[], league: League, path: string[] = []) {
   if (!node) return;
   const entries = extractEntries(node);
-  const rows = entries.map(rowFromEntry).filter(Boolean);
+  const rows = entries.map((entry) => rowFromEntry(entry, league)).filter(Boolean);
   if (rows.length) {
     sections.push({ label: labelForNode(node, path[path.length - 1] || "Standings"), rows });
   }
-  const children = node?.children || node?.groups || node?.divisions || node?.conferences || [];
+  const children = node?.children || node?.groups || node?.divisions || node?.conferences || node?.standings?.children || [];
   if (Array.isArray(children)) {
-    for (const child of children) walk(child, sections, [...path, labelForNode(child, "Group")]);
+    for (const child of children) walk(child, sections, league, [...path, labelForNode(child, "Group")]);
   }
 }
 
@@ -86,25 +98,60 @@ function dedupeSections(sections: any[]) {
   });
 }
 
+function currentSeasonForLeague(league: League) {
+  const now = new Date();
+  const year = now.getFullYear();
+  // In spring/summer, NFL/CFB/CBB standings usually still belong to the prior completed season.
+  if ((league === "nfl" || league === "cfb" || league === "cbb") && now.getMonth() < 7) return year - 1;
+  if ((league === "nba" || league === "nhl") && now.getMonth() < 6) return year - 1;
+  return year;
+}
+
+function standingsUrls(league: League, subdivision?: string) {
+  const season = currentSeasonForLeague(league);
+  const cfbGroup = subdivision === "FCS" ? "81" : "80";
+  const group = league === "cfb" ? `?groups=${cfbGroup}` : league === "cbb" ? "?groups=50" : "";
+  const join = group ? "&" : "?";
+  const path = SPORT_PATH[league];
+  return [
+    `https://site.api.espn.com/apis/v2/sports/${path}/standings${group}`,
+    `https://site.api.espn.com/apis/v2/sports/${path}/standings${group}${join}season=${season}&seasontype=2`,
+    `https://site.web.api.espn.com/apis/v2/sports/${path}/standings${group}${join}region=us&lang=en&contentorigin=espn&season=${season}&seasontype=2`,
+    `https://site.web.api.espn.com/apis/v2/sports/${path}/standings${group}${join}region=us&lang=en&contentorigin=espn`,
+  ];
+}
+
+function collectSections(data: any, league: League) {
+  const sections: any[] = [];
+  walk(data, sections, league, [league.toUpperCase()]);
+  if (!sections.length && Array.isArray(data?.children)) {
+    for (const child of data.children) walk(child, sections, league, []);
+  }
+  if (!sections.length && Array.isArray(data?.standings)) {
+    for (const child of data.standings) walk(child, sections, league, []);
+  }
+  return dedupeSections(sections);
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const league = searchParams.get("league") as League | null;
+  const subdivision = searchParams.get("subdivision") || undefined;
   if (!league || !VALID_LEAGUES.includes(league)) return NextResponse.json({ error: "Invalid league" }, { status: 400 });
 
-  try {
-    const group = league === "cfb" ? "?groups=80" : league === "cbb" ? "?groups=50" : "";
-    const url = `https://site.api.espn.com/apis/site/v2/sports/${SPORT_PATH[league]}/standings${group}`;
-    const data = await fetchJson(url);
-    const sections: any[] = [];
-    walk(data, sections, [league.toUpperCase()]);
-
-    // Some ESPN shapes have `children` under the first object only.
-    if (!sections.length && Array.isArray(data?.children)) {
-      for (const child of data.children) walk(child, sections, []);
+  const errors: string[] = [];
+  for (const url of standingsUrls(league, subdivision)) {
+    try {
+      const data = await fetchJson(url);
+      const sections = collectSections(data, league);
+      if (sections.length) {
+        return NextResponse.json({ league, sections }, { headers: { "Cache-Control": "s-maxage=300, stale-while-revalidate=900" } });
+      }
+      errors.push(`No rows: ${url}`);
+    } catch (err: any) {
+      errors.push(err.message || String(err));
     }
-
-    return NextResponse.json({ league, sections: dedupeSections(sections) }, { headers: { "Cache-Control": "s-maxage=300, stale-while-revalidate=900" } });
-  } catch (err: any) {
-    return NextResponse.json({ league, sections: [], error: err.message || "Standings unavailable" }, { status: 200 });
   }
+
+  return NextResponse.json({ league, sections: [], error: errors[0] || "Standings unavailable" }, { status: 200 });
 }

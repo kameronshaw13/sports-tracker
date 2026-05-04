@@ -48,7 +48,7 @@ export default function TeamSelector({ activeKey, onSelect, onManage }: Props) {
               <div className="text-[11px] uppercase tracking-wide font-medium" style={{ opacity: 0.7 }}>
                 {team.league}
               </div>
-              <div className="text-sm font-semibold leading-tight">{team.short}</div>
+              <div className="text-sm font-semibold leading-tight">{team.league === "cfb" ? team.name : team.short}</div>
             </div>
           </button>
         );

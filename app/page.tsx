@@ -5,6 +5,7 @@ import useSWR from "swr";
 import TopNav, { ViewId } from "@/components/TopNav";
 import HomeDashboard from "@/components/HomeDashboard";
 import LeaguesView from "@/components/LeaguesView";
+import MoreView from "@/components/MoreView";
 import TeamSelector from "@/components/TeamSelector";
 import TeamHeader from "@/components/TeamHeader";
 import Tabs, { TabId } from "@/components/Tabs";
@@ -12,6 +13,7 @@ import Schedule from "@/components/Schedule";
 import Roster from "@/components/Roster";
 import Stats from "@/components/Stats";
 import Standings from "@/components/Standings";
+import StandingsPage from "@/components/StandingsPage";
 import LiveGame from "@/components/LiveGame";
 import ManageTeams from "@/components/ManageTeams";
 import PullToRefresh from "@/components/PullToRefresh";
@@ -30,7 +32,7 @@ import { useFavoriteTeams } from "@/lib/useFavorites";
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function Home() {
-  const [view, setView] = useState<ViewId>("home");
+  const [view, setView] = useState<ViewId>("scores");
   // activeTeam holds a full TeamConfig (not a key). This way we can view a
   // team that ISN'T in favorites — e.g. Astros after tapping their logo on an
   // Orioles boxscore — without auto-adding them. The `_transient` flag marks
@@ -39,6 +41,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>("schedule");
   const [manageOpen, setManageOpen] = useState(false);
   const [leagueInitial, setLeagueInitial] = useState<string>("mlb");
+  const [standingsInitial, setStandingsInitial] = useState<string>("mlb");
   const [returnGame, setReturnGame] = useState<{ league: string; eventId: string } | null>(null);
   const [showReturnGame, setShowReturnGame] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; league: string; teamKey?: string } | null>(null);
@@ -72,7 +75,7 @@ export default function Home() {
   }, [favorites, activeTeam]);
 
   const { data: scheduleData } = useSWR(
-    view === "teams" && activeTeam ? `/api/scoreboard?team=${activeTeam.key}` : null,
+    view === "teamPage" && activeTeam ? `/api/scoreboard?team=${activeTeam.key}` : null,
     fetcher,
     { refreshInterval: 15_000, revalidateOnFocus: true, revalidateOnReconnect: true }
   );
@@ -80,7 +83,7 @@ export default function Home() {
 
   const openManage = useCallback(() => {
     setManageOpen(true);
-    setView("teams");
+    setView("more");
   }, []);
 
   // Navigate to a team's page WITHOUT auto-adding to favorites. If the team
@@ -120,18 +123,76 @@ export default function Home() {
         setShowReturnGame(false);
       }
 
-      setView("teams");
+      setSelectedGame(null);
+      setSelectedPlayer(null);
+      setView("teamPage");
       setActiveTab("schedule");
       setManageOpen(false);
     },
     [favorites, catalogData]
   );
 
+  const renderActiveTeamPage = (showSelector: boolean) => (
+    <>
+      {showSelector && (
+        <div className="mb-6">
+          <TeamSelector
+            activeKey={activeTeam?.key ?? ""}
+            onSelect={(team) => {
+              setActiveTeam(team);
+              setActiveTab("schedule");
+            }}
+            onManage={openManage}
+          />
+        </div>
+      )}
+      {activeTeam ? (
+        <div key={activeTeam.key}>
+          {returnGame && (
+            <button
+              onClick={() => setShowReturnGame(true)}
+              className="mb-3 text-sm font-semibold px-3 py-2 rounded-xl"
+              style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}
+            >
+              ← Back to game
+            </button>
+          )}
+          <TeamHeader team={activeTeam} />
+          <Tabs team={activeTeam} active={activeTab} onChange={setActiveTab} hasLive={hasLive} />
+          <div>
+            {activeTab === "live" && (
+              <LiveGame team={activeTeam} onTeamLogoClick={handleTeamLogoClick} onPlayerClick={(p) => setSelectedPlayer({ ...p, teamKey: activeTeam.key })} />
+            )}
+            {activeTab === "schedule" && (
+              <Schedule team={activeTeam} onTeamLogoClick={handleTeamLogoClick} onPlayerClick={(p) => setSelectedPlayer({ ...p, teamKey: activeTeam.key })} />
+            )}
+            {activeTab === "roster" && <Roster team={activeTeam} onPlayerClick={(p) => setSelectedPlayer(p)} />}
+            {activeTab === "stats" && <Stats team={activeTeam} onPlayerClick={(p) => setSelectedPlayer(p)} />}
+            {activeTab === "standings" && <Standings league={activeTeam.league} teamKey={activeTeam.key} />}
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-2xl p-8 text-center" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+          <p className="text-sm mb-4" style={{ color: "var(--text-2)" }}>
+            No teams selected.
+          </p>
+          <button
+            onClick={openManage}
+            className="px-4 py-2 rounded-xl text-sm font-medium"
+            style={{ background: "var(--text)", color: "var(--bg)" }}
+          >
+            + Pick your teams
+          </button>
+        </div>
+      )}
+    </>
+  );
+
   return (
-    <main className="min-h-screen p-4 sm:p-6 pb-32">
+    <main className="min-h-screen p-4 sm:p-6 pb-24">
       <PullToRefresh>
       <div className="max-w-3xl mx-auto">
-        {!selectedPlayer && !showReturnGame && !selectedGame && (
+        {!selectedPlayer && !showReturnGame && !selectedGame && view === "home" && (
           <div className="flex items-center justify-between gap-3 mb-6">
             <div>
               <h1 className="text-2xl font-black leading-none">My Sports</h1>
@@ -169,14 +230,15 @@ export default function Home() {
           <HomeDashboard
             onTeamClick={(team) => {
               setActiveTeam(team);
-              setView("teams");
+              setSelectedGame(null);
+              setView("teamPage");
               setActiveTab("schedule");
             }}
             onManage={openManage}
             onTeamLogoClick={handleTeamLogoClick}
             onViewLeague={(league) => {
               setLeagueInitial(league);
-              setView("leagues");
+              setView("leaguePage");
               setManageOpen(false);
             }}
             onPlayerClick={(p) => setSelectedPlayer(p)}
@@ -184,75 +246,51 @@ export default function Home() {
           />
         )}
 
-        {!selectedPlayer && !selectedGame && !showReturnGame && view === "teams" && manageOpen && (
+        {!selectedPlayer && !selectedGame && !showReturnGame && view === "more" && manageOpen && (
           <ManageTeams onClose={() => setManageOpen(false)} />
         )}
 
-        {!selectedPlayer && !selectedGame && !showReturnGame && view === "teams" && !manageOpen && (
-          <>
-            <div className="mb-6">
-              <TeamSelector
-                activeKey={activeTeam?.key ?? ""}
-                onSelect={(team) => {
-                  setActiveTeam(team);
-                  setActiveTab("schedule");
-                }}
-                onManage={openManage}
-              />
-            </div>
-            {activeTeam ? (
-              // `key` forces a full remount whenever the active team changes,
-              // so child components don't hold stale internal state.
-              <div key={activeTeam.key}>
-                {returnGame && (
-                  <button
-                    onClick={() => setShowReturnGame(true)}
-                    className="mb-3 text-sm font-semibold px-3 py-2 rounded-xl"
-                    style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}
-                  >
-                    ←
-                  </button>
-                )}
-                <TeamHeader team={activeTeam} />
-                <Tabs team={activeTeam} active={activeTab} onChange={setActiveTab} hasLive={hasLive} />
-                <div>
-                  {activeTab === "live" && (
-                    <LiveGame team={activeTeam} onTeamLogoClick={handleTeamLogoClick} onPlayerClick={(p) => setSelectedPlayer({ ...p, teamKey: activeTeam.key })} />
-                  )}
-                  {activeTab === "schedule" && (
-                    <Schedule team={activeTeam} onTeamLogoClick={handleTeamLogoClick} onPlayerClick={(p) => setSelectedPlayer({ ...p, teamKey: activeTeam.key })} />
-                  )}
-                  {activeTab === "roster" && <Roster team={activeTeam} onPlayerClick={(p) => setSelectedPlayer(p)} />}
-                  {activeTab === "stats" && <Stats team={activeTeam} onPlayerClick={(p) => setSelectedPlayer(p)} />}
-                  {activeTab === "standings" && <Standings league={activeTeam.league} teamKey={activeTeam.key} />}
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-2xl p-8 text-center" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-                <p className="text-sm mb-4" style={{ color: "var(--text-2)" }}>
-                  No teams selected.
-                </p>
-                <button
-                  onClick={openManage}
-                  className="px-4 py-2 rounded-xl text-sm font-medium"
-                  style={{ background: "var(--text)", color: "var(--bg)" }}
-                >
-                  + Pick your teams
-                </button>
-              </div>
-            )}
-          </>
+        {!selectedPlayer && !selectedGame && !showReturnGame && view === "more" && !manageOpen && (
+          <MoreView
+            onTeamClick={(team) => {
+              setActiveTeam(team);
+              setSelectedGame(null);
+              setView("teamPage");
+              setActiveTab("schedule");
+            }}
+            onLeagueClick={(league) => {
+              setLeagueInitial(league);
+              setView("leaguePage");
+              setManageOpen(false);
+            }}
+            onManage={openManage}
+          />
         )}
 
-        {!selectedPlayer && !selectedGame && !showReturnGame && view === "leagues" && <LeaguesView initialLeague={leagueInitial} onTeamLogoClick={handleTeamLogoClick} onPlayerClick={(p) => setSelectedPlayer(p)} />}
+        {!selectedPlayer && !selectedGame && !showReturnGame && view === "teamPage" && renderActiveTeamPage(false)}
+
+        {!selectedPlayer && !selectedGame && !showReturnGame && view === "scores" && <LeaguesView onTeamLogoClick={handleTeamLogoClick} onPlayerClick={(p) => setSelectedPlayer(p)} />}
+
+        {!selectedPlayer && !selectedGame && !showReturnGame && view === "leaguePage" && (
+          <LeaguesView
+            initialLeague={leagueInitial}
+            leaguePage
+            onBack={() => setView("more")}
+            onTeamLogoClick={handleTeamLogoClick}
+            onPlayerClick={(p) => setSelectedPlayer(p)}
+          />
+        )}
+
+        {!selectedPlayer && !selectedGame && !showReturnGame && view === "standings" && <StandingsPage initialLeague={standingsInitial} />}
       </div>
       </PullToRefresh>
-      {!selectedPlayer && !selectedGame && !showReturnGame && (
+      {!selectedPlayer && !selectedGame && !showReturnGame && view !== "teamPage" && (
         <TopNav
           active={view}
           onChange={(v) => {
             setSelectedPlayer(null);
             setShowReturnGame(false);
+            if (v === "standings" && activeTeam?.league) setStandingsInitial(activeTeam.league);
             setView(v);
             setManageOpen(false);
           }}

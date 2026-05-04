@@ -170,8 +170,8 @@ function PostgameRecap({ league, eventId, onPlayerClick }: { league: string; eve
             className="rounded-xl p-3 flex items-center gap-3 text-left hover:opacity-90 transition-opacity"
             style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
           >
-            <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0" style={{ background: "var(--surface-2)" }}>
-              {cat.leader?.headshot ? <Image src={cat.leader.headshot} alt={cat.leader.name} width={48} height={48} className="object-cover" /> : <span className="text-sm font-black">{cat.team?.abbr}</span>}
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0" style={{ background: "var(--surface-2)" }}>
+              {cat.leader?.headshot ? <Image src={cat.leader.headshot} alt={cat.leader.name} width={40} height={40} className="object-cover" /> : <span className="text-xs sm:text-sm font-black">{cat.team?.abbr}</span>}
             </div>
             <div className="min-w-0">
               <div className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-3)" }}>
@@ -263,11 +263,11 @@ function ScoreboardHeader({
   const isLive = status?.state === "in";
   return (
     <div
-      className="rounded-3xl p-5"
+      className="rounded-2xl p-3 sm:p-5"
       style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
     >
       <div
-        className="text-xs font-semibold uppercase tracking-wider text-center mb-3"
+        className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-center mb-2 sm:mb-3"
         style={{ color: isLive ? "var(--danger)" : "var(--text-2)" }}
       >
         {status?.detail || ""}
@@ -278,11 +278,11 @@ function ScoreboardHeader({
         </div>
       )}
 
-      <div className="flex items-center justify-center gap-4">
+      <div className="flex items-center justify-center gap-2 sm:gap-4">
         <TeamBlock team={away} league={league} eventId={eventId} onClick={onTeamClick} />
-        <div className="flex flex-col items-center justify-center min-w-[72px]">
+        <div className="flex flex-col items-center justify-center min-w-[42px] sm:min-w-[72px]">
           <div
-            className="text-3xl font-bold tabular-nums"
+            className="text-xl sm:text-3xl font-bold tabular-nums"
             style={{ color: "var(--text-3)" }}
           >
             –
@@ -366,17 +366,17 @@ function TeamBlock({
   const inner = (
     <>
       <div
-        className="w-20 h-20 rounded-2xl flex items-center justify-center mb-2"
+        className="w-12 h-12 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl flex items-center justify-center mb-1.5 sm:mb-2"
         style={{ background: "var(--surface-2)" }}
       >
         {team.logo && (
-          <Image src={team.logo} alt={team.abbr} width={64} height={64} className="object-contain" />
+          <Image src={team.logo} alt={team.abbr} width={42} height={42} className="object-contain" />
         )}
       </div>
-      <div className="text-sm font-black">{team.abbr}</div>
-      <div className="text-4xl font-black tabular-nums mt-1">{team.score ?? "—"}</div>
+      <div className="text-xs sm:text-sm font-black">{team.abbr}</div>
+      <div className="text-2xl sm:text-4xl font-black tabular-nums mt-0.5 sm:mt-1">{team.score ?? "—"}</div>
       {(team.seriesRecord || team.record) && (
-        <div className="text-[10px]" style={{ color: "var(--text-3)" }}>
+        <div className="text-[9px] sm:text-[10px]" style={{ color: "var(--text-3)" }}>
           {team.seriesRecord || team.record}
         </div>
       )}

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import useSWR from "swr";
-import { League, TeamConfig, logoUrl } from "@/lib/teams";
+import { League, TeamConfig, logoUrl, displayTeamName } from "@/lib/teams";
 import { useFavoriteTeams } from "@/lib/useFavorites";
 import { useFreshKey } from "@/lib/freshKey";
 import { useAppSettings } from "@/lib/useAppSettings";
@@ -233,8 +233,8 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
           <Image src={logoUrl(team)} alt={team.short} width={32} height={32} className="object-contain" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-bold truncate">{team.short}</div>
-          <div className="text-xs opacity-85 truncate">{teamData?.record || team.league}{teamData?.standingSummary ? ` · ${teamData.standingSummary.split(",")[0]}` : ""}</div>
+          <div className="text-sm font-bold truncate">{team.league === "cfb" ? displayTeamName(team) : team.short}</div>
+          <div className="text-xs opacity-85 truncate">{teamData?.record || (team.league === "cfb" ? "Record unavailable" : team.league.toUpperCase())}{teamData?.standingSummary ? ` · ${teamData.standingSummary.split(",")[0]}` : ""}</div>
         </div>
         <span className="text-xs opacity-75">→</span>
       </button>

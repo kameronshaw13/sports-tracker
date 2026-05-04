@@ -56,6 +56,20 @@ export function parseTeamKey(key: string | null | undefined): { league: League; 
   return { league: league as League, abbr };
 }
 
+
+export function formatCollegeSchoolName(name: string): string {
+  return String(name || "")
+    .replace(/\bState\b/g, "St")
+    .replace(/\bSaint\b/g, "St")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function displayTeamName(team: { league?: League | string; name?: string; short?: string; abbr?: string }): string {
+  const raw = team.name || team.short || team.abbr || "";
+  return team.league === "cfb" ? formatCollegeSchoolName(raw) : raw;
+}
+
 export function logoUrl(team: { league: League; abbr: string; logo?: string | null }): string {
   if (team.logo) return team.logo;
   if (team.league === "cfb" || team.league === "cbb") {
