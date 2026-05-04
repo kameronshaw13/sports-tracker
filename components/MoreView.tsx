@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { League, TeamConfig, VALID_LEAGUES, displayTeamName, logoUrl } from "@/lib/teams";
 import { useFavoriteTeams } from "@/lib/useFavorites";
+import AppSettingsButton from "./AppSettingsButton";
 
 const LEAGUE_LABELS: Record<League, string> = {
   mlb: "MLB",
@@ -22,13 +23,15 @@ const LEAGUE_SUBTITLES: Record<League, string> = {
   cbb: "Division I scores and teams",
 };
 
+const NCAA_LOGO = "https://a.espncdn.com/i/teamlogos/leagues/500/ncaa.png";
+
 const LEAGUE_LOGOS: Record<League, string> = {
   mlb: "https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png",
   nfl: "https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png",
   nba: "https://a.espncdn.com/i/teamlogos/leagues/500/nba.png",
   nhl: "https://a.espncdn.com/i/teamlogos/leagues/500/nhl.png",
-  cfb: "https://a.espncdn.com/i/teamlogos/leagues/500/college-football.png",
-  cbb: "https://a.espncdn.com/i/teamlogos/leagues/500/mens-college-basketball.png",
+  cfb: NCAA_LOGO,
+  cbb: NCAA_LOGO,
 };
 
 type Props = {
@@ -43,7 +46,10 @@ export default function MoreView({ onTeamClick, onLeagueClick, onManage }: Props
   return (
     <div className="space-y-7">
       <div className="pt-2">
-        <h1 className="text-4xl font-black tracking-tight">More</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-4xl font-black tracking-tight">More</h1>
+          <AppSettingsButton />
+        </div>
         <div className="mt-4 rounded-2xl px-4 py-3 flex items-center gap-3" style={{ background: "#2b2b31", color: "var(--text-3)" }}>
           <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
             <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />

@@ -220,7 +220,11 @@ export default function Home() {
           <GameDetail
             league={returnGame.league}
             eventId={returnGame.eventId}
-            onClose={() => setShowReturnGame(false)}
+            onClose={() => {
+              setShowReturnGame(false);
+              setReturnGame(null);
+              setView("scores");
+            }}
             onTeamClick={handleTeamLogoClick}
             onPlayerClick={(p) => setSelectedPlayer(p)}
           />
