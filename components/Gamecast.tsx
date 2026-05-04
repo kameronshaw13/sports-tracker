@@ -224,7 +224,7 @@ function LiveAtBatCard({
             <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: isLive ? "var(--danger)" : "var(--text-3)" }}>
               {title}
             </div>
-            <div className="text-sm font-bold truncate">
+            <div className="text-sm font-bold">
               {battingTeam?.abbr || "MLB"} batting
             </div>
           </div>
@@ -460,7 +460,7 @@ function PlayerMiniCard({ label, person, primaryStat, onClick }: { label: string
       </div>
       <div className="min-w-0">
         <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--text-3)" }}>{label}</div>
-        <div className="text-sm font-bold truncate">{name}</div>
+        <div className="text-sm font-bold">{name}</div>
         {hasPlayer && primaryStat && <div className="text-xs" style={{ color: "var(--text-2)" }}>{primaryStat}</div>}
       </div>
     </Wrapper>

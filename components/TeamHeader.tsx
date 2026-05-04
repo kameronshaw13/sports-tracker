@@ -20,8 +20,8 @@ export default function TeamHeader({ team }: Props) {
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-xs uppercase tracking-widest font-black opacity-80">{team.league}</div>
-          <h1 className="text-3xl sm:text-4xl font-black leading-none mt-1 truncate">{team.name}</h1>
-          <div className="text-sm opacity-85 mt-2 truncate">{data?.standingSummary || (error ? "Standings unavailable" : "Loading...")}</div>
+          <h1 className="text-3xl sm:text-4xl font-black leading-none mt-1">{team.name}</h1>
+          <div className="text-sm opacity-85 mt-2">{data?.standingSummary || (error ? "Standings unavailable" : "Loading...")}</div>
         </div>
         <div className="text-right flex-shrink-0">
           <div className="text-xs uppercase tracking-widest font-black opacity-80">Record</div>

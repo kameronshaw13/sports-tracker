@@ -158,7 +158,7 @@ export default function PlayerDetail({ player, onBack }: Props) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--text-3)" }}>{player.league.toUpperCase()}</div>
-          <h1 className="text-3xl font-black leading-tight truncate">{displayName}</h1>
+          <h1 className="text-3xl font-black leading-tight">{displayName}</h1>
           <div className="text-sm mt-1" style={{ color: "var(--text-2)" }}>
             {[profile.team, position].filter(Boolean).join(" · ") || "Player profile"}
           </div>

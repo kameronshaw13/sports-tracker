@@ -11,14 +11,26 @@ export default function TopNav({ active, onChange }: Props) {
     { id: "leagues", label: "Scores", icon: "▦" },
   ];
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 px-4 pt-1 pb-[max(0.45rem,env(safe-area-inset-bottom))]" style={{ background: "color-mix(in srgb, var(--bg) 92%, transparent)", borderTop: "1px solid var(--border)", backdropFilter: "blur(14px)" }}>
-      <div className="max-w-3xl mx-auto grid grid-cols-3 gap-2">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-[max(0.85rem,env(safe-area-inset-bottom))] pt-2.5"
+      style={{ background: "color-mix(in srgb, var(--bg) 94%, transparent)", borderTop: "1px solid var(--border)", backdropFilter: "blur(14px)" }}
+    >
+      <div className="max-w-3xl mx-auto grid grid-cols-3 gap-2.5">
         {items.map((it) => {
           const isActive = active === it.id;
           return (
-            <button key={it.id} onClick={() => onChange(it.id)} className="rounded-xl px-3 py-1 text-[11px] font-black transition-all flex flex-col items-center gap-0.5" style={{ background: isActive ? "var(--surface)" : "transparent", color: isActive ? "var(--text)" : "var(--text-2)", border: isActive ? "1px solid var(--border)" : "1px solid transparent" }}>
-              <span className="text-base leading-none">{it.icon}</span>
-              <span>{it.label}</span>
+            <button
+              key={it.id}
+              onClick={() => onChange(it.id)}
+              className="rounded-2xl px-4 py-3 text-sm font-black transition-all flex flex-col items-center gap-1 active:scale-[0.98]"
+              style={{
+                background: isActive ? "var(--surface)" : "transparent",
+                color: isActive ? "var(--text)" : "var(--text-2)",
+                border: isActive ? "1px solid var(--border)" : "1px solid transparent",
+              }}
+            >
+              <span className="text-[22px] leading-none">{it.icon}</span>
+              <span className="leading-none">{it.label}</span>
             </button>
           );
         })}

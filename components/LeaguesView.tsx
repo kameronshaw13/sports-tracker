@@ -7,6 +7,7 @@ import { useFreshKey } from "@/lib/freshKey";
 import { League } from "@/lib/teams";
 import { useAppSettings } from "@/lib/useAppSettings";
 import GameDetail from "./GameDetail";
+import Standings from "./Standings";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -23,7 +24,7 @@ type Density = "compact" | "expanded";
 
 type Props = {
   onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
-  onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
   initialLeague?: string;
 };
 
@@ -99,6 +100,9 @@ function LeagueDaySection({ league, date, density, onGameClick }: { league: Leag
           {final.length > 0 && <GameGroup title="Final" league={league} games={final} density={density} onGameClick={onGameClick} />}
         </div>
       )}
+    <div className="pt-2">
+        <Standings league={league} compact />
+      </div>
     </section>
   );
 }
@@ -125,7 +129,7 @@ function GameCard({ league, game, density, onClick }: { league: League; game: an
   return (
     <button onClick={onClick} className="w-full text-left rounded-xl px-3 py-2.5 transition-colors hover:bg-[var(--surface-2)]" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
       <div className="flex items-center justify-between mb-1.5 gap-2">
-        <span className="text-[11px] font-bold truncate" style={{ color: isLive ? "var(--danger)" : "var(--text-3)" }}>{game.status?.detail || formatTime(game.date)}</span>
+        <span className="text-[11px] font-bold" style={{ color: isLive ? "var(--danger)" : "var(--text-3)" }}>{game.status?.detail || formatTime(game.date)}</span>
         {isLive && <span className="w-2 h-2 rounded-full live-dot flex-shrink-0" style={{ background: "var(--danger)" }} />}
       </div>
       <TeamLine team={game.away} compact={compact} />
@@ -143,7 +147,7 @@ function GameCard({ league, game, density, onClick }: { league: League; game: an
 
 function TeamLine({ team, compact }: { team: any; compact: boolean }) {
   if (!team) return null;
-  return <div className="flex items-center gap-2 py-0.5"><div className="w-5 h-5 flex items-center justify-center">{team.logo && <Image src={team.logo} alt={team.abbr} width={18} height={18} className="object-contain" unoptimized />}</div><span className={`flex-1 text-xs truncate ${team.winner ? "font-bold" : "font-medium"}`}>{compact ? team.abbr : team.name || team.abbr}</span><span className={`text-sm tabular-nums ${team.winner ? "font-bold" : "font-semibold"}`}>{team.score ?? "—"}</span></div>;
+  return <div className="flex items-center gap-2 py-0.5"><div className="w-5 h-5 flex items-center justify-center">{team.logo && <Image src={team.logo} alt={team.abbr} width={18} height={18} className="object-contain" unoptimized />}</div><span className={`flex-1 text-xs ${team.winner ? "font-bold" : "font-medium"}`}>{compact ? team.abbr : team.name || team.abbr}</span><span className={`text-sm tabular-nums ${team.winner ? "font-bold" : "font-semibold"}`}>{team.score ?? "—"}</span></div>;
 }
 
 function BasesMini({ situation }: { situation: any }) {

@@ -16,6 +16,7 @@ export type TeamConfig = {
   textOnPrimary: string;
   logo?: string | null;
   subdivision?: "FBS" | "FCS" | string;
+  conference?: string;
   // Marks a team being viewed but NOT saved as a favorite. Set by
   // page.tsx#handleTeamLogoClick when navigating to a non-favorite team
   // (e.g. tapping the Astros logo on an Orioles boxscore). Stripped before

@@ -31,7 +31,7 @@ type Props = { onClose: () => void };
 
 export default function ManageTeams({ onClose }: Props) {
   const { favorites, addTeam, removeTeam, moveTeam, reset } = useFavoriteTeams();
-  const { data, isLoading } = useSWR<{ teams: TeamConfig[] }>(`/api/all-teams?v=20`, fetcher);
+  const { data, isLoading } = useSWR<{ teams: TeamConfig[] }>(`/api/all-teams?v=32`, fetcher);
   const [leagueFilter, setLeagueFilter] = useState<"all" | League>("all");
   const [search, setSearch] = useState("");
 
@@ -92,7 +92,7 @@ export default function ManageTeams({ onClose }: Props) {
                   <Image src={logoUrl(t)} alt="" width={28} height={28} className="object-contain" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold truncate">{t.name}</div>
+                  <div className="text-sm font-semibold">{t.name}</div>
                   <div className="text-[11px] uppercase tracking-wide" style={{ color: "var(--text-3)" }}>
                     {LEAGUE_LABEL[t.league]}
                   </div>
@@ -140,14 +140,14 @@ export default function ManageTeams({ onClose }: Props) {
           Browse all teams
         </h3>
 
-        <div className="flex gap-1 p-1 rounded-xl mb-3" style={{ background: "var(--surface-2)" }}>
+        <div className="grid grid-cols-7 gap-1 p-1 rounded-xl mb-3" style={{ background: "var(--surface-2)" }}>
           {(["all", ...VALID_LEAGUES] as const).map((id) => {
             const isActive = leagueFilter === id;
             return (
               <button
                 key={id}
                 onClick={() => setLeagueFilter(id as any)}
-                className="flex-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
+                className="min-w-0 px-1 py-1.5 rounded-lg text-[11px] font-bold transition-all"
                 style={{
                   background: isActive ? "var(--surface)" : "transparent",
                   color: isActive ? "var(--text)" : "var(--text-2)",
@@ -197,7 +197,7 @@ export default function ManageTeams({ onClose }: Props) {
                     <Image src={logoUrl(t)} alt="" width={28} height={28} className="object-contain" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold truncate">{t.name}</div>
+                    <div className="text-sm font-semibold">{t.name}</div>
                     <div className="text-[11px] uppercase tracking-wide" style={{ opacity: 0.75 }}>
                       {LEAGUE_LABEL[t.league]}{t.subdivision ? ` · ${t.subdivision}` : ""}
                     </div>
