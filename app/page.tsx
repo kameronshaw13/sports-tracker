@@ -273,7 +273,7 @@ export default function Home() {
 
         {!selectedPlayer && !selectedGame && !showReturnGame && view === "teamPage" && renderActiveTeamPage(false)}
 
-        {!selectedPlayer && !selectedGame && !showReturnGame && view === "scores" && <LeaguesView onTeamLogoClick={handleTeamLogoClick} onPlayerClick={(p) => setSelectedPlayer(p)} />}
+        {!selectedPlayer && !selectedGame && !showReturnGame && view === "scores" && <LeaguesView onTeamLogoClick={handleTeamLogoClick} onPlayerClick={(p) => setSelectedPlayer(p)} onStandingsClick={(league) => { setStandingsInitial(league); setView("standings"); }} />}
 
         {!selectedPlayer && !selectedGame && !showReturnGame && view === "leaguePage" && (
           <LeaguesView

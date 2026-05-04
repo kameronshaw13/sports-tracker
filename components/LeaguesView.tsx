@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
@@ -48,11 +48,12 @@ type Props = {
   initialLeague?: string;
   leaguePage?: boolean;
   onBack?: () => void;
+  onStandingsClick?: (league: League) => void;
 };
 
 type LeagueTab = "scores" | "stats" | "standings";
 
-export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLeague = "mlb", leaguePage = false, onBack }: Props) {
+export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLeague = "mlb", leaguePage = false, onBack, onStandingsClick }: Props) {
   const safeInitial = VALID_LEAGUES.includes(initialLeague as League) ? (initialLeague as League) : "mlb";
   const [dayOffset, setDayOffset] = useState(0);
   const [league] = useState<League>(safeInitial);
@@ -92,7 +93,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
             <>
               <CbsDateBar dayOffset={dayOffset} setDayOffset={setDayOffset} />
               <div className="mt-3">
-                <LeagueDaySection league={league} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league, eventId })} />
+                <LeagueDaySection league={league} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league, eventId })} onStandingsClick={onStandingsClick} />
               </div>
             </>
           )}
@@ -121,7 +122,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
       <div className="border-t" style={{ borderColor: "var(--border)" }}>
         <FavoritesScores date={date} favoriteKeys={favoriteKeys} density={settings.density} onGameClick={(league, eventId) => setSelectedEvent({ league, eventId })} />
         {leagues.map((lg) => (
-          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} />
+          <div key={`${lg}-${date}`} className="league-section-wrap"><div className="h-3 border-y" style={{ background: "#090909", borderColor: "var(--border)" }} /><LeagueDaySection league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} /></div>
         ))}
       </div>
     </div>
@@ -156,15 +157,25 @@ function LeagueHeader({ league, onBack, tab, setTab }: { league: League; onBack?
 }
 
 function CbsDateBar({ dayOffset, setDayOffset }: { dayOffset: number; setDayOffset: (offset: number) => void }) {
-  const days = useMemo(() => Array.from({ length: 15 }, (_, i) => i - 7).map((offset) => ({ offset, label: prettyDate(offset), sub: dateSmall(offset) })), []);
+  const selectedRef = useRef<HTMLButtonElement | null>(null);
+  const days = useMemo(() => Array.from({ length: 15 }, (_, i) => i - 7).map((offset) => ({ offset, label: dateBarLabel(offset) })), []);
+
+  useEffect(() => {
+    selectedRef.current?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }, [dayOffset]);
+
   return (
     <div className="flex overflow-x-auto gap-4 px-0 pt-1 no-scrollbar">
       {days.map((d) => {
         const selected = dayOffset === d.offset;
         return (
-          <button key={d.offset} onClick={() => setDayOffset(d.offset)} className="relative pb-2.5 pt-1.5 min-w-[70px] text-center">
+          <button
+            key={d.offset}
+            ref={selected ? selectedRef : null}
+            onClick={() => setDayOffset(d.offset)}
+            className="relative pb-2.5 pt-1.5 min-w-[92px] text-center"
+          >
             <div className="text-base font-black whitespace-nowrap" style={{ color: selected ? "var(--text)" : "var(--text-2)" }}>{d.label}</div>
-            <div className="text-[10px] font-semibold" style={{ color: selected ? "var(--text-2)" : "var(--text-3)" }}>{d.sub}</div>
             {selected && <span className="absolute left-2 right-2 bottom-0 h-1" style={{ background: "var(--accent)" }} />}
           </button>
         );
@@ -196,8 +207,9 @@ function FavoritesScores({ date, favoriteKeys, density, onGameClick }: { date: s
   );
 }
 
-function LeagueDaySection({ league, date, density, onGameClick }: { league: League; date: string; density: ScoreDensity; onGameClick: (eventId: string) => void }) {
+function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick }: { league: League; date: string; density: ScoreDensity; onGameClick: (eventId: string) => void; onStandingsClick?: (league: League) => void }) {
   const freshKey = useFreshKey();
+  const [collapsed, setCollapsed] = useState(false);
   const { data, error, isLoading } = useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, {
     refreshInterval: 15_000,
     revalidateOnFocus: true,
@@ -207,34 +219,66 @@ function LeagueDaySection({ league, date, density, onGameClick }: { league: Leag
 
   const events = [...(data?.events || [])].sort((a: any, b: any) => statusRank(a) - statusRank(b) || new Date(a.date).getTime() - new Date(b.date).getTime());
   if (!isLoading && (!events.length || error)) return null;
+  const compactGrid = density === "compact";
 
   return (
     <section className="border-b" style={{ borderColor: "var(--border)" }}>
-      <SectionHeader title={LEAGUE_LABELS[league]} logo={LEAGUE_LOGOS[league]} count={isLoading ? undefined : events.length} sticky />
-      {isLoading ? (
-        <div className="grid grid-cols-2">
+      <SectionHeader
+        title={LEAGUE_LABELS[league]}
+        logo={LEAGUE_LOGOS[league]}
+        sticky
+        collapsed={collapsed}
+        onToggle={() => setCollapsed((v) => !v)}
+        onStandingsClick={onStandingsClick ? () => onStandingsClick(league) : undefined}
+      />
+      {!collapsed && (isLoading ? (
+        <div className={compactGrid ? "grid grid-cols-2" : "grid grid-cols-1 sm:grid-cols-2"}>
           {[0, 1, 2, 3].map((i) => <div key={i} className="h-24 animate-pulse border-t" style={{ background: "var(--surface)", borderColor: "var(--border)" }} />)}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2">
+        <div className={compactGrid ? "grid grid-cols-2" : "grid grid-cols-1 sm:grid-cols-2"}>
           {events.map((game: any) => <ScoreCard key={game.id} league={league} game={game} density={density} onClick={() => onGameClick(game.id)} />)}
         </div>
-      )}
+      ))}
     </section>
   );
 }
 
-function SectionHeader({ title, logo, count, sticky = false }: { title: string; logo?: string; count?: number; sticky?: boolean }) {
+function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggle, onStandingsClick }: { title: string; logo?: string; sticky?: boolean; collapsed?: boolean; onToggle?: () => void; onStandingsClick?: () => void }) {
   return (
     <div
-      className={`px-4 py-3 flex items-center justify-between ${sticky ? "sticky z-20" : ""}`}
+      className={`px-4 py-2.5 flex items-center justify-between ${sticky ? "sticky z-20" : ""}`}
       style={{ background: "var(--surface)", top: sticky ? 86 : undefined, borderBottom: sticky ? "1px solid var(--border)" : undefined }}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 min-w-0">
         {logo && <Image src={logo} alt={title} width={22} height={22} className="object-contain" unoptimized />}
-        <h2 className="text-lg font-black tracking-wide">{title}</h2>
+        <h2 className="text-lg font-black tracking-wide truncate">{title}</h2>
       </div>
-      {typeof count === "number" && <span className="text-[11px] font-bold" style={{ color: "var(--text-3)" }}>{count} game{count === 1 ? "" : "s"}</span>}
+      <div className="flex items-center gap-2">
+        {onStandingsClick && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onStandingsClick(); }}
+            className="rounded-xl px-3 py-2 text-xs font-black tracking-wide"
+            style={{ background: "var(--surface-2)", color: "var(--accent)" }}
+          >
+            STANDINGS
+          </button>
+        )}
+        {onToggle && (
+          <button
+            type="button"
+            onClick={onToggle}
+            className="h-10 w-10 rounded-xl flex items-center justify-center"
+            style={{ background: "var(--surface-2)", color: "var(--text-2)" }}
+            aria-label={collapsed ? `Show ${title} scores` : `Hide ${title} scores`}
+          >
+            <svg viewBox="0 0 24 24" className={`w-6 h-6 transition-transform ${collapsed ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m6 15 6-6 6 6" />
+            </svg>
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -246,12 +290,12 @@ function ScoreCard({ league, game, density, onClick }: { league: League; game: a
   return (
     <button
       onClick={onClick}
-      className={`${compact ? "min-h-[92px] p-3" : "min-h-[108px] p-3.5"} text-left border-t sm:odd:border-r active:scale-[0.99]`}
+      className="min-h-[92px] p-3 text-left border-t sm:odd:border-r active:scale-[0.99]"
       style={{ background: "var(--surface)", borderColor: "var(--border)" }}
     >
-      <div className="flex items-center justify-between gap-3 mb-2">
+      <div className="flex items-center justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="text-xs font-black truncate" style={{ color: isLive ? "var(--danger)" : "var(--text-2)" }}>{game.status?.detail || formatTime(game.date)}</div>
+          <div className="text-xs font-black truncate" style={{ color: isLive ? "var(--danger)" : "var(--text-2)" }}>{gameTimeLabel(game)}</div>
           {league === "mlb" && isLive && game.situation && <BasesDiamondMini situation={game.situation} />}
         </div>
       </div>
@@ -266,12 +310,12 @@ function TeamLine({ team, compact }: { team: any; compact: boolean }) {
   if (!team) return null;
   return (
     <div className="flex items-center gap-2 py-0.5">
-      <div className={`${compact ? "w-6 h-6" : "w-6 h-6"} flex items-center justify-center flex-shrink-0`}>{team.logo && <Image src={team.logo} alt={team.abbr || team.name} width={23} height={23} className="object-contain" unoptimized />}</div>
+      <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">{team.logo && <Image src={team.logo} alt={team.abbr || team.name} width={22} height={22} className="object-contain" unoptimized />}</div>
       <div className="flex-1 flex items-baseline gap-1.5 min-w-0">
-        <span className={`${compact ? "text-base" : "text-lg"} leading-none truncate font-black`}>{team.abbr || team.name}</span>
-        {team.record && <span className="text-xs font-semibold" style={{ color: "var(--text-2)" }}>{team.record}</span>}
+        <span className="text-base leading-none truncate font-black">{team.abbr || team.name}</span>
+        {team.record && <span className="text-[11px] font-semibold" style={{ color: "var(--text-2)" }}>{team.record}</span>}
       </div>
-      <span className={`${compact ? "text-base" : "text-lg"} font-black tabular-nums`}>{team.score ?? ""}</span>
+      <span className="text-base font-black tabular-nums">{team.score ?? ""}</span>
     </div>
   );
 }
@@ -281,11 +325,10 @@ function ScoreCardSubline({ league, game }: { league: League; game: any }) {
     const balls = game.situation.balls ?? 0;
     const strikes = game.situation.strikes ?? 0;
     const outs = game.situation.outs ?? 0;
+    const outLabel = outs === 1 ? "1 Out" : `${outs} Outs`;
     return (
-      <div className="mt-2 flex items-center gap-3 text-xs font-black tabular-nums" style={{ color: "var(--text-2)" }}>
-        <span>B {balls}</span>
-        <span>S {strikes}</span>
-        <span>O {outs}</span>
+      <div className="mt-2 text-xs font-black tabular-nums" style={{ color: "var(--text-2)" }}>
+        {balls}-{strikes}, {outLabel}
       </div>
     );
   }
@@ -341,6 +384,12 @@ function leagueHeaderColor(league: League) {
 }
 
 function formatDate(offset: number) { const d = new Date(); d.setDate(d.getDate() + offset); return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}`; }
-function prettyDate(offset: number) { if (offset === 0) return "Today"; const d = new Date(); d.setDate(d.getDate() + offset); return d.toLocaleDateString(undefined, { weekday: "short" }); }
-function dateSmall(offset: number) { const d = new Date(); d.setDate(d.getDate() + offset); return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
-function formatTime(iso: string) { const d = new Date(iso); return d.toLocaleString(undefined, { hour: "numeric", minute: "2-digit" }); }
+function dateBarLabel(offset: number) { if (offset === 0) return "Today"; const d = new Date(); d.setDate(d.getDate() + offset); return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }); }
+function gameTimeLabel(game: any) {
+  if (game.status?.state === "pre") return formatCentralTime(game.date);
+  return game.status?.detail || formatCentralTime(game.date);
+}
+function formatCentralTime(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleString(undefined, { hour: "numeric", minute: "2-digit", timeZone: "America/Chicago" }).replace(" ", "");
+}
