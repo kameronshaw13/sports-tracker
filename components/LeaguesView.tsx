@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
-import { League, VALID_LEAGUES } from "@/lib/teams";
+import { League, VALID_LEAGUES, logoUrl } from "@/lib/teams";
 import { useAppSettings, ScoreDensity } from "@/lib/useAppSettings";
 import { useFavoriteTeams } from "@/lib/useFavorites";
 import AppSettingsButton from "./AppSettingsButton";
@@ -122,7 +122,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
       <div className="border-t" style={{ borderColor: "var(--border)" }}>
         <FavoritesScores date={date} favoriteKeys={favoriteKeys} density={settings.density} onGameClick={(league, eventId) => setSelectedEvent({ league, eventId })} />
         {leagues.map((lg) => (
-          <div key={`${lg}-${date}`} className="league-section-wrap"><div className="h-3 border-y" style={{ background: "#090909", borderColor: "var(--border)" }} /><LeagueDaySection league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} /></div>
+          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} />
         ))}
       </div>
     </div>
@@ -161,11 +161,12 @@ function CbsDateBar({ dayOffset, setDayOffset }: { dayOffset: number; setDayOffs
   const days = useMemo(() => Array.from({ length: 15 }, (_, i) => i - 7).map((offset) => ({ offset, label: dateBarLabel(offset) })), []);
 
   useEffect(() => {
-    selectedRef.current?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    const id = window.setTimeout(() => selectedRef.current?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" }), 50);
+    return () => window.clearTimeout(id);
   }, [dayOffset]);
 
   return (
-    <div className="flex overflow-x-auto gap-4 px-0 pt-1 no-scrollbar">
+    <div className="flex overflow-x-auto gap-3 px-0 pt-1 no-scrollbar">
       {days.map((d) => {
         const selected = dayOffset === d.offset;
         return (
@@ -173,9 +174,9 @@ function CbsDateBar({ dayOffset, setDayOffset }: { dayOffset: number; setDayOffs
             key={d.offset}
             ref={selected ? selectedRef : null}
             onClick={() => setDayOffset(d.offset)}
-            className="relative pb-2.5 pt-1.5 min-w-[92px] text-center"
+            className="relative pb-2.5 pt-1.5 min-w-[88px] text-center"
           >
-            <div className="text-base font-black whitespace-nowrap" style={{ color: selected ? "var(--text)" : "var(--text-2)" }}>{d.label}</div>
+            <div className="text-sm font-black whitespace-nowrap" style={{ color: selected ? "var(--text)" : "var(--text-2)" }}>{d.label}</div>
             {selected && <span className="absolute left-2 right-2 bottom-0 h-1" style={{ background: "var(--accent)" }} />}
           </button>
         );
@@ -202,7 +203,6 @@ function FavoritesScores({ date, favoriteKeys, density, onGameClick }: { date: s
           {games.slice(0, 4).map((game: any) => <ScoreCard key={`${game.league}-${game.id}`} league={game.league} game={game} density={density} onClick={() => onGameClick(game.league, game.id)} />)}
         </div>
       </section>
-      <div className="h-3 border-y" style={{ background: "#090909", borderColor: "var(--border)" }} />
     </>
   );
 }
@@ -222,6 +222,8 @@ function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick
   const compactGrid = density === "compact";
 
   return (
+    <>
+    <div className="h-2 border-y" style={{ background: "var(--bg)", borderColor: "var(--border)" }} />
     <section className="border-b" style={{ borderColor: "var(--border)" }}>
       <SectionHeader
         title={LEAGUE_LABELS[league]}
@@ -241,25 +243,26 @@ function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick
         </div>
       ))}
     </section>
+    </>
   );
 }
 
 function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggle, onStandingsClick }: { title: string; logo?: string; sticky?: boolean; collapsed?: boolean; onToggle?: () => void; onStandingsClick?: () => void }) {
   return (
     <div
-      className={`px-4 py-2.5 flex items-center justify-between ${sticky ? "sticky z-20" : ""}`}
-      style={{ background: "var(--surface)", top: sticky ? 86 : undefined, borderBottom: sticky ? "1px solid var(--border)" : undefined }}
+      className={`px-4 py-2 flex items-center justify-between ${sticky ? "sticky z-20" : ""}`}
+      style={{ background: "var(--surface)", top: sticky ? 84 : undefined, borderTop: sticky ? "1px solid var(--border)" : undefined, borderBottom: sticky ? "1px solid var(--border)" : undefined }}
     >
       <div className="flex items-center gap-3 min-w-0">
         {logo && <Image src={logo} alt={title} width={22} height={22} className="object-contain" unoptimized />}
-        <h2 className="text-lg font-black tracking-wide truncate">{title}</h2>
+        <h2 className="text-base font-black tracking-wide truncate">{title}</h2>
       </div>
       <div className="flex items-center gap-2">
         {onStandingsClick && (
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onStandingsClick(); }}
-            className="rounded-xl px-3 py-2 text-xs font-black tracking-wide"
+            className="rounded-lg px-2.5 py-1.5 text-[10px] font-black tracking-wide"
             style={{ background: "var(--surface-2)", color: "var(--accent)" }}
           >
             STANDINGS
@@ -269,11 +272,11 @@ function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggl
           <button
             type="button"
             onClick={onToggle}
-            className="h-10 w-10 rounded-xl flex items-center justify-center"
+            className="h-8 w-8 rounded-lg flex items-center justify-center"
             style={{ background: "var(--surface-2)", color: "var(--text-2)" }}
             aria-label={collapsed ? `Show ${title} scores` : `Hide ${title} scores`}
           >
-            <svg viewBox="0 0 24 24" className={`w-6 h-6 transition-transform ${collapsed ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg viewBox="0 0 24 24" className={`w-5 h-5 transition-transform ${collapsed ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="m6 15 6-6 6 6" />
             </svg>
           </button>
@@ -290,32 +293,33 @@ function ScoreCard({ league, game, density, onClick }: { league: League; game: a
   return (
     <button
       onClick={onClick}
-      className="min-h-[92px] p-3 text-left border-t sm:odd:border-r active:scale-[0.99]"
+      className="min-h-[84px] p-2.5 text-left border-t sm:odd:border-r active:scale-[0.99]"
       style={{ background: "var(--surface)", borderColor: "var(--border)" }}
     >
-      <div className="flex items-center justify-between gap-2 mb-1.5">
+      <div className="flex items-center justify-between gap-2 mb-1">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="text-xs font-black truncate" style={{ color: isLive ? "var(--danger)" : "var(--text-2)" }}>{gameTimeLabel(game)}</div>
+          <div className="text-[11px] font-extrabold tracking-tight truncate" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
           {league === "mlb" && isLive && game.situation && <BasesDiamondMini situation={game.situation} />}
         </div>
       </div>
-      <TeamLine team={game.away} compact={compact} />
-      <TeamLine team={game.home} compact={compact} />
+      <TeamLine team={game.away} league={league} compact={compact} />
+      <TeamLine team={game.home} league={league} compact={compact} />
       <ScoreCardSubline league={league} game={game} />
     </button>
   );
 }
 
-function TeamLine({ team, compact }: { team: any; compact: boolean }) {
+function TeamLine({ team, league, compact }: { team: any; league: League; compact: boolean }) {
   if (!team) return null;
+  const img = team.logo || (team.abbr ? logoUrl({ league, abbr: team.abbr }) : null);
   return (
     <div className="flex items-center gap-2 py-0.5">
-      <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">{team.logo && <Image src={team.logo} alt={team.abbr || team.name} width={22} height={22} className="object-contain" unoptimized />}</div>
+      <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">{img && <Image src={img} alt={team.abbr || team.name} width={20} height={20} className="object-contain" unoptimized />}</div>
       <div className="flex-1 flex items-baseline gap-1.5 min-w-0">
-        <span className="text-base leading-none truncate font-black">{team.abbr || team.name}</span>
-        {team.record && <span className="text-[11px] font-semibold" style={{ color: "var(--text-2)" }}>{team.record}</span>}
+        <span className="text-sm leading-none truncate font-black tracking-tight">{team.abbr || team.name}</span>
+        {team.record && <span className="text-[10px] font-bold tracking-tight" style={{ color: "var(--text-2)" }}>{team.record}</span>}
       </div>
-      <span className="text-base font-black tabular-nums">{team.score ?? ""}</span>
+      <span className="text-sm font-black tabular-nums">{team.score ?? ""}</span>
     </div>
   );
 }
@@ -327,7 +331,7 @@ function ScoreCardSubline({ league, game }: { league: League; game: any }) {
     const outs = game.situation.outs ?? 0;
     const outLabel = outs === 1 ? "1 Out" : `${outs} Outs`;
     return (
-      <div className="mt-2 text-xs font-black tabular-nums" style={{ color: "var(--text-2)" }}>
+      <div className="mt-1.5 text-[11px] font-extrabold tracking-tight tabular-nums" style={{ color: "var(--text-2)" }}>
         {balls}-{strikes}, {outLabel}
       </div>
     );
@@ -335,7 +339,7 @@ function ScoreCardSubline({ league, game }: { league: League; game: any }) {
 
   const subline = sublineForGame(league, game);
   if (!subline) return null;
-  return <div className="mt-2 text-xs font-semibold truncate" style={{ color: "var(--text-2)" }}>{subline}</div>;
+  return <div className="mt-1.5 text-[11px] font-bold tracking-tight truncate" style={{ color: "var(--text-2)" }}>{subline}</div>;
 }
 
 function BasesDiamondMini({ situation }: { situation: any }) {
