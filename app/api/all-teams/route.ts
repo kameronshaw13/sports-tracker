@@ -14,6 +14,22 @@ const SPORT_PATH: Record<League, string> = {
   cbb: "basketball/mens-college-basketball",
 };
 
+
+const CFB_ROW_OVERRIDES: Record<string, { abbr: string; espnId?: string; aliases?: string[] }> = {
+  "Texas": { abbr: "tex", espnId: "251", aliases: ["texas longhorns", "longhorns"] },
+  "UTSA": { abbr: "utsa", espnId: "2636", aliases: ["utsa roadrunners", "texas san antonio", "university texas san antonio", "texas san antonio roadrunners"] },
+  "Illinois": { abbr: "ill", espnId: "356", aliases: ["illinois fighting illini", "fighting illini"] },
+  "Miami (FL)": { abbr: "mia", espnId: "2390", aliases: ["miami fl", "miami hurricanes", "miami florida hurricanes"] },
+  "Appalachian State": { abbr: "app", espnId: "2026", aliases: ["app state", "appalachian state mountaineers"] },
+  "ULM": { abbr: "ulm", espnId: "2433", aliases: ["louisiana monroe", "ul monroe", "ulm warhawks", "louisiana monroe warhawks"] },
+  "Albany": { abbr: "alb", espnId: "399", aliases: ["albany great danes"] },
+  "Grambling State": { abbr: "gram", espnId: "2755", aliases: ["grambling", "grambling state tigers"] },
+};
+
+function cfbLogoById(espnId?: string) {
+  return espnId ? `https://a.espncdn.com/i/teamlogos/ncaa/500/${espnId}.png` : null;
+}
+
 const COLLEGE_FOOTBALL_GROUPS = [
   { group: "80", subdivision: "FBS" as const },
   { group: "81", subdivision: "FCS" as const },
@@ -107,6 +123,8 @@ async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
   const rowByKey = new Map<string, typeof csvRows[number]>();
   for (const row of csvRows) {
     for (const c of csvCandidates(row)) rowByKey.set(c, row);
+    const override = CFB_ROW_OVERRIDES[row.teamName];
+    for (const alias of override?.aliases || []) rowByKey.set(normalizeName(alias), row);
   }
 
   const matchedCsvKeys = new Set<string>();
@@ -134,7 +152,16 @@ async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
         if (!matchedRow) continue;
         const schoolName = displaySchoolName(matchedRow.teamName);
         const fullName = displayCollegeFullName(matchedRow);
-        const team = normalizeTeam("cfb", raw, { name: fullName, short: schoolName, subdivision: matchedRow.division, conference: matchedRow.conference } as any);
+        const override = CFB_ROW_OVERRIDES[matchedRow.teamName];
+        const team = normalizeTeam("cfb", raw, {
+          key: makeKey("cfb", override?.abbr || raw?.abbreviation),
+          abbr: (override?.abbr || raw?.abbreviation || "").toLowerCase(),
+          name: fullName,
+          short: schoolName,
+          subdivision: matchedRow.division,
+          conference: matchedRow.conference,
+          logo: cfbLogoById(override?.espnId) || raw?.logos?.[0]?.href || raw?.logo || null,
+        } as any);
         if (team) teams.push(team);
       }
       return teams;
@@ -158,7 +185,8 @@ async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
   for (const row of csvRows) {
     const marker = csvMarker(row);
     if (matchedCsvKeys.has(marker)) continue;
-    const abbr = fallbackAbbr(row.teamName);
+    const override = CFB_ROW_OVERRIDES[row.teamName];
+    const abbr = override?.abbr || fallbackAbbr(row.teamName);
     const key = makeKey("cfb", abbr);
     if (seen.has(key)) continue;
     seen.add(key);
@@ -175,7 +203,7 @@ async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
       textOnPrimary: "#FFFFFF",
       subdivision: row.division,
       conference: row.conference,
-      logo: null,
+      logo: cfbLogoById(override?.espnId),
     });
   }
 

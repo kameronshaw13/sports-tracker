@@ -13,7 +13,7 @@ import Standings from "./Standings";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-const NCAA_LOGO = "https://a.espncdn.com/i/teamlogos/leagues/500/ncaa.png";
+const NCAA_LOGO = "/ncaa-logo.svg";
 
 const LEAGUE_LABELS: Record<League, string> = {
   mlb: "MLB",
@@ -191,7 +191,9 @@ function FavoritesScores({ date, favoriteKeys, onGameClick }: { date: string; fa
   const requests = settings.sportOrder.map((league) => useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, { refreshInterval: 15_000, dedupingInterval: 4_000 }));
   const games = requests.flatMap((req, idx) => {
     const league = settings.sportOrder[idx];
-    return (req.data?.events || []).filter((g: any) => gameMatchesFavorites(g, favoriteKeys, league)).map((g: any) => ({ ...g, league }));
+    return (req.data?.events || [])
+      .map((g: any) => ({ ...g, league, favoriteSide: favoriteSideForGame(g, favoriteKeys, league) }))
+      .filter((g: any) => Boolean(g.favoriteSide));
   });
 
   if (!games.length) return null;
@@ -200,7 +202,7 @@ function FavoritesScores({ date, favoriteKeys, onGameClick }: { date: string; fa
       <section className="border-b" style={{ borderColor: "var(--border)" }}>
         <SectionHeader title="Favorites" />
         <div className="grid grid-cols-1">
-          {games.slice(0, 4).map((game: any) => <ScoreCard key={`${game.league}-${game.id}`} league={game.league} game={game} density="expanded" favorite onClick={() => onGameClick(game.league, game.id)} />)}
+          {games.slice(0, 4).map((game: any) => <ScoreCard key={`${game.league}-${game.id}`} league={game.league} game={game} density="expanded" favorite favoriteSide={game.favoriteSide} onClick={() => onGameClick(game.league, game.id)} />)}
         </div>
       </section>
     </>
@@ -286,24 +288,48 @@ function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggl
   );
 }
 
-function ScoreCard({ league, game, density, favorite = false, onClick }: { league: League; game: any; density: ScoreDensity; favorite?: boolean; onClick: () => void }) {
+function ScoreCard({ league, game, density, favorite = false, favoriteSide, onClick }: { league: League; game: any; density: ScoreDensity; favorite?: boolean; favoriteSide?: "away" | "home" | null; onClick: () => void }) {
   const state = game.status?.state;
   const isLive = state === "in";
   const compact = density === "compact" && !favorite;
+  const favoriteTeam = favoriteSide === "home" ? game.home : game.away;
+
+  if (favorite) {
+    return (
+      <button
+        onClick={onClick}
+        className="relative min-h-[146px] p-4 text-left border-t overflow-hidden active:scale-[0.99]"
+        style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+      >
+        {favoriteTeam?.logo && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-95 pointer-events-none">
+            <Image src={favoriteTeam.logo} alt={favoriteTeam.name || favoriteTeam.abbr} width={78} height={78} className="object-contain logo-outline-dark" unoptimized />
+          </div>
+        )}
+        <div className="relative pr-24">
+          <div className="text-[13px] font-black tracking-tight mb-3" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
+          <TeamLine team={game.away} league={league} compact={false} favorite game={game} />
+          <TeamLine team={game.home} league={league} compact={false} favorite game={game} />
+          <ScoreCardSubline league={league} game={game} />
+        </div>
+      </button>
+    );
+  }
+
   return (
     <button
       onClick={onClick}
-      className={`min-h-[112px] p-3.5 text-left border-t sm:odd:border-r active:scale-[0.99] ${favorite ? "min-h-[132px]" : ""}`}
+      className="min-h-[128px] p-3.5 text-left border-t sm:odd:border-r active:scale-[0.99]"
       style={{ background: "var(--surface)", borderColor: "var(--border)" }}
     >
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="text-xs font-extrabold tracking-tight truncate" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
+          <div className="text-[13px] font-black tracking-tight truncate" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
           {league === "mlb" && isLive && game.situation && <BasesDiamondMini situation={game.situation} />}
         </div>
       </div>
-      <TeamLine team={game.away} league={league} compact={compact} favorite={favorite} game={game} />
-      <TeamLine team={game.home} league={league} compact={compact} favorite={favorite} game={game} />
+      <TeamLine team={game.away} league={league} compact={compact} game={game} />
+      <TeamLine team={game.home} league={league} compact={compact} game={game} />
       <ScoreCardSubline league={league} game={game} />
     </button>
   );
@@ -314,14 +340,15 @@ function TeamLine({ team, league, compact, favorite, game }: { team: any; league
   const img = team.logo || (team.abbr ? logoUrl({ league, abbr: team.abbr }) : null);
   const recordText = seriesTeamRecord(game, team) || team.record;
   const label = favorite ? favoriteTeamLabel(team, league) : (compact ? team.abbr : team.name || team.abbr);
+  const showScore = game?.status?.state !== "pre" && team.score !== undefined && team.score !== null && team.score !== "";
   return (
     <div className="flex items-center gap-2.5 py-0.5">
-      <div className={`${favorite ? "w-8 h-8" : "w-7 h-7"} flex items-center justify-center flex-shrink-0`}>{img && <Image src={img} alt={team.abbr || team.name} width={favorite ? 30 : 25} height={favorite ? 30 : 25} className="object-contain logo-outline-dark" unoptimized />}</div>
+      <div className={`${favorite ? "w-8 h-8" : "w-7 h-7"} flex items-center justify-center flex-shrink-0`}>{img && <Image src={img} alt={team.abbr || team.name} width={favorite ? 31 : 27} height={favorite ? 31 : 27} className="object-contain logo-outline-dark" unoptimized />}</div>
       <div className="flex-1 flex items-baseline gap-1.5 min-w-0">
-        <span className={`${favorite ? "text-xl" : "text-[17px]"} leading-none truncate font-black tracking-tight`}>{label}</span>
+        <span className={`${favorite ? "text-[21px]" : "text-[18px]"} leading-none truncate font-black tracking-tight`}>{label}</span>
         {recordText && <span className="text-[12px] font-bold tracking-tight leading-none" style={{ color: "var(--text-2)" }}>{recordText}</span>}
       </div>
-      <span className={`${favorite ? "text-xl" : "text-lg"} font-black tabular-nums`}>{team.score ?? ""}</span>
+      {showScore && <span className={`${favorite ? "text-xl" : "text-lg"} font-black tabular-nums`}>{team.score}</span>}
     </div>
   );
 }
@@ -352,7 +379,7 @@ function ScoreCardSubline({ league, game }: { league: League; game: any }) {
 
   const subline = sublineForGame(league, game);
   if (!subline) return null;
-  return <div className="mt-2 text-xs font-bold tracking-tight truncate leading-none" style={{ color: "var(--text-2)" }}>{subline}</div>;
+  return <div className="mt-2 text-[11px] font-bold tracking-tight truncate leading-none" style={{ color: "var(--text-2)" }}>{subline}</div>;
 }
 
 function BasesDiamondMini({ situation }: { situation: any }) {
@@ -374,6 +401,27 @@ function LeagueStatsPlaceholder({ league }: { league: League }) {
   );
 }
 
+function favoriteSideForGame(game: any, favoriteKeys: Set<string>, league: League): "away" | "home" | null {
+  const awayAbbr = String(game?.away?.abbr || "").toLowerCase();
+  const homeAbbr = String(game?.home?.abbr || "").toLowerCase();
+  if (awayAbbr && favoriteKeys.has(`${league}-${awayAbbr}`)) return "away";
+  if (homeAbbr && favoriteKeys.has(`${league}-${homeAbbr}`)) return "home";
+  return null;
+}
+
+function pitcherLastNameMatchup(value: string | null | undefined) {
+  const raw = String(value || "TBD vs TBD");
+  const parts = raw.split(/\s+vs\s+/i);
+  const clean = (name: string | undefined) => {
+    const n = String(name || "").trim();
+    if (!n || /probable|starting pitcher|starter|^tbd$/i.test(n)) return "TBD";
+    const withoutParen = n.replace(/\s*\([^)]*\)\s*/g, " ").trim();
+    const tokens = withoutParen.split(/\s+/).filter(Boolean);
+    return tokens[tokens.length - 1] || "TBD";
+  };
+  return `${clean(parts[0])} vs ${clean(parts[1])}`;
+}
+
 function gameMatchesFavorites(game: any, favoriteKeys: Set<string>, league: League) {
   const teams = [game.away, game.home].filter(Boolean);
   return teams.some((t: any) => {
@@ -384,8 +432,8 @@ function gameMatchesFavorites(game: any, favoriteKeys: Set<string>, league: Leag
 
 function sublineForGame(league: League, game: any) {
   if (league === "mlb") {
-    if (game.status?.state === "pre") return game.pitchers || "TBD vs TBD";
-    if (game.pitchers) return game.pitchers;
+    if (game.status?.state === "pre") return pitcherLastNameMatchup(game.pitchers || "TBD vs TBD");
+    if (game.pitchers) return pitcherLastNameMatchup(game.pitchers);
   }
   if ((league === "nba" || league === "nhl" || league === "mlb") && game.isPlayoff) {
     return game.seriesGame || game.seriesSummary || "";

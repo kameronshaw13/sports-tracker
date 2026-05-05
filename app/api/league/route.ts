@@ -75,6 +75,24 @@ function extractSeriesInfo(ev: any, comp: any) {
 }
 
 
+function fallbackSeriesGame(ev: any, comp: any): string | null {
+  const candidates = [
+    comp?.notes?.[0]?.headline,
+    comp?.notes?.[0]?.text,
+    ev?.note,
+    comp?.status?.type?.shortDetail,
+    comp?.status?.type?.detail,
+    ev?.shortName,
+    ev?.name,
+  ];
+  for (const raw of candidates) {
+    const txt = String(raw || "");
+    const match = txt.match(/\bGame\s+(\d+)\b/i);
+    if (match) return `Game ${match[1]}`;
+  }
+  return null;
+}
+
 async function fetchMlbSummaryPitchers(eventId: string, away: any, home: any): Promise<string | null> {
   try {
     const url = `https://site.web.api.espn.com/apis/site/v2/sports/baseball/mlb/summary?event=${eventId}`;
@@ -193,7 +211,7 @@ export async function GET(req: NextRequest) {
         situation: normalizedSituation,
         isPlayoff,
         seriesSummary: seriesInfo.summary,
-        seriesGame: seriesInfo.seriesGame,
+        seriesGame: seriesInfo.seriesGame || fallbackSeriesGame(ev, comp),
         pitchers: league === "mlb" ? (extractPitchingMatchup(comp, away, home) || await fetchMlbSummaryPitchers(ev.id, away, home) || "TBD vs TBD") : null,
         note: comp?.notes?.[0]?.headline || comp?.notes?.[0]?.text || ev?.note || null,
         broadcast: comp?.broadcasts?.[0]?.names?.[0] || null,

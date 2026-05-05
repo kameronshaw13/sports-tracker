@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback, useSyncExternalStore } from "react";
-import { TeamConfig, DEFAULT_FAVORITES } from "./teams";
+import { TeamConfig, DEFAULT_FAVORITES, makeKey } from "./teams";
 
 const STORAGE_KEY = "favoriteTeams_v1";
 
@@ -19,6 +19,32 @@ function notify() {
   listeners.forEach((l) => l());
 }
 
+
+function normalizeStoredFavorite(team: TeamConfig): TeamConfig {
+  if (team.league !== "cfb") return team;
+  const haystack = `${team.key} ${team.name} ${team.short} ${team.abbr}`.toLowerCase();
+  const patches: { test: RegExp; abbr: string; name: string; short: string; logoId?: string }[] = [
+    { test: /(utsa|san antonio|roadrunners)/, abbr: "utsa", name: "UTSA Roadrunners", short: "UTSA", logoId: "2636" },
+    { test: /texas longhorns|\btex\b|longhorns/, abbr: "tex", name: "Texas Longhorns", short: "Texas", logoId: "251" },
+    { test: /illinois|fighting illini/, abbr: "ill", name: "Illinois Fighting Illini", short: "Illinois", logoId: "356" },
+    { test: /miami.*fl|miami hurricanes/, abbr: "mia", name: "Miami Hurricanes", short: "Miami", logoId: "2390" },
+    { test: /appalachian|app state|mountaineers/, abbr: "app", name: "Appalachian St Mountaineers", short: "Appalachian St", logoId: "2026" },
+    { test: /\bulm\b|louisiana monroe|ul monroe|warhawks/, abbr: "ulm", name: "ULM Warhawks", short: "ULM", logoId: "2433" },
+    { test: /albany|great danes/, abbr: "alb", name: "Albany Great Danes", short: "Albany", logoId: "399" },
+    { test: /grambling/, abbr: "gram", name: "Grambling St Tigers", short: "Grambling St", logoId: "2755" },
+  ];
+  const patch = patches.find((p) => p.test.test(haystack));
+  if (!patch) return team;
+  return {
+    ...team,
+    key: makeKey("cfb", patch.abbr),
+    abbr: patch.abbr,
+    name: patch.name,
+    short: patch.short,
+    logo: patch.logoId ? `https://a.espncdn.com/i/teamlogos/ncaa/500/${patch.logoId}.png` : team.logo,
+  };
+}
+
 function readFromStorage(): TeamConfig[] | null {
   if (typeof window === "undefined") return null;
   try {
@@ -28,8 +54,9 @@ function readFromStorage(): TeamConfig[] | null {
     if (!Array.isArray(parsed)) return null;
     const valid = parsed.filter(
       (t: any) => t && typeof t.key === "string" && t.league && t.abbr && t.name && t.primary
-    );
-    return valid.length > 0 ? (valid as TeamConfig[]) : null;
+    ).map((t: TeamConfig) => normalizeStoredFavorite(t));
+    const deduped = Array.from(new Map(valid.map((t: TeamConfig) => [t.key, t])).values());
+    return deduped.length > 0 ? (deduped as TeamConfig[]) : null;
   } catch {
     return null;
   }

@@ -8,7 +8,7 @@ import { League, TeamConfig, VALID_LEAGUES } from "@/lib/teams";
 import { useFavoriteTeams } from "@/lib/useFavorites";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
-const NCAA_LOGO = "https://a.espncdn.com/i/teamlogos/leagues/500/ncaa.png";
+const NCAA_LOGO = "/ncaa-logo.svg";
 
 const LEAGUES: { id: League; label: string; logo: string }[] = [
   { id: "mlb", label: "MLB", logo: "https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" },
