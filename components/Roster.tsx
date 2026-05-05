@@ -124,7 +124,7 @@ export default function Roster({ team, onPlayerClick }: Props) {
         placeholder={`Search ${tab === "active" ? "players" : "injured players"}...`}
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
-        className="w-full mb-3 px-4 py-2 rounded-xl text-sm outline-none"
+        className="w-full mb-0 px-4 py-3 text-base outline-none"
         style={{
           background: "var(--surface)",
           border: "1px solid var(--border)",
@@ -137,7 +137,7 @@ export default function Roster({ team, onPlayerClick }: Props) {
           {filteredGroups.length === 0 ? (
             <EmptyMessage filter={filter} kind="active" />
           ) : (
-            <div className="space-y-5">
+            <div className="-mx-4 sm:mx-0">
               {filteredGroups.map((group) => (
                 <PositionSection
                   key={group.id}
@@ -145,7 +145,7 @@ export default function Roster({ team, onPlayerClick }: Props) {
                   count={group.players.length}
                   showHeader={positionGroups.length > 1}
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="cbs-table-panel">
                     {group.players.map((p) => (
                       <ActivePlayerCard key={p.id} player={p} onClick={onPlayerClick ? () => onPlayerClick({ id: p.id, name: p.name, league: team.league, teamKey: team.key }) : undefined} />
                     ))}
@@ -162,7 +162,7 @@ export default function Roster({ team, onPlayerClick }: Props) {
           {filteredInjured.length === 0 ? (
             <EmptyMessage filter={filter} kind="injured" />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="cbs-table-panel -mx-4 sm:mx-0">
               {filteredInjured.map((p) => (
                 <InjuredPlayerCard key={p.id} player={p} onClick={onPlayerClick ? () => onPlayerClick({ id: p.id, name: p.name, league: team.league, teamKey: team.key }) : undefined} />
               ))}
@@ -189,10 +189,10 @@ function TabButton({
       role="tab"
       aria-selected={isActive}
       onClick={onClick}
-      className="px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors"
+      className="px-4 py-2 text-base font-black transition-colors relative"
       style={{
-        background: isActive ? "var(--text)" : "transparent",
-        color: isActive ? "var(--bg)" : "var(--text-2)",
+        background: "transparent",
+        color: isActive ? "var(--text)" : "var(--text-2)",
       }}
     >
       {label}
@@ -233,8 +233,8 @@ function PositionSection({
     <section>
       <div className="flex items-center gap-2 mb-2 px-1">
         <h4
-          className="text-xs uppercase tracking-widest font-bold"
-          style={{ color: "var(--text-2)", letterSpacing: "0.1em" }}
+          className="text-sm uppercase tracking-widest font-black"
+          style={{ color: "var(--text-2)", letterSpacing: "0.08em" }}
         >
           {label}
         </h4>
@@ -255,12 +255,11 @@ function ActivePlayerCard({ player, onClick }: { player: Player; onClick?: () =>
   return (
     <Comp
       onClick={onClick}
-      className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-xl hover:opacity-90 transition-opacity"
-      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+      className="cbs-roster-row w-full text-left flex items-center gap-3 hover:opacity-90 transition-opacity"
     >
       <Headshot player={player} size={48} />
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold truncate">{player.name}</div>
+        <div className="text-lg font-black truncate">{player.name}</div>
         <div
           className="text-xs flex items-center gap-2 mt-0.5"
           style={{ color: "var(--text-3)" }}
@@ -287,13 +286,12 @@ function InjuredPlayerCard({ player, onClick }: { player: Player; onClick?: () =
   return (
     <Comp
       onClick={onClick}
-      className="w-full text-left flex items-start gap-3 px-3 py-2.5 rounded-xl hover:opacity-90 transition-opacity"
-      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+      className="cbs-roster-row w-full text-left flex items-start gap-3 hover:opacity-90 transition-opacity"
     >
       <Headshot player={player} size={48} />
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <div className="text-sm font-semibold truncate flex-1 min-w-0">
+          <div className="text-lg font-black truncate flex-1 min-w-0">
             {player.name}
           </div>
           <span

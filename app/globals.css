@@ -46,12 +46,22 @@ html, body {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-html[data-theme="dark"] .logo-outline-dark {
+.logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(1px 0 0 rgba(255,255,255,.72))
+    drop-shadow(-1px 0 0 rgba(255,255,255,.72))
+    drop-shadow(0 1px 0 rgba(255,255,255,.72))
+    drop-shadow(0 -1px 0 rgba(255,255,255,.72));
   filter:
-    drop-shadow(.85px 0 0 rgba(255,255,255,.58))
-    drop-shadow(-.85px 0 0 rgba(255,255,255,.58))
-    drop-shadow(0 .85px 0 rgba(255,255,255,.58))
-    drop-shadow(0 -.85px 0 rgba(255,255,255,.58));
+    drop-shadow(1px 0 0 rgba(255,255,255,.72))
+    drop-shadow(-1px 0 0 rgba(255,255,255,.72))
+    drop-shadow(0 1px 0 rgba(255,255,255,.72))
+    drop-shadow(0 -1px 0 rgba(255,255,255,.72));
+}
+
+html[data-theme="light"] .logo-outline-dark {
+  -webkit-filter: none;
+  filter: none;
 }
 
 .favorite-wordmark-outline {
@@ -76,4 +86,136 @@ html[data-theme="dark"] .logo-outline-dark {
   transform: rotate(180deg);
   -webkit-text-stroke: 1px currentColor;
   text-stroke: 1px currentColor;
+}
+
+/* CBS-inspired app-wide polish */
+:root, html[data-theme="dark"] {
+  --bg: #1f2023;
+  --surface: #232426;
+  --surface-2: #303134;
+  --surface-3: #151617;
+  --border: #3b3c40;
+  --text: #f6f7f9;
+  --text-2: #c3c5cb;
+  --text-3: #8d9099;
+  --accent: #3b8cff;
+}
+html[data-theme="light"] {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f2f3f5;
+  --surface-3: #e9ebef;
+  --border: #d7dbe3;
+  --text: #111318;
+  --text-2: #4b5563;
+  --text-3: #8a94a6;
+}
+
+body {
+  letter-spacing: -0.01em;
+}
+
+.logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(.75px 0 0 rgba(255,255,255,.68))
+    drop-shadow(-.75px 0 0 rgba(255,255,255,.68))
+    drop-shadow(0 .75px 0 rgba(255,255,255,.68))
+    drop-shadow(0 -.75px 0 rgba(255,255,255,.68));
+  filter:
+    drop-shadow(.75px 0 0 rgba(255,255,255,.68))
+    drop-shadow(-.75px 0 0 rgba(255,255,255,.68))
+    drop-shadow(0 .75px 0 rgba(255,255,255,.68))
+    drop-shadow(0 -.75px 0 rgba(255,255,255,.68));
+}
+html[data-theme="light"] .logo-outline-dark { filter: none; -webkit-filter: none; }
+
+.cbs-tabs {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.cbs-team-hero {
+  background: var(--surface-3);
+  border-bottom: 1px solid var(--border);
+}
+.cbs-month-bar {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: .85rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.cbs-table-panel {
+  background: var(--surface-3);
+  border-bottom: 1px solid var(--border);
+}
+.cbs-schedule-row {
+  min-height: 86px;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .85rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.cbs-schedule-row:last-child { border-bottom: 0; }
+.cbs-roster-row {
+  min-height: 76px;
+  padding: .85rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-3);
+}
+.cbs-roster-row:last-child { border-bottom: 0; }
+.cbs-game-topbar {
+  min-height: 62px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+}
+.cbs-score-hero {
+  min-height: 172px;
+  background: #050607;
+  border-bottom: 1px solid var(--border);
+}
+.cbs-game-page table,
+.cbs-player-page table,
+.cbs-table-panel table {
+  border-collapse: collapse;
+}
+.cbs-game-page th,
+.cbs-game-page td,
+.cbs-player-page th,
+.cbs-player-page td {
+  font-weight: 900;
+  border-color: var(--border) !important;
+}
+.cbs-player-topbar {
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.cbs-player-hero {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Make existing card/table components feel closer to the CBS screenshots. */
+.rounded-2xl, .rounded-xl { border-radius: 0.35rem; }
+.cbs-tabs .rounded-xl, nav .rounded-xl { border-radius: .75rem; }
+
+@media (max-width: 640px) {
+  main { padding-left: 1rem; padding-right: 1rem; }
+  nav { min-height: 92px; }
+  nav button { transform: translateY(-2px); }
 }

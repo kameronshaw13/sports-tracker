@@ -156,18 +156,19 @@ export default function Home() {
               setShowReturnGame(false);
               setView(teamReturnView || "scores");
             }}
-            className="mb-3 text-sm font-black px-3 py-2 rounded-xl"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}
+            className="mb-2 -ml-2 h-10 px-2 flex items-center gap-1 text-base font-semibold"
+            style={{ color: "var(--text)" }}
           >
-            ← Back
+            <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15 18-6-6 6-6" /></svg>
+            Back
           </button>
           {returnGame && (
             <button
               onClick={() => setShowReturnGame(true)}
-              className="mb-3 text-sm font-semibold px-3 py-2 rounded-xl"
-              style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}
+              className="mb-3 text-sm font-black px-3 py-2"
+              style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--accent)" }}
             >
-              ← Back to game
+              Back to game
             </button>
           )}
           <TeamHeader team={activeTeam} />
@@ -202,7 +203,7 @@ export default function Home() {
   );
 
   return (
-    <main className="min-h-screen p-4 sm:p-6 pb-24">
+    <main className="min-h-screen p-4 sm:p-6 pb-28">
       <PullToRefresh>
       <div className="max-w-3xl mx-auto">
         {!selectedPlayer && !showReturnGame && !selectedGame && view === "home" && (

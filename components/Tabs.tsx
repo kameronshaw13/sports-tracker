@@ -13,38 +13,35 @@ type Props = {
 
 export default function Tabs({ team, active, onChange, hasLive }: Props) {
   const tabs: { id: TabId; label: string }[] = [
-    { id: "live", label: "Live" },
     { id: "schedule", label: "Schedule" },
-    { id: "roster", label: "Roster" },
     { id: "stats", label: "Stats" },
+    { id: "roster", label: "Roster" },
     { id: "standings", label: "Standings" },
+    { id: "live", label: "Live" },
   ];
 
   return (
-    <div className="grid grid-cols-5 gap-1 mb-4 p-1 rounded-xl" style={{ background: "var(--surface-2)" }}>
-      {tabs.map((tab) => {
-        const isActive = active === tab.id;
-        const showDot = tab.id === "live" && hasLive;
-        return (
-          <button
-            key={tab.id}
-            onClick={() => onChange(tab.id)}
-            className="min-w-0 flex items-center justify-center gap-1 px-1.5 py-2 rounded-lg text-[11px] sm:text-sm font-bold transition-all"
-            style={{
-              background: isActive ? team.primary : "transparent",
-              color: isActive ? team.textOnPrimary : "var(--text-2)",
-            }}
-          >
-            {showDot && (
-              <span
-                className="w-2 h-2 rounded-full live-dot flex-shrink-0"
-                style={{ background: isActive ? team.textOnPrimary : "var(--danger)" }}
-              />
-            )}
-            <span className="truncate">{tab.label}</span>
-          </button>
-        );
-      })}
+    <div className="cbs-tabs -mx-4 sm:mx-0 mb-0" role="tablist">
+      <div className="flex overflow-x-auto no-scrollbar px-4 gap-7">
+        {tabs.map((tab) => {
+          const isActive = active === tab.id;
+          const showDot = tab.id === "live" && hasLive;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => onChange(tab.id)}
+              className="relative py-4 text-base font-black whitespace-nowrap tracking-tight"
+              style={{ color: isActive ? "var(--text)" : "var(--text-2)" }}
+            >
+              <span className="inline-flex items-center gap-1.5">
+                {showDot && <span className="w-2 h-2 rounded-full live-dot" style={{ background: "var(--danger)" }} />}
+                {tab.label}
+              </span>
+              {isActive && <span className="absolute left-0 right-0 bottom-0 h-1" style={{ background: "var(--accent)" }} />}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

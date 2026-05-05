@@ -1,16 +1,19 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { League, VALID_LEAGUES } from "@/lib/teams";
 import Standings from "./Standings";
 
-const LEAGUE_LABELS: Record<League, string> = {
-  mlb: "MLB",
-  nfl: "NFL",
-  nba: "NBA",
-  nhl: "NHL",
-  cfb: "CFB",
-  cbb: "CBB",
+const NCAA_LOGO = "/ncaa-logo.png";
+const LEAGUE_LABELS: Record<League, string> = { mlb: "MLB", nfl: "NFL", nba: "NBA", nhl: "NHL", cfb: "CFB", cbb: "CBB" };
+const LEAGUE_LOGOS: Record<League, string> = {
+  mlb: "https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png",
+  nfl: "https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png",
+  nba: "https://a.espncdn.com/i/teamlogos/leagues/500/nba.png",
+  nhl: "https://a.espncdn.com/i/teamlogos/leagues/500/nhl.png",
+  cfb: NCAA_LOGO,
+  cbb: NCAA_LOGO,
 };
 
 type StandingsMode = "division" | "conference" | "wildcard";
@@ -22,70 +25,47 @@ export default function StandingsPage({ initialLeague = "mlb" }: { initialLeague
   const [cfbSubdivision, setCfbSubdivision] = useState<"FBS" | "FCS">("FBS");
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-2xl font-black leading-tight">Standings</h2>
-        <p className="text-xs mt-1" style={{ color: "var(--text-3)" }}>
-          Choose a league, then switch between the standings views ESPN provides.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-6 gap-1 p-1 rounded-2xl" style={{ background: "var(--surface-2)" }}>
+    <div className="-mx-4 sm:mx-0">
+      <header className="px-4 pt-8 pb-4" style={{ background: "var(--surface-3)", borderBottom: "1px solid var(--border)" }}>
+        <h1 className="text-4xl font-black tracking-tight">Standings</h1>
+      </header>
+      <div className="flex overflow-x-auto no-scrollbar gap-2 px-4 py-3" style={{ background: "var(--surface)", borderBottom: "1px solid var(--border)" }}>
         {VALID_LEAGUES.map((id) => {
           const selected = league === id;
           return (
             <button
               key={id}
-              onClick={() => {
-                setLeague(id);
-                setMode("division");
-              }}
-              className="px-1 py-2 rounded-xl text-[11px] font-black transition-all"
-              style={{ background: selected ? "var(--surface)" : "transparent", border: selected ? "1px solid var(--border)" : "1px solid transparent", color: selected ? "var(--text)" : "var(--text-2)" }}
+              onClick={() => { setLeague(id); setMode("division"); }}
+              className="min-w-[76px] px-3 py-2 flex flex-col items-center gap-1 text-xs font-black"
+              style={{ color: selected ? "var(--text)" : "var(--text-2)" }}
             >
-              {LEAGUE_LABELS[id]}
+              <Image src={LEAGUE_LOGOS[id]} alt={LEAGUE_LABELS[id]} width={26} height={26} className="object-contain logo-outline-dark" unoptimized />
+              <span>{LEAGUE_LABELS[id]}</span>
+              {selected && <span className="h-1 w-full" style={{ background: "var(--accent)" }} />}
             </button>
           );
         })}
       </div>
 
-      {league === "cfb" ? (
-        <div className="rounded-2xl p-3 space-y-3" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+      <div className="px-4 py-3" style={{ background: "var(--surface)" }}>
+        {league === "cfb" ? (
           <div className="grid grid-cols-2 gap-2">
             {(["FBS", "FCS"] as const).map((id) => (
-              <button
-                key={id}
-                onClick={() => setCfbSubdivision(id)}
-                className="px-3 py-2 rounded-xl text-sm font-black"
-                style={{ background: cfbSubdivision === id ? "var(--text)" : "var(--surface-2)", color: cfbSubdivision === id ? "var(--bg)" : "var(--text-2)" }}
-              >
-                {id}
-              </button>
+              <button key={id} onClick={() => setCfbSubdivision(id)} className="py-2 text-sm font-black" style={{ background: cfbSubdivision === id ? "var(--surface-2)" : "transparent", color: cfbSubdivision === id ? "var(--text)" : "var(--text-2)", border: "1px solid var(--border)" }}>{id}</button>
             ))}
           </div>
-          <Standings league={league} subdivision={cfbSubdivision} pageMode="conference" showHeader={false} showFilterControls />
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl" style={{ background: "var(--surface-2)" }}>
-            {([
-              ["division", "Division"],
-              ["conference", "Conference"],
-              ["wildcard", "Wild Card"],
-            ] as const).map(([id, label]) => (
-              <button
-                key={id}
-                onClick={() => setMode(id)}
-                className="px-2 py-2 rounded-xl text-xs font-black transition-all"
-                style={{ background: mode === id ? "var(--surface)" : "transparent", border: mode === id ? "1px solid var(--border)" : "1px solid transparent", color: mode === id ? "var(--text)" : "var(--text-2)" }}
-              >
-                {label}
-              </button>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {([ ["division", "Division"], ["conference", "Conference"], ["wildcard", "Wild Card"] ] as const).map(([id, label]) => (
+              <button key={id} onClick={() => setMode(id)} className="py-2 text-xs font-black" style={{ background: mode === id ? "var(--surface-2)" : "transparent", color: mode === id ? "var(--text)" : "var(--text-2)", border: "1px solid var(--border)" }}>{label}</button>
             ))}
           </div>
-          <Standings league={league} pageMode={mode} showHeader={false} />
-        </>
-      )}
+        )}
+      </div>
+
+      <div className="px-0">
+        {league === "cfb" ? <Standings league={league} subdivision={cfbSubdivision} pageMode="conference" showHeader={false} showFilterControls /> : <Standings league={league} pageMode={mode} showHeader={false} />}
+      </div>
     </div>
   );
 }

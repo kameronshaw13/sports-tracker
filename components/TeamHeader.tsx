@@ -9,25 +9,29 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 type Props = { team: TeamConfig };
 
 export default function TeamHeader({ team }: Props) {
-  const { data, error } = useSWR(`/api/team?team=${team.key}`, fetcher, { refreshInterval: 60_000 });
+  const { data } = useSWR(`/api/team?team=${team.key}`, fetcher, { refreshInterval: 60_000 });
+  const record = data?.record || "—";
+  const standing = data?.standingSummary || "";
 
   return (
-    <div className="rounded-2xl p-4 sm:p-6 mb-4 relative overflow-hidden" style={{ background: team.primary, color: team.textOnPrimary }}>
-      <div className="absolute -right-10 -top-10 opacity-10 pointer-events-none"><Image src={logoUrl(team)} alt="" width={210} height={210} className="object-contain" /></div>
-      <div className="relative flex items-center gap-3 sm:gap-5">
-        <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,255,255,0.14)" }}>
-          <Image src={logoUrl(team)} alt={team.name} width={58} height={58} className="object-contain" />
+    <section className="cbs-team-hero -mx-4 sm:mx-0 mb-0" style={{ ["--team-primary" as any]: team.primary }}>
+      <div className="relative px-4 pt-2 pb-5 text-center overflow-hidden">
+        <div className="absolute inset-x-0 top-0 h-1" style={{ background: team.primary }} />
+        <div className="absolute inset-0 opacity-[0.08] pointer-events-none">
+          <Image src={logoUrl(team)} alt="" fill className="object-contain scale-150" unoptimized />
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-[10px] sm:text-xs uppercase tracking-widest font-black opacity-80">{team.league}</div>
-          <h1 className="text-xl sm:text-3xl font-black leading-tight mt-1">{displayTeamName(team)}</h1>
-          <div className="text-xs sm:text-sm opacity-85 mt-1 sm:mt-2">{data?.standingSummary || (error ? "Standings unavailable" : "Loading...")}</div>
-        </div>
-        <div className="text-right flex-shrink-0">
-          <div className="text-[10px] sm:text-xs uppercase tracking-widest font-black opacity-80">Record</div>
-          <div className="text-xl sm:text-3xl font-black mt-1">{data?.record || "—"}</div>
+        <div className="relative">
+          <h1 className="text-xl font-black leading-tight tracking-tight">{displayTeamName(team)}</h1>
+          <p className="mt-0.5 text-sm font-black" style={{ color: "var(--text-2)" }}>
+            {record}{standing ? `, ${standing}` : ""}
+          </p>
+          <div className="mt-5 flex justify-center">
+            <div className="h-24 w-24 flex items-center justify-center">
+              <Image src={logoUrl(team)} alt={team.name} width={92} height={92} className="object-contain logo-outline-dark" unoptimized />
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
