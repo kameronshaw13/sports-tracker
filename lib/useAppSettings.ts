@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 import type { League } from "./teams";
 
 export type ScoreDensity = "compact" | "expanded";
@@ -55,6 +55,13 @@ if (typeof window !== "undefined") {
 
 export function useAppSettings() {
   const settings = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot) ?? DEFAULT_SETTINGS;
+
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.dataset.theme = settings.theme;
+    }
+  }, [settings.theme]);
+
   const setDensity = useCallback((density: ScoreDensity) => setStore({ ...settings, density }), [settings]);
   const setTheme = useCallback((theme: AppTheme) => setStore({ ...settings, theme }), [settings]);
   const moveSport = useCallback((league: League, direction: "up" | "down") => {

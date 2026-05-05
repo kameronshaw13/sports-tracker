@@ -70,8 +70,11 @@ function csvCandidates(row: { teamName: string; nickname: string }) {
   return new Set([
     normalizeName(row.teamName),
     normalizeName(`${row.teamName} ${row.nickname}`),
-    normalizeName(row.nickname),
   ].filter(Boolean));
+}
+
+function csvMarker(row: { division: string; teamName: string }) {
+  return `${row.division}:${normalizeName(row.teamName)}`;
 }
 
 function espnCandidates(t: any) {
@@ -103,6 +106,7 @@ async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
   const matchedCsvKeys = new Set<string>();
   const out: TeamConfig[] = [];
   const seen = new Set<string>();
+  const seenCsvMarkers = new Set<string>();
 
   const results = await Promise.allSettled(
     COLLEGE_FOOTBALL_GROUPS.map(async ({ group, subdivision }) => {
@@ -117,7 +121,7 @@ async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
           const row = rowByKey.get(cand);
           if (row && row.division === subdivision) {
             matchedRow = row;
-            matchedCsvKeys.add(`${row.division}:${row.teamName}`);
+            matchedCsvKeys.add(csvMarker(row));
             break;
           }
         }
@@ -133,8 +137,10 @@ async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
   for (const r of results) {
     if (r.status !== "fulfilled") continue;
     for (const team of r.value) {
-      if (seen.has(team.key)) continue;
+      const marker = `${team.subdivision || ""}:${normalizeName(team.name)}`;
+      if (seen.has(team.key) || seenCsvMarkers.has(marker)) continue;
       seen.add(team.key);
+      seenCsvMarkers.add(marker);
       out.push(team);
     }
   }
@@ -143,12 +149,13 @@ async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
   // have ESPN schedule data until ESPN exposes a matching abbreviation, but the
   // list remains exactly your FBS/FCS source of truth.
   for (const row of csvRows) {
-    const marker = `${row.division}:${row.teamName}`;
+    const marker = csvMarker(row);
     if (matchedCsvKeys.has(marker)) continue;
     const abbr = fallbackAbbr(row.teamName);
     const key = makeKey("cfb", abbr);
     if (seen.has(key)) continue;
     seen.add(key);
+    seenCsvMarkers.add(marker);
     out.push({
       key,
       name: displaySchoolName(row.teamName),

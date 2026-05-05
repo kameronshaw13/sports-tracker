@@ -199,7 +199,7 @@ function FavoritesScores({ date, favoriteKeys, density, onGameClick }: { date: s
     <>
       <section className="border-b" style={{ borderColor: "var(--border)" }}>
         <SectionHeader title="Favorites" />
-        <div className="grid grid-cols-1 sm:grid-cols-2">
+        <div className={density === "compact" ? "grid grid-cols-2" : "grid grid-cols-1"}>
           {games.slice(0, 4).map((game: any) => <ScoreCard key={`${game.league}-${game.id}`} league={game.league} game={game} density={density} onClick={() => onGameClick(game.league, game.id)} />)}
         </div>
       </section>
@@ -234,11 +234,11 @@ function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick
         onStandingsClick={onStandingsClick ? () => onStandingsClick(league) : undefined}
       />
       {!collapsed && (isLoading ? (
-        <div className={compactGrid ? "grid grid-cols-2" : "grid grid-cols-1 sm:grid-cols-2"}>
+        <div className={compactGrid ? "grid grid-cols-2" : "grid grid-cols-1"}>
           {[0, 1, 2, 3].map((i) => <div key={i} className="h-24 animate-pulse border-t" style={{ background: "var(--surface)", borderColor: "var(--border)" }} />)}
         </div>
       ) : (
-        <div className={compactGrid ? "grid grid-cols-2" : "grid grid-cols-1 sm:grid-cols-2"}>
+        <div className={compactGrid ? "grid grid-cols-2" : "grid grid-cols-1"}>
           {events.map((game: any) => <ScoreCard key={game.id} league={league} game={game} density={density} onClick={() => onGameClick(game.id)} />)}
         </div>
       ))}
@@ -293,7 +293,7 @@ function ScoreCard({ league, game, density, onClick }: { league: League; game: a
   return (
     <button
       onClick={onClick}
-      className="min-h-[84px] p-2.5 text-left border-t sm:odd:border-r active:scale-[0.99]"
+      className="min-h-[92px] p-3 text-left border-t sm:odd:border-r active:scale-[0.99]"
       style={{ background: "var(--surface)", borderColor: "var(--border)" }}
     >
       <div className="flex items-center justify-between gap-2 mb-1">
@@ -302,26 +302,32 @@ function ScoreCard({ league, game, density, onClick }: { league: League; game: a
           {league === "mlb" && isLive && game.situation && <BasesDiamondMini situation={game.situation} />}
         </div>
       </div>
-      <TeamLine team={game.away} league={league} compact={compact} />
-      <TeamLine team={game.home} league={league} compact={compact} />
+      <TeamLine team={game.away} league={league} compact={compact} game={game} />
+      <TeamLine team={game.home} league={league} compact={compact} game={game} />
       <ScoreCardSubline league={league} game={game} />
     </button>
   );
 }
 
-function TeamLine({ team, league, compact }: { team: any; league: League; compact: boolean }) {
+function TeamLine({ team, league, compact, game }: { team: any; league: League; compact: boolean; game: any }) {
   if (!team) return null;
   const img = team.logo || (team.abbr ? logoUrl({ league, abbr: team.abbr }) : null);
+  const recordText = seriesTeamRecord(game, team) || team.record;
   return (
     <div className="flex items-center gap-2 py-0.5">
       <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">{img && <Image src={img} alt={team.abbr || team.name} width={20} height={20} className="object-contain" unoptimized />}</div>
       <div className="flex-1 flex items-baseline gap-1.5 min-w-0">
         <span className="text-sm leading-none truncate font-black tracking-tight">{team.abbr || team.name}</span>
-        {team.record && <span className="text-[10px] font-bold tracking-tight" style={{ color: "var(--text-2)" }}>{team.record}</span>}
+        {recordText && <span className="text-[10px] font-bold tracking-tight leading-none" style={{ color: "var(--text-2)" }}>{recordText}</span>}
       </div>
       <span className="text-sm font-black tabular-nums">{team.score ?? ""}</span>
     </div>
   );
+}
+
+function seriesTeamRecord(game: any, team: any) {
+  if (!game?.isPlayoff || !team) return null;
+  return team.seriesRecord || null;
 }
 
 function ScoreCardSubline({ league, game }: { league: League; game: any }) {
@@ -331,7 +337,7 @@ function ScoreCardSubline({ league, game }: { league: League; game: any }) {
     const outs = game.situation.outs ?? 0;
     const outLabel = outs === 1 ? "1 Out" : `${outs} Outs`;
     return (
-      <div className="mt-1.5 text-[11px] font-extrabold tracking-tight tabular-nums" style={{ color: "var(--text-2)" }}>
+      <div className="mt-1.5 text-[11px] font-black tracking-tight tabular-nums leading-none" style={{ color: "var(--text-2)" }}>
         {balls}-{strikes}, {outLabel}
       </div>
     );
@@ -339,7 +345,7 @@ function ScoreCardSubline({ league, game }: { league: League; game: any }) {
 
   const subline = sublineForGame(league, game);
   if (!subline) return null;
-  return <div className="mt-1.5 text-[11px] font-bold tracking-tight truncate" style={{ color: "var(--text-2)" }}>{subline}</div>;
+  return <div className="mt-1.5 text-[11px] font-bold tracking-tight truncate leading-none" style={{ color: "var(--text-2)" }}>{subline}</div>;
 }
 
 function BasesDiamondMini({ situation }: { situation: any }) {
@@ -370,8 +376,14 @@ function gameMatchesFavorites(game: any, favoriteKeys: Set<string>, league: Leag
 }
 
 function sublineForGame(league: League, game: any) {
+  if (league === "mlb") {
+    if (game.status?.state === "pre") return game.pitchers || "Probable pitchers TBD";
+    if (game.pitchers) return game.pitchers;
+  }
+  if ((league === "nba" || league === "nhl") && game.isPlayoff) {
+    return game.seriesGame || game.seriesSummary || "";
+  }
   if (game.status?.state === "post") return game.status?.detail || "Final";
-  if (league === "mlb" && game.pitchers) return game.pitchers;
   if (game.note) return game.note;
   return game.status?.type?.shortDetail || game.status?.detail || "";
 }
@@ -388,7 +400,14 @@ function leagueHeaderColor(league: League) {
 }
 
 function formatDate(offset: number) { const d = new Date(); d.setDate(d.getDate() + offset); return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}`; }
-function dateBarLabel(offset: number) { if (offset === 0) return "Today"; const d = new Date(); d.setDate(d.getDate() + offset); return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }); }
+function dateBarLabel(offset: number) {
+  if (offset === 0) return "Today";
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  const weekday = d.toLocaleDateString(undefined, { weekday: "short" });
+  const month = d.toLocaleDateString(undefined, { month: "short" });
+  return `${weekday} ${month} ${d.getDate()}`;
+}
 function gameTimeLabel(game: any) {
   if (game.status?.state === "pre") return formatCentralTime(game.date);
   return game.status?.detail || formatCentralTime(game.date);

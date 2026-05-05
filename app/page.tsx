@@ -46,6 +46,7 @@ export default function Home() {
   const [showReturnGame, setShowReturnGame] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; league: string; teamKey?: string } | null>(null);
   const [selectedGame, setSelectedGame] = useState<{ league: string; eventId: string } | null>(null);
+  const [teamReturnView, setTeamReturnView] = useState<ViewId>("scores");
 
   const { favorites } = useFavoriteTeams();
 
@@ -123,13 +124,14 @@ export default function Home() {
         setShowReturnGame(false);
       }
 
+      setTeamReturnView(sourceGame?.eventId ? "scores" : (view === "teamPage" ? "scores" : view));
       setSelectedGame(null);
       setSelectedPlayer(null);
       setView("teamPage");
       setActiveTab("schedule");
       setManageOpen(false);
     },
-    [favorites, catalogData]
+    [favorites, catalogData, view]
   );
 
   const renderActiveTeamPage = (showSelector: boolean) => (
@@ -148,6 +150,17 @@ export default function Home() {
       )}
       {activeTeam ? (
         <div key={activeTeam.key}>
+          <button
+            onClick={() => {
+              setReturnGame(null);
+              setShowReturnGame(false);
+              setView(teamReturnView || "scores");
+            }}
+            className="mb-3 text-sm font-black px-3 py-2 rounded-xl"
+            style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}
+          >
+            ← Back
+          </button>
           {returnGame && (
             <button
               onClick={() => setShowReturnGame(true)}
@@ -233,6 +246,7 @@ export default function Home() {
         {!selectedPlayer && !selectedGame && !showReturnGame && view === "home" && (
           <HomeDashboard
             onTeamClick={(team) => {
+              setTeamReturnView("home");
               setActiveTeam(team);
               setSelectedGame(null);
               setView("teamPage");
@@ -257,6 +271,7 @@ export default function Home() {
         {!selectedPlayer && !selectedGame && !showReturnGame && view === "more" && !manageOpen && (
           <MoreView
             onTeamClick={(team) => {
+              setTeamReturnView("home");
               setActiveTeam(team);
               setSelectedGame(null);
               setView("teamPage");
