@@ -22,6 +22,13 @@ function textValue(value: any): string | null {
   return value.displayName || value.fullName || value.name || value.shortName || value.text || value.summary || null;
 }
 
+function cleanPitcherName(txt: string | null): string | null {
+  if (!txt) return null;
+  const value = String(txt).trim();
+  if (!value || /probable|starting pitcher|starter tbd|^tbd$/i.test(value)) return null;
+  return value;
+}
+
 function extractProbablePitcher(c: any): string | null {
   const paths = [
     c?.probablePitcher,
@@ -33,7 +40,7 @@ function extractProbablePitcher(c: any): string | null {
     c?.statistics?.probablePitcher,
   ];
   for (const item of paths) {
-    const txt = textValue(item) || textValue(item?.athlete) || textValue(item?.player);
+    const txt = cleanPitcherName(textValue(item) || textValue(item?.athlete) || textValue(item?.player));
     if (txt) return txt;
   }
   return null;
@@ -47,7 +54,7 @@ function extractPitchingMatchup(comp: any, away: any, home: any): string | null 
   const probables = Array.isArray(comp?.probables) ? comp.probables : [];
   const names = probables.map((p: any) => textValue(p?.athlete) || textValue(p?.player) || textValue(p)).filter(Boolean);
   if (names.length >= 2) return `${names[0]} vs ${names[1]}`;
-  if (names.length === 1) return names[0];
+  if (awayPitcher || homePitcher) return `${awayPitcher || "TBD"} vs ${homePitcher || "TBD"}`;
   return null;
 }
 
@@ -67,6 +74,47 @@ function extractSeriesInfo(ev: any, comp: any) {
   return { summary, seriesGame, recordById };
 }
 
+
+async function fetchMlbSummaryPitchers(eventId: string, away: any, home: any): Promise<string | null> {
+  try {
+    const url = `https://site.web.api.espn.com/apis/site/v2/sports/baseball/mlb/summary?event=${eventId}`;
+    const res = await fetch(url, { cache: "no-store", headers: { "User-Agent": "Mozilla/5.0 SportsTracker/1.0" } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const text = JSON.stringify(data);
+    const names = Array.from(text.matchAll(/"(?:probableStarter|probablePitcher|starter|athlete)"\s*:\s*\{[^{}]*"(?:displayName|fullName|name)"\s*:\s*"([^"]+)"/gi)).map((m) => m[1]);
+    const unique = names.map((n) => cleanPitcherName(n)).filter((n, i, arr): n is string => !!n && arr.indexOf(n) === i);
+    if (unique.length >= 2) return `${unique[0]} vs ${unique[1]}`;
+    if (unique.length === 1) return `${unique[0]} vs TBD`;
+  } catch {}
+  return null;
+}
+
+function normalizeTextName(value: any): string {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function deriveSeriesRecords(summary: string | null, away: any, home: any): { away?: string; home?: string } {
+  if (!summary) return {};
+  const txt = String(summary);
+  const tied = txt.match(/tied[^0-9]*(\d+)\s*-\s*(\d+)/i) || txt.match(/series\s+tied/i);
+  if (tied) {
+    const rec = tied[1] != null ? `${tied[1]}-${tied[2]}` : "0-0";
+    return { away: rec, home: rec };
+  }
+  const lead = txt.match(/(.+?)\s+lead[s]?\s+(?:series\s+)?(\d+)\s*-\s*(\d+)/i);
+  if (lead) {
+    const leader = normalizeTextName(lead[1]);
+    const rec = `${lead[2]}-${lead[3]}`;
+    const other = `${lead[3]}-${lead[2]}`;
+    const awayName = normalizeTextName(`${away?.team?.displayName || ""} ${away?.team?.shortDisplayName || ""} ${away?.team?.abbreviation || ""}`);
+    const homeName = normalizeTextName(`${home?.team?.displayName || ""} ${home?.team?.shortDisplayName || ""} ${home?.team?.abbreviation || ""}`);
+    if (awayName.includes(leader) || leader.includes(normalizeTextName(away?.team?.shortDisplayName))) return { away: rec, home: other };
+    if (homeName.includes(leader) || leader.includes(normalizeTextName(home?.team?.shortDisplayName))) return { away: other, home: rec };
+  }
+  return {};
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const league = searchParams.get("league");
@@ -79,7 +127,7 @@ export async function GET(req: NextRequest) {
   try {
     const data = await getScoreboard(league, date || undefined);
 
-    const events = (data?.events || []).map((ev: any) => {
+    const events = await Promise.all((data?.events || []).map(async (ev: any) => {
       const comp = ev.competitions?.[0];
       const competitors = comp?.competitors || [];
       const home = competitors.find((c: any) => c.homeAway === "home");
@@ -91,6 +139,7 @@ export async function GET(req: NextRequest) {
       // view game cards. Fall through both.
       const seriesInfo = extractSeriesInfo(ev, comp);
       const isPlayoff = ev?.season?.type === 3 || comp?.season?.type === 3 || !!seriesInfo.summary || !!seriesInfo.seriesGame;
+      const derivedSeries = deriveSeriesRecords(seriesInfo.summary, away, home);
 
       const formatTeam = (c: any) =>
         c && {
@@ -100,7 +149,7 @@ export async function GET(req: NextRequest) {
           logo: c.team?.logo || c.team?.logos?.[0]?.href || null,
           score: c.score,
           record: pickRecord(c),
-          seriesRecord: pickSeriesRecord(c) || seriesInfo.recordById.get(String(c.team?.id || c.id || "")) || null,
+          seriesRecord: pickSeriesRecord(c) || seriesInfo.recordById.get(String(c.team?.id || c.id || "")) || (isPlayoff ? (c.homeAway === "away" ? derivedSeries.away : derivedSeries.home) || "0-0" : null),
           winner: c.winner,
         };
 
@@ -145,10 +194,11 @@ export async function GET(req: NextRequest) {
         isPlayoff,
         seriesSummary: seriesInfo.summary,
         seriesGame: seriesInfo.seriesGame,
-        pitchers: league === "mlb" ? extractPitchingMatchup(comp, away, home) : null,
+        pitchers: league === "mlb" ? (extractPitchingMatchup(comp, away, home) || await fetchMlbSummaryPitchers(ev.id, away, home) || "TBD vs TBD") : null,
+        note: comp?.notes?.[0]?.headline || comp?.notes?.[0]?.text || ev?.note || null,
         broadcast: comp?.broadcasts?.[0]?.names?.[0] || null,
       };
-    });
+    }));
 
     return NextResponse.json({ league, date, events }, { headers: { "Cache-Control": "no-store" } });
   } catch (err: any) {

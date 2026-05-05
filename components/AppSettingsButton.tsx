@@ -14,8 +14,8 @@ export default function AppSettingsButton() {
       <button type="button" onClick={() => setOpen((v) => !v)} className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }} aria-label="Settings">⚙</button>
       {open && (
         <>
-          <button aria-label="Close settings" className="fixed inset-0 z-[998] cursor-default" onClick={() => setOpen(false)} />
-          <div className="fixed right-3 top-14 z-[999] w-[min(18rem,calc(100vw-1.5rem))] rounded-2xl p-4 shadow-2xl space-y-4" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)", boxShadow: "0 18px 60px rgba(0,0,0,.45)" }}>
+          <button aria-label="Close settings" className="fixed inset-0 z-[9998] cursor-default" onClick={() => setOpen(false)} />
+          <div className="fixed right-3 top-14 z-[9999] w-[min(18rem,calc(100vw-1.5rem))] rounded-2xl p-4 shadow-2xl space-y-4" style={{ background: "var(--surface)", opacity: 1, border: "1px solid var(--border)", color: "var(--text)", boxShadow: "0 18px 60px rgba(0,0,0,.75)", backdropFilter: "none" }}>
             <div className="flex items-center justify-between"><h3 className="text-sm font-black">Settings</h3><button className="text-xs font-bold" style={{ color: "var(--text-3)" }} onClick={() => setOpen(false)}>Close</button></div>
             <div>
               <div className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: "var(--text-3)" }}>Score card view</div>

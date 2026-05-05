@@ -120,7 +120,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
       </div>
 
       <div className="border-t" style={{ borderColor: "var(--border)" }}>
-        <FavoritesScores date={date} favoriteKeys={favoriteKeys} density={settings.density} onGameClick={(league, eventId) => setSelectedEvent({ league, eventId })} />
+        <FavoritesScores date={date} favoriteKeys={favoriteKeys} onGameClick={(league, eventId) => setSelectedEvent({ league, eventId })} />
         {leagues.map((lg) => (
           <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} />
         ))}
@@ -141,7 +141,7 @@ function LeagueHeader({ league, onBack, tab, setTab }: { league: League; onBack?
           <h1 className="text-lg font-black">{LEAGUE_LABELS[league]}</h1>
         </div>
         <div className="mt-3 flex justify-center">
-          <Image src={LEAGUE_LOGOS[league]} alt={LEAGUE_LABELS[league]} width={68} height={68} className="object-contain" unoptimized />
+          <Image src={LEAGUE_LOGOS[league]} alt={LEAGUE_LABELS[league]} width={68} height={68} className="object-contain logo-outline-dark" unoptimized />
         </div>
       </div>
       <div className="flex gap-7 overflow-x-auto px-4" style={{ background: "color-mix(in srgb, black 8%, transparent)" }}>
@@ -185,7 +185,7 @@ function CbsDateBar({ dayOffset, setDayOffset }: { dayOffset: number; setDayOffs
   );
 }
 
-function FavoritesScores({ date, favoriteKeys, density, onGameClick }: { date: string; favoriteKeys: Set<string>; density: ScoreDensity; onGameClick: (league: League, eventId: string) => void }) {
+function FavoritesScores({ date, favoriteKeys, onGameClick }: { date: string; favoriteKeys: Set<string>; onGameClick: (league: League, eventId: string) => void }) {
   const freshKey = useFreshKey();
   const { settings } = useAppSettings();
   const requests = settings.sportOrder.map((league) => useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, { refreshInterval: 15_000, dedupingInterval: 4_000 }));
@@ -199,8 +199,8 @@ function FavoritesScores({ date, favoriteKeys, density, onGameClick }: { date: s
     <>
       <section className="border-b" style={{ borderColor: "var(--border)" }}>
         <SectionHeader title="Favorites" />
-        <div className={density === "compact" ? "grid grid-cols-2" : "grid grid-cols-1"}>
-          {games.slice(0, 4).map((game: any) => <ScoreCard key={`${game.league}-${game.id}`} league={game.league} game={game} density={density} onClick={() => onGameClick(game.league, game.id)} />)}
+        <div className="grid grid-cols-1">
+          {games.slice(0, 4).map((game: any) => <ScoreCard key={`${game.league}-${game.id}`} league={game.league} game={game} density="expanded" favorite onClick={() => onGameClick(game.league, game.id)} />)}
         </div>
       </section>
     </>
@@ -235,7 +235,7 @@ function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick
       />
       {!collapsed && (isLoading ? (
         <div className={compactGrid ? "grid grid-cols-2" : "grid grid-cols-1"}>
-          {[0, 1, 2, 3].map((i) => <div key={i} className="h-24 animate-pulse border-t" style={{ background: "var(--surface)", borderColor: "var(--border)" }} />)}
+          {[0, 1, 2, 3].map((i) => <div key={i} className="h-[112px] animate-pulse border-t" style={{ background: "var(--surface)", borderColor: "var(--border)" }} />)}
         </div>
       ) : (
         <div className={compactGrid ? "grid grid-cols-2" : "grid grid-cols-1"}>
@@ -254,7 +254,7 @@ function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggl
       style={{ background: "var(--surface)", top: sticky ? 84 : undefined, borderTop: sticky ? "1px solid var(--border)" : undefined, borderBottom: sticky ? "1px solid var(--border)" : undefined }}
     >
       <div className="flex items-center gap-3 min-w-0">
-        {logo && <Image src={logo} alt={title} width={22} height={22} className="object-contain" unoptimized />}
+        {logo && <Image src={logo} alt={title} width={22} height={22} className="object-contain logo-outline-dark" unoptimized />}
         <h2 className="text-base font-black tracking-wide truncate">{title}</h2>
       </div>
       <div className="flex items-center gap-2">
@@ -286,43 +286,50 @@ function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggl
   );
 }
 
-function ScoreCard({ league, game, density, onClick }: { league: League; game: any; density: ScoreDensity; onClick: () => void }) {
+function ScoreCard({ league, game, density, favorite = false, onClick }: { league: League; game: any; density: ScoreDensity; favorite?: boolean; onClick: () => void }) {
   const state = game.status?.state;
   const isLive = state === "in";
-  const compact = density === "compact";
+  const compact = density === "compact" && !favorite;
   return (
     <button
       onClick={onClick}
-      className="min-h-[92px] p-3 text-left border-t sm:odd:border-r active:scale-[0.99]"
+      className={`min-h-[112px] p-3.5 text-left border-t sm:odd:border-r active:scale-[0.99] ${favorite ? "min-h-[132px]" : ""}`}
       style={{ background: "var(--surface)", borderColor: "var(--border)" }}
     >
-      <div className="flex items-center justify-between gap-2 mb-1">
+      <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="text-[11px] font-extrabold tracking-tight truncate" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
+          <div className="text-xs font-extrabold tracking-tight truncate" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
           {league === "mlb" && isLive && game.situation && <BasesDiamondMini situation={game.situation} />}
         </div>
       </div>
-      <TeamLine team={game.away} league={league} compact={compact} game={game} />
-      <TeamLine team={game.home} league={league} compact={compact} game={game} />
+      <TeamLine team={game.away} league={league} compact={compact} favorite={favorite} game={game} />
+      <TeamLine team={game.home} league={league} compact={compact} favorite={favorite} game={game} />
       <ScoreCardSubline league={league} game={game} />
     </button>
   );
 }
 
-function TeamLine({ team, league, compact, game }: { team: any; league: League; compact: boolean; game: any }) {
+function TeamLine({ team, league, compact, favorite, game }: { team: any; league: League; compact: boolean; favorite?: boolean; game: any }) {
   if (!team) return null;
   const img = team.logo || (team.abbr ? logoUrl({ league, abbr: team.abbr }) : null);
   const recordText = seriesTeamRecord(game, team) || team.record;
+  const label = favorite ? favoriteTeamLabel(team, league) : (compact ? team.abbr : team.name || team.abbr);
   return (
-    <div className="flex items-center gap-2 py-0.5">
-      <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">{img && <Image src={img} alt={team.abbr || team.name} width={20} height={20} className="object-contain" unoptimized />}</div>
+    <div className="flex items-center gap-2.5 py-0.5">
+      <div className={`${favorite ? "w-8 h-8" : "w-7 h-7"} flex items-center justify-center flex-shrink-0`}>{img && <Image src={img} alt={team.abbr || team.name} width={favorite ? 30 : 25} height={favorite ? 30 : 25} className="object-contain logo-outline-dark" unoptimized />}</div>
       <div className="flex-1 flex items-baseline gap-1.5 min-w-0">
-        <span className="text-sm leading-none truncate font-black tracking-tight">{team.abbr || team.name}</span>
-        {recordText && <span className="text-[10px] font-bold tracking-tight leading-none" style={{ color: "var(--text-2)" }}>{recordText}</span>}
+        <span className={`${favorite ? "text-xl" : "text-[17px]"} leading-none truncate font-black tracking-tight`}>{label}</span>
+        {recordText && <span className="text-[12px] font-bold tracking-tight leading-none" style={{ color: "var(--text-2)" }}>{recordText}</span>}
       </div>
-      <span className="text-sm font-black tabular-nums">{team.score ?? ""}</span>
+      <span className={`${favorite ? "text-xl" : "text-lg"} font-black tabular-nums`}>{team.score ?? ""}</span>
     </div>
   );
+}
+
+function favoriteTeamLabel(team: any, league: League) {
+  const full = team.name || team.displayName || team.short || team.abbr || "";
+  if (league === "cfb" || league === "cbb") return full;
+  return (team.short || full || team.abbr || "").toUpperCase();
 }
 
 function seriesTeamRecord(game: any, team: any) {
@@ -337,7 +344,7 @@ function ScoreCardSubline({ league, game }: { league: League; game: any }) {
     const outs = game.situation.outs ?? 0;
     const outLabel = outs === 1 ? "1 Out" : `${outs} Outs`;
     return (
-      <div className="mt-1.5 text-[11px] font-black tracking-tight tabular-nums leading-none" style={{ color: "var(--text-2)" }}>
+      <div className="mt-2 text-xs font-black tracking-tight tabular-nums leading-none" style={{ color: "var(--text-2)" }}>
         {balls}-{strikes}, {outLabel}
       </div>
     );
@@ -345,7 +352,7 @@ function ScoreCardSubline({ league, game }: { league: League; game: any }) {
 
   const subline = sublineForGame(league, game);
   if (!subline) return null;
-  return <div className="mt-1.5 text-[11px] font-bold tracking-tight truncate leading-none" style={{ color: "var(--text-2)" }}>{subline}</div>;
+  return <div className="mt-2 text-xs font-bold tracking-tight truncate leading-none" style={{ color: "var(--text-2)" }}>{subline}</div>;
 }
 
 function BasesDiamondMini({ situation }: { situation: any }) {
@@ -377,10 +384,10 @@ function gameMatchesFavorites(game: any, favoriteKeys: Set<string>, league: Leag
 
 function sublineForGame(league: League, game: any) {
   if (league === "mlb") {
-    if (game.status?.state === "pre") return game.pitchers || "Probable pitchers TBD";
+    if (game.status?.state === "pre") return game.pitchers || "TBD vs TBD";
     if (game.pitchers) return game.pitchers;
   }
-  if ((league === "nba" || league === "nhl") && game.isPlayoff) {
+  if ((league === "nba" || league === "nhl" || league === "mlb") && game.isPlayoff) {
     return game.seriesGame || game.seriesSummary || "";
   }
   if (game.status?.state === "post") return game.status?.detail || "Final";

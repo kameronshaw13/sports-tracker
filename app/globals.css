@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 :root, html[data-theme="dark"] {
-  --bg: #1b1c20;
-  --surface: #222328;
-  --surface-2: #2c2e34;
-  --border: #393b43;
-  --text: #f2f3f5;
-  --text-2: #b2b5bd;
-  --text-3: #7d818b;
-  --accent: #2d8cff;
+  --bg: #202124;
+  --surface: #242528;
+  --surface-2: #303134;
+  --border: #3a3b40;
+  --text: #f4f4f5;
+  --text-2: #b7bac1;
+  --text-3: #858992;
+  --accent: #3b8cff;
   --success: #10b981;
   --danger: #ef4444;
   --warning: #f59e0b;
@@ -42,6 +42,13 @@ html, body {
 
 @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 .live-dot { animation: pulse-dot 1.5s ease-in-out infinite; }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+html[data-theme="dark"] .logo-outline-dark {
+  filter: drop-shadow(0 0 1px rgba(255,255,255,.75)) drop-shadow(0 0 2px rgba(255,255,255,.35));
+}
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }

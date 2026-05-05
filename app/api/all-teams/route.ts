@@ -92,6 +92,12 @@ function displaySchoolName(name: string) {
   return formatCollegeSchoolName(name);
 }
 
+function displayCollegeFullName(row: { teamName: string; nickname: string }) {
+  const school = displaySchoolName(row.teamName);
+  const nickname = String(row.nickname || "").trim();
+  return nickname ? `${school} ${nickname}` : school;
+}
+
 function fallbackAbbr(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 24) || "team";
 }
@@ -127,7 +133,8 @@ async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
         }
         if (!matchedRow) continue;
         const schoolName = displaySchoolName(matchedRow.teamName);
-        const team = normalizeTeam("cfb", raw, { name: schoolName, short: schoolName, subdivision: matchedRow.division, conference: matchedRow.conference } as any);
+        const fullName = displayCollegeFullName(matchedRow);
+        const team = normalizeTeam("cfb", raw, { name: fullName, short: schoolName, subdivision: matchedRow.division, conference: matchedRow.conference } as any);
         if (team) teams.push(team);
       }
       return teams;
@@ -158,7 +165,7 @@ async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
     seenCsvMarkers.add(marker);
     out.push({
       key,
-      name: displaySchoolName(row.teamName),
+      name: displayCollegeFullName(row),
       short: displaySchoolName(row.teamName),
       abbr,
       league: "cfb",
