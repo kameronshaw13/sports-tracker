@@ -288,6 +288,17 @@ function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggl
   );
 }
 
+function scoreShouldShow(game: any) {
+  const state = game?.status?.state;
+  const detail = `${game?.status?.detail || ""} ${game?.status?.type?.description || ""} ${game?.status?.type?.shortDetail || ""}`.toLowerCase();
+  if (/postponed|canceled|cancelled|ppd/.test(detail)) return false;
+  return state === "in" || state === "post";
+}
+
+function favoriteAccent(team: any) {
+  return team?.primary || team?.color || "#f97316";
+}
+
 function ScoreCard({ league, game, density, favorite = false, favoriteSide, onClick }: { league: League; game: any; density: ScoreDensity; favorite?: boolean; favoriteSide?: "away" | "home" | null; onClick: () => void }) {
   const state = game.status?.state;
   const isLive = state === "in";
@@ -296,23 +307,26 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
 
   if (favorite) {
     const favoriteLogo = favoriteTeam?.logo || (favoriteTeam?.abbr ? logoUrl({ league, abbr: favoriteTeam.abbr }) : null);
-    const accent = favoriteTeam?.primary || "#f97316";
+    const accent = favoriteAccent(favoriteTeam);
+    const word = favoriteTeamLabel(favoriteTeam, league);
     return (
       <button
         onClick={onClick}
-        className="relative min-h-[154px] p-4 pl-[6.9rem] text-left border-t overflow-hidden active:scale-[0.99] favorite-score-card"
+        className="relative min-h-[158px] p-4 pl-[7.15rem] text-left border-t overflow-hidden active:scale-[0.99] favorite-score-card"
         style={{ background: "var(--surface)", borderColor: "var(--border)" }}
       >
-        <div className="absolute left-0 top-0 bottom-0 w-[5.9rem] pointer-events-none" style={{ background: `linear-gradient(90deg, color-mix(in srgb, ${accent} 64%, transparent), transparent)` }} />
-        <div className="absolute left-2 top-0 bottom-0 w-1.5" style={{ background: accent }} />
+        <div className="absolute left-0 top-0 bottom-0 w-[5.85rem] pointer-events-none" style={{ background: "#08090b" }} />
+        <div className="absolute left-[5.85rem] top-0 bottom-0 w-[2px] pointer-events-none" style={{ background: accent }} />
+        <div className="absolute left-1.5 top-2 bottom-2 flex items-center justify-center pointer-events-none">
+          <div className="favorite-vertical-word text-[2.25rem] leading-none font-black uppercase tracking-tight opacity-[0.18]" style={{ color: accent }}>
+            {word}
+          </div>
+        </div>
         {favoriteLogo && (
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 opacity-100 pointer-events-none">
-            <Image src={favoriteLogo} alt={favoriteTeam?.name || favoriteTeam?.abbr || "Favorite"} width={70} height={70} className="object-contain logo-outline-dark" unoptimized />
+          <div className="absolute left-[3.1rem] top-1/2 -translate-y-1/2 opacity-100 pointer-events-none">
+            <Image src={favoriteLogo} alt={favoriteTeam?.name || favoriteTeam?.abbr || "Favorite"} width={66} height={66} className="object-contain logo-outline-dark" unoptimized />
           </div>
         )}
-        <div className="absolute left-[5.2rem] top-2 bottom-2 text-[3.9rem] leading-none font-black uppercase opacity-[0.08] pointer-events-none whitespace-nowrap favorite-wordmark-outline" style={{ color: accent }}>
-          {favoriteTeamLabel(favoriteTeam, league)}
-        </div>
         <div className="relative pr-2">
           <div className="text-[13px] font-black tracking-tight mb-3 cbs-blue-label">{gameTimeLabel(game)}</div>
           <TeamLine team={game.away} league={league} compact={false} favorite game={game} />
@@ -347,7 +361,7 @@ function TeamLine({ team, league, compact, favorite, game }: { team: any; league
   const img = team.logo || (team.abbr ? logoUrl({ league, abbr: team.abbr }) : null);
   const recordText = seriesTeamRecord(game, team) || team.record;
   const label = favorite ? favoriteTeamLabel(team, league) : (compact ? team.abbr : team.name || team.abbr);
-  const showScore = game?.status?.state !== "pre" && team.score !== undefined && team.score !== null && team.score !== "";
+  const showScore = scoreShouldShow(game) && team.score !== undefined && team.score !== null && team.score !== "";
   return (
     <div className="flex items-center gap-2.5 py-0.5">
       <div className={`${favorite ? "w-8 h-8" : "w-7 h-7"} flex items-center justify-center flex-shrink-0`}>{img && <Image src={img} alt={team.abbr || team.name} width={favorite ? 31 : 27} height={favorite ? 31 : 27} className="object-contain logo-outline-dark" unoptimized />}</div>
@@ -361,12 +375,15 @@ function TeamLine({ team, league, compact, favorite, game }: { team: any; league
 }
 
 function favoriteTeamLabel(team: any, league: League) {
-  const full = team?.name || team?.displayName || team?.short || team?.abbr || "";
-  if (league === "cfb" || league === "cbb") return full;
-  const nickname = String(team?.short || full || team?.abbr || "")
-    .replace(/^[A-Z]{2,4}\s+/, "")
-    .replace(/^(Arizona|Atlanta|Baltimore|Boston|Buffalo|Calgary|Carolina|Charlotte|Chicago|Cincinnati|Cleveland|Colorado|Columbus|Dallas|Denver|Detroit|Golden State|Green Bay|Houston|Indiana|Jacksonville|Kansas City|Las Vegas|Los Angeles|LA|Memphis|Miami|Milwaukee|Minnesota|Montreal|Nashville|New England|New Jersey|New Orleans|New York|NY|Oakland|Oklahoma City|Orlando|Ottawa|Philadelphia|Phoenix|Pittsburgh|Portland|Sacramento|San Antonio|San Diego|San Francisco|Seattle|St\. Louis|Tampa Bay|Texas|Toronto|Utah|Vancouver|Vegas|Washington)\s+/i, "");
-  return toTitleCase(nickname || full || team?.abbr || "");
+  const full = String(team?.name || team?.displayName || team?.short || team?.abbr || "").trim();
+  const short = String(team?.short || full || team?.abbr || "").trim();
+  const raw = short || full;
+  const stripped = raw
+    .replace(/^(Arizona|Atlanta|Baltimore|Boston|Buffalo|Calgary|Carolina|Charlotte|Chicago|Cincinnati|Cleveland|Colorado|Columbus|Dallas|Denver|Detroit|Golden State|Green Bay|Houston|Indiana|Jacksonville|Kansas City|Las Vegas|Los Angeles|LA|Memphis|Miami|Milwaukee|Minnesota|Montreal|Nashville|New England|New Jersey|New Orleans|New York|NY|Oakland|Oklahoma City|Orlando|Ottawa|Philadelphia|Phoenix|Pittsburgh|Portland|Sacramento|San Antonio|San Diego|San Francisco|Seattle|St\.? Louis|Tampa Bay|Texas|Toronto|Utah|Vancouver|Vegas|Washington)\s+/i, "")
+    .replace(/^(University of|Univ\.? of|College of)\s+/i, "")
+    .replace(/^(Texas|UTSA|Illinois|Kansas State|Kansas St\.?|Miami|Appalachian State|Appalachian St\.?|ULM|Albany|Grambling State|Grambling St\.?)\s+/i, "")
+    .trim();
+  return toTitleCase(stripped || raw || team?.abbr || "");
 }
 
 function seriesTeamRecord(game: any, team: any) {

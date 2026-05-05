@@ -19,6 +19,30 @@ const LEAGUES: { id: League; label: string; logo: string }[] = [
   { id: "cbb", label: "College Basketball", logo: NCAA_LOGO },
 ];
 
+const NCAA_LOGO_OVERRIDES: Record<string, string> = {
+  texas: "https://a.espncdn.com/i/teamlogos/ncaa/500/251.png",
+  utsa: "https://a.espncdn.com/i/teamlogos/ncaa/500/2636.png",
+  illinois: "https://a.espncdn.com/i/teamlogos/ncaa/500/356.png",
+  miami: "https://a.espncdn.com/i/teamlogos/ncaa/500/2390.png",
+  appalachian: "https://a.espncdn.com/i/teamlogos/ncaa/500/2026.png",
+  appalachianst: "https://a.espncdn.com/i/teamlogos/ncaa/500/2026.png",
+  ulm: "https://a.espncdn.com/i/teamlogos/ncaa/500/2433.png",
+  albany: "https://a.espncdn.com/i/teamlogos/ncaa/500/399.png",
+  grambling: "https://a.espncdn.com/i/teamlogos/ncaa/500/2755.png",
+  gramblingst: "https://a.espncdn.com/i/teamlogos/ncaa/500/2755.png",
+  kansasstate: "https://a.espncdn.com/i/teamlogos/ncaa/500/2306.png",
+  kansasst: "https://a.espncdn.com/i/teamlogos/ncaa/500/2306.png",
+};
+
+const COLOR_OVERRIDES: Record<string, string> = {
+  texas: "#BF5700",
+  utsa: "#0C2340",
+  illinois: "#13294B",
+  kansasstate: "#512888",
+  kansasst: "#512888",
+};
+
+
 type Props = {
   onTeamClick: (team: TeamConfig) => void;
   onLeagueClick: (league: League) => void;
@@ -79,11 +103,12 @@ export default function MoreView({ onTeamClick, onLeagueClick, onManage }: Props
               {(favorites || []).map((stored) => {
                 const team = data?.teams?.find((t) => t.key === stored.key) || stored;
                 return (
-                  <button key={team.key} onClick={() => onTeamClick(team)} className="flex flex-col items-center gap-2 min-w-[68px]">
-                    <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: team.primary || "var(--surface-2)" }}>
-                      {(team.logo || fallbackLogo(team)) && <Image src={team.logo || fallbackLogo(team)} alt={team.name} width={42} height={42} className="object-contain logo-outline-dark" unoptimized />}
+                  <button key={team.key} onClick={() => onTeamClick(team)} className="flex flex-col items-center gap-1.5 min-w-[70px]">
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: teamColor(team) }}>
+                      {teamLogo(team) && <Image src={teamLogo(team)} alt={team.name} width={42} height={42} className="object-contain logo-outline-dark" unoptimized />}
                     </div>
                     <span className="text-[10px] font-black truncate max-w-[72px]" style={{ color: "var(--text-2)" }}>{team.short || team.abbr.toUpperCase()}</span>
+                    {(team.league === "cfb" || team.league === "cbb") && <span className="text-[9px] font-black uppercase leading-none" style={{ color: "var(--text-3)" }}>{team.league === "cfb" ? "NCAAF" : "NCAAB"}</span>}
                   </button>
                 );
               })}
@@ -124,7 +149,7 @@ function LeagueRow({ league, onClick }: { league: { id: League; label: string; l
 }
 
 function TeamRow({ team, onClick }: { team: TeamConfig; onClick: () => void }) {
-  const logo = team.logo || fallbackLogo(team);
+  const logo = teamLogo(team);
   return (
     <button onClick={onClick} className="w-full px-4 py-3 flex items-center gap-4 border-t text-left" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
       <div className="w-10 h-10 flex items-center justify-center rounded-lg" style={{ background: "var(--surface-2)" }}>
@@ -138,7 +163,21 @@ function TeamRow({ team, onClick }: { team: TeamConfig; onClick: () => void }) {
   );
 }
 
+function teamLogo(team: TeamConfig) {
+  return team.logo || fallbackLogo(team);
+}
+
+function teamColor(team: TeamConfig) {
+  const lookup = normalizedLookup(team);
+  return COLOR_OVERRIDES[lookup] || team.primary || "var(--surface-2)";
+}
+
 function fallbackLogo(team: TeamConfig) {
-  if (team.league === "cfb" || team.league === "cbb") return `https://a.espncdn.com/i/teamlogos/ncaa/500/${team.abbr.toLowerCase()}.png`;
+  const lookup = normalizedLookup(team);
+  if (team.league === "cfb" || team.league === "cbb") return NCAA_LOGO_OVERRIDES[lookup] || `https://a.espncdn.com/i/teamlogos/ncaa/500/${team.abbr.toLowerCase()}.png`;
   return `https://a.espncdn.com/i/teamlogos/${team.league}/500/${team.abbr.toLowerCase()}.png`;
+}
+
+function normalizedLookup(team: TeamConfig) {
+  return `${team.key || ""} ${team.name || ""} ${team.short || ""} ${team.abbr || ""}`.toLowerCase().replace(/[^a-z0-9]/g, "");
 }

@@ -19,7 +19,7 @@ export default function AppSettingsButton() {
       <button
         aria-label="Close settings"
         className="fixed inset-0 cursor-default"
-        style={{ background: "var(--bg)", opacity: 1, zIndex: 2147483000 }}
+        style={{ background: "transparent", opacity: 1, zIndex: 2147483000 }}
         onClick={() => setOpen(false)}
       />
       <div className="fixed right-3 top-14 w-[min(18rem,calc(100vw-1.5rem))] rounded-2xl p-4 shadow-2xl space-y-4" style={{ background: "var(--surface)", opacity: 1, border: "1px solid var(--border)", color: "var(--text)", boxShadow: "0 18px 60px rgba(0,0,0,.95)", backdropFilter: "none", zIndex: 2147483001 }}>

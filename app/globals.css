@@ -33,7 +33,7 @@ html[data-theme="light"] {
 html, body {
   background: var(--bg);
   color: var(--text);
-  font-family: "Arial Narrow", "Roboto Condensed", "Helvetica Neue Condensed", "Helvetica Neue", Arial, system-ui, -apple-system, sans-serif;
+  font-family: "Roboto Condensed", "Arial Narrow", "Helvetica Neue Condensed", "Aptos Narrow", "Helvetica Neue", Arial, system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   min-height: 100%;
 }
@@ -48,10 +48,10 @@ html, body {
 
 html[data-theme="dark"] .logo-outline-dark {
   filter:
-    drop-shadow(.45px 0 0 rgba(255,255,255,.72))
-    drop-shadow(-.45px 0 0 rgba(255,255,255,.72))
-    drop-shadow(0 .45px 0 rgba(255,255,255,.72))
-    drop-shadow(0 -.45px 0 rgba(255,255,255,.72));
+    drop-shadow(.85px 0 0 rgba(255,255,255,.58))
+    drop-shadow(-.85px 0 0 rgba(255,255,255,.58))
+    drop-shadow(0 .85px 0 rgba(255,255,255,.58))
+    drop-shadow(0 -.85px 0 rgba(255,255,255,.58));
 }
 
 .favorite-wordmark-outline {
@@ -69,4 +69,11 @@ html[data-theme="dark"] .logo-outline-dark {
 
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   body { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+.favorite-vertical-word {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  -webkit-text-stroke: 1px currentColor;
+  text-stroke: 1px currentColor;
 }
