@@ -13,7 +13,7 @@ import Standings from "./Standings";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-const NCAA_LOGO = "/ncaa-logo.svg";
+const NCAA_LOGO = "/ncaa-logo.png";
 
 const LEAGUE_LABELS: Record<League, string> = {
   mlb: "MLB",
@@ -295,22 +295,29 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
   const favoriteTeam = favoriteSide === "home" ? game.home : game.away;
 
   if (favorite) {
+    const favoriteLogo = favoriteTeam?.logo || (favoriteTeam?.abbr ? logoUrl({ league, abbr: favoriteTeam.abbr }) : null);
+    const accent = favoriteTeam?.primary || "#f97316";
     return (
       <button
         onClick={onClick}
-        className="relative min-h-[146px] p-4 text-left border-t overflow-hidden active:scale-[0.99]"
+        className="relative min-h-[154px] p-4 pl-[6.9rem] text-left border-t overflow-hidden active:scale-[0.99] favorite-score-card"
         style={{ background: "var(--surface)", borderColor: "var(--border)" }}
       >
-        {favoriteTeam?.logo && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-95 pointer-events-none">
-            <Image src={favoriteTeam.logo} alt={favoriteTeam.name || favoriteTeam.abbr} width={78} height={78} className="object-contain logo-outline-dark" unoptimized />
+        <div className="absolute left-0 top-0 bottom-0 w-[5.9rem] pointer-events-none" style={{ background: `linear-gradient(90deg, color-mix(in srgb, ${accent} 64%, transparent), transparent)` }} />
+        <div className="absolute left-2 top-0 bottom-0 w-1.5" style={{ background: accent }} />
+        {favoriteLogo && (
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 opacity-100 pointer-events-none">
+            <Image src={favoriteLogo} alt={favoriteTeam?.name || favoriteTeam?.abbr || "Favorite"} width={70} height={70} className="object-contain logo-outline-dark" unoptimized />
           </div>
         )}
-        <div className="relative pr-24">
-          <div className="text-[13px] font-black tracking-tight mb-3" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
+        <div className="absolute left-[5.2rem] top-2 bottom-2 text-[3.9rem] leading-none font-black uppercase opacity-[0.08] pointer-events-none whitespace-nowrap favorite-wordmark-outline" style={{ color: accent }}>
+          {favoriteTeamLabel(favoriteTeam, league)}
+        </div>
+        <div className="relative pr-2">
+          <div className="text-[13px] font-black tracking-tight mb-3 cbs-blue-label">{gameTimeLabel(game)}</div>
           <TeamLine team={game.away} league={league} compact={false} favorite game={game} />
           <TeamLine team={game.home} league={league} compact={false} favorite game={game} />
-          <ScoreCardSubline league={league} game={game} />
+          <ScoreCardSubline league={league} game={game} density={density} />
         </div>
       </button>
     );
@@ -319,7 +326,7 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
   return (
     <button
       onClick={onClick}
-      className="min-h-[128px] p-3.5 text-left border-t sm:odd:border-r active:scale-[0.99]"
+      className="min-h-[136px] p-3.5 text-left border-t sm:odd:border-r active:scale-[0.99]"
       style={{ background: "var(--surface)", borderColor: "var(--border)" }}
     >
       <div className="flex items-center justify-between gap-2 mb-2">
@@ -330,7 +337,7 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
       </div>
       <TeamLine team={game.away} league={league} compact={compact} game={game} />
       <TeamLine team={game.home} league={league} compact={compact} game={game} />
-      <ScoreCardSubline league={league} game={game} />
+      <ScoreCardSubline league={league} game={game} density={density} />
     </button>
   );
 }
@@ -345,7 +352,7 @@ function TeamLine({ team, league, compact, favorite, game }: { team: any; league
     <div className="flex items-center gap-2.5 py-0.5">
       <div className={`${favorite ? "w-8 h-8" : "w-7 h-7"} flex items-center justify-center flex-shrink-0`}>{img && <Image src={img} alt={team.abbr || team.name} width={favorite ? 31 : 27} height={favorite ? 31 : 27} className="object-contain logo-outline-dark" unoptimized />}</div>
       <div className="flex-1 flex items-baseline gap-1.5 min-w-0">
-        <span className={`${favorite ? "text-[21px]" : "text-[18px]"} leading-none truncate font-black tracking-tight`}>{label}</span>
+        <span className={`${favorite ? "text-[22px]" : "text-[19px]"} leading-none truncate font-black tracking-tight`}>{label}</span>
         {recordText && <span className="text-[12px] font-bold tracking-tight leading-none" style={{ color: "var(--text-2)" }}>{recordText}</span>}
       </div>
       {showScore && <span className={`${favorite ? "text-xl" : "text-lg"} font-black tabular-nums`}>{team.score}</span>}
@@ -354,9 +361,12 @@ function TeamLine({ team, league, compact, favorite, game }: { team: any; league
 }
 
 function favoriteTeamLabel(team: any, league: League) {
-  const full = team.name || team.displayName || team.short || team.abbr || "";
+  const full = team?.name || team?.displayName || team?.short || team?.abbr || "";
   if (league === "cfb" || league === "cbb") return full;
-  return (team.short || full || team.abbr || "").toUpperCase();
+  const nickname = String(team?.short || full || team?.abbr || "")
+    .replace(/^[A-Z]{2,4}\s+/, "")
+    .replace(/^(Arizona|Atlanta|Baltimore|Boston|Buffalo|Calgary|Carolina|Charlotte|Chicago|Cincinnati|Cleveland|Colorado|Columbus|Dallas|Denver|Detroit|Golden State|Green Bay|Houston|Indiana|Jacksonville|Kansas City|Las Vegas|Los Angeles|LA|Memphis|Miami|Milwaukee|Minnesota|Montreal|Nashville|New England|New Jersey|New Orleans|New York|NY|Oakland|Oklahoma City|Orlando|Ottawa|Philadelphia|Phoenix|Pittsburgh|Portland|Sacramento|San Antonio|San Diego|San Francisco|Seattle|St\. Louis|Tampa Bay|Texas|Toronto|Utah|Vancouver|Vegas|Washington)\s+/i, "");
+  return toTitleCase(nickname || full || team?.abbr || "");
 }
 
 function seriesTeamRecord(game: any, team: any) {
@@ -364,7 +374,7 @@ function seriesTeamRecord(game: any, team: any) {
   return team.seriesRecord || null;
 }
 
-function ScoreCardSubline({ league, game }: { league: League; game: any }) {
+function ScoreCardSubline({ league, game, density }: { league: League; game: any; density: ScoreDensity }) {
   if (league === "mlb" && game.status?.state === "in" && game.situation) {
     const balls = game.situation.balls ?? 0;
     const strikes = game.situation.strikes ?? 0;
@@ -377,9 +387,9 @@ function ScoreCardSubline({ league, game }: { league: League; game: any }) {
     );
   }
 
-  const subline = sublineForGame(league, game);
+  const subline = sublineForGame(league, game, density);
   if (!subline) return null;
-  return <div className="mt-2 text-[11px] font-bold tracking-tight truncate leading-none" style={{ color: "var(--text-2)" }}>{subline}</div>;
+  return <div className="mt-2 text-[10px] font-bold tracking-tight truncate leading-none" style={{ color: "var(--text-2)" }}>{subline}</div>;
 }
 
 function BasesDiamondMini({ situation }: { situation: any }) {
@@ -409,7 +419,7 @@ function favoriteSideForGame(game: any, favoriteKeys: Set<string>, league: Leagu
   return null;
 }
 
-function pitcherLastNameMatchup(value: string | null | undefined) {
+function pitcherNameMatchup(value: string | null | undefined, includeInitial = false) {
   const raw = String(value || "TBD vs TBD");
   const parts = raw.split(/\s+vs\s+/i);
   const clean = (name: string | undefined) => {
@@ -417,7 +427,9 @@ function pitcherLastNameMatchup(value: string | null | undefined) {
     if (!n || /probable|starting pitcher|starter|^tbd$/i.test(n)) return "TBD";
     const withoutParen = n.replace(/\s*\([^)]*\)\s*/g, " ").trim();
     const tokens = withoutParen.split(/\s+/).filter(Boolean);
-    return tokens[tokens.length - 1] || "TBD";
+    const last = tokens[tokens.length - 1] || "TBD";
+    if (includeInitial && tokens.length > 1) return `${tokens[0][0]}. ${last}`;
+    return last;
   };
   return `${clean(parts[0])} vs ${clean(parts[1])}`;
 }
@@ -430,10 +442,11 @@ function gameMatchesFavorites(game: any, favoriteKeys: Set<string>, league: Leag
   });
 }
 
-function sublineForGame(league: League, game: any) {
+function sublineForGame(league: League, game: any, density: ScoreDensity) {
   if (league === "mlb") {
-    if (game.status?.state === "pre") return pitcherLastNameMatchup(game.pitchers || "TBD vs TBD");
-    if (game.pitchers) return pitcherLastNameMatchup(game.pitchers);
+    const withInitial = density === "expanded";
+    if (game.status?.state === "pre") return pitcherNameMatchup(game.pitchers || "TBD vs TBD", withInitial);
+    if (game.pitchers) return pitcherNameMatchup(game.pitchers, withInitial);
   }
   if ((league === "nba" || league === "nhl" || league === "mlb") && game.isPlayoff) {
     return game.seriesGame || game.seriesSummary || "";
@@ -453,6 +466,8 @@ function leagueHeaderColor(league: League) {
   const colors: Record<League, string> = { mlb: "#12345c", nfl: "#06355f", nba: "#244a8f", nhl: "#1f2937", cfb: "#214a35", cbb: "#433061" };
   return colors[league];
 }
+
+function toTitleCase(value: string) { return String(value).toLowerCase().replace(/\b[a-z]/g, (m) => m.toUpperCase()); }
 
 function formatDate(offset: number) { const d = new Date(); d.setDate(d.getDate() + offset); return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}`; }
 function dateBarLabel(offset: number) {
