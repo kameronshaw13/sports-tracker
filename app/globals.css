@@ -641,3 +641,26 @@ html[data-theme="light"] { --score-meta: #4b5563; }
 .favorite-score-card .score-card-number {
   min-width: 2rem;
 }
+
+
+/* Scores page polish v8 */
+.retro-league-head {
+  padding-top: 1.04rem !important;
+  padding-bottom: 0.66rem !important;
+}
+
+.retro-league-head h2 {
+  font-size: 0.94rem;
+  line-height: 1.32;
+  padding-top: 0.16em;
+  padding-bottom: 0.08em;
+}
+
+.retro-league-head img,
+.retro-league-head .logo-outline-dark {
+  transform: translateY(-1px);
+}
+
+.favorite-score-card {
+  padding-left: 6.85rem !important;
+}

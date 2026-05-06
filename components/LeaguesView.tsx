@@ -359,7 +359,7 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
     return (
       <button
         onClick={onClick}
-        className="retro-score-card relative min-h-[158px] p-4 pl-[6.55rem] text-left border-t active:scale-[0.99] favorite-score-card"
+        className="retro-score-card relative min-h-[158px] p-4 pl-[6.85rem] text-left border-t active:scale-[0.99] favorite-score-card"
         style={{ borderColor: "var(--border)" }}
       >
         <div className="absolute left-4 top-3 bottom-3 w-[10px] rounded-full pointer-events-none" style={{ background: accent, clipPath: "polygon(18% 100%, 56% 100%, 96% 0, 0 0)" }} />
