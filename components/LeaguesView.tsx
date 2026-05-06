@@ -354,24 +354,16 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
   const favoriteTeam = favoriteSide === "home" ? game.home : game.away;
 
   if (favorite) {
-    const favoriteLogo = favoriteTeam?.logo || (favoriteTeam?.abbr ? logoUrl({ league, abbr: favoriteTeam.abbr }) : null);
-    const accent = favoriteAccent(favoriteTeam);
     return (
       <button
         onClick={onClick}
-        className="retro-score-card relative min-h-[158px] p-4 pl-[6.85rem] text-left border-t active:scale-[0.99] favorite-score-card"
+        className="retro-score-card relative min-h-[150px] p-4 text-left border-t active:scale-[0.99] favorite-score-card"
         style={{ borderColor: "var(--border)" }}
       >
-        <div className="absolute left-4 top-3 bottom-3 w-[10px] rounded-full pointer-events-none" style={{ background: accent, clipPath: "polygon(18% 100%, 56% 100%, 96% 0, 0 0)" }} />
-        {favoriteLogo && (
-          <div className="absolute left-[1.42rem] top-1/2 -translate-y-1/2 opacity-100 pointer-events-none">
-            <ScoreTeamLogo team={favoriteTeam} league={league} size={82} />
-          </div>
-        )}
-        <div className="relative pr-1">
-          <div className="favorite-score-meta text-[11px] font-black uppercase tracking-[.08em] mb-3 cbs-blue-label">{gameTimeLabel(game)}</div>
-          <TeamLine team={game.away} league={league} compact={false} favorite game={game} showLogo={false} />
-          <TeamLine team={game.home} league={league} compact={false} favorite game={game} showLogo={false} />
+        <div className="favorite-score-content pr-1">
+          <div className="favorite-score-meta text-[10.5px] font-black uppercase tracking-[.07em] mb-2.5 cbs-blue-label">{gameTimeLabel(game)}</div>
+          <TeamLine team={game.away} league={league} compact={false} favorite game={game} showLogo />
+          <TeamLine team={game.home} league={league} compact={false} favorite game={game} showLogo />
           <ScoreCardSubline league={league} game={game} density={density} />
         </div>
       </button>
@@ -386,7 +378,7 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
     >
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="text-[11px] font-black uppercase tracking-[.08em] truncate" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
+          <div className="text-[10.5px] font-black uppercase tracking-[.07em] truncate" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
           {league === "mlb" && isLive && game.situation && <BasesDiamondMini situation={game.situation} />}
         </div>
       </div>
@@ -405,12 +397,12 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
   const showScore = scoreShouldShow(game) && team.score !== undefined && team.score !== null && team.score !== "";
   return (
     <div className={`score-team-row flex items-center ${showLogo ? "gap-2.5" : "gap-0"} py-0.5`}>
-      {showLogo && <div className={`${favorite ? "w-8 h-8" : "w-7 h-7"} flex items-center justify-center flex-shrink-0`}>{img && <ScoreTeamLogo team={team} league={league} size={favorite ? 31 : 27} />}</div>}
+      {showLogo && <div className={`${favorite ? "w-8 h-8" : "w-7 h-7"} flex items-center justify-center flex-shrink-0`}>{img && <ScoreTeamLogo team={team} league={league} size={favorite ? 38 : 27} />}</div>}
       <div className="flex-1 flex items-center gap-1.5 min-w-0">
-        <span className={`${favorite ? "text-[22px] uppercase" : "text-[19px]"} score-team-name truncate font-black tracking-tight`}>{label}</span>
-        {recordText && <span className="text-[12px] font-medium tracking-tight score-card-meta" style={{ color: "var(--score-meta)" }}>{recordText}</span>}
+        <span className={`${favorite ? "text-[20px] uppercase" : "text-[18px]"} score-team-name truncate font-black tracking-tight`}>{label}</span>
+        {recordText && <span className="text-[11px] font-medium tracking-tight score-card-meta" style={{ color: "var(--score-meta)" }}>{recordText}</span>}
       </div>
-      {showScore && <span className={`score-card-number ${favorite ? "text-[22px]" : "text-[19px]"} score-team-name font-black tracking-tight ${team.winner ? "opacity-100" : "opacity-90"}`} style={{ color: "var(--text)" }}>{team.score}</span>}
+      {showScore && <span className={`score-card-number ${favorite ? "text-[20px]" : "text-[18px]"} score-team-name font-black tracking-tight ${team.winner ? "opacity-100" : "opacity-90"}`} style={{ color: "var(--text)" }}>{team.score}</span>}
     </div>
   );
 }
@@ -447,7 +439,7 @@ function ScoreCardSubline({ league, game, density }: { league: League; game: any
 
   const subline = sublineForGame(league, game, density);
   if (!subline) return null;
-  return <div className="mt-2 text-[11px] font-medium tracking-tight truncate score-card-subline" style={{ color: "var(--score-meta)" }}>{subline}</div>;
+  return <div className="mt-2 text-[10.5px] font-medium tracking-tight truncate score-card-subline" style={{ color: "var(--score-meta)" }}>{subline}</div>;
 }
 
 function BasesDiamondMini({ situation }: { situation: any }) {
