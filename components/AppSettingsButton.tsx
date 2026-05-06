@@ -44,7 +44,7 @@ export default function AppSettingsButton() {
 
   return (
     <div className="relative">
-      <button type="button" onClick={() => setOpen((v) => !v)} className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }} aria-label="Settings">⚙</button>
+      <button type="button" onClick={() => setOpen((v) => !v)} className="h-9 w-9 flex items-center justify-center text-[1.35rem] leading-none font-bold transition-transform active:scale-[0.96]" style={{ background: "transparent", border: "none", color: "var(--text)" }} aria-label="Settings">⚙</button>
       {menu}
     </div>
   );

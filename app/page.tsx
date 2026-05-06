@@ -202,8 +202,10 @@ export default function Home() {
     </>
   );
 
+  const isScoresRootView = !selectedPlayer && !selectedGame && !showReturnGame && view === "scores";
+
   return (
-    <main className="retro-page min-h-screen p-4 sm:p-6 pb-28">
+    <main className={`retro-page min-h-screen pb-28 ${isScoresRootView ? "px-4 sm:px-6 pt-0" : "p-4 sm:p-6"}`}>
       <PullToRefresh>
       <div className="max-w-3xl mx-auto">
         {!selectedPlayer && !showReturnGame && !selectedGame && view === "home" && (
