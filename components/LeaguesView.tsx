@@ -66,7 +66,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
 
   useEffect(() => {
     if (leaguePage) return;
-    const onScroll = () => setScrolled(window.scrollY > 28);
+    const onScroll = () => setScrolled(window.scrollY > 36);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -110,9 +110,9 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
   return (
     <div className="-mx-4 sm:mx-0">
       <div className="sticky top-0 z-40 px-4 pb-2 scores-sticky-header" style={{ background: "var(--bg)", borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent" }}>
-        <div className="relative flex min-h-[3.95rem] items-center justify-between">
+        <div className="relative flex min-h-[4.05rem] items-center justify-between">
           <h1
-            className={`retro-title scores-page-heading transition-all duration-200 ${scrolled ? "absolute left-1/2 -translate-x-1/2 text-[1.18rem] tracking-[.04em]" : "text-[2.55rem] tracking-[.02em]"}`}
+            className={`absolute top-1/2 -translate-y-1/2 retro-title scores-page-heading transition-[left,transform,font-size,letter-spacing] duration-300 ease-out ${scrolled ? "left-1/2 -translate-x-1/2 text-[1.16rem] tracking-[.04em]" : "left-0 translate-x-0 text-[2.55rem] tracking-[.02em]"}`}
           >
             Scores
           </h1>
@@ -126,7 +126,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
       <div>
         <FavoritesScores date={date} favoriteKeys={favoriteKeys} onGameClick={(league, eventId) => setSelectedEvent({ league, eventId })} />
         {leagues.map((lg) => (
-          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={104} />
+          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={112} />
         ))}
       </div>
     </div>
@@ -205,7 +205,7 @@ function FavoritesScores({ date, favoriteKeys, onGameClick }: { date: string; fa
   return (
     <>
       <section className="mt-3 border-b" style={{ borderColor: "var(--border)" }}>
-        <SectionHeader title="Favorites" />
+        <SectionHeader title="Favorites" sticky stickyTop={112} />
         <div className="grid grid-cols-1">
           {games.slice(0, 4).map((game: any) => <ScoreCard key={`${game.league}-${game.id}`} league={game.league} game={game} density="expanded" favorite favoriteSide={game.favoriteSide} onClick={() => onGameClick(game.league, game.id)} />)}
         </div>
@@ -214,7 +214,7 @@ function FavoritesScores({ date, favoriteKeys, onGameClick }: { date: string; fa
   );
 }
 
-function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick, stickyTop = 104 }: { league: League; date: string; density: ScoreDensity; onGameClick: (eventId: string) => void; onStandingsClick?: (league: League) => void; stickyTop?: number }) {
+function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick, stickyTop = 112 }: { league: League; date: string; density: ScoreDensity; onGameClick: (eventId: string) => void; onStandingsClick?: (league: League) => void; stickyTop?: number }) {
   const freshKey = useFreshKey();
   const [collapsed, setCollapsed] = useState(false);
   const { data, error, isLoading } = useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, {
@@ -254,7 +254,7 @@ function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick
   );
 }
 
-function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggle, onStandingsClick, stickyTop = 98 }: { title: string; logo?: string; sticky?: boolean; collapsed?: boolean; onToggle?: () => void; onStandingsClick?: () => void; stickyTop?: number }) {
+function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggle, onStandingsClick, stickyTop = 112 }: { title: string; logo?: string; sticky?: boolean; collapsed?: boolean; onToggle?: () => void; onStandingsClick?: () => void; stickyTop?: number }) {
   return (
     <div
       className={`retro-league-head px-4 py-2.5 flex items-center justify-between ${sticky ? "sticky z-20" : ""}`}
@@ -300,6 +300,49 @@ function scoreShouldShow(game: any) {
   return state === "in" || state === "post";
 }
 
+
+function slugLogoName(value: string) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function retroLogoCandidates(team: any, league: League) {
+  const fallback = team?.logo || (team?.abbr ? logoUrl({ league, abbr: team.abbr }) : "");
+  const nickname = favoriteTeamLabel(team, league);
+  const names = [nickname, team?.short, team?.name, team?.displayName, team?.abbr]
+    .map((v) => slugLogoName(String(v || "")))
+    .filter(Boolean);
+  const unique = Array.from(new Set(names));
+  return [...unique.map((slug) => `/retro_images/${slug}.png`), fallback].filter(Boolean);
+}
+
+function ScoreTeamLogo({ team, league, size }: { team: any; league: League; size: number }) {
+  const sources = useMemo(() => retroLogoCandidates(team, league), [team, league]);
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => setIndex(0), [sources.join("|")]);
+
+  const src = sources[index] || "";
+  if (!src) return null;
+
+  return (
+    <span className="score-team-logo-wrap logo-outline-dark" style={{ width: size, height: size }}>
+      <Image
+        src={src}
+        alt={team?.abbr || team?.name || "Team logo"}
+        fill
+        sizes={`${size}px`}
+        className="object-contain"
+        unoptimized
+        onError={() => setIndex((current) => Math.min(current + 1, sources.length - 1))}
+      />
+    </span>
+  );
+}
+
 function favoriteAccent(team: any) {
   return team?.primary || team?.color || "#f97316";
 }
@@ -316,13 +359,13 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
     return (
       <button
         onClick={onClick}
-        className="retro-score-card relative min-h-[158px] p-4 pl-[6.8rem] text-left border-t active:scale-[0.99] favorite-score-card"
+        className="retro-score-card relative min-h-[158px] p-4 pl-[6.55rem] text-left border-t active:scale-[0.99] favorite-score-card"
         style={{ borderColor: "var(--border)" }}
       >
         <div className="absolute left-4 top-3 bottom-3 w-[10px] rounded-full pointer-events-none" style={{ background: accent, clipPath: "polygon(18% 100%, 56% 100%, 96% 0, 0 0)" }} />
         {favoriteLogo && (
-          <div className="absolute left-[1.95rem] top-1/2 -translate-y-1/2 opacity-100 pointer-events-none">
-            <Image src={favoriteLogo} alt={favoriteTeam?.name || favoriteTeam?.abbr || "Favorite"} width={62} height={62} className="object-contain logo-outline-dark" unoptimized />
+          <div className="absolute left-[1.65rem] top-1/2 -translate-y-1/2 opacity-100 pointer-events-none">
+            <ScoreTeamLogo team={favoriteTeam} league={league} size={74} />
           </div>
         )}
         <div className="relative pr-1">
@@ -362,7 +405,7 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
   const showScore = scoreShouldShow(game) && team.score !== undefined && team.score !== null && team.score !== "";
   return (
     <div className="flex items-center gap-2.5 py-0.5">
-      {showLogo ? <div className={`${favorite ? "w-8 h-8" : "w-7 h-7"} flex items-center justify-center flex-shrink-0`}>{img && <Image src={img} alt={team.abbr || team.name} width={favorite ? 31 : 27} height={favorite ? 31 : 27} className="object-contain logo-outline-dark" unoptimized />}</div> : <div className="w-0" />}
+      {showLogo ? <div className={`${favorite ? "w-8 h-8" : "w-7 h-7"} flex items-center justify-center flex-shrink-0`}>{img && <ScoreTeamLogo team={team} league={league} size={favorite ? 31 : 27} />}</div> : <div className="w-0" />}
       <div className="flex-1 flex items-baseline gap-1.5 min-w-0">
         <span className={`${favorite ? "text-[22px] uppercase" : "text-[19px]"} score-team-name truncate font-black tracking-tight`}>{label}</span>
         {recordText && <span className="text-[12px] font-medium tracking-tight score-card-meta" style={{ color: "var(--score-meta)" }}>{recordText}</span>}
@@ -396,7 +439,7 @@ function ScoreCardSubline({ league, game, density }: { league: League; game: any
     const outs = game.situation.outs ?? 0;
     const outLabel = outs === 1 ? "1 Out" : `${outs} Outs`;
     return (
-      <div className="mt-2 text-xs font-black tracking-tight tabular-nums leading-none" style={{ color: "var(--text-2)" }}>
+      <div className="mt-2 text-[11px] font-medium tracking-tight tabular-nums score-card-subline" style={{ color: "var(--score-meta)" }}>
         {balls}-{strikes}, {outLabel}
       </div>
     );

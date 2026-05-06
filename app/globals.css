@@ -485,3 +485,35 @@ html[data-theme="light"] { --score-meta: #4b5563; }
   padding-bottom: 0.08em;
   max-width: 4.9rem;
 }
+
+/* Scores page polish v4 */
+.scores-sticky-header {
+  padding-top: max(1.12rem, env(safe-area-inset-top));
+}
+
+.scores-page-heading {
+  will-change: left, transform, font-size, letter-spacing;
+}
+
+.retro-datebar .active-date,
+.retro-datebar .active-date * {
+  color: var(--text) !important;
+}
+
+.retro-league-head {
+  line-height: 1.2;
+  padding-top: 0.78rem !important;
+  padding-bottom: 0.68rem !important;
+}
+
+.retro-league-head h2 {
+  line-height: 1.2;
+  padding-top: 0.08em;
+  padding-bottom: 0.03em;
+}
+
+.score-team-logo-wrap {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+}
