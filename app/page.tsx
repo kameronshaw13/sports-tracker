@@ -203,15 +203,21 @@ export default function Home() {
   );
 
   return (
-    <main className="min-h-screen p-4 sm:p-6 pb-28">
+    <main className="retro-page min-h-screen p-4 sm:p-6 pb-28">
       <PullToRefresh>
       <div className="max-w-3xl mx-auto">
         {!selectedPlayer && !showReturnGame && !selectedGame && view === "home" && (
-          <div className="flex items-center justify-between gap-3 mb-6">
-            <div>
-              <h1 className="text-2xl font-black leading-none">My Sports</h1>
+          <div className="retro-page mb-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="retro-top-badge">Gridiron<br />Sports</div>
+                <div>
+                  <h1 className="retro-page-title">Home</h1>
+                  <div className="retro-subtitle">★ Real-time. All the time. ★</div>
+                </div>
+              </div>
+              <div className="pt-1"><AppSettingsButton /></div>
             </div>
-            <AppSettingsButton />
           </div>
         )}
 

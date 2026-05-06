@@ -32,6 +32,12 @@ function stat(entry: any, names: string[], fallback = "—") {
   return found?.displayValue ?? found?.value ?? fallback;
 }
 
+function numericStat(entry: any, names: string[], fallback = Number.POSITIVE_INFINITY) {
+  const raw = stat(entry, names, "");
+  const n = Number(String(raw).replace(/[^\d.-]/g, ""));
+  return Number.isFinite(n) ? n : fallback;
+}
+
 function firstLogo(team: any) {
   const logos = team?.logos || team?.logo;
   if (Array.isArray(logos)) return logos[0]?.href || logos[0];
@@ -52,18 +58,47 @@ function teamInfo(entry: any, league: League) {
 function rowFromEntry(entry: any, league: League) {
   const t = teamInfo(entry, league);
   if (!t.name && !t.abbr) return null;
+  const conferenceRecord = stat(entry, ["conferencerecord", "confrecord", "conference"], "");
+  const parsedConference = String(conferenceRecord || "").match(/(\d+)\s*[-–]\s*(\d+)/);
+  const conferenceWins = stat(entry, ["conferencewins", "confwins", "confw"], "");
+  const conferenceLosses = stat(entry, ["conferencelosses", "conflosses", "confl"], "");
+  const derivedConferenceRecord = conferenceRecord || (conferenceWins || conferenceLosses ? `${conferenceWins || 0}-${conferenceLosses || 0}` : "");
   return {
     id: t.id,
     name: t.name || t.abbr,
     abbr: t.abbr || t.name,
     logo: t.logo || null,
-    wins: stat(entry, ["wins", "w"], "0"),
-    losses: stat(entry, ["losses", "l"], "0"),
+    wins: stat(entry, ["overallwins", "wins", "w"], "0"),
+    losses: stat(entry, ["overalllosses", "losses", "l"], "0"),
     ties: stat(entry, ["ties", "t"], ""),
+    otl: stat(entry, ["overtimelosses", "otlosses", "otl"], ""),
+    gp: stat(entry, ["gamesplayed", "gp", "games"], ""),
+    points: stat(entry, ["points", "pts"], ""),
+    conferenceRecord: derivedConferenceRecord,
     pct: stat(entry, ["winpercent", "winpct", "pct", "winpercentage", "percentage"], "—"),
     gb: stat(entry, ["gamesbehind", "gamesback", "gb", "gamesbehinddivision", "divisiongamesbehind"], "—"),
     streak: stat(entry, ["streak", "strk"], "—"),
+    rank: numericStat(entry, ["rank", "playoffseed", "seed"], Number.POSITIVE_INFINITY),
+    confWins: conferenceWins !== "" ? numericStat(entry, ["conferencewins", "confwins", "confw"], -1) : parsedConference ? Number(parsedConference[1]) : -1,
+    confLosses: conferenceLosses !== "" ? numericStat(entry, ["conferencelosses", "conflosses", "confl"], Number.POSITIVE_INFINITY) : parsedConference ? Number(parsedConference[2]) : Number.POSITIVE_INFINITY,
+    confWinsDisplay: conferenceWins || parsedConference?.[1] || "",
+    confLossesDisplay: conferenceLosses || parsedConference?.[2] || "",
+    winPctSort: numericStat(entry, ["winpercent", "winpct", "pct", "winpercentage", "percentage"], -1),
   };
+}
+
+function sortRows(rows: any[], league: League) {
+  const copy = [...rows];
+  copy.sort((a, b) => {
+    if (Number.isFinite(a.rank) || Number.isFinite(b.rank)) return (a.rank ?? 9999) - (b.rank ?? 9999);
+    if (league === "cfb" || league === "cbb") {
+      if ((b.confWins ?? -1) !== (a.confWins ?? -1)) return (b.confWins ?? -1) - (a.confWins ?? -1);
+      if ((a.confLosses ?? 999) !== (b.confLosses ?? 999)) return (a.confLosses ?? 999) - (b.confLosses ?? 999);
+    }
+    if ((b.winPctSort ?? -1) !== (a.winPctSort ?? -1)) return (b.winPctSort ?? -1) - (a.winPctSort ?? -1);
+    return Number(b.wins || 0) - Number(a.wins || 0);
+  });
+  return copy;
 }
 
 function extractEntries(node: any): any[] {
@@ -80,7 +115,7 @@ function walk(node: any, sections: any[], league: League, path: string[] = []) {
   const entries = extractEntries(node);
   const rows = entries.map((entry) => rowFromEntry(entry, league)).filter(Boolean);
   if (rows.length) {
-    sections.push({ label: labelForNode(node, path[path.length - 1] || "Standings"), rows });
+    sections.push({ label: labelForNode(node, path[path.length - 1] || "Standings"), rows: sortRows(rows, league) });
   }
   const children = node?.children || node?.groups || node?.divisions || node?.conferences || node?.standings?.children || [];
   if (Array.isArray(children)) {

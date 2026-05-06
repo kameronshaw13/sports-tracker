@@ -54,16 +54,13 @@ export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, 
   const date = formatDateParam(offsetDate(dayOffset));
 
   return (
-    <div className="space-y-7">
+    <div className="retro-page space-y-5">
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wider whitespace-nowrap" style={{ color: "var(--text-2)" }}>
-            My Teams
-          </h2>
+          <h2 className="retro-title text-xl">★ Favorites</h2>
           <button
             onClick={onManage}
-            className="text-xs font-medium px-2.5 py-1 rounded-lg"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}
+            className="retro-action-btn text-[11px] font-black uppercase px-3 py-1 rounded-lg"
           >
             Manage
           </button>
@@ -88,9 +85,7 @@ export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, 
       <section>
         <div className="flex items-center justify-between mb-3 gap-3">
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--text-2)" }}>
-              Live Scores
-            </h2>
+            <h2 className="retro-title text-xl">Live Scores</h2>
           </div>
         </div>
 
@@ -116,13 +111,13 @@ export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, 
 
 function DateControls({ dayOffset, setDayOffset }: { dayOffset: number; setDayOffset: (n: number) => void }) {
   return (
-    <div className="flex items-center justify-between gap-2 rounded-2xl p-2" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-      <button onClick={() => setDayOffset(dayOffset - 1)} className="px-3 py-2 rounded-xl text-sm font-semibold" style={{ background: "var(--surface-2)", color: "var(--text-2)" }}>←</button>
+    <div className="retro-datebar flex items-center justify-between gap-2 rounded-2xl p-2" >
+      <button onClick={() => setDayOffset(dayOffset - 1)} className="retro-action-btn px-3 py-2 rounded-xl text-sm font-semibold">←</button>
       <button onClick={() => setDayOffset(0)} className="flex-1 text-center">
         <div className="text-sm font-bold">{prettyDate(dayOffset)}</div>
         <div className="text-[11px]" style={{ color: "var(--text-3)" }}>{offsetDate(dayOffset).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</div>
       </button>
-      <button onClick={() => setDayOffset(dayOffset + 1)} className="px-3 py-2 rounded-xl text-sm font-semibold" style={{ background: "var(--surface-2)", color: "var(--text-2)" }}>→</button>
+      <button onClick={() => setDayOffset(dayOffset + 1)} className="retro-action-btn px-3 py-2 rounded-xl text-sm font-semibold">→</button>
     </div>
   );
 }
@@ -146,8 +141,8 @@ function LeagueScoreStrip({ league, label, date, density, onViewAll, onGameClick
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--text-2)" }}>{label}</h3>
-        <button onClick={onViewAll} className="text-xs font-semibold" style={{ color: "var(--text-2)" }}>View all →</button>
+        <h3 className="retro-title text-base">{label}</h3>
+        <button onClick={onViewAll} className="text-xs font-black uppercase tracking-wider" style={{ color: "var(--accent)" }}>View all →</button>
       </div>
       {isLoading ? (
         <div className={density === "compact" ? "grid grid-cols-2 sm:grid-cols-3 gap-2" : "grid grid-cols-1 sm:grid-cols-2 gap-2"}>
@@ -165,7 +160,7 @@ function LeagueScoreStrip({ league, label, date, density, onViewAll, onGameClick
 function MiniGameCard({ league, game, compact, onClick }: { league: League; game: any; compact: boolean; onClick: () => void }) {
   const isLive = game.status?.state === "in";
   return (
-    <button onClick={onClick} className="rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-[var(--surface-2)]" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+    <button onClick={onClick} className="retro-score-card rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-[var(--surface-2)]">
       <div className="flex items-center justify-between mb-1.5 gap-2">
         <span className="text-[11px] font-bold truncate" style={{ color: isLive ? "var(--danger)" : "var(--text-3)" }}>{game.status?.detail || formatTime(game.date)}</span>
         {isLive && <span className="w-2 h-2 rounded-full live-dot flex-shrink-0" style={{ background: "var(--danger)" }} />}
@@ -227,8 +222,8 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
   const displayOppScore = summaryOpp?.score ?? featured?.opponent?.score ?? "—";
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-      <button onClick={onTeamClick} className="w-full text-left px-4 py-3 flex items-center gap-3 transition-opacity hover:opacity-90" style={{ background: team.primary, color: team.textOnPrimary }}>
+    <div className="retro-panel overflow-hidden">
+      <button onClick={onTeamClick} className="w-full text-left px-4 py-3 flex items-center gap-3 transition-opacity hover:opacity-90" style={{ background: "linear-gradient(90deg, color-mix(in srgb, var(--accent-2) 65%, var(--surface)), var(--surface))", color: "var(--text)" }}>
         <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,255,255,0.15)" }}>
           <Image src={logoUrl(team)} alt={team.short} width={32} height={32} className="object-contain" />
         </div>
@@ -265,7 +260,7 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
             </div>
             {featured.status?.state !== "pre" && (
               <div className="text-right">
-                <div className="text-base font-bold tabular-nums">{displayUsScore}<span style={{ color: "var(--text-3)" }}> – </span>{displayOppScore}</div>
+                <div className="retro-score text-base font-bold tabular-nums">{displayUsScore}<span style={{ color: "var(--text-3)" }}> – </span>{displayOppScore}</div>
                 <div className="text-xs font-bold" style={{ color: featured.us?.winner ? "var(--success)" : featured.status?.state === "post" ? "var(--danger)" : team.primary }}>
                   {featured.status?.state === "in" ? (team.league === "mlb" ? inningStateText(featured) : featured.status.detail || "Live") : featured.us?.winner ? "W" : "L"}
                 </div>

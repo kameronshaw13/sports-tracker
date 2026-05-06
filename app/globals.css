@@ -219,3 +219,191 @@ html[data-theme="light"] .logo-outline-dark { filter: none; -webkit-filter: none
   nav { min-height: 92px; }
   nav button { transform: translateY(-2px); }
 }
+
+/* Retro scoreboard redesign - cleaner color version */
+:root, html[data-theme="dark"] {
+  --bg: #11100d;
+  --surface: #191813;
+  --surface-2: #242015;
+  --surface-3: #0d0c0a;
+  --border: #4f3418;
+  --text: #ead8b4;
+  --text-2: #bfa986;
+  --text-3: #85745c;
+  --accent: #d18429;
+  --accent-2: #8f3f16;
+  --retro-green: #8ea15b;
+  --success: #8ea15b;
+  --danger: #e25b22;
+  --warning: #d18429;
+}
+
+html[data-theme="light"] {
+  --bg: #f6eddc;
+  --surface: #fff8ec;
+  --surface-2: #eadcc5;
+  --surface-3: #fbf3e4;
+  --border: #b48753;
+  --text: #241b13;
+  --text-2: #6f5539;
+  --text-3: #9f815e;
+  --accent: #b76521;
+  --accent-2: #7f3515;
+  --retro-green: #536b35;
+  --success: #536b35;
+  --danger: #b83d1c;
+  --warning: #b76521;
+}
+
+html, body {
+  background:
+    radial-gradient(circle at 22% 0%, rgba(209,132,41,.12), transparent 28rem),
+    linear-gradient(180deg, rgba(255,255,255,.018), transparent 22rem),
+    var(--bg);
+  color: var(--text);
+  font-family: "Roboto Slab", "Rockwell", "Clarendon", "Georgia", "Times New Roman", serif;
+  letter-spacing: .015em;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: .18;
+  background-image:
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255,255,255,.018) 1px, transparent 1px);
+  background-size: 28px 28px, 28px 28px;
+  mask-image: linear-gradient(#000, transparent 90%);
+}
+
+.retro-page { color: var(--text); }
+.retro-title,
+.retro-page-title {
+  font-family: "Roboto Slab", "Rockwell", "Georgia", serif;
+  text-transform: uppercase;
+  font-weight: 950;
+  letter-spacing: .075em;
+  color: var(--text);
+  text-shadow: 0 1px 0 rgba(0,0,0,.7);
+}
+.retro-page-title {
+  font-size: clamp(2.45rem, 11vw, 4.25rem);
+  line-height: .86;
+}
+.retro-subtitle {
+  color: var(--accent);
+  font-size: .76rem;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: .17em;
+  font-weight: 950;
+}
+.retro-top-badge {
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  border-radius: 999px;
+  width: 4.55rem;
+  height: 4.55rem;
+  display: grid;
+  place-items: center;
+  font-size: .64rem;
+  line-height: 1.05;
+  font-weight: 950;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  background: rgba(0,0,0,.20);
+}
+.retro-action-btn {
+  min-height: 2.55rem;
+  min-width: 2.55rem;
+  border: 1px solid var(--border);
+  border-radius: .55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .25rem;
+  color: var(--accent);
+  background: rgba(0,0,0,.16);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.025);
+}
+.retro-panel {
+  background: linear-gradient(180deg, rgba(255,255,255,.025), transparent 60%), var(--surface);
+  border: 1px solid var(--border);
+  border-radius: .8rem;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.03), 0 16px 32px rgba(0,0,0,.18);
+}
+.retro-section-head,
+.retro-league-head {
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.08)), color-mix(in srgb, var(--accent-2) 64%, var(--surface));
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: .65rem .65rem 0 0;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  font-family: "Roboto Slab", "Rockwell", Georgia, serif;
+}
+.retro-league-head.green { background: color-mix(in srgb, var(--retro-green) 42%, var(--surface)); }
+.retro-league-head.blue { background: color-mix(in srgb, #355f68 40%, var(--surface)); }
+.retro-card,
+.retro-score-card {
+  background: linear-gradient(180deg, rgba(255,255,255,.025), transparent 50%), #15130f;
+  border: 1px solid var(--border) !important;
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.025);
+}
+.retro-score {
+  font-family: "Courier New", ui-monospace, monospace;
+  color: var(--accent);
+  font-weight: 950;
+  letter-spacing: .03em;
+  text-shadow: 0 0 8px rgba(209,132,41,.18);
+}
+.retro-status { color: var(--retro-green) !important; }
+.retro-muted { color: var(--text-2); }
+.retro-datebar {
+  background: rgba(0,0,0,.15);
+  border: 1px solid var(--border);
+  border-radius: .75rem;
+  padding-inline: .45rem;
+}
+.retro-datebar button { text-transform: uppercase; letter-spacing: .05em; }
+.retro-datebar .active-date {
+  background: color-mix(in srgb, var(--accent) 78%, #5e3515);
+  color: #17110a !important;
+  border-radius: .45rem;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.12);
+}
+.retro-nav {
+  background: rgba(14,13,10,.98) !important;
+  border-top: 1px solid var(--border) !important;
+  box-shadow: 0 -12px 28px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.03);
+}
+.retro-nav button.active {
+  color: var(--accent) !important;
+  background: rgba(209,132,41,.08);
+  border: 1px solid var(--border);
+  border-radius: .65rem;
+}
+.logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(.65px 0 0 rgba(241,222,185,.72))
+    drop-shadow(-.65px 0 0 rgba(241,222,185,.72))
+    drop-shadow(0 .65px 0 rgba(241,222,185,.72))
+    drop-shadow(0 -.65px 0 rgba(241,222,185,.72));
+  filter:
+    drop-shadow(.65px 0 0 rgba(241,222,185,.72))
+    drop-shadow(-.65px 0 0 rgba(241,222,185,.72))
+    drop-shadow(0 .65px 0 rgba(241,222,185,.72))
+    drop-shadow(0 -.65px 0 rgba(241,222,185,.72));
+}
+html[data-theme="light"] .logo-outline-dark { filter: none; -webkit-filter: none; }
+.cbs-blue-label { color: var(--accent); }
+.cbs-tabs { background: var(--surface); border-color: var(--border); }
+.cbs-game-topbar, .cbs-score-hero, .cbs-team-hero, .cbs-player-topbar, .cbs-player-hero, .cbs-table-panel, .cbs-schedule-row, .cbs-roster-row { background: var(--surface) !important; border-color: var(--border) !important; }
+
+@media (max-width: 640px) {
+  nav { min-height: 98px; }
+}

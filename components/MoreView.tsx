@@ -68,10 +68,10 @@ export default function MoreView({ onTeamClick, onLeagueClick, onManage }: Props
   }, [q, data?.teams]);
 
   return (
-    <div className="-mx-4 sm:mx-0 pb-8">
+    <div className="retro-page -mx-4 sm:mx-0 pb-8">
       <div className="px-4 pt-3 pb-4">
         <div className="flex items-center justify-between mb-5">
-          <h1 className="text-4xl font-black tracking-tight">More</h1>
+          <div><h1 className="retro-page-title">More</h1><div className="retro-subtitle">★ Real-time. All the time. ★</div></div>
           <AppSettingsButton />
         </div>
         <div className="relative">
@@ -80,8 +80,7 @@ export default function MoreView({ onTeamClick, onLeagueClick, onManage }: Props
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search Teams and Leagues"
-            className="w-full rounded-xl pl-9 pr-3 py-3 text-base font-semibold outline-none"
-            style={{ background: "var(--surface-2)", color: "var(--text)", border: "1px solid var(--border)" }}
+            className="w-full rounded-xl pl-9 pr-3 py-3 text-base font-semibold outline-none retro-panel"
           />
         </div>
       </div>
@@ -96,7 +95,7 @@ export default function MoreView({ onTeamClick, onLeagueClick, onManage }: Props
         <>
           <section className="border-t border-b px-4 py-5" style={{ borderColor: "var(--border)" }}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-black">Favorite Teams</h2>
+              <h2 className="retro-title text-xl">★ My Teams</h2>
               <button onClick={onManage} className="text-sm font-black" style={{ color: "var(--accent)" }}>EDIT</button>
             </div>
             <div className="flex gap-5 overflow-x-auto no-scrollbar pb-1">
@@ -104,7 +103,7 @@ export default function MoreView({ onTeamClick, onLeagueClick, onManage }: Props
                 const team = data?.teams?.find((t) => t.key === stored.key) || stored;
                 return (
                   <button key={team.key} onClick={() => onTeamClick(team)} className="flex flex-col items-center gap-1.5 min-w-[70px]">
-                    <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: teamColor(team) }}>
+                    <div className="w-14 h-14 rounded-full flex items-center justify-center retro-card" style={{ background: teamColor(team) }}>
                       {teamLogo(team) && <Image src={teamLogo(team)} alt={team.name} width={42} height={42} className="object-contain logo-outline-dark" unoptimized />}
                     </div>
                     <span className="text-[10px] font-black truncate max-w-[72px]" style={{ color: "var(--text-2)" }}>{team.short || team.abbr.toUpperCase()}</span>
@@ -115,9 +114,9 @@ export default function MoreView({ onTeamClick, onLeagueClick, onManage }: Props
             </div>
           </section>
 
-          <section className="border-t mt-3" style={{ borderColor: "var(--border)" }}>
+          <section className="mt-3">
             <div className="px-4 py-4 flex items-center justify-between">
-              <h2 className="text-lg font-black">Sports</h2>
+              <h2 className="retro-title text-xl">Sports</h2>
             </div>
             <div>
               {LEAGUES.map((l) => <LeagueRow key={l.id} league={l} onClick={() => onLeagueClick(l.id)} />)}
@@ -140,7 +139,7 @@ function SearchGroup({ title, children }: { title: string; children: React.React
 
 function LeagueRow({ league, onClick }: { league: { id: League; label: string; logo: string }; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="w-full px-4 py-4 flex items-center gap-4 border-t text-left" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+    <button onClick={onClick} className="w-full px-4 py-4 flex items-center gap-4 text-left retro-card mb-2">
       <Image src={league.logo} alt={league.label} width={34} height={34} className="object-contain logo-outline-dark" unoptimized />
       <span className="flex-1 text-lg font-black">{league.label}</span>
       <span className="text-2xl" style={{ color: "var(--text-3)" }}>›</span>

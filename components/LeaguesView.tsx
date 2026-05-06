@@ -109,10 +109,14 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
 
   return (
     <div className="-mx-4 sm:mx-0">
-      <div className="sticky top-0 z-30 px-4 pt-2 pb-0" style={{ background: "var(--bg)", borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent" }}>
-        <div className={`relative flex items-center py-2 transition-all duration-200 ${scrolled ? "justify-center" : "justify-start"}`}>
-          <h1 className={`${scrolled ? "text-lg" : "text-3xl"} font-black tracking-tight transition-all duration-200`}>Scores</h1>
-          <div className="absolute right-0 top-1/2 -translate-y-1/2">
+      <div className="sticky top-0 z-30 px-4 pt-2 pb-3" style={{ background: "var(--bg)", borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent" }}>
+        <div className={`relative flex items-start py-2 transition-all duration-200 ${scrolled ? "justify-center" : "justify-between"}`}>
+          <div className={`${scrolled ? "hidden" : "retro-top-badge scale-[.82] origin-left"}`}>Gridiron<br />Sports</div>
+          <div className={scrolled ? "text-center" : "text-center flex-1"}>
+            <h1 className={`${scrolled ? "text-xl" : "retro-page-title"} retro-title transition-all duration-200`}>Scores</h1>
+            {!scrolled && <div className="retro-subtitle">★ Real-time. All the time. ★</div>}
+          </div>
+          <div className={`${scrolled ? "absolute right-0 top-1/2 -translate-y-1/2" : "pt-1"}`}>
             <AppSettingsButton />
           </div>
         </div>
@@ -166,7 +170,7 @@ function CbsDateBar({ dayOffset, setDayOffset }: { dayOffset: number; setDayOffs
   }, [dayOffset]);
 
   return (
-    <div className="flex overflow-x-auto gap-3 px-0 pt-1 no-scrollbar">
+    <div className="retro-datebar flex overflow-x-auto gap-2 px-0 py-1 no-scrollbar">
       {days.map((d) => {
         const selected = dayOffset === d.offset;
         return (
@@ -174,10 +178,10 @@ function CbsDateBar({ dayOffset, setDayOffset }: { dayOffset: number; setDayOffs
             key={d.offset}
             ref={selected ? selectedRef : null}
             onClick={() => setDayOffset(d.offset)}
-            className="relative pb-2.5 pt-1.5 min-w-[88px] text-center"
+            className={`relative px-3 pb-2.5 pt-2 min-w-[88px] text-center ${selected ? "active-date" : ""}`}
           >
             <div className="text-sm font-black whitespace-nowrap" style={{ color: selected ? "var(--text)" : "var(--text-2)" }}>{d.label}</div>
-            {selected && <span className="absolute left-2 right-2 bottom-0 h-1" style={{ background: "var(--accent)" }} />}
+            {selected && <span className="absolute left-1/2 -translate-x-1/2 bottom-1 h-1 w-8 rounded-full" style={{ background: "var(--bg)" }} />}
           </button>
         );
       })}
@@ -225,7 +229,7 @@ function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick
 
   return (
     <>
-    <div className="h-2 border-y" style={{ background: "var(--bg)", borderColor: "var(--border)" }} />
+    <div className="h-3" />
     <section className="border-b" style={{ borderColor: "var(--border)" }}>
       <SectionHeader
         title={LEAGUE_LABELS[league]}
@@ -252,12 +256,12 @@ function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick
 function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggle, onStandingsClick }: { title: string; logo?: string; sticky?: boolean; collapsed?: boolean; onToggle?: () => void; onStandingsClick?: () => void }) {
   return (
     <div
-      className={`px-4 py-2 flex items-center justify-between ${sticky ? "sticky z-20" : ""}`}
-      style={{ background: "var(--surface)", top: sticky ? 84 : undefined, borderTop: sticky ? "1px solid var(--border)" : undefined, borderBottom: sticky ? "1px solid var(--border)" : undefined }}
+      className={`retro-league-head px-4 py-2.5 flex items-center justify-between ${sticky ? "sticky z-20" : ""}`}
+      style={{ top: sticky ? 122 : undefined }}
     >
       <div className="flex items-center gap-3 min-w-0">
         {logo && <Image src={logo} alt={title} width={22} height={22} className="object-contain logo-outline-dark" unoptimized />}
-        <h2 className="text-base font-black tracking-wide truncate">{title}</h2>
+        <h2 className="text-base font-black tracking-[.11em] uppercase truncate">{title}</h2>
       </div>
       <div className="flex items-center gap-2">
         {onStandingsClick && (
@@ -265,7 +269,7 @@ function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggl
             type="button"
             onClick={(e) => { e.stopPropagation(); onStandingsClick(); }}
             className="rounded-lg px-2.5 py-1.5 text-[10px] font-black tracking-wide"
-            style={{ background: "var(--surface-2)", color: "var(--accent)" }}
+            style={{ background: "rgba(0,0,0,.16)", color: "var(--text)", border: "1px solid var(--border)" }}
           >
             STANDINGS
           </button>
@@ -275,7 +279,7 @@ function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggl
             type="button"
             onClick={onToggle}
             className="h-8 w-8 rounded-lg flex items-center justify-center"
-            style={{ background: "var(--surface-2)", color: "var(--text-2)" }}
+            style={{ background: "rgba(0,0,0,.16)", color: "var(--accent)", border: "1px solid var(--border)" }}
             aria-label={collapsed ? `Show ${title} scores` : `Hide ${title} scores`}
           >
             <svg viewBox="0 0 24 24" className={`w-5 h-5 transition-transform ${collapsed ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -312,8 +316,8 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
     return (
       <button
         onClick={onClick}
-        className="relative min-h-[158px] p-4 pl-[7.15rem] text-left border-t overflow-hidden active:scale-[0.99] favorite-score-card"
-        style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+        className="retro-score-card relative min-h-[158px] p-4 pl-[7.15rem] text-left border-t overflow-hidden active:scale-[0.99] favorite-score-card"
+        style={{ borderColor: "var(--border)" }}
       >
         <div className="absolute left-0 top-0 bottom-0 w-[5.85rem] pointer-events-none" style={{ background: "#08090b" }} />
         <div className="absolute left-[5.85rem] top-0 bottom-0 w-[2px] pointer-events-none" style={{ background: accent }} />
@@ -328,7 +332,7 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
           </div>
         )}
         <div className="relative pr-2">
-          <div className="text-[13px] font-black tracking-tight mb-3 cbs-blue-label">{gameTimeLabel(game)}</div>
+          <div className="text-[13px] font-black uppercase tracking-[.08em] mb-3 cbs-blue-label">{gameTimeLabel(game)}</div>
           <TeamLine team={game.away} league={league} compact={false} favorite game={game} />
           <TeamLine team={game.home} league={league} compact={false} favorite game={game} />
           <ScoreCardSubline league={league} game={game} density={density} />
@@ -340,12 +344,12 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
   return (
     <button
       onClick={onClick}
-      className="min-h-[136px] p-3.5 text-left border-t sm:odd:border-r active:scale-[0.99]"
-      style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+      className="retro-score-card min-h-[136px] p-3.5 text-left border-t sm:odd:border-r active:scale-[0.99]"
+      style={{ borderColor: "var(--border)" }}
     >
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="text-[13px] font-black tracking-tight truncate" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
+          <div className="text-[13px] font-black uppercase tracking-[.08em] truncate" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
           {league === "mlb" && isLive && game.situation && <BasesDiamondMini situation={game.situation} />}
         </div>
       </div>
@@ -369,7 +373,7 @@ function TeamLine({ team, league, compact, favorite, game }: { team: any; league
         <span className={`${favorite ? "text-[22px]" : "text-[19px]"} leading-none truncate font-black tracking-tight`}>{label}</span>
         {recordText && <span className="text-[12px] font-bold tracking-tight leading-none" style={{ color: "var(--text-2)" }}>{recordText}</span>}
       </div>
-      {showScore && <span className={`${favorite ? "text-xl" : "text-lg"} font-black tabular-nums`}>{team.score}</span>}
+      {showScore && <span className={`retro-score ${favorite ? "text-2xl" : "text-xl"} font-black tabular-nums`}>{team.score}</span>}
     </div>
   );
 }

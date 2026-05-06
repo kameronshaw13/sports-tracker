@@ -33,10 +33,10 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
   const isNonPlayed = /POSTPONED|CANCELED|CANCELLED|SUSPENDED/.test(statusName);
 
   return (
-    <div className="-mx-4 sm:mx-0 cbs-game-page">
+    <div className="retro-page -mx-4 sm:mx-0 cbs-game-page">
       <GameTopBar title={`${away?.abbr || ""} @ ${home?.abbr || ""}`} onClose={onClose} />
       <ScoreboardHero league={league} home={home} away={away} status={status} situation={situation} eventId={eventId} onTeamClick={onTeamClick} />
-      <div className="cbs-tabs mb-0" role="tablist">
+      <div className="retro-panel mb-0 mx-4" role="tablist">
         <div className="flex overflow-x-auto no-scrollbar px-4 gap-8">
           <TabBtn label="GameTracker" isActive={activeTab === "main"} onClick={() => setActiveTab("main")} />
           <TabBtn label="Box Score" isActive={activeTab === "boxscore"} onClick={() => setActiveTab("boxscore")} />
@@ -53,11 +53,11 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
 
 function GameTopBar({ title, onClose }: { title: string; onClose?: () => void }) {
   return (
-    <div className="sticky top-0 z-40 cbs-game-topbar flex items-center justify-center px-4 py-3">
+    <div className="sticky top-0 z-40 retro-card flex items-center justify-center px-4 py-3">
       <button onClick={onClose} className="absolute left-4 h-10 w-10 flex items-center justify-center" aria-label="Close game">
         <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M18 6 6 18M6 6l12 12" /></svg>
       </button>
-      <h1 className="text-xl font-black tracking-tight">{title}</h1>
+      <h1 className="retro-title text-xl">{title}</h1>
     </div>
   );
 }
@@ -65,7 +65,7 @@ function GameTopBar({ title, onClose }: { title: string; onClose?: () => void })
 function ScoreboardHero({ league, home, away, status, situation, eventId, onTeamClick }: any) {
   const showScore = scoreShouldShow(status);
   return (
-    <section className="cbs-score-hero relative overflow-hidden">
+    <section className="retro-panel relative overflow-hidden my-3 mx-4">
       <div className="absolute inset-y-0 left-0 w-[29%] opacity-75" style={{ background: away?.color ? `linear-gradient(90deg, ${away.color}, transparent)` : "linear-gradient(90deg,#1d4ed8,transparent)" }} />
       <div className="absolute inset-y-0 right-0 w-[29%] opacity-75" style={{ background: home?.color ? `linear-gradient(270deg, ${home.color}, transparent)` : "linear-gradient(270deg,#7c2d12,transparent)" }} />
       <div className="relative px-5 py-5">
@@ -91,7 +91,7 @@ function TeamBlock({ team, league, eventId, onClick, align, showScore }: any) {
       <div className="w-20 h-20 flex items-center justify-center shrink-0">{team.logo && <Image src={team.logo} alt={team.abbr || team.name || ""} width={78} height={78} className="object-contain logo-outline-dark" unoptimized />}</div>
       <div className="min-w-0">
         <div className="text-xs font-black" style={{ color: "var(--text-2)" }}>{team.seriesRecord || team.record || ""}</div>
-        <div className="text-4xl font-black tabular-nums leading-none">{showScore ? team.score ?? "—" : ""}</div>
+        <div className="retro-score text-5xl font-black tabular-nums leading-none">{showScore ? team.score ?? "—" : ""}</div>
         <div className="mt-1 text-sm font-black truncate">{team.abbr}</div>
       </div>
     </Comp>
