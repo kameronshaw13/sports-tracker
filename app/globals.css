@@ -784,3 +784,96 @@ html[data-theme="light"] { --score-meta: #4b5563; }
   height: 1.9rem !important;
   transform: translateY(-6px);
 }
+
+
+/* Scores page polish v12 */
+.retro-league-head {
+  padding-top: 0.58rem !important;
+  padding-bottom: 0.38rem !important;
+  min-height: 2.48rem !important;
+  align-items: center !important;
+  overflow: visible !important;
+}
+
+.retro-league-head h2 {
+  display: flex;
+  align-items: center;
+  min-height: 1.35rem;
+  font-size: 0.9rem !important;
+  line-height: 1.18 !important;
+  padding-top: 2px !important;
+  padding-bottom: 0 !important;
+  margin: 0 !important;
+}
+
+.retro-league-head .standings-header-btn {
+  min-height: 1.7rem;
+  height: 1.7rem;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  text-align: center !important;
+}
+
+.retro-league-head button:not(.standings-header-btn) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.score-team-logo-cell {
+  width: 2rem !important;
+  height: 2rem !important;
+  flex: 0 0 2rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
+}
+
+.score-team-logo-wrap,
+.favorite-score-card .score-team-logo-wrap {
+  position: relative !important;
+  width: 1.72rem !important;
+  height: 1.72rem !important;
+  flex: 0 0 1.72rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transform: none !important;
+  overflow: visible !important;
+}
+
+.score-team-logo-wrap img,
+.favorite-score-card .score-team-logo-wrap img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+.logo-outline-dark,
+.score-team-logo-wrap,
+.score-team-logo-wrap img {
+  -webkit-filter:
+    drop-shadow(0.8px 0 0 rgba(255,255,255,.86))
+    drop-shadow(-0.8px 0 0 rgba(255,255,255,.86))
+    drop-shadow(0 0.8px 0 rgba(255,255,255,.86))
+    drop-shadow(0 -0.8px 0 rgba(255,255,255,.86)) !important;
+  filter:
+    drop-shadow(0.8px 0 0 rgba(255,255,255,.86))
+    drop-shadow(-0.8px 0 0 rgba(255,255,255,.86))
+    drop-shadow(0 0.8px 0 rgba(255,255,255,.86))
+    drop-shadow(0 -0.8px 0 rgba(255,255,255,.86)) !important;
+}
+
+html[data-theme="light"] .score-team-logo-wrap,
+html[data-theme="light"] .score-team-logo-wrap img {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
