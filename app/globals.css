@@ -517,3 +517,54 @@ html[data-theme="light"] { --score-meta: #4b5563; }
   display: inline-block;
   flex: 0 0 auto;
 }
+
+
+/* Scores page polish v5 */
+.retro-league-head {
+  padding-top: 0.96rem !important;
+  padding-bottom: 0.76rem !important;
+}
+
+.retro-league-head h2 {
+  line-height: 1.28;
+  padding-top: 0.13em;
+  padding-bottom: 0.07em;
+}
+
+.score-team-row {
+  min-height: 2.15rem;
+}
+
+.score-team-logo-wrap {
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-team-logo-wrap img {
+  object-fit: contain !important;
+  transform: scale(1.08);
+  transform-origin: center center;
+}
+
+.favorite-score-card .score-team-row {
+  min-height: 2rem;
+}
+
+.favorite-score-card .score-team-name {
+  letter-spacing: .015em;
+}
+
+.favorite-score-meta,
+.favorite-score-card .score-card-subline {
+  margin-left: 0;
+}
+
+.scores-page-heading {
+  transform-origin: center center;
+}
+
+.scores-sticky-header {
+  padding-top: max(1.22rem, env(safe-area-inset-top));
+}

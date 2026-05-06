@@ -112,7 +112,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
       <div className="sticky top-0 z-40 px-4 pb-2 scores-sticky-header" style={{ background: "var(--bg)", borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent" }}>
         <div className="relative flex min-h-[4.05rem] items-center justify-between">
           <h1
-            className={`absolute top-1/2 -translate-y-1/2 retro-title scores-page-heading transition-[left,transform,font-size,letter-spacing] duration-300 ease-out ${scrolled ? "left-1/2 -translate-x-1/2 text-[1.16rem] tracking-[.04em]" : "left-0 translate-x-0 text-[2.55rem] tracking-[.02em]"}`}
+            className={`absolute top-1/2 -translate-y-1/2 retro-title scores-page-heading transition-[left,transform,font-size,letter-spacing] duration-500 ease-[cubic-bezier(.22,.9,.28,1)] ${scrolled ? "left-1/2 -translate-x-1/2 text-[1.16rem] tracking-[.04em]" : "left-0 translate-x-0 text-[2.55rem] tracking-[.02em]"}`}
           >
             Scores
           </h1>
@@ -359,17 +359,17 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
     return (
       <button
         onClick={onClick}
-        className="retro-score-card relative min-h-[158px] p-4 pl-[6.55rem] text-left border-t active:scale-[0.99] favorite-score-card"
+        className="retro-score-card relative min-h-[158px] p-4 pl-[6.2rem] text-left border-t active:scale-[0.99] favorite-score-card"
         style={{ borderColor: "var(--border)" }}
       >
         <div className="absolute left-4 top-3 bottom-3 w-[10px] rounded-full pointer-events-none" style={{ background: accent, clipPath: "polygon(18% 100%, 56% 100%, 96% 0, 0 0)" }} />
         {favoriteLogo && (
-          <div className="absolute left-[1.65rem] top-1/2 -translate-y-1/2 opacity-100 pointer-events-none">
-            <ScoreTeamLogo team={favoriteTeam} league={league} size={74} />
+          <div className="absolute left-[1.42rem] top-1/2 -translate-y-1/2 opacity-100 pointer-events-none">
+            <ScoreTeamLogo team={favoriteTeam} league={league} size={82} />
           </div>
         )}
         <div className="relative pr-1">
-          <div className="text-[11px] font-black uppercase tracking-[.08em] mb-3 cbs-blue-label">{gameTimeLabel(game)}</div>
+          <div className="favorite-score-meta text-[11px] font-black uppercase tracking-[.08em] mb-3 cbs-blue-label">{gameTimeLabel(game)}</div>
           <TeamLine team={game.away} league={league} compact={false} favorite game={game} showLogo={false} />
           <TeamLine team={game.home} league={league} compact={false} favorite game={game} showLogo={false} />
           <ScoreCardSubline league={league} game={game} density={density} />
@@ -404,9 +404,9 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
   const label = compact ? team.abbr : favoriteTeamLabel(team, league);
   const showScore = scoreShouldShow(game) && team.score !== undefined && team.score !== null && team.score !== "";
   return (
-    <div className="flex items-center gap-2.5 py-0.5">
-      {showLogo ? <div className={`${favorite ? "w-8 h-8" : "w-7 h-7"} flex items-center justify-center flex-shrink-0`}>{img && <ScoreTeamLogo team={team} league={league} size={favorite ? 31 : 27} />}</div> : <div className="w-0" />}
-      <div className="flex-1 flex items-baseline gap-1.5 min-w-0">
+    <div className={`score-team-row flex items-center ${showLogo ? "gap-2.5" : "gap-0"} py-0.5`}>
+      {showLogo && <div className={`${favorite ? "w-8 h-8" : "w-7 h-7"} flex items-center justify-center flex-shrink-0`}>{img && <ScoreTeamLogo team={team} league={league} size={favorite ? 31 : 27} />}</div>}
+      <div className="flex-1 flex items-center gap-1.5 min-w-0">
         <span className={`${favorite ? "text-[22px] uppercase" : "text-[19px]"} score-team-name truncate font-black tracking-tight`}>{label}</span>
         {recordText && <span className="text-[12px] font-medium tracking-tight score-card-meta" style={{ color: "var(--score-meta)" }}>{recordText}</span>}
       </div>
