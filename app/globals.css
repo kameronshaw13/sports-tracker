@@ -730,3 +730,57 @@ html[data-theme="light"] { --score-meta: #4b5563; }
 .score-card-subline {
   letter-spacing: 0;
 }
+
+/* Scores page polish v11 */
+.retro-league-head {
+  padding-top: 0.92rem !important;
+  padding-bottom: 0.24rem !important;
+  min-height: 2.92rem;
+  overflow: visible;
+}
+
+.retro-league-head h2 {
+  line-height: 1.78;
+  padding-top: 0.5em;
+  padding-bottom: 0.02em;
+}
+
+.score-team-logo-cell {
+  width: 2.08rem !important;
+  height: 2.08rem !important;
+  flex: 0 0 2.08rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.score-team-logo-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem !important;
+  height: 1.85rem !important;
+  flex: 0 0 1.85rem;
+  transform: translateY(-6px);
+  overflow: visible;
+}
+
+.score-team-logo-wrap img {
+  object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.favorite-score-card .score-team-logo-cell {
+  width: 2.08rem !important;
+  height: 2.08rem !important;
+  flex-basis: 2.08rem;
+}
+
+.favorite-score-card .score-team-logo-wrap {
+  width: 1.9rem !important;
+  height: 1.9rem !important;
+  transform: translateY(-6px);
+}

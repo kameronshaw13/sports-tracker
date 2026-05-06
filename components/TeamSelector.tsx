@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
-import { TeamConfig, logoUrl } from "@/lib/teams";
+import { TeamConfig } from "@/lib/teams";
+import RetroTeamLogo from "./RetroTeamLogo";
 import { useFavoriteTeams } from "@/lib/useFavorites";
 
 type Props = {
@@ -36,13 +36,7 @@ export default function TeamSelector({ activeKey, onSelect, onManage }: Props) {
               className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
               style={{ background: isActive ? "rgba(255,255,255,0.12)" : "var(--surface-2)" }}
             >
-              <Image
-                src={logoUrl(team)}
-                alt={team.short}
-                width={32}
-                height={32}
-                className="object-contain"
-              />
+<RetroTeamLogo team={team} league={team.league} size={32} />
             </div>
             <div className="text-left">
               <div className="text-[11px] uppercase tracking-wide font-medium" style={{ opacity: 0.7 }}>

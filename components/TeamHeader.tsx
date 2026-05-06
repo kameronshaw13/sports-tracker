@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import RetroTeamLogo from "./RetroTeamLogo";
 import useSWR from "swr";
 import { TeamConfig, logoUrl, displayTeamName } from "@/lib/teams";
 
@@ -27,7 +28,7 @@ export default function TeamHeader({ team }: Props) {
           </p>
           <div className="mt-5 flex justify-center">
             <div className="h-24 w-24 flex items-center justify-center">
-              <Image src={logoUrl(team)} alt={team.name} width={92} height={92} className="object-contain logo-outline-dark" unoptimized />
+              <RetroTeamLogo team={team} league={team.league} size={92} />
             </div>
           </div>
         </div>

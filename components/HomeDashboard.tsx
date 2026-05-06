@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
+import RetroTeamLogo from "./RetroTeamLogo";
 import { useState } from "react";
 import useSWR from "swr";
-import { League, TeamConfig, logoUrl, displayTeamName } from "@/lib/teams";
+import { League, TeamConfig, displayTeamName } from "@/lib/teams";
 import { useFavoriteTeams } from "@/lib/useFavorites";
 import { useFreshKey } from "@/lib/freshKey";
 import { useAppSettings } from "@/lib/useAppSettings";
@@ -165,8 +165,8 @@ function MiniGameCard({ league, game, compact, onClick }: { league: League; game
         <span className="text-[11px] font-bold truncate" style={{ color: isLive ? "var(--danger)" : "var(--text-3)" }}>{game.status?.detail || formatTime(game.date)}</span>
         {isLive && <span className="w-2 h-2 rounded-full live-dot flex-shrink-0" style={{ background: "var(--danger)" }} />}
       </div>
-      <MiniTeam team={game.away} compact={compact} />
-      <MiniTeam team={game.home} compact={compact} />
+      <MiniTeam team={game.away} league={league} compact={compact} />
+      <MiniTeam team={game.home} league={league} compact={compact} />
       {league === "mlb" && isLive && (
         <div className="mt-2 pt-2 flex items-center gap-2 text-[11px] font-semibold" style={{ borderTop: "1px solid var(--border)", color: "var(--text-2)" }}>
           <BasesMini situation={game.situation} />
@@ -178,11 +178,11 @@ function MiniGameCard({ league, game, compact, onClick }: { league: League; game
   );
 }
 
-function MiniTeam({ team, compact }: { team: any; compact: boolean }) {
+function MiniTeam({ team, league, compact }: { team: any; league: League; compact: boolean }) {
   if (!team) return null;
   return (
     <div className="flex items-center gap-2 py-0.5">
-      <div className="w-5 h-5 flex items-center justify-center">{team.logo && <Image src={team.logo} alt={team.abbr} width={18} height={18} className="object-contain" />}</div>
+      <div className="w-5 h-5 flex items-center justify-center"><RetroTeamLogo team={team} league={league} size={18} /></div>
       <span className={`flex-1 text-xs truncate ${team.winner ? "font-bold" : "font-medium"}`}>{compact ? team.abbr : team.name || team.abbr}</span>
       <span className={`text-sm tabular-nums ${team.winner ? "font-bold" : "font-semibold"}`} style={{ color: "var(--text)" }}>{team.score ?? "—"}</span>
     </div>
@@ -225,7 +225,7 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
     <div className="retro-panel overflow-hidden">
       <button onClick={onTeamClick} className="w-full text-left px-4 py-3 flex items-center gap-3 transition-opacity hover:opacity-90" style={{ background: "linear-gradient(90deg, color-mix(in srgb, var(--accent-2) 65%, var(--surface)), var(--surface))", color: "var(--text)" }}>
         <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,255,255,0.15)" }}>
-          <Image src={logoUrl(team)} alt={team.short} width={32} height={32} className="object-contain" />
+          <RetroTeamLogo team={team} league={team.league} size={32} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-sm font-bold truncate">{team.league === "cfb" ? displayTeamName(team) : team.short}</div>
@@ -244,7 +244,7 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
 
         {featured ? (
           <div className="flex items-center gap-3">
-            {featured.opponent?.logo && <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "var(--surface-2)" }}><Image src={featured.opponent.logo} alt={featured.opponent.abbr} width={28} height={28} className="object-contain" /></div>}
+            {featured.opponent?.logo && <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "var(--surface-2)" }}><RetroTeamLogo team={featured.opponent} league={team.league} size={28} /></div>}
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold truncate"><span style={{ color: "var(--text-3)" }}>{featured.home ? "vs" : "@"}</span> {featured.opponent?.name}</div>
               <div className="text-xs" style={{ color: "var(--text-3)" }}>
