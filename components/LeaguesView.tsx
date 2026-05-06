@@ -410,7 +410,7 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
         <span className={`${favorite ? "text-[22px] uppercase" : "text-[19px]"} score-team-name truncate font-black tracking-tight`}>{label}</span>
         {recordText && <span className="text-[12px] font-medium tracking-tight score-card-meta" style={{ color: "var(--score-meta)" }}>{recordText}</span>}
       </div>
-      {showScore && <span className={`retro-score ${favorite ? "text-2xl" : "text-xl"} font-black tabular-nums`}>{team.score}</span>}
+      {showScore && <span className={`score-card-number ${favorite ? "text-base" : "text-sm"} tabular-nums ${team.winner ? "font-bold" : "font-semibold"}`} style={{ color: "var(--text)" }}>{team.score}</span>}
     </div>
   );
 }

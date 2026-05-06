@@ -568,3 +568,43 @@ html[data-theme="light"] { --score-meta: #4b5563; }
 .scores-sticky-header {
   padding-top: max(1.22rem, env(safe-area-inset-top));
 }
+
+
+/* Scores page polish v6 */
+.retro-league-head {
+  padding-top: 1.16rem !important;
+  padding-bottom: 0.84rem !important;
+}
+
+.retro-league-head h2 {
+  line-height: 1.34;
+  padding-top: 0.18em;
+  padding-bottom: 0.09em;
+}
+
+.score-team-logo-wrap {
+  overflow: visible !important;
+  transform: translateY(-2px);
+}
+
+.score-team-logo-wrap img {
+  object-fit: contain !important;
+  transform: none !important;
+  transform-origin: center center;
+}
+
+.favorite-score-card .score-team-logo-wrap {
+  transform: translateY(-2px);
+}
+
+.score-card-number {
+  min-width: 1.4rem;
+  text-align: right;
+  letter-spacing: 0;
+  line-height: 1.15;
+  padding-top: 0.05em;
+}
+
+.favorite-score-card .score-card-number {
+  min-width: 1.8rem;
+}
