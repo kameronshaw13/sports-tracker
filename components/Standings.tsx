@@ -213,6 +213,7 @@ function renderRow(row: TeamRow, columns: string[], selected: boolean, marker?: 
         <div className="flex items-center gap-2 min-w-0">
           {row.logo && <Image src={row.logo} alt="" width={18} height={18} className="object-contain flex-shrink-0 logo-outline-dark" unoptimized />}
           <span className="font-bold whitespace-normal leading-tight">{row.name}</span>
+          {row.divisionLabel && <span className="ml-auto text-[10px] font-black uppercase tracking-wide" style={{ color: "var(--text-3)" }}>{row.divisionLabel}</span>}
         </div>
       </td>
       {columns.map((key, idx) => <td key={key} className={`text-right py-2 tabular-nums ${idx === columns.length - 1 ? "px-3" : "px-2"}`}>{cell(row, key)}</td>)}
@@ -322,19 +323,32 @@ export default function Standings({ league, teamKey, compact = false, pageMode =
       })}
       {pageMode === "wildcard" && config.conferences.filter((conf) => !conferenceFilter || conf.name === conferenceFilter).map((conf) => {
         const leaders = sortRows(divisionLeaders(allRows, conf, league), league).map((row) => ({ ...row, gb: "-" }));
-        const cutoff = config.wildCardCount || 3;
+        const cutoff = league === "nhl" ? 2 : (config.wildCardCount || 3);
         const wc = league === "nhl" ? wildCardRows(allRows, conf, league) : withWildCardGb(wildCardRows(allRows, conf, league), cutoff);
         const markers: Record<number, "solid"> = {};
         markers[cutoff] = "solid";
         if (league === "nba") {
           const rows = rowsForConference(allRows, conf, league);
-          return <StandingsTable key={conf.name} title={`${conf.name} Play-In`} rows={rows} league={league} teamAbbr={teamAbbr} markers={{ 6: "dash", 10: "solid" }} />;
+          return <StandingsTable key={conf.name} title={conf.name} rows={rows} league={league} teamAbbr={teamAbbr} markers={{ 6: "dash", 10: "solid" }} />;
         }
         if (league === "nhl") {
-          const topThree = conf.divisions.flatMap((division) => rowsForDivision(allRows, division, league).slice(0, 3));
-          return <div key={conf.name} className="space-y-3"><StandingsTable title={`${conf.name} Top 3`} rows={topThree} league={league} teamAbbr={teamAbbr} /><StandingsTable title={`${conf.name} Wild Card`} rows={wc} league={league} teamAbbr={teamAbbr} markers={markers} /></div>;
+          return (
+            <div key={conf.name} className="space-y-3">
+              <div className="px-1 text-sm font-black uppercase tracking-wider" style={{ color: "var(--accent)" }}>{conf.name}</div>
+              {conf.divisions.map((division) => (
+                <StandingsTable
+                  key={`${conf.name}-${division.name}-top3`}
+                  title={`${division.name} Top 3`}
+                  rows={rowsForDivision(allRows, division, league).slice(0, 3).map((row) => ({ ...row, divisionLabel: division.name }))}
+                  league={league}
+                  teamAbbr={teamAbbr}
+                />
+              ))}
+              <StandingsTable title={`${conf.name} Next Teams`} rows={wc} league={league} teamAbbr={teamAbbr} markers={markers} />
+            </div>
+          );
         }
-        return <div key={conf.name} className="space-y-3"><StandingsTable title={`${conf.name} Division Leaders`} rows={leaders} league={league} teamAbbr={teamAbbr} /><StandingsTable title={`${conf.name} Wild Card`} rows={wc} league={league} teamAbbr={teamAbbr} markers={markers} /></div>;
+        return <div key={conf.name} className="space-y-3"><StandingsTable title={`${conf.name} Division Leaders`} rows={leaders} league={league} teamAbbr={teamAbbr} /><StandingsTable title={`${conf.name} Next Teams`} rows={wc} league={league} teamAbbr={teamAbbr} markers={markers} /></div>;
       })}
     </section>
   );

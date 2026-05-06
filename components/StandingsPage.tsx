@@ -79,17 +79,17 @@ function controlsForLeague(league: League): StandingsControl[] {
   if (league === "nfl") return [
     { id: "afc", label: "AFC", mode: "division", conference: "AFC" },
     { id: "nfc", label: "NFC", mode: "division", conference: "NFC" },
-    { id: "wildcard", label: "Wild Card", mode: "wildcard" },
+    { id: "conference", label: "Conference", mode: "wildcard" },
   ];
   if (league === "nhl") return [
     { id: "east", label: "Eastern", mode: "division", conference: "Eastern Conference" },
     { id: "west", label: "Western", mode: "division", conference: "Western Conference" },
-    { id: "wildcard", label: "Wild Card", mode: "wildcard" },
+    { id: "conference", label: "Conference", mode: "wildcard" },
   ];
   if (league === "nba") return [
-    { id: "east", label: "Eastern", mode: "conference", conference: "Eastern Conference" },
-    { id: "west", label: "Western", mode: "conference", conference: "Western Conference" },
-    { id: "playin", label: "Play-In", mode: "wildcard" },
+    { id: "east", label: "Eastern", mode: "division", conference: "Eastern Conference" },
+    { id: "west", label: "Western", mode: "division", conference: "Western Conference" },
+    { id: "conference", label: "Conference", mode: "conference" },
   ];
   return [
     { id: "division", label: "Division", mode: "division" },

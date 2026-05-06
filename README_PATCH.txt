@@ -1,0 +1,11 @@
+Patch contents:
+- app/globals.css
+  - Fixes clipped/flat-looking score font by giving retro score text safer line-height/top padding.
+  - Adds visible solid/dashed standings cut-line styles.
+- components/StandingsPage.tsx
+  - NBA Eastern/Western tabs now show divisions.
+  - NFL/NHL/NBA third tab is labeled Conference instead of Wild Card/Play-In.
+- components/Standings.tsx
+  - NBA Conference view adds dashed line after top 6 and solid white line after top 10.
+  - NFL Conference view keeps division leaders and next teams, with white line after 3 teams.
+  - NHL Conference view lists each division's top 3 separately, then next teams with white line after 2 teams.
