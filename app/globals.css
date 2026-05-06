@@ -664,3 +664,20 @@ html[data-theme="light"] { --score-meta: #4b5563; }
 .favorite-score-card {
   padding-left: 6.85rem !important;
 }
+
+/* Scores page polish v9 */
+.retro-league-head {
+  padding-top: 0.88rem !important;
+  padding-bottom: 0.46rem !important;
+}
+
+.retro-league-head h2 {
+  font-size: 0.92rem;
+  line-height: 1.4;
+  padding-top: 0.24em;
+  padding-bottom: 0.04em;
+}
+
+.favorite-score-card {
+  padding-left: 7.18rem !important;
+}
