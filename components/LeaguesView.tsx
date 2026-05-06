@@ -110,7 +110,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
   return (
     <div className="-mx-4 sm:mx-0">
       <div className="sticky top-0 z-40 px-4 pb-2 scores-sticky-header" style={{ background: "var(--bg)", borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent" }}>
-        <div className="relative flex min-h-[3.75rem] items-center justify-between">
+        <div className="relative flex min-h-[3.95rem] items-center justify-between">
           <h1
             className={`retro-title scores-page-heading transition-all duration-200 ${scrolled ? "absolute left-1/2 -translate-x-1/2 text-[1.18rem] tracking-[.04em]" : "text-[2.55rem] tracking-[.02em]"}`}
           >
@@ -126,7 +126,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
       <div>
         <FavoritesScores date={date} favoriteKeys={favoriteKeys} onGameClick={(league, eventId) => setSelectedEvent({ league, eventId })} />
         {leagues.map((lg) => (
-          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={92} />
+          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={104} />
         ))}
       </div>
     </div>
@@ -178,10 +178,10 @@ function CbsDateBar({ dayOffset, setDayOffset }: { dayOffset: number; setDayOffs
             key={d.offset}
             ref={selected ? selectedRef : null}
             onClick={() => setDayOffset(d.offset)}
-            className={`relative min-w-[104px] rounded-xl border px-4 py-2.5 text-center transition-all ${selected ? "active-date" : ""}`}
-            style={{ borderColor: selected ? "transparent" : "var(--border)", background: selected ? undefined : "var(--surface)" }}
+            className={`relative min-w-[74px] px-2.5 py-1.5 text-center transition-all ${selected ? "active-date" : ""}`}
+            style={{ color: selected ? "var(--text)" : "var(--text-2)" }}
           >
-            <div className="text-[0.92rem] font-semibold whitespace-nowrap" style={{ color: selected ? "#17110a" : "var(--text)" }}>{d.label}</div>
+            <div className="text-[0.76rem] font-semibold whitespace-nowrap leading-[1.15]">{d.label}</div>
             
           </button>
         );
@@ -214,7 +214,7 @@ function FavoritesScores({ date, favoriteKeys, onGameClick }: { date: string; fa
   );
 }
 
-function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick, stickyTop = 92 }: { league: League; date: string; density: ScoreDensity; onGameClick: (eventId: string) => void; onStandingsClick?: (league: League) => void; stickyTop?: number }) {
+function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick, stickyTop = 104 }: { league: League; date: string; density: ScoreDensity; onGameClick: (eventId: string) => void; onStandingsClick?: (league: League) => void; stickyTop?: number }) {
   const freshKey = useFreshKey();
   const [collapsed, setCollapsed] = useState(false);
   const { data, error, isLoading } = useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, {
@@ -316,17 +316,17 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
     return (
       <button
         onClick={onClick}
-        className="retro-score-card relative min-h-[158px] p-4 pl-[6.35rem] text-left border-t active:scale-[0.99] favorite-score-card"
+        className="retro-score-card relative min-h-[158px] p-4 pl-[6.8rem] text-left border-t active:scale-[0.99] favorite-score-card"
         style={{ borderColor: "var(--border)" }}
       >
         <div className="absolute left-4 top-3 bottom-3 w-[10px] rounded-full pointer-events-none" style={{ background: accent, clipPath: "polygon(18% 100%, 56% 100%, 96% 0, 0 0)" }} />
         {favoriteLogo && (
           <div className="absolute left-[1.95rem] top-1/2 -translate-y-1/2 opacity-100 pointer-events-none">
-            <Image src={favoriteLogo} alt={favoriteTeam?.name || favoriteTeam?.abbr || "Favorite"} width={52} height={52} className="object-contain logo-outline-dark" unoptimized />
+            <Image src={favoriteLogo} alt={favoriteTeam?.name || favoriteTeam?.abbr || "Favorite"} width={62} height={62} className="object-contain logo-outline-dark" unoptimized />
           </div>
         )}
         <div className="relative pr-1">
-          <div className="text-[13px] font-black uppercase tracking-[.08em] mb-3 cbs-blue-label">{gameTimeLabel(game)}</div>
+          <div className="text-[11px] font-black uppercase tracking-[.08em] mb-3 cbs-blue-label">{gameTimeLabel(game)}</div>
           <TeamLine team={game.away} league={league} compact={false} favorite game={game} showLogo={false} />
           <TeamLine team={game.home} league={league} compact={false} favorite game={game} showLogo={false} />
           <ScoreCardSubline league={league} game={game} density={density} />
@@ -343,7 +343,7 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
     >
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="text-[13px] font-black uppercase tracking-[.08em] truncate" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
+          <div className="text-[11px] font-black uppercase tracking-[.08em] truncate" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
           {league === "mlb" && isLive && game.situation && <BasesDiamondMini situation={game.situation} />}
         </div>
       </div>
@@ -364,7 +364,7 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
     <div className="flex items-center gap-2.5 py-0.5">
       {showLogo ? <div className={`${favorite ? "w-8 h-8" : "w-7 h-7"} flex items-center justify-center flex-shrink-0`}>{img && <Image src={img} alt={team.abbr || team.name} width={favorite ? 31 : 27} height={favorite ? 31 : 27} className="object-contain logo-outline-dark" unoptimized />}</div> : <div className="w-0" />}
       <div className="flex-1 flex items-baseline gap-1.5 min-w-0">
-        <span className={`${favorite ? "text-[22px]" : "text-[19px]"} score-team-name truncate font-black tracking-tight`}>{label}</span>
+        <span className={`${favorite ? "text-[22px] uppercase" : "text-[19px]"} score-team-name truncate font-black tracking-tight`}>{label}</span>
         {recordText && <span className="text-[12px] font-medium tracking-tight score-card-meta" style={{ color: "var(--score-meta)" }}>{recordText}</span>}
       </div>
       {showScore && <span className={`retro-score ${favorite ? "text-2xl" : "text-xl"} font-black tabular-nums`}>{team.score}</span>}

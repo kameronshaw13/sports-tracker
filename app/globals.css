@@ -411,7 +411,7 @@ html[data-theme="light"] .logo-outline-dark { filter: none; -webkit-filter: none
 
 /* Scores page refinements */
 .scores-sticky-header {
-  padding-top: max(0.35rem, env(safe-area-inset-top));
+  padding-top: max(0.85rem, env(safe-area-inset-top));
   box-shadow: none;
 }
 
@@ -434,16 +434,30 @@ html[data-theme="light"] .logo-outline-dark { filter: none; -webkit-filter: none
   border: 0;
   border-radius: 0;
   padding-inline: 0;
-  gap: 0.6rem;
+  gap: 0.45rem;
 }
 
 .retro-datebar button {
   flex: 0 0 auto;
+  border: 0 !important;
+  background: transparent !important;
+  border-radius: 0;
 }
 
 .retro-datebar .active-date {
-  border-radius: 0.9rem;
-  box-shadow: 0 0 0 1px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.12);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.retro-datebar .active-date::after {
+  content: "";
+  position: absolute;
+  left: 0.45rem;
+  right: 0.45rem;
+  bottom: 0.1rem;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--accent);
 }
 
 .favorite-score-card {
@@ -463,4 +477,11 @@ html[data-theme="light"] { --score-meta: #4b5563; }
 
 .score-card-subline {
   line-height: 1.2;
+}
+
+.bottom-nav-label {
+  line-height: 1.22;
+  padding-top: 0.12em;
+  padding-bottom: 0.08em;
+  max-width: 4.9rem;
 }

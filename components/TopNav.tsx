@@ -34,9 +34,9 @@ export default function TopNav({ active, onChange }: Props) {
         {items.map((it) => {
           const isActive = active === it.id;
           return (
-            <button key={it.id} onClick={() => onChange(it.id)} className={`min-h-[66px] px-2 pt-2 pb-1 text-[11px] font-black uppercase tracking-wider transition-all flex flex-col items-center justify-start gap-1 active:scale-[0.98] ${isActive ? "active" : ""}`} style={{ color: isActive ? "var(--accent)" : "var(--text-3)" }}>
+            <button key={it.id} onClick={() => onChange(it.id)} className={`min-h-[66px] px-1 pt-2 pb-1 text-[10px] font-black uppercase tracking-[.02em] transition-all flex flex-col items-center justify-start gap-1 active:scale-[0.98] ${isActive ? "active" : ""}`} style={{ color: isActive ? "var(--accent)" : "var(--text-3)" }}>
               {icons[it.icon](isActive)}
-              <span className="leading-none truncate max-w-full">{it.label}</span>
+              <span className="bottom-nav-label truncate max-w-full">{it.label}</span>
             </button>
           );
         })}
