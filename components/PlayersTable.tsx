@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useMemo, useState } from "react";
 import type { Section } from "@/lib/playerColumns";
 import { fmtAvg, fmtPct, fmtRate2, fmtDecimal1, fmtCount } from "@/lib/format";
@@ -193,8 +192,7 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
                   className="sticky left-0 z-10 px-3 py-2 whitespace-nowrap"
                   style={{ background: "var(--surface)" }}
                 >
-                  <button type="button" onClick={() => onPlayerClick?.(p)} className="flex items-center gap-2.5 text-left hover:opacity-80 transition-opacity" disabled={!onPlayerClick}>
-                    <Headshot player={p} />
+                  <button type="button" onClick={() => onPlayerClick?.(p)} className="flex items-center text-left hover:opacity-80 transition-opacity" disabled={!onPlayerClick}>
                     <div className="min-w-0">
                       <div className="font-semibold truncate max-w-[140px] sm:max-w-[180px]">
                         {p.name}
@@ -257,43 +255,6 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
       >
         {sorted.length} player{sorted.length === 1 ? "" : "s"} · click any column to sort
       </div>
-    </div>
-  );
-}
-
-function Headshot({ player }: { player: Player }) {
-  const [failed, setFailed] = useState(false);
-  const initials = player.name
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("");
-
-  return (
-    <div
-      className="rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
-      style={{
-        background: "var(--surface-2, var(--surface))",
-        width: 32,
-        height: 32,
-        border: "1px solid var(--border)",
-      }}
-    >
-      {player.headshot && !failed ? (
-        <Image
-          src={player.headshot}
-          alt={player.name}
-          width={32}
-          height={32}
-          className="object-cover"
-          style={{ width: 32, height: 32 }}
-          onError={() => setFailed(true)}
-        />
-      ) : (
-        <span className="text-[10px] font-semibold" style={{ color: "var(--text-3)" }}>
-          {initials}
-        </span>
-      )}
     </div>
   );
 }

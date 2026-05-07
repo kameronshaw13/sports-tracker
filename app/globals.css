@@ -4167,3 +4167,263 @@ main.retro-page {
   padding-right: .78rem !important;
   font-size: .64rem !important;
 }
+
+/* v56: sticky compact header, table tabs, tighter schedule controls */
+.team-sticky-shell {
+  top: 0 !important;
+  background: color-mix(in srgb, var(--team-primary) 58%, var(--surface)) !important;
+}
+
+.team-header-actions {
+  min-height: calc(1.78rem + env(safe-area-inset-top)) !important;
+  padding: calc(env(safe-area-inset-top) + .18rem) .72rem 0 !important;
+}
+
+.team-back-btn {
+  width: 2rem !important;
+  height: 2rem !important;
+  min-height: 2rem !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--text) !important;
+}
+
+.team-back-btn svg {
+  width: 1.72rem !important;
+  height: 1.72rem !important;
+}
+
+.team-page-hero-inner {
+  min-height: 6.7rem !important;
+  padding-top: .12rem !important;
+  padding-bottom: .5rem !important;
+  justify-content: flex-start !important;
+}
+
+.team-page-name {
+  font-size: 1rem !important;
+}
+
+.team-page-record {
+  margin-top: .08rem !important;
+  font-size: .68rem !important;
+}
+
+.team-page-logo-box {
+  width: 3.55rem !important;
+  height: 3.55rem !important;
+  flex-basis: 3.55rem !important;
+  margin-top: .16rem !important;
+}
+
+.team-page-logo-box .score-team-logo-wrap,
+.team-page-logo-box .espn-team-logo-wrap {
+  width: 3.35rem !important;
+  height: 3.35rem !important;
+}
+
+.team-page-hero.is-compact .team-page-hero-inner {
+  min-height: 3.68rem !important;
+  padding-top: .22rem !important;
+  padding-bottom: .28rem !important;
+}
+
+.team-page-hero.is-compact .team-page-logo-box {
+  width: 2.38rem !important;
+  height: 2.38rem !important;
+  flex-basis: 2.38rem !important;
+}
+
+.team-page-hero.is-compact .team-page-logo-box .score-team-logo-wrap,
+.team-page-hero.is-compact .team-page-logo-box .espn-team-logo-wrap {
+  width: 2.15rem !important;
+  height: 2.15rem !important;
+}
+
+.team-sticky-shell .cbs-tabs {
+  background: color-mix(in srgb, var(--team-primary) 58%, var(--surface)) !important;
+  border-top: 0 !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, #fff) !important;
+}
+
+.team-sticky-shell .cbs-tabs > div {
+  gap: 1.36rem !important;
+  padding-left: .72rem !important;
+  padding-right: .72rem !important;
+}
+
+.team-sticky-shell .cbs-tabs button {
+  padding-top: .56rem !important;
+  padding-bottom: .52rem !important;
+  font-size: .78rem !important;
+  font-weight: 950 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.team-sticky-shell .cbs-tabs button span:last-child {
+  height: 3px !important;
+  bottom: 0 !important;
+  background: var(--text) !important;
+}
+
+.team-month-toggle {
+  min-height: 2.24rem !important;
+  padding: .2rem .64rem .12rem !important;
+  grid-template-columns: 1.72rem 1fr 1.72rem !important;
+}
+
+.team-month-toggle button {
+  min-height: 1.6rem !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  font-size: .92rem !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-month-toggle div {
+  transform: translateY(1px);
+  font-size: .7rem !important;
+}
+
+.team-schedule-row {
+  min-height: 3.28rem !important;
+  gap: .2rem !important;
+  padding: .34rem .56rem !important;
+}
+
+.team-schedule-date {
+  width: 1.82rem !important;
+  font-size: .56rem !important;
+}
+
+.team-schedule-at {
+  width: .74rem !important;
+  font-size: .58rem !important;
+}
+
+.team-schedule-logo {
+  width: 1.32rem !important;
+  height: 1.32rem !important;
+}
+
+.team-schedule-logo img {
+  width: 1.18rem !important;
+  height: 1.18rem !important;
+}
+
+.team-schedule-opponent {
+  font-size: .68rem !important;
+  line-height: 1.08 !important;
+}
+
+.team-schedule-status,
+.team-schedule-status > div {
+  min-width: 2.85rem !important;
+  font-size: .56rem !important;
+}
+
+.team-roster-search {
+  display: none !important;
+}
+
+.team-roster-row .rounded-full {
+  background: #222 !important;
+}
+
+.team-roster-row img {
+  object-fit: cover !important;
+  object-position: center 18% !important;
+  transform: scale(1.18);
+}
+
+.team-stats-toggle,
+.team-player-stat-tabs,
+.team-standings-toggle {
+  background: var(--surface) !important;
+  border-radius: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+}
+
+.team-stats-toggle button,
+.team-player-stat-tabs button,
+.team-standings-toggle button {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.team-player-stat-tabs {
+  display: flex !important;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-top: 1px solid var(--border) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.team-player-stat-tabs button {
+  flex: 1 1 0;
+  min-height: 2.28rem;
+  color: var(--text-2) !important;
+}
+
+.team-player-stat-tabs button[aria-selected="true"] {
+  color: var(--text) !important;
+}
+
+.team-standings-panel {
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.team-standings-panel .standings-table-card {
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-radius: 0 !important;
+}
+
+.team-standings-toggle {
+  gap: 0 !important;
+  border-bottom: 1px solid var(--border);
+}
+
+.team-standings-toggle button {
+  min-height: 2.34rem !important;
+  color: var(--text-2);
+  position: relative;
+}
+
+.team-standings-toggle button.is-active {
+  color: var(--text);
+}
+
+.team-standings-toggle button.is-active::after {
+  content: "";
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  bottom: 0;
+  height: 3px;
+  background: var(--accent);
+}
+
+.team-stats-page table .rounded-full,
+.team-stats-page table img {
+  display: none !important;
+}
+
+.team-stats-page table button {
+  gap: 0 !important;
+}

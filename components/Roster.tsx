@@ -45,7 +45,6 @@ export default function Roster({ team, mode = "active", onPlayerClick }: Props) 
     `/api/roster?team=${team.key}&_t=${freshKey}`,
     fetcher
   );
-  const [filter, setFilter] = useState("");
 
   if (isLoading) {
     return (
@@ -80,42 +79,21 @@ export default function Roster({ team, mode = "active", onPlayerClick }: Props) 
   const active: Player[] = data.active || [];
   const injured: Player[] = data.injured || [];
 
-  const filterText = filter.trim().toLowerCase();
-  const matches = (p: Player) =>
-    !filterText ||
-    p.name.toLowerCase().includes(filterText) ||
-    (p.position || "").toLowerCase().includes(filterText) ||
-    (p.positionAbbr || "").toLowerCase().includes(filterText) ||
-    (p.jersey || "").includes(filterText);
-
   const filteredGroups = positionGroups
-    .map((g) => ({ ...g, players: g.players.filter(matches) }))
+    .map((g) => ({ ...g, players: g.players }))
     .filter((g) => g.players.length > 0);
 
-  const filteredInjured = injured.filter(matches);
+  const filteredInjured = injured;
 
   const isCollege = team.league === "cfb" || team.league === "cbb";
   const tab = mode === "injured" && !isCollege ? "injured" : "active";
 
   return (
     <div>
-      <input
-        type="text"
-        placeholder={`Search ${tab === "active" ? "players" : "injured players"}...`}
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-        className="team-roster-search w-full mb-0 px-4 py-3 text-base outline-none"
-        style={{
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-          color: "var(--text)",
-        }}
-      />
-
       {tab === "active" && (
         <>
           {filteredGroups.length === 0 ? (
-            <EmptyMessage filter={filter} kind="active" />
+            <EmptyMessage kind="active" />
           ) : (
             <div className="-mx-4 sm:mx-0">
               {filteredGroups.map((group) => (
@@ -140,7 +118,7 @@ export default function Roster({ team, mode = "active", onPlayerClick }: Props) 
       {tab === "injured" && (
         <>
           {filteredInjured.length === 0 ? (
-            <EmptyMessage filter={filter} kind="injured" />
+            <EmptyMessage kind="injured" />
           ) : (
             <div className="cbs-table-panel -mx-4 sm:mx-0">
               {filteredInjured.map((p) => (
@@ -154,7 +132,7 @@ export default function Roster({ team, mode = "active", onPlayerClick }: Props) 
   );
 }
 
-function EmptyMessage({ filter, kind }: { filter: string; kind: "active" | "injured" }) {
+function EmptyMessage({ kind }: { kind: "active" | "injured" }) {
   return (
     <div
       className="p-6 rounded-xl text-sm text-center"
@@ -164,9 +142,7 @@ function EmptyMessage({ filter, kind }: { filter: string; kind: "active" | "inju
         color: "var(--text-2)",
       }}
     >
-      {filter
-        ? `No ${kind} players match "${filter}"`
-        : `No ${kind} players.`}
+      No {kind} players.
     </div>
   );
 }
