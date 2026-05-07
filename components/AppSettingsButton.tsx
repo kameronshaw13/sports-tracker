@@ -52,7 +52,17 @@ export default function AppSettingsButton() {
         zIndex: 2147483001,
       }}
     >
-      <div className="flex items-center justify-between"><h3 className="text-sm font-black">Settings</h3></div>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-sm font-black">Settings</h3>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="settings-close-btn"
+          aria-label="Close settings"
+        >
+          ×
+        </button>
+      </div>
       <div>
         <div className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: "var(--text-3)" }}>Score card view</div>
         <div className="grid grid-cols-2 gap-2">{(["compact", "expanded"] as const).map((d) => <button key={d} onClick={() => setDensity(d)} className="px-3 py-2 rounded-xl text-xs font-black capitalize" style={{ background: settings.density === d ? "var(--text)" : "var(--surface-2)", color: settings.density === d ? "var(--bg)" : "var(--text-2)", border: "1px solid var(--border)" }}>{d}</button>)}</div>
