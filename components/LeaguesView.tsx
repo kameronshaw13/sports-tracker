@@ -330,15 +330,6 @@ function ScoreTeamLogo({ team, league, size }: { team: any; league: League; size
     <span className="score-team-logo-wrap espn-team-logo-wrap" style={{ width: size, height: size }}>
       <Image
         src={src}
-        alt=""
-        fill
-        sizes={`${size}px`}
-        className="object-contain espn-team-logo-outline-copy"
-        aria-hidden
-        unoptimized
-      />
-      <Image
-        src={src}
         alt={alt}
         fill
         sizes={`${size}px`}

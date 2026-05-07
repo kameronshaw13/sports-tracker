@@ -107,7 +107,6 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
   const displayUsScore = summaryUs?.score ?? featured?.us?.score ?? "—";
   const displayOppScore = summaryOpp?.score ?? featured?.opponent?.score ?? "—";
   const featuredState = featured?.status?.state;
-  const featuredIsUpcoming = featuredState === "pre";
   const featuredIsLive = featuredState === "in";
   const teamStyle = {
     "--team-primary": team.primary,
@@ -134,7 +133,6 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
           <span className="home-team-pill" data-live={liveEvent ? "true" : "false"}>
             {liveEvent && <span className="w-2 h-2 rounded-full live-dot" style={{ background: "var(--danger)" }} />}{label}
           </span>
-          {!liveEvent && <span className="home-team-game-status">{featuredIsUpcoming ? formatDateShort(featured.date) : featured?.status?.detail}</span>}
         </div>
 
         {featured ? (
@@ -142,11 +140,9 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
             {featured.opponent?.logo && <div className="home-team-opponent-logo"><RetroTeamLogo team={featured.opponent} league={team.league} size={44} /></div>}
             <div className="flex-1 min-w-0">
               <div className="home-team-matchup"><span>{featured.home ? "vs" : "@"}</span> {featured.opponent?.name}</div>
-              {featuredIsLive && (
-                <div className="home-team-time">
-                  {team.league === "mlb" ? liveStatus : featured.status?.detail || "Live"}
-                </div>
-              )}
+              <div className="home-team-time">
+                {featured.status?.state === "pre" ? formatClock(featured.date) : featured.status?.state === "in" && team.league === "mlb" ? liveStatus : featured.status?.detail || formatClock(featured.date)}
+              </div>
               {featuredIsLive && team.league === "mlb" && (
                 <div className="mt-1 flex items-center gap-2 text-[11px] font-semibold" style={{ color: "var(--text-2)" }}>
                   <BasesMini situation={liveSituation} />
@@ -155,11 +151,7 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
                 </div>
               )}
             </div>
-            {featuredIsUpcoming ? (
-              <div className="text-right">
-                <div className="retro-score home-team-score home-team-upcoming-time tabular-nums">{formatClock(featured.date)}</div>
-              </div>
-            ) : (
+            {featured.status?.state !== "pre" && (
               <div className="text-right">
                 <div className="retro-score home-team-score tabular-nums">{displayUsScore}<span> - </span>{displayOppScore}</div>
                 <div className="home-team-result" style={{ color: featured.us?.winner ? "var(--success)" : featured.status?.state === "post" ? "var(--danger)" : team.primary }}>

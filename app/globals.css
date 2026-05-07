@@ -2694,3 +2694,33 @@ html[data-theme="light"] .espn-team-logo-wrap img.espn-team-logo-img.logo-outlin
   -webkit-filter: none !important;
   filter: none !important;
 }
+
+/* v38: return to the v33-style outline, just a fraction thinner */
+.score-team-logo-wrap .espn-team-logo-outline-copy,
+.espn-team-logo-wrap .espn-team-logo-outline-copy,
+html[data-theme="light"] .score-team-logo-wrap .espn-team-logo-outline-copy,
+html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-outline-copy {
+  display: none !important;
+}
+
+.logo-outline-dark,
+.logo-outline-dark img,
+.espn-team-logo-img.logo-outline-dark,
+.score-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+.espn-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+img.logo-outline-dark,
+img.espn-team-logo-img.logo-outline-dark,
+.score-team-logo-wrap img.espn-team-logo-img.logo-outline-dark,
+.espn-team-logo-wrap img.espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .logo-outline-dark,
+html[data-theme="light"] .logo-outline-dark img,
+html[data-theme="light"] .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .score-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] img.logo-outline-dark,
+html[data-theme="light"] img.espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .score-team-logo-wrap img.espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .espn-team-logo-wrap img.espn-team-logo-img.logo-outline-dark {
+  -webkit-filter: drop-shadow(0 0 1.55px rgba(255,255,255,.98)) !important;
+  filter: drop-shadow(0 0 1.55px rgba(255,255,255,.98)) !important;
+}
