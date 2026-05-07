@@ -1935,13 +1935,218 @@ html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-outline-copy {
 html[data-theme="light"] .logo-outline-dark,
 html[data-theme="light"] .logo-outline-dark img {
   -webkit-filter:
-    drop-shadow(0.9px 0 0 rgba(255,255,255,.96))
-    drop-shadow(-0.9px 0 0 rgba(255,255,255,.96))
-    drop-shadow(0 0.9px 0 rgba(255,255,255,.96))
-    drop-shadow(0 -0.9px 0 rgba(255,255,255,.96)) !important;
+    drop-shadow(1.35px 0 0 rgba(255,255,255,.98))
+    drop-shadow(-1.35px 0 0 rgba(255,255,255,.98))
+    drop-shadow(0 1.35px 0 rgba(255,255,255,.98))
+    drop-shadow(0 -1.35px 0 rgba(255,255,255,.98)) !important;
   filter:
-    drop-shadow(0.9px 0 0 rgba(255,255,255,.96))
-    drop-shadow(-0.9px 0 0 rgba(255,255,255,.96))
-    drop-shadow(0 0.9px 0 rgba(255,255,255,.96))
-    drop-shadow(0 -0.9px 0 rgba(255,255,255,.96)) !important;
+    drop-shadow(1.35px 0 0 rgba(255,255,255,.98))
+    drop-shadow(-1.35px 0 0 rgba(255,255,255,.98))
+    drop-shadow(0 1.35px 0 rgba(255,255,255,.98))
+    drop-shadow(0 -1.35px 0 rgba(255,255,255,.98)) !important;
+}
+
+/* v28: stronger home logo scale + sticky team page */
+.home-topbar-title,
+.home-section-title {
+  font-family: "Roboto Slab", "Rockwell", "Georgia", serif !important;
+  letter-spacing: .02em !important;
+  text-transform: none !important;
+}
+
+.home-section-title {
+  font-size: 1.22rem;
+}
+
+.home-team-logo-shell {
+  width: 4.34rem;
+  height: 4.34rem;
+}
+
+.home-team-opponent-logo {
+  width: 3.18rem;
+  height: 3.18rem;
+}
+
+.home-team-game-head {
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.home-team-pill {
+  min-height: 1.62rem;
+  align-items: center;
+  line-height: 1;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.team-sticky-shell {
+  position: sticky;
+  top: 0;
+  z-index: 45;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.12)),
+    color-mix(in srgb, var(--team-primary) 76%, #111214);
+  border-bottom: 1px solid color-mix(in srgb, var(--team-secondary) 36%, rgba(255,255,255,.16));
+  box-shadow: 0 12px 28px rgba(0,0,0,.24);
+}
+
+@media (min-width: 640px) {
+  .team-sticky-shell {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+.team-header-actions {
+  min-height: calc(2.65rem + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) 1rem .28rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  background: transparent;
+}
+
+.team-back-btn,
+.team-return-game-btn {
+  min-height: 2.18rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .18rem;
+  color: var(--text);
+  font-size: .92rem;
+  font-weight: 900;
+}
+
+.team-return-game-btn {
+  padding: 0 .65rem;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: .45rem;
+  background: rgba(0,0,0,.14);
+  color: color-mix(in srgb, var(--team-secondary) 40%, #fff);
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.team-page-hero.cbs-team-hero {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+.team-page-hero-inner {
+  padding-top: .32rem;
+  padding-bottom: .78rem;
+  transition: padding .18s ease;
+}
+
+.team-page-name {
+  max-width: min(100%, 28rem);
+  margin: 0 auto;
+  color: var(--text);
+  font-family: "Roboto Slab", "Rockwell", "Georgia", serif;
+  font-size: 1.18rem;
+  line-height: 1.14;
+  font-weight: 950;
+  letter-spacing: .02em;
+}
+
+.team-page-record {
+  margin-top: .16rem;
+  color: color-mix(in srgb, var(--text) 82%, var(--team-secondary));
+  font-size: .82rem;
+  line-height: 1.2;
+  font-weight: 850;
+}
+
+.team-page-logo-row {
+  display: flex;
+  justify-content: center;
+  max-height: 5.7rem;
+  margin-top: .7rem;
+  opacity: 1;
+  overflow: hidden;
+  transition: max-height .2s ease, margin .2s ease, opacity .16s ease;
+}
+
+.team-page-logo-box {
+  width: 5.3rem;
+  height: 5.3rem;
+  display: grid;
+  place-items: center;
+}
+
+.team-page-hero.is-compact .team-page-hero-inner {
+  padding-top: .18rem;
+  padding-bottom: .46rem;
+}
+
+.team-page-hero.is-compact .team-page-logo-row {
+  max-height: 0;
+  margin-top: 0;
+  opacity: 0;
+}
+
+.team-sticky-shell .cbs-tabs {
+  margin-left: 0;
+  margin-right: 0;
+  background: rgba(0,0,0,.14) !important;
+  border-color: rgba(255,255,255,.16) !important;
+}
+
+.team-sticky-shell .cbs-tabs button {
+  padding-top: .82rem;
+  padding-bottom: .82rem;
+  font-size: .96rem;
+}
+
+.team-month-toggle {
+  min-height: 3.1rem;
+  padding: .35rem 1rem;
+  display: grid;
+  grid-template-columns: 2.4rem 1fr 2.4rem;
+  align-items: center;
+  gap: .45rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.team-month-toggle button {
+  min-height: 2.16rem;
+  border: 1px solid var(--border);
+  border-radius: .45rem;
+  color: var(--accent);
+  background: rgba(0,0,0,.14);
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.team-month-toggle button:disabled {
+  opacity: .36;
+}
+
+.team-month-toggle div {
+  text-align: center;
+  color: var(--text);
+  font-family: "Roboto Slab", "Rockwell", "Georgia", serif;
+  font-size: .92rem;
+  font-weight: 950;
+  letter-spacing: .04em;
+}
+
+.team-transactions-empty {
+  min-height: 10rem;
+  padding: 2rem 1rem;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: var(--text-2);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
 }

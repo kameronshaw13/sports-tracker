@@ -150,29 +150,28 @@ export default function Home() {
       )}
       {activeTeam ? (
         <div key={activeTeam.key}>
-          <button
-            onClick={() => {
-              setReturnGame(null);
-              setShowReturnGame(false);
-              setView(teamReturnView || "scores");
-            }}
-            className="mb-2 -ml-2 h-10 px-2 flex items-center gap-1 text-base font-semibold"
-            style={{ color: "var(--text)" }}
-          >
-            <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15 18-6-6 6-6" /></svg>
-            Back
-          </button>
-          {returnGame && (
-            <button
-              onClick={() => setShowReturnGame(true)}
-              className="mb-3 text-sm font-black px-3 py-2"
-              style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--accent)" }}
-            >
-              Back to game
-            </button>
-          )}
-          <TeamHeader team={activeTeam} />
-          <Tabs team={activeTeam} active={activeTab} onChange={setActiveTab} hasLive={hasLive} />
+          <div className="team-sticky-shell" style={{ ["--team-primary" as any]: activeTeam.primary, ["--team-secondary" as any]: activeTeam.secondary }}>
+            <div className="team-header-actions -mx-4 sm:mx-0">
+              <button
+                onClick={() => {
+                  setReturnGame(null);
+                  setShowReturnGame(false);
+                  setView(teamReturnView || "scores");
+                }}
+                className="team-back-btn"
+              >
+                <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15 18-6-6 6-6" /></svg>
+                Back
+              </button>
+              {returnGame && (
+                <button onClick={() => setShowReturnGame(true)} className="team-return-game-btn">
+                  Back to game
+                </button>
+              )}
+            </div>
+            <TeamHeader team={activeTeam} />
+            <Tabs team={activeTeam} active={activeTab} onChange={setActiveTab} hasLive={hasLive} />
+          </div>
           <div>
             {activeTab === "live" && (
               <LiveGame team={activeTeam} onTeamLogoClick={handleTeamLogoClick} onPlayerClick={(p) => setSelectedPlayer({ ...p, teamKey: activeTeam.key })} />
@@ -183,6 +182,7 @@ export default function Home() {
             {activeTab === "roster" && <Roster team={activeTeam} onPlayerClick={(p) => setSelectedPlayer(p)} />}
             {activeTab === "stats" && <Stats team={activeTeam} onPlayerClick={(p) => setSelectedPlayer(p)} />}
             {activeTab === "standings" && <Standings league={activeTeam.league} teamKey={activeTeam.key} />}
+            {activeTab === "transactions" && <div className="team-transactions-empty -mx-4 sm:mx-0">Transactions will appear here when the feed is connected.</div>}
           </div>
         </div>
       ) : (
@@ -202,7 +202,7 @@ export default function Home() {
     </>
   );
 
-  const usesFullTopHeader = !selectedPlayer && !selectedGame && !showReturnGame && (view === "home" || view === "scores");
+  const usesFullTopHeader = !selectedPlayer && !selectedGame && !showReturnGame && (view === "home" || view === "scores" || view === "teamPage");
 
   return (
     <main className={`retro-page min-h-screen pb-28 px-4 sm:px-6 ${usesFullTopHeader ? "pt-0" : "app-safe-top"}`}>

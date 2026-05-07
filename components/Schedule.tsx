@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { TeamConfig } from "@/lib/teams";
 import { useFreshKey } from "@/lib/freshKey";
@@ -19,6 +19,7 @@ type Props = {
 
 export default function Schedule({ team, onTeamLogoClick, onPlayerClick }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const freshKey = useFreshKey();
   const { data, error, isLoading } = useSWR(`/api/scoreboard?team=${team.key}&_t=${freshKey}`, fetcher, {
     refreshInterval: 30_000,
@@ -32,6 +33,25 @@ export default function Schedule({ team, onTeamLogoClick, onPlayerClick }: Props
     list.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
     return list;
   }, [data?.events]);
+
+  const grouped: Record<string, any[]> = groupByMonth(events);
+  const monthKeys = Object.keys(grouped);
+
+  useEffect(() => {
+    if (monthKeys.length === 0) return;
+    const currentMonth = monthKey(new Date());
+    const upcoming = events.find((ev: any) => new Date(ev.date).getTime() >= Date.now());
+    const nextMonth = upcoming ? monthKey(new Date(upcoming.date)) : null;
+    const preferred = monthKeys.includes(currentMonth)
+      ? currentMonth
+      : nextMonth && monthKeys.includes(nextMonth)
+        ? nextMonth
+        : monthKeys[0];
+
+    if (!selectedMonth || !monthKeys.includes(selectedMonth)) {
+      setSelectedMonth(preferred);
+    }
+  }, [events, monthKeys, selectedMonth]);
 
   if (selected) {
     return (
@@ -48,22 +68,36 @@ export default function Schedule({ team, onTeamLogoClick, onPlayerClick }: Props
   if (isLoading) return <SkeletonList />;
   if (error || !data?.events) return <ErrorBox message="Couldn't load schedule" />;
 
-  const grouped: Record<string, any[]> = groupByMonth(events);
+  const activeMonth = selectedMonth && grouped[selectedMonth] ? selectedMonth : monthKeys[0];
+  const activeIndex = Math.max(0, monthKeys.indexOf(activeMonth));
+  const activeList = activeMonth ? grouped[activeMonth] || [] : [];
 
   return (
     <div className="-mx-4 sm:mx-0 cbs-panel-list">
-      {Object.entries(grouped).map(([month, list]: [string, any[]]) => (
-        <section key={month}>
-          <div className="cbs-month-bar">
-            <span>{month}</span>
-          </div>
-          <div className="cbs-table-panel">
-            {list.map((ev: any) => (
-              <ScheduleRow key={ev.id} ev={ev} team={team} onClick={() => setSelected(ev.id)} />
-            ))}
-          </div>
-        </section>
-      ))}
+      <div className="team-month-toggle">
+        <button
+          onClick={() => setSelectedMonth(monthKeys[Math.max(0, activeIndex - 1)])}
+          disabled={activeIndex <= 0}
+          aria-label="Previous month"
+        >
+          ←
+        </button>
+        <div>{activeMonth || "Schedule"}</div>
+        <button
+          onClick={() => setSelectedMonth(monthKeys[Math.min(monthKeys.length - 1, activeIndex + 1)])}
+          disabled={activeIndex >= monthKeys.length - 1}
+          aria-label="Next month"
+        >
+          →
+        </button>
+      </div>
+      <section key={activeMonth}>
+        <div className="cbs-table-panel">
+          {activeList.map((ev: any) => (
+            <ScheduleRow key={ev.id} ev={ev} team={team} onClick={() => setSelected(ev.id)} />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
@@ -107,10 +141,14 @@ function ScheduleRow({ ev, team, onClick }: any) {
 function groupByMonth(events: any[]) {
   return events.reduce((acc: Record<string, any[]>, ev) => {
     const d = new Date(ev.date);
-    const key = Number.isNaN(d.getTime()) ? "Schedule" : d.toLocaleDateString(undefined, { month: "long", year: "numeric" }).toUpperCase();
+    const key = Number.isNaN(d.getTime()) ? "Schedule" : monthKey(d);
     (acc[key] ||= []).push(ev);
     return acc;
   }, {});
+}
+
+function monthKey(d: Date) {
+  return d.toLocaleDateString(undefined, { month: "long", year: "numeric" }).toUpperCase();
 }
 
 function classifyNonPlayed(status: any): NonPlayedKind {

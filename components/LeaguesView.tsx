@@ -309,14 +309,14 @@ function ScoreTeamLogo({ team, league, size }: { team: any; league: League; size
 
   const alt = team?.abbr || team?.name || "Team logo";
   const outlineOffsets = [
-    [0, -0.9],
-    [0.9, 0],
-    [0, 0.9],
-    [-0.9, 0],
-    [0.68, -0.68],
-    [0.68, 0.68],
-    [-0.68, 0.68],
-    [-0.68, -0.68],
+    [0, -1.35],
+    [1.35, 0],
+    [0, 1.35],
+    [-1.35, 0],
+    [0.98, -0.98],
+    [0.98, 0.98],
+    [-0.98, 0.98],
+    [-0.98, -0.98],
   ];
 
   return (
