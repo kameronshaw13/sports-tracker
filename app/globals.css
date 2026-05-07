@@ -2150,3 +2150,84 @@ html[data-theme="light"] .logo-outline-dark img {
   background: var(--surface);
   border-top: 1px solid var(--border);
 }
+
+/* v29: Home/Scores parity pass */
+.scores-page-heading,
+.home-topbar-title,
+.home-section-title {
+  font-family: "Roboto Slab", "Rockwell", "Georgia", serif !important;
+  font-weight: 950 !important;
+  letter-spacing: .02em !important;
+  text-transform: none !important;
+  text-shadow: none !important;
+}
+
+.scores-page-heading,
+.home-topbar-title {
+  font-size: 2.42rem !important;
+  line-height: 1.12 !important;
+}
+
+.home-section-title {
+  font-size: 1.22rem !important;
+  line-height: 1.12 !important;
+}
+
+.espn-team-logo-outline-copy {
+  opacity: .94 !important;
+}
+
+.score-team-logo-wrap.logo-outline-dark,
+.espn-team-logo-wrap.logo-outline-dark {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+.logo-outline-dark,
+.logo-outline-dark img,
+html[data-theme="light"] .logo-outline-dark,
+html[data-theme="light"] .logo-outline-dark img {
+  -webkit-filter:
+    drop-shadow(1.05px 0 0 rgba(255,255,255,.95))
+    drop-shadow(-1.05px 0 0 rgba(255,255,255,.95))
+    drop-shadow(0 1.05px 0 rgba(255,255,255,.95))
+    drop-shadow(0 -1.05px 0 rgba(255,255,255,.95)) !important;
+  filter:
+    drop-shadow(1.05px 0 0 rgba(255,255,255,.95))
+    drop-shadow(-1.05px 0 0 rgba(255,255,255,.95))
+    drop-shadow(0 1.05px 0 rgba(255,255,255,.95))
+    drop-shadow(0 -1.05px 0 rgba(255,255,255,.95)) !important;
+}
+
+.score-team-logo-wrap .espn-team-logo-img,
+.espn-team-logo-wrap .espn-team-logo-img {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+.retro-league-head.sticky {
+  position: sticky !important;
+  z-index: 35 !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.08)),
+    color-mix(in srgb, var(--accent-2) 64%, var(--surface)) !important;
+  box-shadow: 0 8px 16px rgba(0,0,0,.18), inset 0 -1px 0 var(--border);
+}
+
+.home-team-game {
+  transition: none !important;
+}
+
+.home-team-game:hover,
+.home-team-game:active,
+.home-team-game:focus {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.018), transparent 58%),
+    color-mix(in srgb, var(--surface) 92%, #000) !important;
+}
+
+.home-team-pill {
+  transform: translateY(1px);
+  padding-top: 2px !important;
+  padding-bottom: 0 !important;
+}

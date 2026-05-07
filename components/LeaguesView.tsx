@@ -124,7 +124,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
       <div>
         <FavoritesScores date={date} favoriteKeys={favoriteKeys} onGameClick={(league, eventId) => setSelectedEvent({ league, eventId })} />
         {leagues.map((lg) => (
-          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={124} />
+          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={128} />
         ))}
       </div>
     </div>
@@ -203,7 +203,7 @@ function FavoritesScores({ date, favoriteKeys, onGameClick }: { date: string; fa
   return (
     <>
       <section className="mt-3 border-b" style={{ borderColor: "var(--border)" }}>
-        <SectionHeader title="Favorites" sticky stickyTop={124} />
+        <SectionHeader title="Favorites" sticky stickyTop={128} />
         <div className="grid grid-cols-1">
           {games.slice(0, 4).map((game: any) => <ScoreCard key={`${game.league}-${game.id}`} league={game.league} game={game} density="expanded" favorite favoriteSide={game.favoriteSide} onClick={() => onGameClick(game.league, game.id)} />)}
         </div>
@@ -309,14 +309,14 @@ function ScoreTeamLogo({ team, league, size }: { team: any; league: League; size
 
   const alt = team?.abbr || team?.name || "Team logo";
   const outlineOffsets = [
-    [0, -1.35],
-    [1.35, 0],
-    [0, 1.35],
-    [-1.35, 0],
-    [0.98, -0.98],
-    [0.98, 0.98],
-    [-0.98, 0.98],
-    [-0.98, -0.98],
+    [0, -1.05],
+    [1.05, 0],
+    [0, 1.05],
+    [-1.05, 0],
+    [0.76, -0.76],
+    [0.76, 0.76],
+    [-0.76, 0.76],
+    [-0.76, -0.76],
   ];
 
   return (
