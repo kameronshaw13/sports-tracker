@@ -2309,3 +2309,66 @@ html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img.logo-outline-d
   width: 3.72rem !important;
   height: 3.72rem !important;
 }
+
+/* v32: larger Home favorite logos + slightly thicker smooth outline */
+.logo-outline-dark,
+.logo-outline-dark img,
+.espn-team-logo-img.logo-outline-dark,
+.score-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+.espn-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .logo-outline-dark,
+html[data-theme="light"] .logo-outline-dark img,
+html[data-theme="light"] .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .score-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img.logo-outline-dark {
+  -webkit-filter: drop-shadow(0 0 1.55px rgba(255,255,255,.98)) !important;
+  filter: drop-shadow(0 0 1.55px rgba(255,255,255,.98)) !important;
+}
+
+.home-team-main {
+  min-height: 7.05rem !important;
+  gap: 1rem !important;
+}
+
+.home-team-logo-shell {
+  width: 6.28rem !important;
+  height: 6.28rem !important;
+}
+
+.home-team-logo-shell .score-team-logo-wrap,
+.home-team-logo-shell .espn-team-logo-wrap {
+  width: 100% !important;
+  height: 100% !important;
+  transform: none !important;
+}
+
+.home-team-logo-shell .espn-team-logo-img {
+  padding: .12rem !important;
+}
+
+.home-team-opponent-logo {
+  width: 4.25rem !important;
+  height: 4.25rem !important;
+}
+
+.home-team-opponent-logo .score-team-logo-wrap,
+.home-team-opponent-logo .espn-team-logo-wrap {
+  width: 100% !important;
+  height: 100% !important;
+  transform: none !important;
+}
+
+.home-team-opponent-logo .espn-team-logo-img {
+  padding: .15rem !important;
+}
+
+.home-team-score {
+  font-family: inherit !important;
+  font-variant-numeric: normal !important;
+  color: var(--text) !important;
+  font-size: 1.12rem !important;
+  line-height: 1.12 !important;
+  font-weight: 950 !important;
+  letter-spacing: 0 !important;
+  padding-top: .08em !important;
+}
