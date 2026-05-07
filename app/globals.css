@@ -3622,3 +3622,48 @@ body::-webkit-scrollbar,
 .standings-stat-col {
   width: auto !important;
 }
+
+/* v52: college standings, refresh pill, and Home opponent logo tuning */
+.standings-table-cfb,
+.standings-table-cbb {
+  --standings-team-col: 46%;
+}
+
+.standings-table-cfb .standings-colgroup-overall,
+.standings-table-cbb .standings-colgroup-overall,
+.standings-table-cfb .standings-colgroup-conference,
+.standings-table-cbb .standings-colgroup-conference {
+  transform: none !important;
+}
+
+.standings-table-cfb th:not(:first-child),
+.standings-table-cfb td:not(:first-child),
+.standings-table-cbb th:not(:first-child),
+.standings-table-cbb td:not(:first-child),
+.standings-table-nhl th:not(:first-child),
+.standings-table-nhl td:not(:first-child) {
+  padding-left: .18rem !important;
+  padding-right: .18rem !important;
+  text-align: center !important;
+}
+
+.pull-refresh-indicator {
+  top: calc(max(env(safe-area-inset-top), 0px) + 1.18rem) !important;
+}
+
+.home-team-opponent-logo {
+  width: 2.54rem !important;
+  height: 2.54rem !important;
+}
+
+.home-team-opponent-logo .score-team-logo-wrap,
+.home-team-opponent-logo .espn-team-logo-wrap {
+  width: 100% !important;
+  height: 100% !important;
+  transform: none !important;
+}
+
+.home-team-opponent-logo .team-logo-svg {
+  width: 100% !important;
+  height: 100% !important;
+}

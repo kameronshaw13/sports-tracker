@@ -26,6 +26,12 @@ const CFB_ROW_OVERRIDES: Record<string, { abbr: string; espnId?: string; aliases
   "Grambling State": { abbr: "gram", espnId: "2755", aliases: ["grambling", "grambling state tigers"] },
 };
 
+const TEAM_COLOR_OVERRIDES: Record<string, { primary: string; secondary?: string }> = {
+  "cfb-tex": { primary: "#BF5700", secondary: "#333F48" },
+  "cbb-tex": { primary: "#BF5700", secondary: "#333F48" },
+  "texas longhorns": { primary: "#BF5700", secondary: "#333F48" },
+};
+
 function cfbLogoById(espnId?: string) {
   return espnId ? `https://a.espncdn.com/i/teamlogos/ncaa/500/${espnId}.png` : null;
 }
@@ -59,19 +65,22 @@ function normalizeName(value: any): string {
 
 function normalizeTeam(league: League, t: any, extra?: Partial<TeamConfig>): TeamConfig | null {
   if (!t?.abbreviation || !t?.displayName) return null;
-  const primary = ensureHash(t.color || t.teamColor);
+  const key = makeKey(league, extra?.abbr || t.abbreviation);
+  const colorOverride = TEAM_COLOR_OVERRIDES[key] || TEAM_COLOR_OVERRIDES[normalizeName(extra?.name || t.displayName)];
+  const primary = colorOverride?.primary || ensureHash(t.color || t.teamColor);
+  const secondary = colorOverride?.secondary || ensureHash(t.alternateColor);
   return {
-    key: makeKey(league, t.abbreviation),
+    key,
     name: t.displayName || t.name || t.abbreviation,
     short: t.shortDisplayName || t.nickname || t.abbreviation,
     abbr: String(t.abbreviation).toLowerCase(),
     league,
     sport: getSport(league),
-    primary,
-    secondary: ensureHash(t.alternateColor),
-    textOnPrimary: pickTextColor(primary),
     logo: t.logos?.[0]?.href || t.logo || null,
     ...extra,
+    primary,
+    secondary,
+    textOnPrimary: pickTextColor(primary),
   } as TeamConfig;
 }
 
@@ -198,9 +207,9 @@ async function fetchCollegeFootballTeams(): Promise<TeamConfig[]> {
       abbr,
       league: "cfb",
       sport: "football",
-      primary: "#374151",
-      secondary: "#9CA3AF",
-      textOnPrimary: "#FFFFFF",
+      primary: TEAM_COLOR_OVERRIDES[key]?.primary || "#374151",
+      secondary: TEAM_COLOR_OVERRIDES[key]?.secondary || "#9CA3AF",
+      textOnPrimary: pickTextColor(TEAM_COLOR_OVERRIDES[key]?.primary || "#374151"),
       subdivision: row.division,
       conference: row.conference,
       logo: cfbLogoById(override?.espnId),

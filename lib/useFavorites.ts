@@ -23,9 +23,9 @@ function notify() {
 function normalizeStoredFavorite(team: TeamConfig): TeamConfig {
   if (team.league !== "cfb") return team;
   const haystack = `${team.key} ${team.name} ${team.short} ${team.abbr}`.toLowerCase();
-  const patches: { test: RegExp; abbr: string; name: string; short: string; logoId?: string }[] = [
+  const patches: { test: RegExp; abbr: string; name: string; short: string; logoId?: string; primary?: string; secondary?: string }[] = [
     { test: /(utsa|san antonio|roadrunners)/, abbr: "utsa", name: "UTSA Roadrunners", short: "UTSA", logoId: "2636" },
-    { test: /texas longhorns|\btex\b|longhorns/, abbr: "tex", name: "Texas Longhorns", short: "Texas", logoId: "251" },
+    { test: /texas longhorns|\btex\b|longhorns/, abbr: "tex", name: "Texas Longhorns", short: "Texas", logoId: "251", primary: "#BF5700", secondary: "#333F48" },
     { test: /illinois|fighting illini/, abbr: "ill", name: "Illinois Fighting Illini", short: "Illinois", logoId: "356" },
     { test: /miami.*fl|miami hurricanes/, abbr: "mia", name: "Miami Hurricanes", short: "Miami", logoId: "2390" },
     { test: /appalachian|app state|mountaineers/, abbr: "app", name: "Appalachian St Mountaineers", short: "Appalachian St", logoId: "2026" },
@@ -41,6 +41,9 @@ function normalizeStoredFavorite(team: TeamConfig): TeamConfig {
     abbr: patch.abbr,
     name: patch.name,
     short: patch.short,
+    primary: patch.primary || team.primary,
+    secondary: patch.secondary || team.secondary,
+    textOnPrimary: patch.primary ? "#FFFFFF" : team.textOnPrimary,
     logo: patch.logoId ? `https://a.espncdn.com/i/teamlogos/ncaa/500/${patch.logoId}.png` : team.logo,
   };
 }
