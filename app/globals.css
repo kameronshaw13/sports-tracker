@@ -1398,3 +1398,39 @@ html[data-theme="light"] .espn-team-logo-wrap img {
   filter: none !important;
   z-index: 1 !important;
 }
+
+
+/* v22: cleaner uniform ESPN logo outline + favorite live diamond */
+.espn-team-logo-outline-img {
+  display: none !important;
+}
+
+.score-team-logo-wrap,
+.espn-team-logo-wrap {
+  isolation: auto !important;
+}
+
+.score-team-logo-wrap .espn-team-logo-img,
+.espn-team-logo-wrap .espn-team-logo-img,
+html[data-theme="light"] .score-team-logo-wrap .espn-team-logo-img,
+html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img {
+  object-fit: contain !important;
+  object-position: center center !important;
+  z-index: 1 !important;
+  opacity: 1 !important;
+  -webkit-filter:
+    drop-shadow(0.55px 0 0 rgba(255,255,255,.9))
+    drop-shadow(-0.55px 0 0 rgba(255,255,255,.9))
+    drop-shadow(0 0.55px 0 rgba(255,255,255,.9))
+    drop-shadow(0 -0.55px 0 rgba(255,255,255,.9)) !important;
+  filter:
+    drop-shadow(0.55px 0 0 rgba(255,255,255,.9))
+    drop-shadow(-0.55px 0 0 rgba(255,255,255,.9))
+    drop-shadow(0 0.55px 0 rgba(255,255,255,.9))
+    drop-shadow(0 -0.55px 0 rgba(255,255,255,.9)) !important;
+}
+
+.favorite-score-meta svg {
+  flex: 0 0 auto;
+  transform: translateY(-1px);
+}

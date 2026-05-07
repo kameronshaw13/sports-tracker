@@ -311,15 +311,6 @@ function ScoreTeamLogo({ team, league, size }: { team: any; league: League; size
     <span className="score-team-logo-wrap espn-team-logo-wrap" style={{ width: size, height: size }}>
       <Image
         src={src}
-        alt=""
-        aria-hidden
-        fill
-        sizes={`${size}px`}
-        className="object-contain espn-team-logo-outline-img"
-        unoptimized
-      />
-      <Image
-        src={src}
         alt={team?.abbr || team?.name || "Team logo"}
         fill
         sizes={`${size}px`}
@@ -348,7 +339,10 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
         style={{ borderColor: "var(--border)" }}
       >
         <div className="favorite-score-content pr-1">
-          <div className="favorite-score-meta score-game-meta text-[9.5px] font-black uppercase tracking-[.06em] mb-1.5 cbs-blue-label">{gameTimeLabel(game)}</div>
+          <div className="favorite-score-meta score-game-meta mb-1.5 flex items-center gap-2 text-[9.5px] font-black uppercase tracking-[.06em] cbs-blue-label">
+            <span className="truncate">{gameTimeLabel(game)}</span>
+            {league === "mlb" && isLive && game.situation && <BasesDiamondMini situation={game.situation} />}
+          </div>
           <TeamLine team={game.away} league={league} compact={false} favorite game={game} showLogo />
           <TeamLine team={game.home} league={league} compact={false} favorite game={game} showLogo />
           <ScoreCardSubline league={league} game={game} density={density} />
