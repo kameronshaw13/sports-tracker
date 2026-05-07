@@ -3142,3 +3142,75 @@ html[data-theme="light"] .espn-team-logo-wrap img.espn-team-logo-img.logo-outlin
   padding-top: .68rem !important;
   padding-bottom: .42rem !important;
 }
+
+/* v44: table-specific GB/spacing polish, centered pull refresh, More search centering */
+.pull-refresh-indicator {
+  top: calc(max(env(safe-area-inset-top), 0px) + 3.15rem);
+}
+
+.more-search-input {
+  line-height: 1.12 !important;
+  padding-top: .88rem !important;
+  padding-bottom: .62rem !important;
+}
+
+.more-search-input::placeholder {
+  color: var(--text-3);
+  opacity: 1;
+}
+
+.standings-table th,
+.standings-table td {
+  font-size: .69rem;
+}
+
+.standings-table th:not(:first-child),
+.standings-table td:not(:first-child) {
+  padding-left: .22rem !important;
+  padding-right: .22rem !important;
+}
+
+.standings-table th:last-child,
+.standings-table td:last-child {
+  padding-right: .42rem !important;
+}
+
+.standings-table-mlb th:first-child,
+.standings-table-mlb td:first-child,
+.standings-table-nfl th:first-child,
+.standings-table-nfl td:first-child,
+.standings-table-nba th:first-child,
+.standings-table-nba td:first-child {
+  width: 54%;
+}
+
+.standings-table-nhl th:first-child,
+.standings-table-nhl td:first-child {
+  width: 45%;
+}
+
+.standings-table-cfb th:first-child,
+.standings-table-cfb td:first-child,
+.standings-table-cbb th:first-child,
+.standings-table-cbb td:first-child {
+  width: 41%;
+}
+
+.standings-team-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.standings-table-nhl .standings-team-name,
+.standings-table-cfb .standings-team-name,
+.standings-table-cbb .standings-team-name {
+  white-space: normal;
+}
+
+.standings-table-mlb .standings-team-name,
+.standings-table-nfl .standings-team-name,
+.standings-table-nba .standings-team-name {
+  display: block;
+}

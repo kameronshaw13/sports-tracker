@@ -59,7 +59,7 @@ export default function PullToRefresh({ children }: Props) {
       onTouchCancel={reset}
     >
       {(pullDistance > 0 || refreshing) && (
-        <div className="fixed inset-x-0 top-3 z-50 flex justify-center pointer-events-none">
+        <div className="fixed inset-x-0 pull-refresh-indicator z-50 flex justify-center pointer-events-none">
           <div
             className="text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm"
             style={{

@@ -181,6 +181,12 @@ function withWildCardGb(rows: TeamRow[], cutoffCount: number) {
   });
 }
 
+function withLeaderGb(rows: TeamRow[]) {
+  const leader = rows[0];
+  if (!leader) return rows;
+  return rows.map((row, idx) => idx === 0 ? { ...row, gb: "-" } : { ...row, gb: formatGames(gamesBackFrom(leader, row)) });
+}
+
 function withCollegeGb(rows: TeamRow[]) {
   const sorted = sortRows(rows, "cfb");
   const leader = sorted[0];
@@ -217,7 +223,7 @@ function renderRow(row: TeamRow, columns: string[], selected: boolean, marker?: 
       <td className="px-3 py-2">
         <div className="flex items-center gap-2 min-w-0">
           {row.logo && <RetroTeamLogo team={{ logo: row.logo, abbr: row.abbr, name: row.name }} league={row.league} size={20} className="standings-team-logo" />}
-          <span className="font-bold whitespace-normal leading-tight">{row.name}</span>
+          <span className="standings-team-name font-bold leading-tight">{row.name}</span>
           {row.divisionLabel && <span className="ml-auto text-[10px] font-black uppercase tracking-wide" style={{ color: "var(--text-3)" }}>{row.divisionLabel}</span>}
         </div>
       </td>
@@ -226,9 +232,9 @@ function renderRow(row: TeamRow, columns: string[], selected: boolean, marker?: 
   );
 }
 
-function StandingsTable({ title, rows, league, teamAbbr, markers = {} }: { title: string; rows: TeamRow[]; league: League | string; teamAbbr?: string; markers?: Record<number, "dash" | "solid"> }) {
+function StandingsTable({ title, rows, league, teamAbbr, markers = {}, gbMode = "leader" }: { title: string; rows: TeamRow[]; league: League | string; teamAbbr?: string; markers?: Record<number, "dash" | "solid">; gbMode?: "leader" | "preserve" }) {
   const columns = columnsForLeague(league);
-  const displayRows = isCollege(league) ? withCollegeGb(rows.map((row) => {
+  const normalizedRows = isCollege(league) ? withCollegeGb(rows.map((row) => {
     const parsed = parseRecord(row.conferenceRecord);
     const overall = rowOverallRecord(row);
     return {
@@ -239,11 +245,13 @@ function StandingsTable({ title, rows, league, teamAbbr, markers = {} }: { title
       confLossesDisplay: row.confLossesDisplay ?? (Number.isFinite(row.confLosses) && row.confLosses !== Number.POSITIVE_INFINITY ? row.confLosses : parsed.losses ?? "—"),
     };
   })) : rows;
+  const displayRows = !isCollege(league) && columns.includes("gb") && gbMode === "leader" ? withLeaderGb(normalizedRows) : normalizedRows;
+  const tableLeagueClass = `standings-table-${String(league)}`;
   return (
     <div className="standings-table-card overflow-hidden">
       <div className="standings-table-title px-3 py-2 text-xs font-black uppercase tracking-wider">{title}</div>
       <div className="overflow-x-auto">
-        <table className="standings-table w-full text-xs">
+        <table className={`standings-table ${tableLeagueClass} w-full text-xs`}>
           <thead>
             {isCollege(league) ? (
               <>
@@ -362,8 +370,8 @@ export default function Standings({ league, teamKey, compact = false, pageMode =
         return (
           <div key={conf.name} className="space-y-3">
             <StandingsGroupTitle>{conf.name}</StandingsGroupTitle>
-            <StandingsTable title="Division Leaders" rows={leaders} league={league} teamAbbr={teamAbbr} />
-            <StandingsTable title="Wild Card" rows={wc} league={league} teamAbbr={teamAbbr} markers={markers} />
+            <StandingsTable title="Division Leaders" rows={leaders} league={league} teamAbbr={teamAbbr} gbMode="preserve" />
+            <StandingsTable title="Wild Card" rows={wc} league={league} teamAbbr={teamAbbr} markers={markers} gbMode="preserve" />
           </div>
         );
       })}
