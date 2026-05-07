@@ -4581,3 +4581,166 @@ main.retro-page {
   font-size: .78rem !important;
   line-height: 1.18 !important;
 }
+
+/* v58: schedule/header alignment corrections */
+.team-page-shell {
+  --team-fixed-header-height: calc(11.58rem + env(safe-area-inset-top));
+}
+
+.team-header-actions {
+  min-height: calc(1.62rem + env(safe-area-inset-top)) !important;
+  padding: calc(env(safe-area-inset-top) + .08rem) .66rem 0 !important;
+}
+
+.team-page-hero-inner {
+  min-height: 5.48rem !important;
+  padding-bottom: .24rem !important;
+  gap: .1rem !important;
+}
+
+.team-page-name {
+  font-size: 1.02rem !important;
+}
+
+.team-page-record {
+  margin-top: .05rem !important;
+  font-size: .68rem !important;
+}
+
+.team-page-logo-box {
+  width: 3.34rem !important;
+  height: 3.34rem !important;
+  flex-basis: 3.34rem !important;
+  margin-top: .08rem !important;
+}
+
+.team-page-logo-box .score-team-logo-wrap,
+.team-page-logo-box .espn-team-logo-wrap {
+  width: 3.12rem !important;
+  height: 3.12rem !important;
+}
+
+.team-sticky-shell .cbs-tabs {
+  box-shadow: none !important;
+}
+
+.team-sticky-shell .cbs-tabs > div {
+  gap: 1.32rem !important;
+}
+
+.team-sticky-shell .cbs-tabs button {
+  min-height: 2.24rem !important;
+  padding-top: .48rem !important;
+  padding-bottom: .62rem !important;
+  font-size: .8rem !important;
+}
+
+.team-sticky-shell .cbs-tabs button > span:not(.team-tab-rule) {
+  position: static !important;
+  display: inline-flex !important;
+  height: auto !important;
+  background: transparent !important;
+  border: 0 !important;
+  text-decoration: none !important;
+}
+
+.team-sticky-shell .cbs-tabs .team-tab-label::before,
+.team-sticky-shell .cbs-tabs .team-tab-label::after {
+  content: none !important;
+  display: none !important;
+}
+
+.team-sticky-shell .cbs-tabs .team-tab-rule {
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  transform: none !important;
+  height: 3px !important;
+  background: var(--text) !important;
+  pointer-events: none;
+}
+
+.team-page-content {
+  padding-top: var(--team-fixed-header-height);
+}
+
+.cbs-panel-list {
+  margin-top: 0 !important;
+}
+
+.team-month-toggle {
+  margin-top: 0 !important;
+  min-height: 2.44rem !important;
+  padding: .18rem .66rem .18rem !important;
+  align-items: center !important;
+  border-top: 0 !important;
+}
+
+.team-month-toggle button {
+  min-height: 1.78rem !important;
+  align-self: center;
+}
+
+.team-month-toggle div {
+  align-self: center;
+  transform: translateY(0) !important;
+  padding-top: .14rem;
+  overflow: visible !important;
+  line-height: 1.18 !important;
+}
+
+.team-schedule-row {
+  min-height: 4.08rem !important;
+  align-items: center !important;
+  gap: .28rem !important;
+  padding: .48rem .68rem !important;
+}
+
+.team-schedule-date,
+.team-schedule-at,
+.team-schedule-status {
+  transform: translateY(.06rem);
+}
+
+.team-schedule-date {
+  width: 2.16rem !important;
+  font-size: .72rem !important;
+  line-height: 1.14 !important;
+}
+
+.team-schedule-at {
+  width: 1rem !important;
+  font-size: .78rem !important;
+}
+
+.team-schedule-logo {
+  width: 1.92rem !important;
+  height: 1.92rem !important;
+}
+
+.team-schedule-logo img {
+  width: 1.72rem !important;
+  height: 1.72rem !important;
+  -webkit-filter:
+    drop-shadow(.7px 0 0 rgba(255,255,255,.92))
+    drop-shadow(-.7px 0 0 rgba(255,255,255,.92))
+    drop-shadow(0 .7px 0 rgba(255,255,255,.92))
+    drop-shadow(0 -.7px 0 rgba(255,255,255,.92)) !important;
+  filter:
+    drop-shadow(.7px 0 0 rgba(255,255,255,.92))
+    drop-shadow(-.7px 0 0 rgba(255,255,255,.92))
+    drop-shadow(0 .7px 0 rgba(255,255,255,.92))
+    drop-shadow(0 -.7px 0 rgba(255,255,255,.92)) !important;
+}
+
+.team-schedule-opponent {
+  font-size: .94rem !important;
+  line-height: 1.1 !important;
+}
+
+.team-schedule-status,
+.team-schedule-status > div {
+  min-width: 3.36rem !important;
+  font-size: .72rem !important;
+  line-height: 1.12 !important;
+}

@@ -123,7 +123,6 @@ function ScheduleRow({ ev, team, onClick }: any) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="team-schedule-opponent font-black truncate">{opp?.name || opp?.abbr}</div>
-        {ev.weekText && <div className="text-xs font-bold truncate" style={{ color: "var(--text-3)" }}>{ev.weekText}</div>}
       </div>
       <div className="team-schedule-status text-right shrink-0">
         <div className="font-black" style={{ color: isLive ? "var(--danger)" : "var(--text-2)" }}>{statusLabel}</div>
