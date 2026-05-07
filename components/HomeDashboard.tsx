@@ -116,7 +116,7 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
     <div className="retro-panel home-team-card overflow-hidden" style={teamStyle}>
       <button onClick={onTeamClick} className="home-team-main">
         <div className="home-team-logo-shell">
-          <RetroTeamLogo team={team} league={team.league} size={58} />
+          <RetroTeamLogo team={team} league={team.league} size={74} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="home-team-kicker">{team.league.toUpperCase()}</div>
@@ -136,7 +136,7 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
 
         {featured ? (
           <div className="flex items-center gap-3">
-            {featured.opponent?.logo && <div className="home-team-opponent-logo"><RetroTeamLogo team={featured.opponent} league={team.league} size={42} /></div>}
+            {featured.opponent?.logo && <div className="home-team-opponent-logo"><RetroTeamLogo team={featured.opponent} league={team.league} size={50} /></div>}
             <div className="flex-1 min-w-0">
               <div className="home-team-matchup truncate"><span>{featured.home ? "vs" : "@"}</span> {featured.opponent?.name}</div>
               <div className="home-team-time">

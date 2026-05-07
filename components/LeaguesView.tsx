@@ -42,8 +42,6 @@ const LEAGUE_LOGOS: Record<League, string> = {
   cbb: NCAA_LOGO,
 };
 
-const SCORES_SECTION_STICKY_TOP = "calc(128px + env(safe-area-inset-top))";
-
 type Props = {
   onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
   onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
@@ -62,6 +60,8 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
   const [tab, setTab] = useState<LeagueTab>("scores");
   const [selectedEvent, setSelectedEvent] = useState<{ league: string; eventId: string } | null>(null);
   const [scrolled, setScrolled] = useState(false);
+  const scoresHeaderRef = useRef<HTMLDivElement | null>(null);
+  const [scoresHeaderHeight, setScoresHeaderHeight] = useState(128);
   const { settings } = useAppSettings();
   const { favorites } = useFavoriteTeams();
   const date = formatDate(dayOffset);
@@ -73,6 +73,21 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [leaguePage]);
+
+  useEffect(() => {
+    if (leaguePage) return;
+    const measure = () => {
+      const height = scoresHeaderRef.current?.getBoundingClientRect().height;
+      if (height) setScoresHeaderHeight(Math.ceil(height));
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    window.addEventListener("orientationchange", measure);
+    return () => {
+      window.removeEventListener("resize", measure);
+      window.removeEventListener("orientationchange", measure);
+    };
+  }, [leaguePage, dayOffset, settings.density]);
 
   if (selectedEvent) {
     return (
@@ -111,7 +126,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
 
   return (
     <div className="-mx-4 sm:mx-0">
-      <div className="sticky top-0 z-40 px-4 pb-2 scores-sticky-header" style={{ background: "var(--bg)", borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent" }}>
+      <div ref={scoresHeaderRef} className="sticky top-0 z-40 px-4 pb-2 scores-sticky-header" style={{ background: "var(--bg)", borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent" }}>
         <div className="relative flex min-h-[4.05rem] items-center justify-between">
           <h1 className="absolute left-0 top-1/2 -translate-y-1/2 retro-title scores-page-heading text-[2.42rem] tracking-[.02em]">
             Scores
@@ -124,9 +139,9 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
       </div>
 
       <div>
-        <FavoritesScores date={date} favoriteKeys={favoriteKeys} onGameClick={(league, eventId) => setSelectedEvent({ league, eventId })} />
+        <FavoritesScores date={date} favoriteKeys={favoriteKeys} stickyTop={scoresHeaderHeight} onGameClick={(league, eventId) => setSelectedEvent({ league, eventId })} />
         {leagues.map((lg) => (
-          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={SCORES_SECTION_STICKY_TOP} />
+          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={scoresHeaderHeight} />
         ))}
       </div>
     </div>
@@ -190,7 +205,7 @@ function CbsDateBar({ dayOffset, setDayOffset }: { dayOffset: number; setDayOffs
   );
 }
 
-function FavoritesScores({ date, favoriteKeys, onGameClick }: { date: string; favoriteKeys: Set<string>; onGameClick: (league: League, eventId: string) => void }) {
+function FavoritesScores({ date, favoriteKeys, stickyTop, onGameClick }: { date: string; favoriteKeys: Set<string>; stickyTop: number | string; onGameClick: (league: League, eventId: string) => void }) {
   const freshKey = useFreshKey();
   const { settings } = useAppSettings();
   const requests = settings.sportOrder.map((league) => useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, { refreshInterval: 15_000, dedupingInterval: 4_000 }));
@@ -205,7 +220,7 @@ function FavoritesScores({ date, favoriteKeys, onGameClick }: { date: string; fa
   return (
     <>
       <section className="mt-3 border-b" style={{ borderColor: "var(--border)" }}>
-        <SectionHeader title="Favorites" sticky stickyTop={SCORES_SECTION_STICKY_TOP} />
+        <SectionHeader title="Favorites" sticky stickyTop={stickyTop} />
         <div className="grid grid-cols-1">
           {games.slice(0, 4).map((game: any) => <ScoreCard key={`${game.league}-${game.id}`} league={game.league} game={game} density="expanded" favorite favoriteSide={game.favoriteSide} onClick={() => onGameClick(game.league, game.id)} />)}
         </div>
