@@ -3667,3 +3667,239 @@ body::-webkit-scrollbar,
   width: 100% !important;
   height: 100% !important;
 }
+
+/* v54: team page redesign and standings navigation */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden !important;
+  overscroll-behavior-x: none;
+}
+
+main.retro-page {
+  overflow-x: clip;
+}
+
+.team-sticky-shell {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  overflow: hidden;
+  border-radius: 0 0 .55rem .55rem;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--team-primary) 42%, var(--surface)), var(--surface)) !important;
+  box-shadow: 0 8px 18px rgba(0,0,0,.18) !important;
+}
+
+.team-header-actions {
+  min-height: calc(2.72rem + env(safe-area-inset-top)) !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding: calc(env(safe-area-inset-top) + .32rem) .82rem .24rem !important;
+}
+
+.team-back-btn {
+  width: 2.26rem !important;
+  height: 2.26rem !important;
+  min-height: 2.26rem !important;
+  justify-content: center !important;
+  border: 1px solid color-mix(in srgb, var(--border) 82%, #fff);
+  border-radius: .5rem;
+  background: rgba(0,0,0,.14);
+}
+
+.team-back-btn svg {
+  width: 1.46rem !important;
+  height: 1.46rem !important;
+  transform: translateX(-1px);
+}
+
+.team-page-hero.cbs-team-hero,
+.team-sticky-shell .cbs-tabs,
+.cbs-panel-list,
+.team-transactions-empty {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.team-page-hero-inner {
+  min-height: 4.85rem;
+  padding: .56rem .82rem .72rem !important;
+  display: flex;
+  align-items: center;
+  gap: .82rem;
+  text-align: left;
+}
+
+.team-page-logo-box {
+  width: 3.26rem !important;
+  height: 3.26rem !important;
+  flex: 0 0 3.26rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: .5rem;
+  background: rgba(255,255,255,.09);
+}
+
+.team-page-logo-box .score-team-logo-wrap,
+.team-page-logo-box .espn-team-logo-wrap {
+  width: 2.78rem !important;
+  height: 2.78rem !important;
+  transform: none !important;
+}
+
+.team-page-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.team-page-name {
+  max-width: 100% !important;
+  margin: 0 !important;
+  font-size: 1.08rem !important;
+  line-height: 1.18 !important;
+  letter-spacing: .01em !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  padding-top: .04rem;
+}
+
+.team-page-record {
+  margin-top: .18rem !important;
+  font-size: .74rem !important;
+  line-height: 1.18 !important;
+}
+
+.team-page-hero.is-compact .team-page-hero-inner {
+  min-height: 4.2rem;
+  padding-top: .44rem !important;
+  padding-bottom: .52rem !important;
+}
+
+.team-page-hero.is-compact .team-page-logo-box {
+  width: 2.72rem !important;
+  height: 2.72rem !important;
+  flex-basis: 2.72rem;
+}
+
+.team-page-hero.is-compact .team-page-logo-box .score-team-logo-wrap,
+.team-page-hero.is-compact .team-page-logo-box .espn-team-logo-wrap {
+  width: 2.28rem !important;
+  height: 2.28rem !important;
+}
+
+.team-sticky-shell .cbs-tabs {
+  background: var(--surface) !important;
+}
+
+.team-sticky-shell .cbs-tabs > div {
+  gap: 1.12rem !important;
+  padding-left: .82rem !important;
+  padding-right: .82rem !important;
+}
+
+.team-sticky-shell .cbs-tabs button {
+  padding-top: .68rem !important;
+  padding-bottom: .62rem !important;
+  font-size: .78rem !important;
+  letter-spacing: 0 !important;
+}
+
+.team-month-toggle {
+  min-height: 2.68rem !important;
+  padding: .28rem .72rem !important;
+  grid-template-columns: 2.08rem 1fr 2.08rem !important;
+}
+
+.team-month-toggle button {
+  min-height: 1.92rem !important;
+}
+
+.team-month-toggle div {
+  font-size: .78rem !important;
+  line-height: 1.05 !important;
+}
+
+.cbs-schedule-row {
+  min-height: 4.72rem !important;
+  gap: .56rem !important;
+  padding: .58rem .72rem !important;
+}
+
+.cbs-schedule-row > div:first-child {
+  width: 2.38rem !important;
+  font-size: .72rem !important;
+}
+
+.cbs-schedule-row > div:nth-child(2) {
+  width: 1.35rem !important;
+  font-size: .94rem !important;
+}
+
+.cbs-schedule-row > div:nth-child(3) {
+  width: 2.05rem !important;
+  height: 2.05rem !important;
+}
+
+.cbs-schedule-row > div:nth-child(3) img {
+  width: 1.88rem !important;
+  height: 1.88rem !important;
+}
+
+.cbs-schedule-row > div:nth-child(4) > div:first-child {
+  font-size: .94rem !important;
+  line-height: 1.14 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.cbs-schedule-row > div:last-child {
+  min-width: 3.65rem !important;
+}
+
+.cbs-schedule-row > div:last-child > div:first-child {
+  font-size: .78rem !important;
+  line-height: 1.1 !important;
+}
+
+.cbs-schedule-row > div:last-child > div {
+  font-size: .7rem !important;
+}
+
+.team-standings-panel {
+  padding: .72rem .5rem 1rem;
+}
+
+.team-standings-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .5rem;
+}
+
+.team-standings-toggle button {
+  min-height: 2.18rem;
+  padding: .42rem .34rem .28rem;
+  border: 1px solid var(--border);
+  border-radius: .45rem;
+  color: var(--text-2);
+  background: rgba(0,0,0,.1);
+  font-size: .72rem;
+  line-height: 1.08;
+  font-weight: 950;
+  text-align: center;
+}
+
+.team-standings-toggle button.is-active {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.standings-team-link {
+  color: inherit;
+}
+
+.standings-team-link:active .standings-team-name {
+  color: var(--accent);
+}

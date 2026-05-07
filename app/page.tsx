@@ -158,9 +158,9 @@ export default function Home() {
                   setView(teamReturnView || "scores");
                 }}
                 className="team-back-btn"
+                aria-label="Back"
               >
                 <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15 18-6-6 6-6" /></svg>
-                Back
               </button>
               {returnGame && (
                 <button onClick={() => setShowReturnGame(true)} className="team-return-game-btn">
@@ -180,7 +180,7 @@ export default function Home() {
             )}
             {activeTab === "roster" && <Roster team={activeTeam} onPlayerClick={(p) => setSelectedPlayer(p)} />}
             {activeTab === "stats" && <Stats team={activeTeam} onPlayerClick={(p) => setSelectedPlayer(p)} />}
-            {activeTab === "standings" && <Standings league={activeTeam.league} teamKey={activeTeam.key} />}
+            {activeTab === "standings" && <Standings league={activeTeam.league} teamKey={activeTeam.key} teamView onTeamClick={handleTeamLogoClick} />}
             {activeTab === "transactions" && <div className="team-transactions-empty -mx-4 sm:mx-0">Transactions will appear here when the feed is connected.</div>}
           </div>
         </div>
@@ -299,7 +299,7 @@ export default function Home() {
           />
         )}
 
-        {!selectedPlayer && !selectedGame && !showReturnGame && view === "standings" && <StandingsPage initialLeague={standingsInitial} />}
+        {!selectedPlayer && !selectedGame && !showReturnGame && view === "standings" && <StandingsPage initialLeague={standingsInitial} onTeamClick={(league, abbr) => handleTeamLogoClick(league, abbr)} />}
       </div>
       </PullToRefresh>
       {!selectedPlayer && !selectedGame && !showReturnGame && view !== "teamPage" && (

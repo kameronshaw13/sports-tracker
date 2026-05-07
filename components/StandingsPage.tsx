@@ -17,7 +17,7 @@ const LEAGUE_LOGOS: Record<League, string> = {
 type StandingsMode = "division" | "conference" | "wildcard";
 type StandingsControl = { id: string; label: string; mode: StandingsMode; conference?: string };
 
-export default function StandingsPage({ initialLeague = "mlb" }: { initialLeague?: string }) {
+export default function StandingsPage({ initialLeague = "mlb", onTeamClick }: { initialLeague?: string; onTeamClick?: (league: string, abbr: string) => void }) {
   const safeInitial = VALID_LEAGUES.includes(initialLeague as League) ? (initialLeague as League) : "mlb";
   const [league, setLeague] = useState<League>(safeInitial);
   const [view, setView] = useState<string>(defaultViewForLeague(safeInitial));
@@ -63,7 +63,7 @@ export default function StandingsPage({ initialLeague = "mlb" }: { initialLeague
       )}
 
       <div className="standings-content px-2 pb-6">
-        <Standings league={league} pageMode={league === "cbb" || league === "cfb" ? "conference" : active?.mode || "division"} conferenceFilter={active?.conference} showHeader={false} showFilterControls={league === "cbb" || league === "cfb"} />
+        <Standings league={league} pageMode={league === "cbb" || league === "cfb" ? "conference" : active?.mode || "division"} conferenceFilter={active?.conference} showHeader={false} showFilterControls={league === "cbb" || league === "cfb"} onTeamClick={onTeamClick} />
       </div>
     </div>
   );

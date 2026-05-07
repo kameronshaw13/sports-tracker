@@ -1,10 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import RetroTeamLogo from "./RetroTeamLogo";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
-import { TeamConfig, logoUrl, displayTeamName } from "@/lib/teams";
+import { TeamConfig, displayTeamName } from "@/lib/teams";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -27,20 +26,15 @@ export default function TeamHeader({ team }: Props) {
 
   return (
     <section className={`team-page-hero cbs-team-hero -mx-4 sm:mx-0 mb-0 ${compact ? "is-compact" : ""}`} style={{ ["--team-primary" as any]: team.primary, ["--team-secondary" as any]: team.secondary }}>
-      <div className="team-page-hero-inner relative px-4 text-center overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.07] pointer-events-none">
-          <Image src={logoUrl(team)} alt="" fill className="object-contain scale-150" unoptimized />
+      <div className="team-page-hero-inner px-4">
+        <div className="team-page-logo-box">
+          <RetroTeamLogo team={team} league={team.league} size={52} />
         </div>
-        <div className="relative">
+        <div className="team-page-copy">
           <h1 className="team-page-name">{displayTeamName(team)}</h1>
           <p className="team-page-record">
             {record}{standing ? `, ${standing}` : ""}
           </p>
-          <div className="team-page-logo-row">
-            <div className="team-page-logo-box">
-              <RetroTeamLogo team={team} league={team.league} size={82} />
-            </div>
-          </div>
         </div>
       </div>
     </section>
