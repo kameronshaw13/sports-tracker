@@ -4898,3 +4898,30 @@ main.retro-page {
   object-position: center center !important;
   transform: translateY(-.03rem) !important;
 }
+
+/* v62: shallower fixed header with more logo-to-tabs breathing room */
+.team-page-shell {
+  --team-fixed-header-height: calc(10.18rem + env(safe-area-inset-top));
+}
+
+.team-header-actions {
+  min-height: calc(1.28rem + env(safe-area-inset-top)) !important;
+  padding-top: env(safe-area-inset-top) !important;
+}
+
+.team-page-hero-inner {
+  min-height: 4.62rem !important;
+  padding-bottom: .18rem !important;
+}
+
+.team-page-logo-box {
+  margin-bottom: .28rem !important;
+}
+
+.team-sticky-shell .cbs-tabs button {
+  padding-top: .5rem !important;
+}
+
+.team-page-content {
+  padding-top: var(--team-fixed-header-height) !important;
+}
