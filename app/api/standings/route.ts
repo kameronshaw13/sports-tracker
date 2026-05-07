@@ -58,6 +58,8 @@ function teamInfo(entry: any, league: League) {
 function rowFromEntry(entry: any, league: League) {
   const t = teamInfo(entry, league);
   if (!t.name && !t.abbr) return null;
+  const overallRecord = stat(entry, ["overallrecord", "overall", "record"], "");
+  const parsedOverall = String(overallRecord || "").match(/(\d+)\s*[-–]\s*(\d+)/);
   const conferenceRecord = stat(entry, ["conferencerecord", "confrecord", "conference"], "");
   const parsedConference = String(conferenceRecord || "").match(/(\d+)\s*[-–]\s*(\d+)/);
   const conferenceWins = stat(entry, ["conferencewins", "confwins", "confw"], "");
@@ -68,8 +70,8 @@ function rowFromEntry(entry: any, league: League) {
     name: t.name || t.abbr,
     abbr: t.abbr || t.name,
     logo: t.logo || null,
-    wins: stat(entry, ["overallwins", "wins", "w"], "0"),
-    losses: stat(entry, ["overalllosses", "losses", "l"], "0"),
+    wins: stat(entry, ["overallwins", "wins", "w"], parsedOverall?.[1] || "0"),
+    losses: stat(entry, ["overalllosses", "losses", "l"], parsedOverall?.[2] || "0"),
     ties: stat(entry, ["ties", "t"], ""),
     otl: stat(entry, ["overtimelosses", "otlosses", "otl"], ""),
     gp: stat(entry, ["gamesplayed", "gp", "games"], ""),

@@ -3069,3 +3069,76 @@ html[data-theme="light"] .espn-team-logo-wrap img.espn-team-logo-img.logo-outlin
 .standings-college-filter {
   padding: 0 .1rem;
 }
+
+/* v43: standings mobile fit/header alignment fixes */
+.standings-topbar {
+  margin-bottom: .9rem !important;
+}
+
+.more-topbar,
+.standings-topbar {
+  background: var(--bg) !important;
+}
+
+.standings-content {
+  padding-left: .5rem !important;
+  padding-right: .5rem !important;
+}
+
+.standings-mode-wrap {
+  padding-left: .5rem !important;
+  padding-right: .5rem !important;
+}
+
+.standings-table-card {
+  border-radius: .45rem;
+}
+
+.standings-table th,
+.standings-table td {
+  font-size: .68rem;
+}
+
+.standings-table th:first-child,
+.standings-table td:first-child {
+  width: 43%;
+}
+
+.standings-table th:not(:first-child),
+.standings-table td:not(:first-child) {
+  padding-left: .32rem !important;
+  padding-right: .32rem !important;
+  white-space: nowrap;
+}
+
+.standings-table th:last-child,
+.standings-table td:last-child {
+  padding-right: .5rem !important;
+}
+
+.standings-table td:first-child {
+  padding-left: .45rem !important;
+  padding-right: .2rem !important;
+}
+
+.standings-table th:first-child {
+  padding-left: .5rem !important;
+  padding-right: .2rem !important;
+}
+
+.standings-team-logo {
+  width: 18px !important;
+  height: 18px !important;
+  flex-basis: 18px !important;
+}
+
+.standings-row td:first-child > div {
+  gap: .35rem !important;
+}
+
+.standings-college-select {
+  min-height: 2.55rem;
+  line-height: 1.1 !important;
+  padding-top: .68rem !important;
+  padding-bottom: .42rem !important;
+}

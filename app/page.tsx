@@ -201,7 +201,7 @@ export default function Home() {
     </>
   );
 
-  const usesFullTopHeader = !selectedPlayer && !selectedGame && !showReturnGame && (view === "home" || view === "scores" || view === "teamPage");
+  const usesFullTopHeader = !selectedPlayer && !selectedGame && !showReturnGame && (view === "home" || view === "scores" || view === "standings" || view === "more" || view === "teamPage");
 
   return (
     <main className={`retro-page min-h-screen pb-28 px-4 sm:px-6 ${usesFullTopHeader ? "pt-0" : "app-safe-top"}`}>

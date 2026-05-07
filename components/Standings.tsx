@@ -74,7 +74,7 @@ const CONFIGS: Record<string, LeagueConfig> = {
         { name: "Southeast", teams: ["ATL", "CHA", "MIA", "ORL", "WSH", "WAS"] },
       ] },
       { name: "Western Conference", divisions: [
-        { name: "Northwest", teams: ["DEN", "MIN", "OKC", "POR", "UTA"] },
+        { name: "Northwest", teams: ["DEN", "MIN", "OKC", "POR", "UTA", "UTAH", "UT"] },
         { name: "Pacific", teams: ["GS", "GSW", "LAC", "LAL", "PHX", "SAC"] },
         { name: "Southwest", teams: ["DAL", "HOU", "MEM", "NO", "NOP", "SA", "SAS"] },
       ] },
@@ -103,6 +103,10 @@ function teamAbbrFromKey(teamKey?: string) { return teamKey?.split("-").slice(1)
 function parseRecord(value: any) {
   const match = String(value || "").match(/(\d+)\s*[-–]\s*(\d+)/);
   return match ? { wins: Number(match[1]), losses: Number(match[2]) } : { wins: null, losses: null };
+}
+
+function rowOverallRecord(row: TeamRow) {
+  return parseRecord(row.overallRecord || row.record || row.records?.overall || row.summary || "");
 }
 
 function flattenRows(sections: any[]) {
@@ -226,8 +230,11 @@ function StandingsTable({ title, rows, league, teamAbbr, markers = {} }: { title
   const columns = columnsForLeague(league);
   const displayRows = isCollege(league) ? withCollegeGb(rows.map((row) => {
     const parsed = parseRecord(row.conferenceRecord);
+    const overall = rowOverallRecord(row);
     return {
       ...row,
+      wins: row.wins ?? row.overallWins ?? overall.wins ?? "—",
+      losses: row.losses ?? row.overallLosses ?? overall.losses ?? "—",
       confWinsDisplay: row.confWinsDisplay ?? row.confWins ?? parsed.wins ?? "—",
       confLossesDisplay: row.confLossesDisplay ?? (Number.isFinite(row.confLosses) && row.confLosses !== Number.POSITIVE_INFINITY ? row.confLosses : parsed.losses ?? "—"),
     };
@@ -293,7 +300,7 @@ export default function Standings({ league, teamKey, compact = false, pageMode =
         {showFilterControls && collegeLabels.length > 1 && (
           <label className="standings-college-filter block">
             <span className="block text-[11px] uppercase tracking-wider font-black mb-1" style={{ color: "var(--text-3)" }}>Conference</span>
-            <select value={chosen || ""} onChange={(e) => setSelectedCollegeSection(e.target.value)} className="w-full px-3 py-2 rounded-xl text-sm font-bold outline-none" style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" }}>
+            <select value={chosen || ""} onChange={(e) => setSelectedCollegeSection(e.target.value)} className="standings-college-select w-full px-3 py-2 rounded-xl text-sm font-bold outline-none" style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" }}>
               {collegeLabels.map((label) => <option key={label} value={label}>{label}</option>)}
             </select>
           </label>
@@ -339,7 +346,15 @@ export default function Standings({ league, teamKey, compact = false, pageMode =
           return (
             <div key={conf.name} className="space-y-3">
               <StandingsGroupTitle>{conf.name}</StandingsGroupTitle>
-              <StandingsTable title="Division Leaders" rows={topThree} league={league} teamAbbr={teamAbbr} />
+              {conf.divisions.map((division) => (
+                <StandingsTable
+                  key={`${conf.name}-${division.name}-leaders`}
+                  title={`${division.name} Leaders`}
+                  rows={rowsForDivision(allRows, division, league).slice(0, 3)}
+                  league={league}
+                  teamAbbr={teamAbbr}
+                />
+              ))}
               <StandingsTable title="Wild Card" rows={nhlWildCardRows} league={league} teamAbbr={teamAbbr} markers={markers} />
             </div>
           );

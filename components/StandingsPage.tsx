@@ -53,7 +53,7 @@ export default function StandingsPage({ initialLeague = "mlb" }: { initialLeague
       </div>
 
       {controls.length > 0 && (
-        <div className="standings-mode-wrap px-4 py-3">
+        <div className="standings-mode-wrap px-2 py-3">
           <div className={`standings-mode-grid grid gap-2 ${controls.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
             {controls.map((control) => (
               <button key={control.id} onClick={() => setView(control.id)} className={`standings-mode-btn py-2 text-xs font-black ${view === control.id ? "is-active" : ""}`}>{control.label}</button>
@@ -62,7 +62,7 @@ export default function StandingsPage({ initialLeague = "mlb" }: { initialLeague
         </div>
       )}
 
-      <div className="standings-content px-4 pb-6">
+      <div className="standings-content px-2 pb-6">
         <Standings league={league} pageMode={league === "cbb" || league === "cfb" ? "conference" : active?.mode || "division"} conferenceFilter={active?.conference} showHeader={false} showFilterControls={league === "cbb" || league === "cfb"} />
       </div>
     </div>
