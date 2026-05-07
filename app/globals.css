@@ -2462,3 +2462,57 @@ html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img.logo-outline-d
   min-width: 3.1rem;
   text-align: right;
 }
+
+/* v34: crisp logo stroke and slightly smaller Home logo balance */
+.logo-outline-dark,
+.logo-outline-dark img,
+.espn-team-logo-img.logo-outline-dark,
+.score-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+.espn-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .logo-outline-dark,
+html[data-theme="light"] .logo-outline-dark img,
+html[data-theme="light"] .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .score-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img.logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(1px 0 0 #fff)
+    drop-shadow(-1px 0 0 #fff)
+    drop-shadow(0 1px 0 #fff)
+    drop-shadow(0 -1px 0 #fff)
+    drop-shadow(.72px .72px 0 #fff)
+    drop-shadow(-.72px .72px 0 #fff)
+    drop-shadow(.72px -.72px 0 #fff)
+    drop-shadow(-.72px -.72px 0 #fff) !important;
+  filter:
+    drop-shadow(1px 0 0 #fff)
+    drop-shadow(-1px 0 0 #fff)
+    drop-shadow(0 1px 0 #fff)
+    drop-shadow(0 -1px 0 #fff)
+    drop-shadow(.72px .72px 0 #fff)
+    drop-shadow(-.72px .72px 0 #fff)
+    drop-shadow(.72px -.72px 0 #fff)
+    drop-shadow(-.72px -.72px 0 #fff) !important;
+}
+
+.home-team-main {
+  min-height: 6rem !important;
+  gap: .82rem !important;
+}
+
+.home-team-logo-shell {
+  width: 4.78rem !important;
+  height: 4.78rem !important;
+}
+
+.home-team-logo-shell .espn-team-logo-img {
+  padding: .18rem !important;
+}
+
+.home-team-opponent-logo {
+  width: 3.28rem !important;
+  height: 3.28rem !important;
+}
+
+.home-team-opponent-logo .espn-team-logo-img {
+  padding: .16rem !important;
+}

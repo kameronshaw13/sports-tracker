@@ -66,8 +66,19 @@ export function formatCollegeSchoolName(name: string): string {
 }
 
 export function displayTeamName(team: { league?: League | string; name?: string; short?: string; abbr?: string }): string {
-  const raw = team.name || team.short || team.abbr || "";
-  return team.league === "cfb" ? formatCollegeSchoolName(raw) : raw;
+  if (team.league === "cfb") {
+    return formatCollegeSchoolName(team.short || stripCollegeNickname(team.name || "") || team.abbr || "");
+  }
+  return team.name || team.short || team.abbr || "";
+}
+
+function stripCollegeNickname(name: string): string {
+  return String(name || "")
+    .replace(/\s+(Longhorns|Wildcats|Jayhawks|Sooners|Cowboys|Red Raiders|Bears|Horned Frogs|Cougars|Utes|Mountaineers|Sun Devils|Buffaloes|Cyclones|Knights)$/i, "")
+    .replace(/\s+(Crimson Tide|Razorbacks|Tigers|Gators|Bulldogs|Aggies|Rebels|Gamecocks|Volunteers|Commodores|Wildcats|Sooners)$/i, "")
+    .replace(/\s+(Buckeyes|Wolverines|Spartans|Nittany Lions|Hoosiers|Hawkeyes|Terrapins|Golden Gophers|Cornhuskers|Scarlet Knights|Badgers|Ducks|Huskies|Bruins|Trojans|Boilermakers|Fighting Illini)$/i, "")
+    .replace(/\s+(Hurricanes|Seminoles|Cardinals|Blue Devils|Tar Heels|Wolfpack|Yellow Jackets|Panthers|Mustangs|Orange|Cavaliers|Hokies|Demon Deacons)$/i, "")
+    .trim();
 }
 
 export function logoUrl(team: { league: League; abbr: string; logo?: string | null }): string {
