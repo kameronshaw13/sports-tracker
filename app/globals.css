@@ -2372,3 +2372,93 @@ html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img.logo-outline-d
   letter-spacing: 0 !important;
   padding-top: .08em !important;
 }
+
+/* v33: balanced Home team cards with readable names */
+.logo-outline-dark,
+.logo-outline-dark img,
+.espn-team-logo-img.logo-outline-dark,
+.score-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+.espn-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .logo-outline-dark,
+html[data-theme="light"] .logo-outline-dark img,
+html[data-theme="light"] .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .score-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img.logo-outline-dark {
+  -webkit-filter: drop-shadow(0 0 1.7px rgba(255,255,255,.98)) !important;
+  filter: drop-shadow(0 0 1.7px rgba(255,255,255,.98)) !important;
+}
+
+.home-team-main {
+  min-height: 6.35rem !important;
+  gap: .86rem !important;
+  align-items: center !important;
+}
+
+.home-team-logo-shell {
+  width: 5.18rem !important;
+  height: 5.18rem !important;
+}
+
+.home-team-logo-shell .score-team-logo-wrap,
+.home-team-logo-shell .espn-team-logo-wrap {
+  width: 100% !important;
+  height: 100% !important;
+  transform: none !important;
+}
+
+.home-team-logo-shell .espn-team-logo-img {
+  padding: .22rem !important;
+}
+
+.home-team-name,
+.home-team-meta,
+.home-team-matchup {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.home-team-name {
+  display: block;
+  max-width: 100%;
+  line-height: 1.16 !important;
+  padding-top: .02em;
+  padding-bottom: .03em;
+}
+
+.home-team-meta {
+  line-height: 1.22 !important;
+}
+
+.home-team-game > .flex {
+  align-items: center !important;
+}
+
+.home-team-opponent-logo {
+  width: 3.6rem !important;
+  height: 3.6rem !important;
+}
+
+.home-team-opponent-logo .score-team-logo-wrap,
+.home-team-opponent-logo .espn-team-logo-wrap {
+  width: 100% !important;
+  height: 100% !important;
+  transform: none !important;
+}
+
+.home-team-opponent-logo .espn-team-logo-img {
+  padding: .18rem !important;
+}
+
+.home-team-matchup {
+  display: block;
+  max-width: 100%;
+  line-height: 1.22 !important;
+  padding-top: .03em;
+  padding-bottom: .03em;
+}
+
+.home-team-score {
+  min-width: 3.1rem;
+  text-align: right;
+}
