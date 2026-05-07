@@ -405,13 +405,13 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
   const isWinner = Boolean(team?.winner);
   return (
     <div className={`score-team-row flex items-center ${showLogo ? "gap-2.5" : "gap-0"} py-0.5 ${hasWinner ? "has-winner-state" : ""} ${isWinner ? "winner-row" : hasWinner ? "loser-row" : ""}`}>
-      {hasWinner && <span className={`winner-marker ${isWinner ? "opacity-100" : "opacity-0"}`} aria-hidden>▸</span>}
+      {hasWinner && <span className={`winner-marker ${isWinner ? "is-visible" : ""}`} aria-hidden />}
       {showLogo && <div className="score-team-logo-cell">{img && <ScoreTeamLogo team={team} league={league} size={favorite ? 28 : 26} />}</div>}
       <div className="flex-1 flex items-center gap-1.5 min-w-0">
-        <span className={`${favorite ? "text-[18px] uppercase" : "text-[16.5px]"} score-team-name truncate tracking-tight ${isWinner || !hasWinner ? "font-black" : "font-semibold"}`}>{label}</span>
-        {recordText && <span className={`text-[10px] tracking-tight score-card-meta ${isWinner ? "font-semibold" : "font-medium"}`} style={{ color: "var(--score-meta)" }}>{recordText}</span>}
+        <span className={`${favorite ? "text-[18px] uppercase" : "text-[16.5px]"} score-team-name truncate tracking-tight ${isWinner || !hasWinner ? "font-black" : "font-medium"}`}>{label}</span>
+        {recordText && <span className={`text-[10px] tracking-tight score-card-meta ${isWinner ? "font-semibold" : "font-normal"}`} style={{ color: "var(--score-meta)" }}>{recordText}</span>}
       </div>
-      {showScore && <span className={`score-card-number ${favorite ? "text-[18px]" : "text-[16.5px]"} score-team-name tracking-tight ${isWinner || !hasWinner ? "font-black opacity-100" : "font-semibold opacity-75"}`} style={{ color: "var(--text)" }}>{team.score}</span>}
+      {showScore && <span className={`score-card-number ${favorite ? "text-[18px]" : "text-[16.5px]"} score-team-name tracking-tight ${isWinner || !hasWinner ? "font-black opacity-100" : "font-medium opacity-60"}`} style={{ color: "var(--text)" }}>{team.score}</span>}
     </div>
   );
 }
