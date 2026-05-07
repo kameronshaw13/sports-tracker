@@ -2584,3 +2584,51 @@ html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img.logo-outline-d
   line-height: 1;
   font-weight: 950;
 }
+
+/* v36: final Scores sticky join + crisp logo outline restore */
+.score-team-logo-wrap.logo-outline-dark,
+.espn-team-logo-wrap.logo-outline-dark {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+img.logo-outline-dark,
+.score-team-logo-wrap > img.logo-outline-dark,
+.espn-team-logo-wrap > img.logo-outline-dark,
+img.espn-team-logo-img.logo-outline-dark,
+.score-team-logo-wrap img.espn-team-logo-img.logo-outline-dark,
+.espn-team-logo-wrap img.espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] img.logo-outline-dark,
+html[data-theme="light"] .score-team-logo-wrap > img.logo-outline-dark,
+html[data-theme="light"] .espn-team-logo-wrap > img.logo-outline-dark,
+html[data-theme="light"] img.espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .score-team-logo-wrap img.espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .espn-team-logo-wrap img.espn-team-logo-img.logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(.96px 0 0 #fff)
+    drop-shadow(-.96px 0 0 #fff)
+    drop-shadow(0 .96px 0 #fff)
+    drop-shadow(0 -.96px 0 #fff)
+    drop-shadow(.68px .68px 0 #fff)
+    drop-shadow(-.68px .68px 0 #fff)
+    drop-shadow(.68px -.68px 0 #fff)
+    drop-shadow(-.68px -.68px 0 #fff) !important;
+  filter:
+    drop-shadow(.96px 0 0 #fff)
+    drop-shadow(-.96px 0 0 #fff)
+    drop-shadow(0 .96px 0 #fff)
+    drop-shadow(0 -.96px 0 #fff)
+    drop-shadow(.68px .68px 0 #fff)
+    drop-shadow(-.68px .68px 0 #fff)
+    drop-shadow(.68px -.68px 0 #fff)
+    drop-shadow(-.68px -.68px 0 #fff) !important;
+}
+
+.scores-sticky-header {
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--border) 76%, #000) !important;
+}
+
+.retro-league-head.sticky {
+  margin-top: -1px !important;
+}

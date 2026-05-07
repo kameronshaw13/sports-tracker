@@ -123,10 +123,11 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
 
   const leagues = settings.sportOrder;
   const favoriteKeys = new Set((favorites || []).map((t) => t.key));
+  const leagueStickyTop = Math.max(0, scoresHeaderHeight - 4);
 
   return (
     <div className="-mx-4 sm:mx-0">
-      <div ref={scoresHeaderRef} className="sticky top-0 z-40 px-4 pb-2 scores-sticky-header" style={{ background: "var(--bg)", borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent" }}>
+      <div ref={scoresHeaderRef} className="sticky top-0 z-40 px-4 pb-2 scores-sticky-header" style={{ background: "var(--bg)" }}>
         <div className="relative flex min-h-[4.05rem] items-center justify-between">
           <h1 className="absolute left-0 top-1/2 -translate-y-1/2 retro-title scores-page-heading text-[2.42rem] tracking-[.02em]">
             Scores
@@ -139,9 +140,9 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
       </div>
 
       <div>
-        <FavoritesScores date={date} favoriteKeys={favoriteKeys} stickyTop={scoresHeaderHeight} onGameClick={(league, eventId) => setSelectedEvent({ league, eventId })} />
+        <FavoritesScores date={date} favoriteKeys={favoriteKeys} stickyTop={leagueStickyTop} onGameClick={(league, eventId) => setSelectedEvent({ league, eventId })} />
         {leagues.map((lg) => (
-          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={scoresHeaderHeight} />
+          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={leagueStickyTop} />
         ))}
       </div>
     </div>
