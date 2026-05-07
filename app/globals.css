@@ -3214,3 +3214,156 @@ html[data-theme="light"] .espn-team-logo-wrap img.espn-team-logo-img.logo-outlin
 .standings-table-nba .standings-team-name {
   display: block;
 }
+
+/* v45: final spacing polish for standings, More, pull refresh, and scrollbars */
+html,
+body {
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.pull-refresh-indicator {
+  top: calc(max(env(safe-area-inset-top), 0px) + 2.45rem);
+}
+
+.standings-mode-btn,
+.standings-league-tab span {
+  line-height: 1 !important;
+  padding-top: 2px;
+}
+
+.standings-table th,
+.standings-table td {
+  font-size: .71rem;
+  vertical-align: middle;
+}
+
+.standings-table td {
+  padding-top: .62rem !important;
+  padding-bottom: .42rem !important;
+}
+
+.standings-table th:not(:first-child),
+.standings-table td:not(:first-child) {
+  padding-left: .16rem !important;
+  padding-right: .16rem !important;
+}
+
+.standings-table th:nth-child(2),
+.standings-table td:nth-child(2) {
+  padding-right: .08rem !important;
+}
+
+.standings-table th:nth-child(3),
+.standings-table td:nth-child(3) {
+  padding-left: .08rem !important;
+}
+
+.standings-team-name {
+  font-size: .78rem;
+  line-height: 1.12 !important;
+  transform: translateY(1px);
+}
+
+.standings-table-mlb th:first-child,
+.standings-table-mlb td:first-child,
+.standings-table-nfl th:first-child,
+.standings-table-nfl td:first-child,
+.standings-table-nba th:first-child,
+.standings-table-nba td:first-child {
+  width: 56%;
+}
+
+.standings-table-nhl th:first-child,
+.standings-table-nhl td:first-child {
+  width: 46%;
+}
+
+.standings-table-cfb th:first-child,
+.standings-table-cfb td:first-child,
+.standings-table-cbb th:first-child,
+.standings-table-cbb td:first-child {
+  width: 42%;
+}
+
+.more-search-input {
+  padding-top: .96rem !important;
+  padding-bottom: .54rem !important;
+}
+
+.more-edit-btn {
+  padding-top: .36rem !important;
+  padding-bottom: .08rem !important;
+}
+
+.more-section:first-of-type {
+  padding-top: .82rem !important;
+  padding-bottom: .82rem !important;
+}
+
+.more-section:first-of-type .more-section-head {
+  margin-bottom: .68rem !important;
+}
+
+.more-favorites-strip {
+  gap: .82rem !important;
+}
+
+.more-favorite-team {
+  min-width: 3.55rem !important;
+  gap: .28rem !important;
+}
+
+.more-favorite-logo {
+  width: 2.86rem !important;
+  height: 2.86rem !important;
+}
+
+.more-team-logo {
+  width: 35px !important;
+  height: 35px !important;
+  flex-basis: 35px !important;
+}
+
+.more-favorite-team > span {
+  max-width: 3.75rem !important;
+}
+
+.more-sports-list {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.more-league-row {
+  min-height: 3.65rem !important;
+  margin-bottom: 0 !important;
+  border-radius: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.012), transparent 58%),
+    var(--surface) !important;
+}
+
+.more-league-row:first-child {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+.more-league-row img {
+  width: 30px;
+  height: 30px;
+}
+
+.more-league-row span {
+  transform: translateY(1px);
+}

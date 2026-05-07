@@ -97,7 +97,7 @@ export default function MoreView({ onTeamClick, onLeagueClick, onManage }: Props
               <h2 className="retro-title text-xl">My Teams</h2>
               <button onClick={onManage} className="more-edit-btn text-sm font-black">EDIT</button>
             </div>
-            <div className="flex gap-5 overflow-x-auto no-scrollbar pb-1">
+            <div className="more-favorites-strip flex gap-5 overflow-x-auto no-scrollbar pb-1">
               {(favorites || []).map((stored) => {
                 const team = data?.teams?.find((t) => t.key === stored.key) || stored;
                 return (
@@ -117,7 +117,7 @@ export default function MoreView({ onTeamClick, onLeagueClick, onManage }: Props
             <div className="more-section-head px-4 py-4 flex items-center justify-between">
               <h2 className="retro-title text-xl">Sports</h2>
             </div>
-            <div className="px-4 pb-2">
+            <div className="more-sports-list px-4 pb-2">
               {LEAGUES.map((l) => <LeagueRow key={l.id} league={l} onClick={() => onLeagueClick(l.id)} />)}
             </div>
           </section>
