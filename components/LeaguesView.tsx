@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
@@ -324,19 +324,27 @@ function scoreTeamLogoSrc(team: any, league: League) {
 
 function ScoreTeamLogo({ team, league, size }: { team: any; league: League; size: number }) {
   const src = scoreTeamLogoSrc(team, league);
+  const rawId = useId();
   if (!src) return null;
 
   const alt = team?.abbr || team?.name || "Team logo";
+  const filterId = `score-logo-outline-${rawId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
   return (
     <span className="score-team-logo-wrap espn-team-logo-wrap" style={{ width: size, height: size }}>
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        sizes={`${size}px`}
-        className="object-contain espn-team-logo-img logo-outline-dark"
-        unoptimized
-      />
+      <svg className="team-logo-svg" width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={alt}>
+        <defs>
+          <filter id={filterId} x="-4" y="-4" width={size + 8} height={size + 8} filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+            <feMorphology in="SourceAlpha" operator="dilate" radius="0.9" result="expanded" />
+            <feFlood floodColor="#fff" floodOpacity="1" result="white" />
+            <feComposite in="white" in2="expanded" operator="in" result="outline" />
+            <feMerge>
+              <feMergeNode in="outline" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        <image href={src} width={size} height={size} preserveAspectRatio="xMidYMid meet" filter={`url(#${filterId})`} />
+      </svg>
     </span>
   );
 }

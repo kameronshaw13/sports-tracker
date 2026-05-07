@@ -2791,3 +2791,23 @@ html[data-theme="light"] .espn-team-logo-wrap img.espn-team-logo-img.logo-outlin
   line-height: 1 !important;
   padding-top: 2px;
 }
+
+/* v40: real SVG alpha outline for team logos + settings league label nudge */
+.score-team-logo-wrap,
+.espn-team-logo-wrap,
+.score-team-logo-wrap.logo-outline-dark,
+.espn-team-logo-wrap.logo-outline-dark {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+.team-logo-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.settings-sport-row > span {
+  padding-top: 4px !important;
+}
