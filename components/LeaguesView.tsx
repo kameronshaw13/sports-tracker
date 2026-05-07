@@ -307,11 +307,36 @@ function ScoreTeamLogo({ team, league, size }: { team: any; league: League; size
   const src = scoreTeamLogoSrc(team, league);
   if (!src) return null;
 
+  const alt = team?.abbr || team?.name || "Team logo";
+  const outlineOffsets = [
+    [0, -0.55],
+    [0.55, 0],
+    [0, 0.55],
+    [-0.55, 0],
+    [0.42, -0.42],
+    [0.42, 0.42],
+    [-0.42, 0.42],
+    [-0.42, -0.42],
+  ];
+
   return (
     <span className="score-team-logo-wrap espn-team-logo-wrap" style={{ width: size, height: size }}>
+      {outlineOffsets.map(([x, y], idx) => (
+        <Image
+          key={`outline-${idx}`}
+          src={src}
+          alt=""
+          fill
+          sizes={`${size}px`}
+          className="object-contain espn-team-logo-outline-copy"
+          style={{ transform: `translate(${x}px, ${y}px)` }}
+          aria-hidden
+          unoptimized
+        />
+      ))}
       <Image
         src={src}
-        alt={team?.abbr || team?.name || "Team logo"}
+        alt={alt}
         fill
         sizes={`${size}px`}
         className="object-contain espn-team-logo-img"
@@ -376,14 +401,17 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
   const recordText = seriesTeamRecord(game, team) || team.record;
   const label = compact ? team.abbr : favoriteTeamLabel(team, league);
   const showScore = scoreShouldShow(game) && team.score !== undefined && team.score !== null && team.score !== "";
+  const hasWinner = Boolean(game?.away?.winner || game?.home?.winner);
+  const isWinner = Boolean(team?.winner);
   return (
-    <div className={`score-team-row flex items-center ${showLogo ? "gap-2.5" : "gap-0"} py-0.5`}>
+    <div className={`score-team-row flex items-center ${showLogo ? "gap-2.5" : "gap-0"} py-0.5 ${hasWinner ? "has-winner-state" : ""} ${isWinner ? "winner-row" : hasWinner ? "loser-row" : ""}`}>
+      {hasWinner && <span className={`winner-marker ${isWinner ? "opacity-100" : "opacity-0"}`} aria-hidden>▸</span>}
       {showLogo && <div className="score-team-logo-cell">{img && <ScoreTeamLogo team={team} league={league} size={favorite ? 28 : 26} />}</div>}
       <div className="flex-1 flex items-center gap-1.5 min-w-0">
-        <span className={`${favorite ? "text-[18px] uppercase" : "text-[16.5px]"} score-team-name truncate font-black tracking-tight`}>{label}</span>
-        {recordText && <span className="text-[10px] font-medium tracking-tight score-card-meta" style={{ color: "var(--score-meta)" }}>{recordText}</span>}
+        <span className={`${favorite ? "text-[18px] uppercase" : "text-[16.5px]"} score-team-name truncate tracking-tight ${isWinner || !hasWinner ? "font-black" : "font-semibold"}`}>{label}</span>
+        {recordText && <span className={`text-[10px] tracking-tight score-card-meta ${isWinner ? "font-semibold" : "font-medium"}`} style={{ color: "var(--score-meta)" }}>{recordText}</span>}
       </div>
-      {showScore && <span className={`score-card-number ${favorite ? "text-[18px]" : "text-[16.5px]"} score-team-name font-black tracking-tight ${team.winner ? "opacity-100" : "opacity-90"}`} style={{ color: "var(--text)" }}>{team.score}</span>}
+      {showScore && <span className={`score-card-number ${favorite ? "text-[18px]" : "text-[16.5px]"} score-team-name tracking-tight ${isWinner || !hasWinner ? "font-black opacity-100" : "font-semibold opacity-75"}`} style={{ color: "var(--text)" }}>{team.score}</span>}
     </div>
   );
 }

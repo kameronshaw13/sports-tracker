@@ -1434,3 +1434,54 @@ html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img {
   flex: 0 0 auto;
   transform: translateY(-1px);
 }
+
+
+/* v23: phone-safe uniform outline copies + winner marker */
+.espn-team-logo-outline-img {
+  display: none !important;
+}
+
+.espn-team-logo-wrap {
+  isolation: isolate !important;
+}
+
+.espn-team-logo-outline-copy {
+  display: block !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  opacity: .82 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  -webkit-filter: brightness(0) invert(1) !important;
+  filter: brightness(0) invert(1) !important;
+}
+
+.score-team-logo-wrap .espn-team-logo-img,
+.espn-team-logo-wrap .espn-team-logo-img,
+html[data-theme="light"] .score-team-logo-wrap .espn-team-logo-img,
+html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img {
+  -webkit-filter: none !important;
+  filter: none !important;
+  z-index: 2 !important;
+}
+
+.winner-marker {
+  width: .6rem;
+  flex: 0 0 .6rem;
+  margin-right: -.18rem;
+  color: var(--accent);
+  font-size: .72rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(1px);
+}
+
+.score-team-row.has-winner-state.loser-row .score-team-name {
+  color: color-mix(in srgb, var(--text) 78%, var(--text-3));
+}
+
+.score-team-row.winner-row .score-team-name {
+  color: var(--text);
+}
