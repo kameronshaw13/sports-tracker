@@ -1074,3 +1074,127 @@ html[data-theme="light"] { --score-meta: #4b5563; }
 .scores-page-heading {
   text-transform: none !important;
 }
+
+
+/* v19: restore smaller ESPN score-card sizing and slimmer section headers */
+.retro-league-head {
+  min-height: 2.1rem !important;
+  padding-top: 0.34rem !important;
+  padding-bottom: 0.26rem !important;
+  align-items: center !important;
+}
+
+.retro-league-head h2 {
+  font-size: 0.88rem !important;
+  line-height: 1.25 !important;
+  padding-top: 2px !important;
+  padding-bottom: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.retro-league-head .standings-header-btn {
+  height: 1.52rem !important;
+  min-height: 1.52rem !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+
+.score-team-logo-cell {
+  width: 1.85rem !important;
+  height: 1.85rem !important;
+  flex: 0 0 1.85rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.score-team-logo-wrap,
+.espn-team-logo-wrap {
+  position: relative !important;
+  width: 1.58rem !important;
+  height: 1.58rem !important;
+  flex: 0 0 1.58rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
+  transform: none !important;
+}
+
+.favorite-score-card .score-team-logo-wrap,
+.favorite-score-card .espn-team-logo-wrap {
+  width: 1.72rem !important;
+  height: 1.72rem !important;
+  flex: 0 0 1.72rem !important;
+}
+
+.score-team-logo-wrap img,
+.espn-team-logo-img,
+.favorite-score-card .score-team-logo-wrap img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: none !important;
+}
+
+.score-team-row {
+  gap: 0.48rem !important;
+}
+
+.score-team-name {
+  font-size: 1.03rem !important;
+  line-height: 1.14 !important;
+  padding-top: 0.08em !important;
+  padding-bottom: 0.06em !important;
+}
+
+.favorite-score-card .score-team-name {
+  font-size: 1.12rem !important;
+}
+
+.score-card-number {
+  font-size: 1.05rem !important;
+  line-height: 1.12 !important;
+}
+
+.favorite-score-card .score-card-number {
+  font-size: 1.12rem !important;
+}
+
+.score-card-meta {
+  font-size: 0.64rem !important;
+  line-height: 1.12 !important;
+}
+
+.score-card-subline,
+.favorite-score-meta {
+  font-size: 0.64rem !important;
+  line-height: 1.18 !important;
+}
+
+.logo-outline-dark,
+.logo-outline-dark img,
+.score-team-logo-wrap,
+.score-team-logo-wrap img,
+.espn-team-logo-wrap,
+.espn-team-logo-img {
+  -webkit-filter:
+    drop-shadow(.42px 0 0 rgba(255,255,255,.72))
+    drop-shadow(-.42px 0 0 rgba(255,255,255,.72))
+    drop-shadow(0 .42px 0 rgba(255,255,255,.72))
+    drop-shadow(0 -.42px 0 rgba(255,255,255,.72)) !important;
+  filter:
+    drop-shadow(.42px 0 0 rgba(255,255,255,.72))
+    drop-shadow(-.42px 0 0 rgba(255,255,255,.72))
+    drop-shadow(0 .42px 0 rgba(255,255,255,.72))
+    drop-shadow(0 -.42px 0 rgba(255,255,255,.72)) !important;
+}
