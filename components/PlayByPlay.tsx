@@ -131,7 +131,7 @@ function MlbPlayByPlay({ atBats, home, away }: { atBats: MlbAtBat[]; home?: Team
             style={{ borderBottom: "1px solid var(--border)" }}
           >
             <div className="flex items-center gap-2 min-w-0">
-              {section.team?.logo && <Image src={section.team.logo} alt={section.team.abbr} width={26} height={26} className="object-contain" />}
+              {section.team?.logo && <Image src={section.team.logo} alt={section.team.abbr} width={26} height={26} className="object-contain logo-outline-dark" unoptimized />}
               <div className="min-w-0">
                 <div className="text-sm font-bold truncate">
                   {section.half === "bottom" ? "Bottom" : "Top"} of the {inningWord(section.period)} · {section.team?.abbr || "Team"}

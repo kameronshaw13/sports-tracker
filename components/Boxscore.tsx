@@ -74,7 +74,7 @@ export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Pro
               }}
             >
               {t.team.logo && (
-                <Image src={t.team.logo} alt="" width={20} height={20} className="object-contain" />
+                <Image src={t.team.logo} alt="" width={20} height={20} className="object-contain logo-outline-dark" unoptimized />
               )}
               {t.team.abbr}
             </button>
@@ -149,7 +149,7 @@ function LeaderCard({ cat, teamLogo, teamAbbr, league, teamKey, onPlayerClick }:
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-xs font-semibold uppercase tracking-wide flex items-center gap-1.5" style={{ color: "var(--text-3)" }}>
-          {teamLogo && <Image src={teamLogo} alt="" width={12} height={12} className="object-contain" />}
+          {teamLogo && <Image src={teamLogo} alt="" width={12} height={12} className="object-contain logo-outline-dark" unoptimized />}
           {cat.shortName || cat.name}
         </div>
         <div className="text-sm font-semibold truncate">{cat.leader.name}</div>

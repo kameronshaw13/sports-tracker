@@ -89,7 +89,7 @@ export default function ManageTeams({ onClose }: Props) {
                 style={{ borderColor: "var(--border)" }}
               >
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "var(--surface-2)" }}>
-                  <Image src={logoUrl(t)} alt="" width={28} height={28} className="object-contain" />
+                  <Image src={logoUrl(t)} alt="" width={28} height={28} className="object-contain logo-outline-dark" unoptimized />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold">{t.name}</div>
@@ -194,7 +194,7 @@ export default function ManageTeams({ onClose }: Props) {
                     className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
                     style={{ background: isFav ? "rgba(255,255,255,0.15)" : "var(--surface-2)" }}
                   >
-                    <Image src={logoUrl(t)} alt="" width={28} height={28} className="object-contain" />
+                    <Image src={logoUrl(t)} alt="" width={28} height={28} className="object-contain logo-outline-dark" unoptimized />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold">{t.name}</div>

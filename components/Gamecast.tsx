@@ -219,7 +219,7 @@ function LiveAtBatCard({
     >
       <div className="px-4 py-3 flex items-center justify-between gap-3" style={{ borderBottom: "1px solid var(--border)" }}>
         <div className="flex items-center gap-2 min-w-0">
-          {battingTeam?.logo && <Image src={battingTeam.logo} alt={battingTeam.abbr} width={30} height={30} className="object-contain" />}
+          {battingTeam?.logo && <Image src={battingTeam.logo} alt={battingTeam.abbr} width={30} height={30} className="object-contain logo-outline-dark" unoptimized />}
           <div className="min-w-0">
             <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: isLive ? "var(--danger)" : "var(--text-3)" }}>
               {title}
@@ -279,7 +279,7 @@ function HalfInningCard({
     >
       <div className="px-4 py-3 flex items-center justify-between gap-3" style={{ borderBottom: "1px solid var(--border)" }}>
         <div className="flex items-center gap-2 min-w-0">
-          {team?.logo && <Image src={team.logo} alt={team.abbr} width={24} height={24} className="object-contain" />}
+          {team?.logo && <Image src={team.logo} alt={team.abbr} width={24} height={24} className="object-contain logo-outline-dark" unoptimized />}
           <div>
             <div className="text-sm font-bold">
               {half === "bottom" ? "Bottom" : "Top"} of the {inningWord(period)} · {team?.abbr || "Batting"}
@@ -331,7 +331,7 @@ function ScoringPlaysView({ sections }: { sections: MlbSection[] }) {
       {sections.map((section) => (
         <div key={`${section.period}-${section.half}-scoring`} className="rounded-2xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
           <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: "1px solid var(--border)" }}>
-            {section.team?.logo && <Image src={section.team.logo} alt={section.team.abbr} width={24} height={24} className="object-contain" />}
+            {section.team?.logo && <Image src={section.team.logo} alt={section.team.abbr} width={24} height={24} className="object-contain logo-outline-dark" unoptimized />}
             <div>
               <div className="text-sm font-bold">{section.half === "bottom" ? "Bottom" : "Top"} of the {inningWord(section.period)} · {section.team?.abbr || "Team"}</div>
               <div className="text-xs" style={{ color: "var(--text-3)" }}>{section.atBats.length} scoring play{section.atBats.length === 1 ? "" : "s"}</div>
@@ -532,7 +532,7 @@ function GenericPlayList({ plays, home, away }: { plays: any[]; home?: TeamMeta;
         return (
           <div key={p.id} className="px-4 py-3 border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
             <div className="flex items-start gap-2">
-              {team?.logo ? <Image src={team.logo} alt={team.abbr} width={22} height={22} className="mt-0.5 object-contain flex-shrink-0" unoptimized /> : team ? <span className="mt-1 w-2 h-2 rounded-full flex-shrink-0" style={{ background: team.color || "var(--text-3)" }} /> : null}
+              {team?.logo ? <Image src={team.logo} alt={team.abbr} width={22} height={22} className="mt-0.5 object-contain flex-shrink-0 logo-outline-dark" unoptimized /> : team ? <span className="mt-1 w-2 h-2 rounded-full flex-shrink-0" style={{ background: team.color || "var(--text-3)" }} /> : null}
               <div className="min-w-0">
                 <div className="text-sm font-semibold">{p.text}</div>
                 <div className="text-xs mt-1" style={{ color: "var(--text-3)" }}>{[p.clock, periodLabel(p.period), team?.abbr].filter(Boolean).join(" · ")}</div>
