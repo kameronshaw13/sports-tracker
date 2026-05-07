@@ -4744,3 +4744,76 @@ main.retro-page {
   font-size: .72rem !important;
   line-height: 1.12 !important;
 }
+
+/* v59: final header seam and schedule vertical alignment */
+.more-page-title,
+.standings-page-title {
+  transform: translateY(.24rem) !important;
+  padding-top: .08rem;
+}
+
+.more-topbar,
+.standings-topbar {
+  padding-top: max(1.18rem, env(safe-area-inset-top)) !important;
+}
+
+.team-page-shell {
+  --team-fixed-header-height: calc(11.12rem + env(safe-area-inset-top));
+}
+
+.team-sticky-shell {
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--border) 72%, #fff) !important;
+}
+
+.team-sticky-shell .cbs-tabs {
+  border-bottom: 0 !important;
+}
+
+.team-page-hero-inner {
+  min-height: 5.18rem !important;
+  padding-bottom: .14rem !important;
+}
+
+.team-page-logo-box {
+  margin-top: .02rem !important;
+}
+
+.team-page-content {
+  padding-top: var(--team-fixed-header-height) !important;
+}
+
+.team-month-toggle {
+  min-height: 2.34rem !important;
+  padding-top: .16rem !important;
+  padding-bottom: .14rem !important;
+  border-top: 0 !important;
+}
+
+.team-month-toggle div {
+  padding-top: .18rem !important;
+}
+
+.team-schedule-row {
+  min-height: 4.18rem !important;
+  padding-top: .6rem !important;
+  padding-bottom: .46rem !important;
+}
+
+.team-schedule-date,
+.team-schedule-at,
+.team-schedule-status {
+  transform: translateY(.16rem) !important;
+}
+
+.team-schedule-logo,
+.team-schedule-opponent {
+  transform: translateY(.12rem) !important;
+}
+
+.team-schedule-date,
+.team-schedule-opponent,
+.team-schedule-status,
+.team-schedule-status > div {
+  line-height: 1.22 !important;
+  overflow: visible !important;
+}
