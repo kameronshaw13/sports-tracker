@@ -124,7 +124,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
       <div>
         <FavoritesScores date={date} favoriteKeys={favoriteKeys} onGameClick={(league, eventId) => setSelectedEvent({ league, eventId })} />
         {leagues.map((lg) => (
-          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={118} />
+          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={124} />
         ))}
       </div>
     </div>
@@ -203,7 +203,7 @@ function FavoritesScores({ date, favoriteKeys, onGameClick }: { date: string; fa
   return (
     <>
       <section className="mt-3 border-b" style={{ borderColor: "var(--border)" }}>
-        <SectionHeader title="Favorites" sticky stickyTop={118} />
+        <SectionHeader title="Favorites" sticky stickyTop={124} />
         <div className="grid grid-cols-1">
           {games.slice(0, 4).map((game: any) => <ScoreCard key={`${game.league}-${game.id}`} league={game.league} game={game} density="expanded" favorite favoriteSide={game.favoriteSide} onClick={() => onGameClick(game.league, game.id)} />)}
         </div>
@@ -212,7 +212,7 @@ function FavoritesScores({ date, favoriteKeys, onGameClick }: { date: string; fa
   );
 }
 
-function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick, stickyTop = 118 }: { league: League; date: string; density: ScoreDensity; onGameClick: (eventId: string) => void; onStandingsClick?: (league: League) => void; stickyTop?: number }) {
+function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick, stickyTop = 124 }: { league: League; date: string; density: ScoreDensity; onGameClick: (eventId: string) => void; onStandingsClick?: (league: League) => void; stickyTop?: number }) {
   const freshKey = useFreshKey();
   const [collapsed, setCollapsed] = useState(false);
   const { data, error, isLoading } = useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, {
@@ -252,7 +252,7 @@ function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick
   );
 }
 
-function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggle, onStandingsClick, stickyTop = 118 }: { title: string; logo?: string; sticky?: boolean; collapsed?: boolean; onToggle?: () => void; onStandingsClick?: () => void; stickyTop?: number }) {
+function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggle, onStandingsClick, stickyTop = 124 }: { title: string; logo?: string; sticky?: boolean; collapsed?: boolean; onToggle?: () => void; onStandingsClick?: () => void; stickyTop?: number }) {
   return (
     <div
       className={`retro-league-head px-4 py-1.5 flex items-center justify-between ${sticky ? "sticky z-20" : ""}`}
@@ -308,7 +308,16 @@ function ScoreTeamLogo({ team, league, size }: { team: any; league: League; size
   if (!src) return null;
 
   return (
-    <span className="score-team-logo-wrap espn-team-logo-wrap logo-outline-dark" style={{ width: size, height: size }}>
+    <span className="score-team-logo-wrap espn-team-logo-wrap" style={{ width: size, height: size }}>
+      <Image
+        src={src}
+        alt=""
+        aria-hidden
+        fill
+        sizes={`${size}px`}
+        className="object-contain espn-team-logo-outline-img"
+        unoptimized
+      />
       <Image
         src={src}
         alt={team?.abbr || team?.name || "Team logo"}
@@ -339,7 +348,7 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
         style={{ borderColor: "var(--border)" }}
       >
         <div className="favorite-score-content pr-1">
-          <div className="favorite-score-meta score-game-meta text-[9.5px] font-black uppercase tracking-[.06em] mb-2.5 cbs-blue-label">{gameTimeLabel(game)}</div>
+          <div className="favorite-score-meta score-game-meta text-[9.5px] font-black uppercase tracking-[.06em] mb-1.5 cbs-blue-label">{gameTimeLabel(game)}</div>
           <TeamLine team={game.away} league={league} compact={false} favorite game={game} showLogo />
           <TeamLine team={game.home} league={league} compact={false} favorite game={game} showLogo />
           <ScoreCardSubline league={league} game={game} density={density} />
@@ -354,7 +363,7 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
       className="retro-score-card min-h-[136px] p-3.5 text-left border-t sm:odd:border-r active:scale-[0.99]"
       style={{ borderColor: "var(--border)" }}
     >
-      <div className="flex items-center justify-between gap-2 mb-2">
+      <div className="flex items-center justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-2 min-w-0">
           <div className="score-game-meta text-[9.5px] font-black uppercase tracking-[.06em] truncate" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
           {league === "mlb" && isLive && game.situation && <BasesDiamondMini situation={game.situation} />}
@@ -409,7 +418,7 @@ function ScoreCardSubline({ league, game, density }: { league: League; game: any
     const outs = game.situation.outs ?? 0;
     const outLabel = outs === 1 ? "1 Out" : `${outs} Outs`;
     return (
-      <div className="mt-2 text-[10px] font-medium tracking-tight tabular-nums score-card-subline" style={{ color: "var(--score-meta)" }}>
+      <div className="mt-1 text-[10px] font-medium tracking-tight tabular-nums score-card-subline" style={{ color: "var(--score-meta)" }}>
         {balls}-{strikes}, {outLabel}
       </div>
     );
@@ -417,7 +426,7 @@ function ScoreCardSubline({ league, game, density }: { league: League; game: any
 
   const subline = sublineForGame(league, game, density);
   if (!subline) return null;
-  return <div className="mt-2 text-[10px] font-medium tracking-tight truncate score-card-subline" style={{ color: "var(--score-meta)" }}>{subline}</div>;
+  return <div className="mt-1 text-[10px] font-medium tracking-tight truncate score-card-subline" style={{ color: "var(--score-meta)" }}>{subline}</div>;
 }
 
 function BasesDiamondMini({ situation }: { situation: any }) {

@@ -1307,3 +1307,94 @@ html[data-theme="light"] .espn-team-logo-wrap img {
     drop-shadow(0 .65px 0 rgba(255,255,255,.88))
     drop-shadow(0 -.65px 0 rgba(255,255,255,.88)) !important;
 }
+
+
+/* v21 final score-card tightening + mobile-safe thin logo outline */
+.retro-league-head {
+  min-height: 2.05rem !important;
+  padding-top: 0.34rem !important;
+  padding-bottom: 0.22rem !important;
+  align-items: center !important;
+}
+
+.retro-league-head h2 {
+  line-height: 1.3 !important;
+  padding-top: 5px !important;
+  padding-bottom: 1px !important;
+}
+
+.retro-score-card:not(.favorite-score-card) {
+  min-height: 116px !important;
+  padding-top: 0.78rem !important;
+  padding-bottom: 0.62rem !important;
+}
+
+.favorite-score-card {
+  min-height: 130px !important;
+  padding-top: 0.82rem !important;
+  padding-bottom: 0.68rem !important;
+}
+
+.score-team-row {
+  min-height: 1.78rem !important;
+}
+
+.score-team-logo-cell {
+  transform: translateY(-2.5px) !important;
+}
+
+.score-team-logo-wrap,
+.espn-team-logo-wrap,
+.score-team-logo-wrap img,
+.espn-team-logo-img {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+.score-team-logo-wrap,
+.espn-team-logo-wrap {
+  position: relative !important;
+  overflow: visible !important;
+  isolation: isolate;
+}
+
+.espn-team-logo-outline-img {
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: scale(1.045) !important;
+  transform-origin: center center !important;
+  opacity: 0.98 !important;
+  -webkit-filter: brightness(0) invert(1) !important;
+  filter: brightness(0) invert(1) !important;
+  z-index: 0 !important;
+}
+
+.espn-team-logo-img {
+  object-fit: contain !important;
+  object-position: center center !important;
+  z-index: 1 !important;
+}
+
+.score-card-subline,
+.favorite-score-meta,
+.score-game-meta {
+  line-height: 1.28 !important;
+  padding-top: 2px !important;
+}
+
+/* v21 force the actual outline layer to win over older outline filters */
+.score-team-logo-wrap .espn-team-logo-outline-img,
+.espn-team-logo-wrap .espn-team-logo-outline-img {
+  -webkit-filter: brightness(0) invert(1) !important;
+  filter: brightness(0) invert(1) !important;
+  transform: scale(1.045) !important;
+  opacity: 0.98 !important;
+  z-index: 0 !important;
+}
+
+.score-team-logo-wrap .espn-team-logo-img,
+.espn-team-logo-wrap .espn-team-logo-img {
+  -webkit-filter: none !important;
+  filter: none !important;
+  z-index: 1 !important;
+}
