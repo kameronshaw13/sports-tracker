@@ -65,13 +65,13 @@ export default function AppSettingsButton() {
       </div>
       <div>
         <div className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: "var(--text-3)" }}>Score card view</div>
-        <div className="grid grid-cols-2 gap-2">{(["compact", "expanded"] as const).map((d) => <button key={d} onClick={() => setDensity(d)} className="px-3 py-2 rounded-xl text-xs font-black capitalize" style={{ background: settings.density === d ? "var(--text)" : "var(--surface-2)", color: settings.density === d ? "var(--bg)" : "var(--text-2)", border: "1px solid var(--border)" }}>{d}</button>)}</div>
+        <div className="grid grid-cols-2 gap-2">{(["compact", "expanded"] as const).map((d) => <button key={d} onClick={() => setDensity(d)} className="settings-choice-btn px-3 py-2 rounded-xl text-xs font-black capitalize" style={{ background: settings.density === d ? "var(--text)" : "var(--surface-2)", color: settings.density === d ? "var(--bg)" : "var(--text-2)", border: "1px solid var(--border)" }}>{d}</button>)}</div>
       </div>
       <div>
         <div className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: "var(--text-3)" }}>Sport order</div>
-        <div className="space-y-1.5">{settings.sportOrder.map((league, idx) => <div key={league} className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}><span className="flex-1 text-sm font-black">{LABELS[league]}</span><button disabled={idx === 0} onClick={() => moveSport(league, "up")} className="text-xs px-2 py-1 rounded disabled:opacity-30" style={{ background: "var(--surface)", color: "var(--text-2)" }}>↑</button><button disabled={idx === settings.sportOrder.length - 1} onClick={() => moveSport(league, "down")} className="text-xs px-2 py-1 rounded disabled:opacity-30" style={{ background: "var(--surface)", color: "var(--text-2)" }}>↓</button></div>)}</div>
+        <div className="space-y-1.5">{settings.sportOrder.map((league, idx) => <div key={league} className="settings-sport-row flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}><span className="flex-1 text-sm font-black">{LABELS[league]}</span><button disabled={idx === 0} onClick={() => moveSport(league, "up")} className="settings-order-btn text-xs px-2 py-1 rounded disabled:opacity-30" style={{ background: "var(--surface)", color: "var(--text-2)" }}>↑</button><button disabled={idx === settings.sportOrder.length - 1} onClick={() => moveSport(league, "down")} className="settings-order-btn text-xs px-2 py-1 rounded disabled:opacity-30" style={{ background: "var(--surface)", color: "var(--text-2)" }}>↓</button></div>)}</div>
       </div>
-      <button onClick={resetSettings} className="w-full text-xs font-black rounded-xl py-2" style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-2)" }}>Reset settings</button>
+      <button onClick={resetSettings} className="settings-reset-btn w-full text-xs font-black rounded-xl py-2" style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-2)" }}>Reset settings</button>
     </div>,
     document.body
   ) : null;

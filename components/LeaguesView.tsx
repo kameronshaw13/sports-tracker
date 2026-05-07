@@ -243,10 +243,11 @@ function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick
   const events = [...(data?.events || [])].sort((a: any, b: any) => statusRank(a) - statusRank(b) || new Date(a.date).getTime() - new Date(b.date).getTime());
   if (!isLoading && (!events.length || error)) return null;
   const compactGrid = density === "compact";
+  const hasOddCompactGrid = compactGrid && events.length % 2 === 1;
 
   return (
     <>
-    <section className="mt-3 border-b" style={{ borderColor: "var(--border)" }}>
+    <section className={`mt-3 ${hasOddCompactGrid ? "" : "border-b"}`} style={{ borderColor: "var(--border)" }}>
       <SectionHeader
         title={LEAGUE_LABELS[league]}
         logo={LEAGUE_LOGOS[league]}

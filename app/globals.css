@@ -2724,3 +2724,70 @@ html[data-theme="light"] .espn-team-logo-wrap img.espn-team-logo-img.logo-outlin
   -webkit-filter: drop-shadow(0 0 1.55px rgba(255,255,255,.98)) !important;
   filter: drop-shadow(0 0 1.55px rgba(255,255,255,.98)) !important;
 }
+
+/* v39: v34-style outline, header/button fine tuning, compact odd-grid cleanup */
+.logo-outline-dark,
+.logo-outline-dark img,
+.espn-team-logo-img.logo-outline-dark,
+.score-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+.espn-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+img.logo-outline-dark,
+img.espn-team-logo-img.logo-outline-dark,
+.score-team-logo-wrap img.espn-team-logo-img.logo-outline-dark,
+.espn-team-logo-wrap img.espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .logo-outline-dark,
+html[data-theme="light"] .logo-outline-dark img,
+html[data-theme="light"] .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .score-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] img.logo-outline-dark,
+html[data-theme="light"] img.espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .score-team-logo-wrap img.espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .espn-team-logo-wrap img.espn-team-logo-img.logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(.92px 0 0 #fff)
+    drop-shadow(-.92px 0 0 #fff)
+    drop-shadow(0 .92px 0 #fff)
+    drop-shadow(0 -.92px 0 #fff)
+    drop-shadow(.66px .66px 0 #fff)
+    drop-shadow(-.66px .66px 0 #fff)
+    drop-shadow(.66px -.66px 0 #fff)
+    drop-shadow(-.66px -.66px 0 #fff) !important;
+  filter:
+    drop-shadow(.92px 0 0 #fff)
+    drop-shadow(-.92px 0 0 #fff)
+    drop-shadow(0 .92px 0 #fff)
+    drop-shadow(0 -.92px 0 #fff)
+    drop-shadow(.66px .66px 0 #fff)
+    drop-shadow(-.66px .66px 0 #fff)
+    drop-shadow(.66px -.66px 0 #fff)
+    drop-shadow(-.66px -.66px 0 #fff) !important;
+}
+
+.home-topbar {
+  justify-content: flex-start !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--border) 76%, #000) !important;
+}
+
+.home-topbar-title {
+  transform: translateY(.12rem);
+}
+
+.settings-choice-btn,
+.settings-reset-btn,
+.settings-order-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  padding-top: .62rem !important;
+  padding-bottom: .42rem !important;
+}
+
+.settings-sport-row > span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1 !important;
+  padding-top: 2px;
+}

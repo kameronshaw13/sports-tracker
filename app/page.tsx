@@ -18,7 +18,6 @@ import LiveGame from "@/components/LiveGame";
 import ManageTeams from "@/components/ManageTeams";
 import PullToRefresh from "@/components/PullToRefresh";
 import GameDetail from "@/components/GameDetail";
-import AppSettingsButton from "@/components/AppSettingsButton";
 import PlayerDetail from "@/components/PlayerDetail";
 import {
   TeamConfig,
@@ -211,7 +210,6 @@ export default function Home() {
         {!selectedPlayer && !showReturnGame && !selectedGame && view === "home" && (
           <div className="home-topbar">
             <h1 className="home-topbar-title">Home</h1>
-            <AppSettingsButton />
           </div>
         )}
 
