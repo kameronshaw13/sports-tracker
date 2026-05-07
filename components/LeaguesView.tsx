@@ -339,7 +339,7 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
         style={{ borderColor: "var(--border)" }}
       >
         <div className="favorite-score-content pr-1">
-          <div className="favorite-score-meta text-[9.5px] font-black uppercase tracking-[.06em] mb-2.5 cbs-blue-label">{gameTimeLabel(game)}</div>
+          <div className="favorite-score-meta score-game-meta text-[9.5px] font-black uppercase tracking-[.06em] mb-2.5 cbs-blue-label">{gameTimeLabel(game)}</div>
           <TeamLine team={game.away} league={league} compact={false} favorite game={game} showLogo />
           <TeamLine team={game.home} league={league} compact={false} favorite game={game} showLogo />
           <ScoreCardSubline league={league} game={game} density={density} />
@@ -356,7 +356,7 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
     >
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="text-[9.5px] font-black uppercase tracking-[.06em] truncate" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
+          <div className="score-game-meta text-[9.5px] font-black uppercase tracking-[.06em] truncate" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
           {league === "mlb" && isLive && game.situation && <BasesDiamondMini situation={game.situation} />}
         </div>
       </div>
