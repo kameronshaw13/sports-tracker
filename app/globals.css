@@ -4999,3 +4999,92 @@ main.retro-page {
   width: 1.12rem !important;
   height: 1.12rem !important;
 }
+
+/* v64: fix team header lift, month clipping, logo scale, and home pill placement */
+.team-page-shell {
+  --team-fixed-header-height: calc(10.12rem + env(safe-area-inset-top));
+}
+
+.team-sticky-shell {
+  position: fixed !important;
+  overflow: hidden !important;
+  background: color-mix(in srgb, var(--team-primary) 74%, #11100d) !important;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--border) 72%, #fff) !important;
+}
+
+.team-header-actions {
+  position: absolute !important;
+  top: env(safe-area-inset-top) !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 3 !important;
+  min-height: 2.18rem !important;
+  padding: .16rem .66rem 0 !important;
+  pointer-events: none;
+}
+
+.team-header-actions > * {
+  pointer-events: auto;
+}
+
+.team-page-hero-inner {
+  min-height: calc(7.08rem + env(safe-area-inset-top)) !important;
+  padding-top: calc(env(safe-area-inset-top) + .26rem) !important;
+  padding-bottom: .46rem !important;
+  transform: none !important;
+}
+
+.team-page-logo-box {
+  margin-top: .12rem !important;
+  margin-bottom: .22rem !important;
+}
+
+.team-sticky-shell .cbs-tabs {
+  background: transparent !important;
+  border-top: 0 !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, #fff) !important;
+}
+
+.team-page-content {
+  padding-top: var(--team-fixed-header-height) !important;
+}
+
+.team-month-toggle {
+  min-height: 2.46rem !important;
+  padding-top: .2rem !important;
+  padding-bottom: .14rem !important;
+  overflow: visible !important;
+}
+
+.team-month-toggle button,
+.team-month-toggle div {
+  transform: translateY(.18rem) !important;
+}
+
+.team-month-toggle div {
+  line-height: 1.22 !important;
+  overflow: visible !important;
+}
+
+.team-schedule-logo {
+  width: 1.54rem !important;
+  height: 1.54rem !important;
+  transform: translateY(-.02rem) !important;
+}
+
+.team-schedule-logo img {
+  width: 1.32rem !important;
+  height: 1.32rem !important;
+  transform: translateY(-.02rem) !important;
+}
+
+.home-team-game-head {
+  justify-content: flex-start !important;
+  overflow: visible !important;
+}
+
+.home-live-situation {
+  right: -.06rem;
+  max-width: 52%;
+  overflow: visible;
+}
