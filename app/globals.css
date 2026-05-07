@@ -3452,3 +3452,24 @@ body::-webkit-scrollbar,
   text-overflow: clip !important;
   white-space: normal !important;
 }
+
+/* v49: tiny final standings/search alignment nudges */
+.standings-table {
+  width: 100% !important;
+}
+
+.standings-colgroup-overall {
+  transform: translateX(.46rem);
+}
+
+.standings-colgroup-conference {
+  transform: translateX(.6rem);
+}
+
+.pull-refresh-indicator {
+  top: calc(max(env(safe-area-inset-top), 0px) + 2.08rem);
+}
+
+.more-topbar .relative > span {
+  transform: translateY(-38%) !important;
+}
