@@ -203,23 +203,16 @@ export default function Home() {
   );
 
   const isScoresRootView = !selectedPlayer && !selectedGame && !showReturnGame && view === "scores";
+  const isHomeRootView = !selectedPlayer && !selectedGame && !showReturnGame && view === "home";
 
   return (
-    <main className={`retro-page min-h-screen pb-28 ${isScoresRootView ? "px-4 sm:px-6 pt-0" : "p-4 sm:p-6"}`}>
+    <main className={`retro-page min-h-screen pb-28 ${isScoresRootView || isHomeRootView ? "px-4 sm:px-6 pt-0" : "p-4 sm:p-6"}`}>
       <PullToRefresh>
       <div className="max-w-3xl mx-auto">
         {!selectedPlayer && !showReturnGame && !selectedGame && view === "home" && (
-          <div className="retro-page mb-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="retro-top-badge">Gridiron<br />Sports</div>
-                <div>
-                  <h1 className="retro-page-title">Home</h1>
-                  <div className="retro-subtitle">★ Real-time. All the time. ★</div>
-                </div>
-              </div>
-              <div className="pt-1"><AppSettingsButton /></div>
-            </div>
+          <div className="home-topbar">
+            <h1 className="home-topbar-title">My Teams</h1>
+            <AppSettingsButton />
           </div>
         )}
 

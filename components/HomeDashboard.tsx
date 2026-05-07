@@ -1,24 +1,15 @@
 "use client";
 
 import RetroTeamLogo from "./RetroTeamLogo";
+import type { CSSProperties } from "react";
 import { useState } from "react";
 import useSWR from "swr";
-import { League, TeamConfig, displayTeamName } from "@/lib/teams";
+import { TeamConfig, displayTeamName } from "@/lib/teams";
 import { useFavoriteTeams } from "@/lib/useFavorites";
 import { useFreshKey } from "@/lib/freshKey";
-import { useAppSettings } from "@/lib/useAppSettings";
 import GameDetail from "./GameDetail";
 
 const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json());
-
-const LEAGUE_LABELS: Record<League, string> = {
-  mlb: "MLB",
-  nba: "NBA",
-  nhl: "NHL",
-  nfl: "NFL",
-  cfb: "CFB",
-  cbb: "CBB",
-};
 
 type Props = {
   onTeamClick: (team: TeamConfig) => void;
@@ -31,9 +22,7 @@ type Props = {
 
 export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, onViewLeague, onPlayerClick, onOpenGame }: Props) {
   const [drillIn, setDrillIn] = useState<{ league: string; eventId: string } | null>(null);
-  const [dayOffset, setDayOffset] = useState(0);
   const { favorites } = useFavoriteTeams();
-  const { settings } = useAppSettings();
 
   if (drillIn) {
     return (
@@ -51,16 +40,17 @@ export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, 
     return <div className="h-32 rounded-2xl animate-pulse" style={{ background: "var(--surface)" }} />;
   }
 
-  const date = formatDateParam(offsetDate(dayOffset));
-
   return (
-    <div className="retro-page space-y-5">
+    <div className="retro-page home-teams-page">
       <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="retro-title text-xl">★ Favorites</h2>
+        <div className="home-section-head">
+          <div>
+            <h2 className="home-section-title">My Teams</h2>
+            <div className="home-section-rule" />
+          </div>
           <button
             onClick={onManage}
-            className="retro-action-btn text-[11px] font-black uppercase px-3 py-1 rounded-lg"
+            className="retro-action-btn home-manage-btn text-[11px] font-black uppercase px-3 py-1"
           >
             Manage
           </button>
@@ -74,117 +64,13 @@ export default function HomeDashboard({ onTeamClick, onManage, onTeamLogoClick, 
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="home-team-grid">
             {favorites.map((team) => (
               <TeamCard key={team.key} team={team} onTeamClick={() => onTeamClick(team)} onGameClick={(eventId) => onOpenGame ? onOpenGame(team.league, eventId) : setDrillIn({ league: team.league, eventId })} />
             ))}
           </div>
         )}
       </section>
-
-      <section>
-        <div className="flex items-center justify-between mb-3 gap-3">
-          <div>
-            <h2 className="retro-title text-xl">Live Scores</h2>
-          </div>
-        </div>
-
-        <DateControls dayOffset={dayOffset} setDayOffset={setDayOffset} />
-
-        <div className="space-y-5 mt-4">
-          {settings.sportOrder.map((league) => (
-            <LeagueScoreStrip
-              key={`${league}-${date}`}
-              league={league}
-              label={LEAGUE_LABELS[league]}
-              date={date}
-              density={settings.density}
-              onViewAll={() => onViewLeague?.(league)}
-              onGameClick={(eventId) => onOpenGame ? onOpenGame(league, eventId) : setDrillIn({ league, eventId })}
-            />
-          ))}
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function DateControls({ dayOffset, setDayOffset }: { dayOffset: number; setDayOffset: (n: number) => void }) {
-  return (
-    <div className="retro-datebar flex items-center justify-between gap-2 rounded-2xl p-2" >
-      <button onClick={() => setDayOffset(dayOffset - 1)} className="retro-action-btn px-3 py-2 rounded-xl text-sm font-semibold">←</button>
-      <button onClick={() => setDayOffset(0)} className="flex-1 text-center">
-        <div className="text-sm font-bold">{prettyDate(dayOffset)}</div>
-        <div className="text-[11px]" style={{ color: "var(--text-3)" }}>{offsetDate(dayOffset).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</div>
-      </button>
-      <button onClick={() => setDayOffset(dayOffset + 1)} className="retro-action-btn px-3 py-2 rounded-xl text-sm font-semibold">→</button>
-    </div>
-  );
-}
-
-function LeagueScoreStrip({ league, label, date, density, onViewAll, onGameClick }: { league: League; label: string; date: string; density: "compact" | "expanded"; onViewAll: () => void; onGameClick: (eventId: string) => void }) {
-  const freshKey = useFreshKey();
-  const { data, isLoading } = useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, {
-    refreshInterval: 15_000,
-    revalidateOnFocus: true,
-    revalidateOnReconnect: true,
-    dedupingInterval: 4_000,
-  });
-
-  const events = data?.events || [];
-  const sorted = [...events].sort((a: any, b: any) => statusRank(a) - statusRank(b) || new Date(a.date).getTime() - new Date(b.date).getTime());
-  const shown = sorted.slice(0, density === "compact" ? 6 : 4);
-
-  // Home should not output a sport section if there are no games for that sport/date.
-  if (!isLoading && shown.length === 0) return null;
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="retro-title text-base">{label}</h3>
-        <button onClick={onViewAll} className="text-xs font-black uppercase tracking-wider" style={{ color: "var(--accent)" }}>View all →</button>
-      </div>
-      {isLoading ? (
-        <div className={density === "compact" ? "grid grid-cols-2 sm:grid-cols-3 gap-2" : "grid grid-cols-1 sm:grid-cols-2 gap-2"}>
-          {[...Array(density === "compact" ? 3 : 2)].map((_, i) => <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: "var(--surface)" }} />)}
-        </div>
-      ) : (
-        <div className={density === "compact" ? "grid grid-cols-2 sm:grid-cols-3 gap-2" : "grid grid-cols-1 sm:grid-cols-2 gap-2"}>
-          {shown.map((game: any) => <MiniGameCard key={game.id} league={league} game={game} compact={density === "compact"} onClick={() => onGameClick(game.id)} />)}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function MiniGameCard({ league, game, compact, onClick }: { league: League; game: any; compact: boolean; onClick: () => void }) {
-  const isLive = game.status?.state === "in";
-  return (
-    <button onClick={onClick} className="retro-score-card rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-[var(--surface-2)]">
-      <div className="flex items-center justify-between mb-1.5 gap-2">
-        <span className="text-[11px] font-bold truncate" style={{ color: isLive ? "var(--danger)" : "var(--text-3)" }}>{game.status?.detail || formatTime(game.date)}</span>
-        {isLive && <span className="w-2 h-2 rounded-full live-dot flex-shrink-0" style={{ background: "var(--danger)" }} />}
-      </div>
-      <MiniTeam team={game.away} league={league} compact={compact} />
-      <MiniTeam team={game.home} league={league} compact={compact} />
-      {league === "mlb" && isLive && (
-        <div className="mt-2 pt-2 flex items-center gap-2 text-[11px] font-semibold" style={{ borderTop: "1px solid var(--border)", color: "var(--text-2)" }}>
-          <BasesMini situation={game.situation} />
-          <span>{countText(game.situation)}</span>
-          <span>{outsText(game.situation)}</span>
-        </div>
-      )}
-    </button>
-  );
-}
-
-function MiniTeam({ team, league, compact }: { team: any; league: League; compact: boolean }) {
-  if (!team) return null;
-  return (
-    <div className="flex items-center gap-2 py-0.5">
-      <div className="w-5 h-5 flex items-center justify-center"><RetroTeamLogo team={team} league={league} size={18} /></div>
-      <span className={`flex-1 text-xs truncate ${team.winner ? "font-bold" : "font-medium"}`}>{compact ? team.abbr : team.name || team.abbr}</span>
-      <span className={`text-sm tabular-nums ${team.winner ? "font-bold" : "font-semibold"}`} style={{ color: "var(--text)" }}>{team.score ?? "—"}</span>
     </div>
   );
 }
@@ -220,34 +106,40 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
   const summaryOpp = [summaryHome, summaryAway].find((t: any) => String(t?.abbr || "").toLowerCase() !== team.abbr.toLowerCase());
   const displayUsScore = summaryUs?.score ?? featured?.us?.score ?? "—";
   const displayOppScore = summaryOpp?.score ?? featured?.opponent?.score ?? "—";
+  const teamStyle = {
+    "--team-primary": team.primary,
+    "--team-secondary": team.secondary,
+    "--team-text": team.textOnPrimary,
+  } as CSSProperties;
 
   return (
-    <div className="retro-panel overflow-hidden">
-      <button onClick={onTeamClick} className="w-full text-left px-4 py-3 flex items-center gap-3 transition-opacity hover:opacity-90" style={{ background: "linear-gradient(90deg, color-mix(in srgb, var(--accent-2) 65%, var(--surface)), var(--surface))", color: "var(--text)" }}>
-        <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,255,255,0.15)" }}>
-          <RetroTeamLogo team={team} league={team.league} size={32} />
+    <div className="retro-panel home-team-card overflow-hidden" style={teamStyle}>
+      <button onClick={onTeamClick} className="home-team-main">
+        <div className="home-team-logo-shell">
+          <RetroTeamLogo team={team} league={team.league} size={42} />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-bold truncate">{team.league === "cfb" ? displayTeamName(team) : team.short}</div>
-          <div className="text-xs opacity-85 truncate">{teamData?.record || (team.league === "cfb" ? "Record unavailable" : team.league.toUpperCase())}{teamData?.standingSummary ? ` · ${teamData.standingSummary.split(",")[0]}` : ""}</div>
+          <div className="home-team-kicker">{team.league.toUpperCase()}</div>
+          <div className="home-team-name truncate">{team.league === "cfb" ? displayTeamName(team) : team.short}</div>
+          <div className="home-team-meta truncate">{teamData?.record || (team.league === "cfb" ? "Record unavailable" : team.name)}{teamData?.standingSummary ? ` · ${teamData.standingSummary.split(",")[0]}` : ""}</div>
         </div>
-        <span className="text-xs opacity-75">→</span>
+        <span className="home-team-arrow">→</span>
       </button>
 
-      <button onClick={() => featured?.id && onGameClick(featured.id)} disabled={!featured} className="w-full text-left p-4 transition-colors hover:bg-[var(--surface-2)] disabled:cursor-default">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs uppercase tracking-wider font-semibold flex items-center gap-1.5" style={{ color: liveEvent ? "var(--danger)" : "var(--text-3)" }}>
+      <button onClick={() => featured?.id && onGameClick(featured.id)} disabled={!featured} className="home-team-game disabled:cursor-default">
+        <div className="home-team-game-head">
+          <span className="home-team-pill" data-live={liveEvent ? "true" : "false"}>
             {liveEvent && <span className="w-2 h-2 rounded-full live-dot" style={{ background: "var(--danger)" }} />}{label}
           </span>
-          {featured?.status?.detail && !liveEvent && <span className="text-xs" style={{ color: "var(--text-3)" }}>{featured.status.detail}</span>}
+          {featured?.status?.detail && !liveEvent && <span className="home-team-game-status">{featured.status.detail}</span>}
         </div>
 
         {featured ? (
           <div className="flex items-center gap-3">
-            {featured.opponent?.logo && <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "var(--surface-2)" }}><RetroTeamLogo team={featured.opponent} league={team.league} size={28} /></div>}
+            {featured.opponent?.logo && <div className="home-team-opponent-logo"><RetroTeamLogo team={featured.opponent} league={team.league} size={30} /></div>}
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold truncate"><span style={{ color: "var(--text-3)" }}>{featured.home ? "vs" : "@"}</span> {featured.opponent?.name}</div>
-              <div className="text-xs" style={{ color: "var(--text-3)" }}>
+              <div className="home-team-matchup truncate"><span>{featured.home ? "vs" : "@"}</span> {featured.opponent?.name}</div>
+              <div className="home-team-time">
                 {featured.status?.state === "pre" ? formatTime(featured.date) : featured.status?.state === "in" && team.league === "mlb" ? liveStatus : featured.status?.detail || formatTime(featured.date)}
               </div>
               {featured.status?.state === "in" && team.league === "mlb" && (
@@ -260,8 +152,8 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
             </div>
             {featured.status?.state !== "pre" && (
               <div className="text-right">
-                <div className="retro-score text-base font-bold tabular-nums">{displayUsScore}<span style={{ color: "var(--text-3)" }}> – </span>{displayOppScore}</div>
-                <div className="text-xs font-bold" style={{ color: featured.us?.winner ? "var(--success)" : featured.status?.state === "post" ? "var(--danger)" : team.primary }}>
+                <div className="retro-score home-team-score tabular-nums">{displayUsScore}<span> - </span>{displayOppScore}</div>
+                <div className="home-team-result" style={{ color: featured.us?.winner ? "var(--success)" : featured.status?.state === "post" ? "var(--danger)" : team.primary }}>
                   {featured.status?.state === "in" ? (team.league === "mlb" ? inningStateText(featured) : featured.status.detail || "Live") : featured.us?.winner ? "W" : "L"}
                 </div>
               </div>
@@ -307,32 +199,6 @@ function BasesMini({ situation }: { situation: any }) {
       <rect x="1.5" y="7" width="4" height="4" transform="rotate(45 1.5 7)" fill={situation.onThird ? filled : empty} stroke={stroke} strokeWidth="1" />
     </svg>
   );
-}
-
-function statusRank(game: any) {
-  if (game.status?.state === "in") return 0;
-  if (game.status?.state === "pre") return 1;
-  return 2;
-}
-
-function offsetDate(offset: number) {
-  const d = new Date();
-  d.setDate(d.getDate() + offset);
-  return d;
-}
-
-function formatDateParam(d: Date) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}${m}${day}`;
-}
-
-function prettyDate(offset: number): string {
-  if (offset === 0) return "Today";
-  if (offset === -1) return "Yesterday";
-  if (offset === 1) return "Tomorrow";
-  return offsetDate(offset).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
 }
 
 function formatTime(iso: string) {
