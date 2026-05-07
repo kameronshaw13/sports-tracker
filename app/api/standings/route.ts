@@ -49,7 +49,7 @@ function teamInfo(entry: any, league: League) {
   const rawName = team?.displayName || team?.name || entry?.displayName || entry?.name || team?.shortDisplayName;
   return {
     id: team?.id || entry?.id,
-    name: league === "cfb" ? formatCollegeSchoolName(team?.location || rawName) : rawName,
+    name: league === "cfb" || league === "cbb" ? formatCollegeSchoolName(team?.location || rawName) : rawName,
     abbr: team?.abbreviation || entry?.abbreviation,
     logo: firstLogo(team),
   };

@@ -3411,3 +3411,29 @@ body::-webkit-scrollbar,
 .standings-colgroup-conference {
   transform: translateX(.04rem);
 }
+
+/* v47: move full standings column block left and refine college labels */
+.standings-table {
+  width: calc(100% - .42rem) !important;
+}
+
+.standings-table-mlb th:last-child,
+.standings-table-mlb td:last-child,
+.standings-table-nfl th:last-child,
+.standings-table-nfl td:last-child,
+.standings-table-nba th:last-child,
+.standings-table-nba td:last-child,
+.standings-table-cfb th:last-child,
+.standings-table-cfb td:last-child,
+.standings-table-cbb th:last-child,
+.standings-table-cbb td:last-child {
+  padding-right: .42rem !important;
+}
+
+.standings-colgroup-overall {
+  transform: translateX(.22rem);
+}
+
+.standings-colgroup-conference {
+  transform: translateX(.3rem);
+}
