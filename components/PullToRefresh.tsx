@@ -66,11 +66,11 @@ export default function PullToRefresh({ children }: Props) {
               background: "var(--surface)",
               border: "1px solid var(--border)",
               color: ready || refreshing ? "var(--text)" : "var(--text-2)",
-              transform: `translateY(${Math.min(36, Math.max(0, pullDistance - 18))}px)`,
+              transform: `translateY(${Math.min(32, Math.max(0, pullDistance - 20))}px)`,
               transition: refreshing ? "transform 120ms ease" : undefined,
             }}
           >
-            {refreshing ? "Updating scores..." : ready ? "Release to refresh" : "Pull to refresh"}
+            <span className="pull-refresh-label">{refreshing ? "Updating scores..." : ready ? "Release to refresh" : "Pull to refresh"}</span>
           </div>
         </div>
       )}
