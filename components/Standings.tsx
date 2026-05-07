@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import useSWR from "swr";
 import { League } from "@/lib/teams";
 import RetroTeamLogo from "./RetroTeamLogo";
@@ -189,9 +190,9 @@ function withCollegeGb(rows: TeamRow[]) {
 }
 
 function columnsForLeague(league: League | string) {
-  if (league === "nhl") return ["gp", "wins", "losses", "otl", "points", "streak"];
-  if (isCollege(league)) return ["wins", "losses", "confWinsDisplay", "confLossesDisplay", "confGb", "streak"];
-  return ["wins", "losses", "pct", "gb", "streak"];
+  if (league === "nhl") return ["gp", "wins", "losses", "otl", "points"];
+  if (isCollege(league)) return ["wins", "losses", "confWinsDisplay", "confLossesDisplay", "confGb"];
+  return ["wins", "losses", "pct", "gb"];
 }
 
 function colLabel(key: string) {
@@ -235,7 +236,7 @@ function StandingsTable({ title, rows, league, teamAbbr, markers = {} }: { title
     <div className="standings-table-card overflow-hidden">
       <div className="standings-table-title px-3 py-2 text-xs font-black uppercase tracking-wider">{title}</div>
       <div className="overflow-x-auto">
-        <table className="standings-table w-full text-xs min-w-[360px]">
+        <table className="standings-table w-full text-xs">
           <thead>
             {isCollege(league) ? (
               <>
@@ -243,7 +244,6 @@ function StandingsTable({ title, rows, league, teamAbbr, markers = {} }: { title
                   <th className="text-left px-3 pt-2"></th>
                   <th colSpan={2} className="text-center px-2 pt-2 uppercase tracking-wider">Overall</th>
                   <th colSpan={3} className="text-center px-2 pt-2 uppercase tracking-wider">Conference</th>
-                  <th className="px-3 pt-2"></th>
                 </tr>
                 <tr style={{ color: "var(--text-3)" }}><th className="text-left px-3 py-2">Team</th>{columns.map((key, idx) => <th key={key} className={`text-right py-2 ${idx === columns.length - 1 ? "px-3" : "px-2"}`}>{colLabel(key)}</th>)}</tr>
               </>
@@ -267,6 +267,7 @@ export default function Standings({ league, teamKey, compact = false, pageMode =
   const teamAbbr = teamAbbrFromKey(teamKey);
   const allRows = useMemo(() => flattenRows(sections), [sections]);
   const config = CONFIGS[String(league)];
+  const filteredConferences = config?.conferences.filter((conf) => !conferenceFilter || conf.name === conferenceFilter) || [];
 
   const collegeLabels = useMemo(() => {
     if (!isCollege(league)) return [];
@@ -309,19 +310,19 @@ export default function Standings({ league, teamKey, compact = false, pageMode =
   return (
     <section className={compact ? "space-y-3" : "space-y-4"}>
       {!compact && showHeader && <h2 className="text-lg font-black">Standings</h2>}
-      {pageMode === "division" && config.conferences.filter((conf) => !conferenceFilter || conf.name === conferenceFilter).map((conf) => (
+      {pageMode === "division" && filteredConferences.map((conf) => (
         <div key={conf.name} className="space-y-3">
-          <div className="px-1 text-sm font-black uppercase tracking-wider" style={{ color: "var(--accent)" }}>{conf.name}</div>
+          {!conferenceFilter && <StandingsGroupTitle>{conf.name}</StandingsGroupTitle>}
           {conf.divisions.map((division) => <StandingsTable key={division.name} title={division.name} rows={rowsForDivision(allRows, division, league)} league={league} teamAbbr={teamAbbr} />)}
         </div>
       ))}
-      {pageMode === "conference" && config.conferences.filter((conf) => !conferenceFilter || conf.name === conferenceFilter).map((conf) => {
+      {pageMode === "conference" && filteredConferences.map((conf) => {
         const rows = rowsForConference(allRows, conf, league);
         const markers: Record<number, "dash" | "solid"> = {};
         if (league === "nba") { markers[6] = "dash"; markers[10] = "solid"; }
         return <StandingsTable key={conf.name} title={conf.name} rows={rows} league={league} teamAbbr={teamAbbr} markers={markers} />;
       })}
-      {pageMode === "wildcard" && config.conferences.filter((conf) => !conferenceFilter || conf.name === conferenceFilter).map((conf) => {
+      {pageMode === "wildcard" && filteredConferences.map((conf) => {
         const leaders = sortRows(divisionLeaders(allRows, conf, league), league).map((row) => ({ ...row, gb: "-" }));
         const cutoff = league === "nhl" ? 2 : (config.wildCardCount || 3);
         const wc = league === "nhl" ? wildCardRows(allRows, conf, league) : withWildCardGb(wildCardRows(allRows, conf, league), cutoff);
@@ -332,24 +333,29 @@ export default function Standings({ league, teamKey, compact = false, pageMode =
           return <StandingsTable key={conf.name} title={conf.name} rows={rows} league={league} teamAbbr={teamAbbr} markers={{ 6: "dash", 10: "solid" }} />;
         }
         if (league === "nhl") {
+          const topThree: TeamRow[] = conf.divisions.flatMap((division) => rowsForDivision(allRows, division, league).slice(0, 3).map((row) => ({ ...row, divisionLabel: division.name })));
+          const topThreeKeys = new Set(topThree.map((row) => clean(row.abbr)));
+          const nhlWildCardRows = rowsForConference(allRows, conf, league).filter((row) => !topThreeKeys.has(clean(row.abbr)));
           return (
             <div key={conf.name} className="space-y-3">
-              <div className="px-1 text-sm font-black uppercase tracking-wider" style={{ color: "var(--accent)" }}>{conf.name}</div>
-              {conf.divisions.map((division) => (
-                <StandingsTable
-                  key={`${conf.name}-${division.name}-top3`}
-                  title={`${division.name} Top 3`}
-                  rows={rowsForDivision(allRows, division, league).slice(0, 3).map((row) => ({ ...row, divisionLabel: division.name }))}
-                  league={league}
-                  teamAbbr={teamAbbr}
-                />
-              ))}
-              <StandingsTable title={`${conf.name} Next Teams`} rows={wc} league={league} teamAbbr={teamAbbr} markers={markers} />
+              <StandingsGroupTitle>{conf.name}</StandingsGroupTitle>
+              <StandingsTable title="Division Leaders" rows={topThree} league={league} teamAbbr={teamAbbr} />
+              <StandingsTable title="Wild Card" rows={nhlWildCardRows} league={league} teamAbbr={teamAbbr} markers={markers} />
             </div>
           );
         }
-        return <div key={conf.name} className="space-y-3"><StandingsTable title={`${conf.name} Division Leaders`} rows={leaders} league={league} teamAbbr={teamAbbr} /><StandingsTable title={`${conf.name} Next Teams`} rows={wc} league={league} teamAbbr={teamAbbr} markers={markers} /></div>;
+        return (
+          <div key={conf.name} className="space-y-3">
+            <StandingsGroupTitle>{conf.name}</StandingsGroupTitle>
+            <StandingsTable title="Division Leaders" rows={leaders} league={league} teamAbbr={teamAbbr} />
+            <StandingsTable title="Wild Card" rows={wc} league={league} teamAbbr={teamAbbr} markers={markers} />
+          </div>
+        );
       })}
     </section>
   );
+}
+
+function StandingsGroupTitle({ children }: { children: ReactNode }) {
+  return <div className="standings-group-title px-1 text-sm font-black uppercase tracking-wider">{children}</div>;
 }

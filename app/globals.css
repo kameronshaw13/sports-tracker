@@ -3016,6 +3016,7 @@ html[data-theme="light"] .espn-team-logo-wrap img.espn-team-logo-img.logo-outlin
 .standings-table {
   color: var(--text);
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .standings-table th {
@@ -3029,6 +3030,11 @@ html[data-theme="light"] .espn-team-logo-wrap img.espn-team-logo-img.logo-outlin
   font-weight: 850;
 }
 
+.standings-table th:first-child,
+.standings-table td:first-child {
+  width: 48%;
+}
+
 .standings-row {
   border-top: 1px solid var(--border);
   background: transparent;
@@ -3036,6 +3042,21 @@ html[data-theme="light"] .espn-team-logo-wrap img.espn-team-logo-img.logo-outlin
 
 .standings-row.is-selected {
   background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.standings-cut-solid {
+  border-top: 2px solid rgba(255,255,255,.92) !important;
+}
+
+.standings-cut-dash {
+  border-top: 1px dashed color-mix(in srgb, #fff 72%, var(--border)) !important;
+}
+
+.standings-group-title {
+  color: var(--accent);
+  line-height: 1;
+  padding-top: .28rem;
+  padding-bottom: .1rem;
 }
 
 .standings-empty,
