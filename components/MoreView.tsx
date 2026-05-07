@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import useSWR from "swr";
-import AppSettingsButton from "./AppSettingsButton";
-import { League, TeamConfig, VALID_LEAGUES } from "@/lib/teams";
+import RetroTeamLogo from "./RetroTeamLogo";
+import { League, TeamConfig } from "@/lib/teams";
 import { useFavoriteTeams } from "@/lib/useFavorites";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -68,11 +68,10 @@ export default function MoreView({ onTeamClick, onLeagueClick, onManage }: Props
   }, [q, data?.teams]);
 
   return (
-    <div className="retro-page -mx-4 sm:mx-0 pb-8">
-      <div className="px-4 pt-3 pb-4">
-        <div className="flex items-center justify-between mb-5">
-          <div><h1 className="retro-page-title">More</h1><div className="retro-subtitle">★ Real-time. All the time. ★</div></div>
-          <AppSettingsButton />
+    <div className="retro-page more-page -mx-4 sm:mx-0 pb-8">
+      <div className="more-topbar">
+        <div>
+          <h1 className="retro-page-title more-page-title">More</h1>
         </div>
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-3)" }}>⌕</span>
@@ -80,7 +79,7 @@ export default function MoreView({ onTeamClick, onLeagueClick, onManage }: Props
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search Teams and Leagues"
-            className="w-full rounded-xl pl-9 pr-3 py-3 text-base font-semibold outline-none retro-panel"
+            className="more-search-input w-full rounded-xl pl-9 pr-3 py-3 text-base font-semibold outline-none retro-panel"
           />
         </div>
       </div>
@@ -93,18 +92,18 @@ export default function MoreView({ onTeamClick, onLeagueClick, onManage }: Props
         </div>
       ) : (
         <>
-          <section className="border-t border-b px-4 py-5" style={{ borderColor: "var(--border)" }}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="retro-title text-xl">★ My Teams</h2>
-              <button onClick={onManage} className="text-sm font-black" style={{ color: "var(--accent)" }}>EDIT</button>
+          <section className="more-section px-4 py-5">
+            <div className="more-section-head flex items-center justify-between mb-4">
+              <h2 className="retro-title text-xl">My Teams</h2>
+              <button onClick={onManage} className="more-edit-btn text-sm font-black">EDIT</button>
             </div>
             <div className="flex gap-5 overflow-x-auto no-scrollbar pb-1">
               {(favorites || []).map((stored) => {
                 const team = data?.teams?.find((t) => t.key === stored.key) || stored;
                 return (
-                  <button key={team.key} onClick={() => onTeamClick(team)} className="flex flex-col items-center gap-1.5 min-w-[70px]">
-                    <div className="w-14 h-14 rounded-full flex items-center justify-center retro-card" style={{ background: teamColor(team) }}>
-                      {teamLogo(team) && <Image src={teamLogo(team)} alt={team.name} width={42} height={42} className="object-contain logo-outline-dark" unoptimized />}
+                  <button key={team.key} onClick={() => onTeamClick(team)} className="more-favorite-team flex flex-col items-center gap-1.5 min-w-[70px]">
+                    <div className="more-favorite-logo w-14 h-14 flex items-center justify-center retro-card" style={{ background: teamColor(team) }}>
+                      {teamLogo(team) && <RetroTeamLogo team={{ ...team, logo: teamLogo(team) }} league={team.league} size={42} className="more-team-logo" />}
                     </div>
                     <span className="text-[10px] font-black truncate max-w-[72px]" style={{ color: "var(--text-2)" }}>{team.short || team.abbr.toUpperCase()}</span>
                     {(team.league === "cfb" || team.league === "cbb") && <span className="text-[9px] font-black uppercase leading-none" style={{ color: "var(--text-3)" }}>{team.league === "cfb" ? "NCAAF" : "NCAAB"}</span>}
@@ -114,11 +113,11 @@ export default function MoreView({ onTeamClick, onLeagueClick, onManage }: Props
             </div>
           </section>
 
-          <section className="mt-3">
-            <div className="px-4 py-4 flex items-center justify-between">
+          <section className="more-section mt-3">
+            <div className="more-section-head px-4 py-4 flex items-center justify-between">
               <h2 className="retro-title text-xl">Sports</h2>
             </div>
-            <div>
+            <div className="px-4 pb-2">
               {LEAGUES.map((l) => <LeagueRow key={l.id} league={l} onClick={() => onLeagueClick(l.id)} />)}
             </div>
           </section>
@@ -139,8 +138,8 @@ function SearchGroup({ title, children }: { title: string; children: React.React
 
 function LeagueRow({ league, onClick }: { league: { id: League; label: string; logo: string }; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="w-full px-4 py-4 flex items-center gap-4 text-left retro-card mb-2">
-      <Image src={league.logo} alt={league.label} width={34} height={34} className="object-contain logo-outline-dark" unoptimized />
+    <button onClick={onClick} className="more-league-row w-full px-4 py-4 flex items-center gap-4 text-left retro-card mb-2">
+      <Image src={league.logo} alt={league.label} width={34} height={34} className="object-contain" unoptimized />
       <span className="flex-1 text-lg font-black">{league.label}</span>
       <span className="text-2xl" style={{ color: "var(--text-3)" }}>›</span>
     </button>
@@ -150,9 +149,9 @@ function LeagueRow({ league, onClick }: { league: { id: League; label: string; l
 function TeamRow({ team, onClick }: { team: TeamConfig; onClick: () => void }) {
   const logo = teamLogo(team);
   return (
-    <button onClick={onClick} className="w-full px-4 py-3 flex items-center gap-4 border-t text-left" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-      <div className="w-10 h-10 flex items-center justify-center rounded-lg" style={{ background: "var(--surface-2)" }}>
-        {logo && <Image src={logo} alt={team.name} width={32} height={32} className="object-contain logo-outline-dark" unoptimized />}
+    <button onClick={onClick} className="more-team-row w-full px-4 py-3 flex items-center gap-4 border-t text-left" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+      <div className="more-team-row-logo w-10 h-10 flex items-center justify-center rounded-lg" style={{ background: "var(--surface-2)" }}>
+        {logo && <RetroTeamLogo team={{ ...team, logo }} league={team.league} size={32} className="more-team-row-logo-img" />}
       </div>
       <div className="min-w-0 flex-1">
         <div className="text-base font-black truncate">{team.name}</div>

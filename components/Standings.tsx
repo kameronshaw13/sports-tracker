@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { League } from "@/lib/teams";
+import RetroTeamLogo from "./RetroTeamLogo";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -208,10 +208,10 @@ function cell(row: TeamRow, key: string) {
 
 function renderRow(row: TeamRow, columns: string[], selected: boolean, marker?: "dash" | "solid") {
   return (
-    <tr key={`${row.id || row.abbr || row.name}-${marker || ""}`} className={marker === "dash" ? "standings-cut-dash" : marker === "solid" ? "standings-cut-solid" : ""} style={{ borderTop: "1px solid var(--border)", background: selected ? "color-mix(in srgb, var(--text) 8%, transparent)" : "transparent" }}>
+    <tr key={`${row.id || row.abbr || row.name}-${marker || ""}`} className={`standings-row ${selected ? "is-selected" : ""} ${marker === "dash" ? "standings-cut-dash" : marker === "solid" ? "standings-cut-solid" : ""}`}>
       <td className="px-3 py-2">
         <div className="flex items-center gap-2 min-w-0">
-          {row.logo && <Image src={row.logo} alt="" width={18} height={18} className="object-contain flex-shrink-0 logo-outline-dark" unoptimized />}
+          {row.logo && <RetroTeamLogo team={{ logo: row.logo, abbr: row.abbr, name: row.name }} league={row.league} size={20} className="standings-team-logo" />}
           <span className="font-bold whitespace-normal leading-tight">{row.name}</span>
           {row.divisionLabel && <span className="ml-auto text-[10px] font-black uppercase tracking-wide" style={{ color: "var(--text-3)" }}>{row.divisionLabel}</span>}
         </div>
@@ -232,10 +232,10 @@ function StandingsTable({ title, rows, league, teamAbbr, markers = {} }: { title
     };
   })) : rows;
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-      <div className="px-3 py-2 text-xs font-black uppercase tracking-wider" style={{ background: "var(--surface-2)", color: "var(--text-2)" }}>{title}</div>
+    <div className="standings-table-card overflow-hidden">
+      <div className="standings-table-title px-3 py-2 text-xs font-black uppercase tracking-wider">{title}</div>
       <div className="overflow-x-auto">
-        <table className="w-full text-xs min-w-[360px]">
+        <table className="standings-table w-full text-xs min-w-[360px]">
           <thead>
             {isCollege(league) ? (
               <>
@@ -281,8 +281,8 @@ export default function Standings({ league, teamKey, compact = false, pageMode =
     }
   }, [league, sections, selectedCollegeSection, teamAbbr]);
 
-  if (isLoading) return <div className="h-40 rounded-2xl animate-pulse" style={{ background: "var(--surface)" }} />;
-  if (!sections.length) return <div className="p-5 rounded-xl text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>Standings are not available yet.</div>;
+  if (isLoading) return <div className="standings-loading h-40 rounded-xl animate-pulse" />;
+  if (!sections.length) return <div className="standings-empty p-5 rounded-xl text-sm">Standings are not available yet.</div>;
 
   if (isCollege(league)) {
     const chosen = selectedCollegeSection === "auto" ? collegeLabels[0] : selectedCollegeSection;
@@ -290,7 +290,7 @@ export default function Standings({ league, teamKey, compact = false, pageMode =
     return (
       <section className={compact ? "space-y-3" : "space-y-4"}>
         {showFilterControls && collegeLabels.length > 1 && (
-          <label className="block">
+          <label className="standings-college-filter block">
             <span className="block text-[11px] uppercase tracking-wider font-black mb-1" style={{ color: "var(--text-3)" }}>Conference</span>
             <select value={chosen || ""} onChange={(e) => setSelectedCollegeSection(e.target.value)} className="w-full px-3 py-2 rounded-xl text-sm font-bold outline-none" style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" }}>
               {collegeLabels.map((label) => <option key={label} value={label}>{label}</option>)}

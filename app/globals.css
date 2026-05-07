@@ -2811,3 +2811,240 @@ html[data-theme="light"] .espn-team-logo-wrap img.espn-team-logo-img.logo-outlin
 .settings-sport-row > span {
   padding-top: 4px !important;
 }
+
+/* v41: More and Standings retro polish */
+.more-topbar,
+.standings-topbar {
+  margin: 0 0 .9rem;
+  padding: max(1.12rem, env(safe-area-inset-top)) 1rem .5rem;
+  min-height: calc(4.05rem + max(1.12rem, env(safe-area-inset-top)));
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--border) 76%, #000);
+}
+
+.more-topbar {
+  flex-direction: column;
+  align-items: stretch;
+  gap: .72rem;
+  padding-bottom: .86rem;
+}
+
+.more-page-title,
+.standings-page-title {
+  margin: 0;
+  color: var(--text);
+  font-family: "Roboto Slab", "Rockwell", "Georgia", serif !important;
+  font-size: 2.42rem !important;
+  line-height: 1.12 !important;
+  font-weight: 950 !important;
+  letter-spacing: .02em !important;
+  text-transform: none !important;
+  text-shadow: none !important;
+  transform: translateY(.12rem);
+}
+
+.more-search-input {
+  min-height: 2.92rem;
+  border-radius: .55rem !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.025), transparent 60%),
+    var(--surface) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+.more-section {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.018), transparent 55%),
+    color-mix(in srgb, var(--surface) 94%, #000);
+}
+
+.more-section-head h2 {
+  font-size: 1.2rem !important;
+  line-height: 1.12 !important;
+  letter-spacing: .02em !important;
+  text-transform: none !important;
+}
+
+.more-edit-btn {
+  min-height: 1.9rem;
+  padding: .24rem .72rem .1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: .45rem;
+  background: rgba(0,0,0,.14);
+  color: var(--accent) !important;
+  line-height: 1;
+}
+
+.more-favorite-logo {
+  border-radius: .55rem !important;
+  border-color: color-mix(in srgb, var(--border) 72%, #fff) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.05), 0 8px 18px rgba(0,0,0,.2);
+}
+
+.more-league-row,
+.more-team-row {
+  min-height: 4.25rem;
+  border-radius: .5rem !important;
+  border-color: var(--border) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.025), transparent 60%),
+    var(--surface) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.025);
+}
+
+.more-league-row span,
+.more-team-row span,
+.more-team-row div {
+  line-height: 1.12;
+}
+
+.more-league-row > span:last-child {
+  transform: translateY(-1px);
+}
+
+.more-team-logo,
+.more-team-row-logo-img,
+.standings-team-logo {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+.more-team-logo {
+  width: 42px !important;
+  height: 42px !important;
+  flex-basis: 42px !important;
+}
+
+.more-team-row-logo-img {
+  width: 32px !important;
+  height: 32px !important;
+  flex-basis: 32px !important;
+}
+
+.standings-team-logo {
+  width: 20px !important;
+  height: 20px !important;
+  flex: 0 0 20px !important;
+}
+
+.standings-league-tabs {
+  margin: -.9rem 0 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg) !important;
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--border) 76%, #000);
+}
+
+.standings-league-tab {
+  min-height: 4.05rem;
+  border-radius: .45rem;
+  line-height: 1;
+}
+
+.standings-league-tab.is-active {
+  background: color-mix(in srgb, var(--surface-2) 64%, transparent);
+}
+
+.standings-league-tab-rule {
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 72%, #000);
+}
+
+.standings-mode-wrap {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.012), transparent),
+    var(--bg);
+}
+
+.standings-mode-btn {
+  min-height: 2.25rem;
+  padding: .58rem .35rem .38rem !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: .45rem;
+  background: transparent;
+  color: var(--text-2);
+  line-height: 1;
+  text-align: center;
+}
+
+.standings-mode-btn.is-active {
+  background: var(--surface-2);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.035);
+}
+
+.standings-content {
+  padding-top: .25rem;
+}
+
+.standings-table-card {
+  border: 1px solid var(--border);
+  border-radius: .55rem;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.018), transparent 52%),
+    var(--surface);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.025);
+}
+
+.standings-table-title {
+  min-height: 2.2rem;
+  display: flex;
+  align-items: center;
+  padding-top: .62rem !important;
+  padding-bottom: .42rem !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.08)),
+    color-mix(in srgb, var(--accent-2) 62%, var(--surface));
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  line-height: 1;
+}
+
+.standings-table {
+  color: var(--text);
+  border-collapse: collapse;
+}
+
+.standings-table th {
+  color: var(--text-3);
+  font-weight: 950;
+  line-height: 1;
+}
+
+.standings-table td {
+  color: var(--text);
+  font-weight: 850;
+}
+
+.standings-row {
+  border-top: 1px solid var(--border);
+  background: transparent;
+}
+
+.standings-row.is-selected {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.standings-empty,
+.standings-loading {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+}
+
+.standings-college-filter {
+  padding: 0 .1rem;
+}
