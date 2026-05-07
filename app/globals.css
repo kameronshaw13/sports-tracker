@@ -2632,3 +2632,65 @@ html[data-theme="light"] .espn-team-logo-wrap img.espn-team-logo-img.logo-outlin
 .retro-league-head.sticky {
   margin-top: -1px !important;
 }
+
+/* v37: settings cleanup, Home game text placement, and single-silhouette logo outline */
+.settings-close-btn {
+  width: 1.65rem !important;
+  height: 1.65rem !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--text) !important;
+}
+
+.home-manage-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  padding-top: .22rem !important;
+  padding-bottom: .08rem !important;
+}
+
+.retro-league-head .standings-header-btn {
+  padding-top: 2px !important;
+  padding-bottom: 0 !important;
+  line-height: 1 !important;
+}
+
+.home-team-upcoming-time {
+  min-width: 3.2rem;
+  white-space: nowrap;
+}
+
+.score-team-logo-wrap .espn-team-logo-outline-copy,
+.espn-team-logo-wrap .espn-team-logo-outline-copy,
+html[data-theme="light"] .score-team-logo-wrap .espn-team-logo-outline-copy,
+html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-outline-copy {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  opacity: 1 !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+  transform: scale(1.06) !important;
+  transform-origin: center center !important;
+  -webkit-filter: brightness(0) invert(1) !important;
+  filter: brightness(0) invert(1) !important;
+}
+
+.score-team-logo-wrap .espn-team-logo-img,
+.espn-team-logo-wrap .espn-team-logo-img,
+.score-team-logo-wrap img.espn-team-logo-img.logo-outline-dark,
+.espn-team-logo-wrap img.espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .score-team-logo-wrap .espn-team-logo-img,
+html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img,
+html[data-theme="light"] .score-team-logo-wrap img.espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .espn-team-logo-wrap img.espn-team-logo-img.logo-outline-dark {
+  z-index: 2 !important;
+  -webkit-filter: none !important;
+  filter: none !important;
+}

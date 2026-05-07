@@ -35,6 +35,15 @@ export default function RetroTeamLogo({
     <span className={`score-team-logo-wrap espn-team-logo-wrap logo-outline-dark ${className}`} style={{ width: size, height: size }}>
       <Image
         src={src}
+        alt=""
+        fill
+        sizes={`${size}px`}
+        className="object-contain espn-team-logo-outline-copy"
+        aria-hidden
+        unoptimized
+      />
+      <Image
+        src={src}
         alt={team?.abbr || team?.name || "Team logo"}
         fill
         sizes={`${size}px`}

@@ -11,7 +11,7 @@ export default function AppSettingsButton() {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const { settings, setDensity, setTheme, moveSport, resetSettings } = useAppSettings();
+  const { settings, setDensity, moveSport, resetSettings } = useAppSettings();
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -66,10 +66,6 @@ export default function AppSettingsButton() {
       <div>
         <div className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: "var(--text-3)" }}>Score card view</div>
         <div className="grid grid-cols-2 gap-2">{(["compact", "expanded"] as const).map((d) => <button key={d} onClick={() => setDensity(d)} className="px-3 py-2 rounded-xl text-xs font-black capitalize" style={{ background: settings.density === d ? "var(--text)" : "var(--surface-2)", color: settings.density === d ? "var(--bg)" : "var(--text-2)", border: "1px solid var(--border)" }}>{d}</button>)}</div>
-      </div>
-      <div>
-        <div className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: "var(--text-3)" }}>Appearance</div>
-        <div className="grid grid-cols-2 gap-2">{(["dark", "light"] as const).map((theme) => <button key={theme} onClick={() => setTheme(theme)} className="px-3 py-2 rounded-xl text-xs font-black capitalize" style={{ background: settings.theme === theme ? "var(--text)" : "var(--surface-2)", color: settings.theme === theme ? "var(--bg)" : "var(--text-2)", border: "1px solid var(--border)" }}>{theme}</button>)}</div>
       </div>
       <div>
         <div className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: "var(--text-3)" }}>Sport order</div>
