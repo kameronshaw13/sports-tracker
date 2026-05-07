@@ -97,9 +97,6 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
   );
   const label = liveEvent ? "Live now" : nextEvent ? "Next game" : "Last game";
   const liveSituation = liveSummary?.situation || featured?.situation || null;
-  const liveStatus = team.league === "mlb" && featured?.status?.state === "in"
-    ? baseballSituationText({ ...featured, situation: liveSituation, status: liveSummary?.status || featured.status })
-    : featured?.status?.detail || "Live";
   const summaryHome = liveSummary?.home;
   const summaryAway = liveSummary?.away;
   const summaryUs = [summaryHome, summaryAway].find((t: any) => String(t?.abbr || "").toLowerCase() === team.abbr.toLowerCase());
@@ -131,8 +128,15 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
       <button onClick={() => featured?.id && onGameClick(featured.id)} disabled={!featured} className="home-team-game disabled:cursor-default">
         <div className="home-team-game-head">
           <span className="home-team-pill" data-live={liveEvent ? "true" : "false"}>
-            {liveEvent && <span className="w-2 h-2 rounded-full live-dot" style={{ background: "var(--danger)" }} />}{label}
+            {label}
           </span>
+          {featuredIsLive && team.league === "mlb" && (
+            <div className="home-live-situation">
+              <BasesMini situation={liveSituation} />
+              <span>{countText(liveSituation)}</span>
+              <span>{outsText(liveSituation)}</span>
+            </div>
+          )}
         </div>
 
         {featured ? (
@@ -141,22 +145,17 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
             <div className="flex-1 min-w-0">
               <div className="home-team-matchup"><span>{featured.home ? "vs" : "@"}</span> {featured.opponent?.name}</div>
               <div className="home-team-time">
-                {featured.status?.state === "pre" ? formatClock(featured.date) : featured.status?.state === "in" && team.league === "mlb" ? liveStatus : featured.status?.detail || formatClock(featured.date)}
+                {featured.status?.state === "pre" ? formatClock(featured.date) : featured.status?.state === "in" && team.league === "mlb" ? "Live" : featured.status?.detail || formatClock(featured.date)}
               </div>
-              {featuredIsLive && team.league === "mlb" && (
-                <div className="mt-1 flex items-center gap-2 text-[11px] font-semibold" style={{ color: "var(--text-2)" }}>
-                  <BasesMini situation={liveSituation} />
-                  <span>{countText(liveSituation)}</span>
-                  <span>{outsText(liveSituation)}</span>
-                </div>
-              )}
             </div>
             {featured.status?.state !== "pre" && (
               <div className="text-right">
                 <div className="retro-score home-team-score tabular-nums">{displayUsScore}<span> - </span>{displayOppScore}</div>
-                <div className="home-team-result" style={{ color: featured.us?.winner ? "var(--success)" : featured.status?.state === "post" ? "var(--danger)" : team.primary }}>
-                  {featured.status?.state === "in" ? (team.league === "mlb" ? inningStateText(featured) : featured.status.detail || "Live") : featured.us?.winner ? "W" : "L"}
-                </div>
+                {featured.status?.state !== "in" && (
+                  <div className="home-team-result" style={{ color: featured.us?.winner ? "var(--success)" : featured.status?.state === "post" ? "var(--danger)" : team.primary }}>
+                    {featured.us?.winner ? "W" : "L"}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -164,18 +163,6 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
       </button>
     </div>
   );
-}
-
-function baseballSituationText(game: any) {
-  const inning = inningStateText(game);
-  const count = countText(game?.situation);
-  return [inning, count].filter(Boolean).join(" · ") || game?.status?.detail || "Live";
-}
-
-function inningStateText(game: any) {
-  const detail = String(game?.status?.detail || "").trim();
-  if (detail) return detail;
-  return "Live";
 }
 
 function countText(situation: any) {

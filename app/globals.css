@@ -4925,3 +4925,77 @@ main.retro-page {
 .team-page-content {
   padding-top: var(--team-fixed-header-height) !important;
 }
+
+/* v63: final team schedule and home live-state polish */
+.team-page-shell {
+  --team-fixed-header-height: calc(9.92rem + env(safe-area-inset-top));
+}
+
+.team-header-actions {
+  min-height: calc(1.08rem + env(safe-area-inset-top)) !important;
+  padding-top: env(safe-area-inset-top) !important;
+}
+
+.team-page-hero-inner {
+  min-height: 4.46rem !important;
+  padding-top: 0 !important;
+  padding-bottom: .34rem !important;
+  transform: translateY(-.2rem);
+}
+
+.team-page-content {
+  padding-top: var(--team-fixed-header-height) !important;
+}
+
+.team-month-toggle button,
+.team-month-toggle div {
+  transform: translateY(.1rem) !important;
+}
+
+.team-schedule-logo {
+  width: 1.74rem !important;
+  height: 1.74rem !important;
+  transform: translateY(-.06rem) !important;
+}
+
+.team-schedule-logo img {
+  width: 1.54rem !important;
+  height: 1.54rem !important;
+  transform: translateY(-.03rem) !important;
+}
+
+.home-team-main {
+  align-items: center;
+}
+
+.home-team-name {
+  transform: translateY(.12rem);
+}
+
+.home-team-game-head {
+  position: relative;
+  justify-content: center !important;
+}
+
+.home-live-situation {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .32rem;
+  max-width: 48%;
+  color: color-mix(in srgb, var(--text) 78%, var(--team-secondary));
+  font-size: .64rem;
+  line-height: 1;
+  font-weight: 950;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+
+.home-live-situation svg {
+  width: 1.12rem !important;
+  height: 1.12rem !important;
+}
