@@ -116,7 +116,7 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
     <div className="retro-panel home-team-card overflow-hidden" style={teamStyle}>
       <button onClick={onTeamClick} className="home-team-main">
         <div className="home-team-logo-shell">
-          <RetroTeamLogo team={team} league={team.league} size={42} />
+          <RetroTeamLogo team={team} league={team.league} size={48} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="home-team-kicker">{team.league.toUpperCase()}</div>
@@ -131,16 +131,16 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
           <span className="home-team-pill" data-live={liveEvent ? "true" : "false"}>
             {liveEvent && <span className="w-2 h-2 rounded-full live-dot" style={{ background: "var(--danger)" }} />}{label}
           </span>
-          {featured?.status?.detail && !liveEvent && <span className="home-team-game-status">{featured.status.detail}</span>}
+          {!liveEvent && <span className="home-team-game-status">{featured?.status?.state === "pre" ? formatDateShort(featured.date) : featured?.status?.detail}</span>}
         </div>
 
         {featured ? (
           <div className="flex items-center gap-3">
-            {featured.opponent?.logo && <div className="home-team-opponent-logo"><RetroTeamLogo team={featured.opponent} league={team.league} size={30} /></div>}
+            {featured.opponent?.logo && <div className="home-team-opponent-logo"><RetroTeamLogo team={featured.opponent} league={team.league} size={36} /></div>}
             <div className="flex-1 min-w-0">
               <div className="home-team-matchup truncate"><span>{featured.home ? "vs" : "@"}</span> {featured.opponent?.name}</div>
               <div className="home-team-time">
-                {featured.status?.state === "pre" ? formatTime(featured.date) : featured.status?.state === "in" && team.league === "mlb" ? liveStatus : featured.status?.detail || formatTime(featured.date)}
+                {featured.status?.state === "pre" ? formatClock(featured.date) : featured.status?.state === "in" && team.league === "mlb" ? liveStatus : featured.status?.detail || formatClock(featured.date)}
               </div>
               {featured.status?.state === "in" && team.league === "mlb" && (
                 <div className="mt-1 flex items-center gap-2 text-[11px] font-semibold" style={{ color: "var(--text-2)" }}>
@@ -201,7 +201,12 @@ function BasesMini({ situation }: { situation: any }) {
   );
 }
 
-function formatTime(iso: string) {
+function formatDateShort(iso: string) {
   const d = new Date(iso);
-  return d.toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+}
+
+function formatClock(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 }

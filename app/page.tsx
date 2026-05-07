@@ -202,16 +202,15 @@ export default function Home() {
     </>
   );
 
-  const isScoresRootView = !selectedPlayer && !selectedGame && !showReturnGame && view === "scores";
-  const isHomeRootView = !selectedPlayer && !selectedGame && !showReturnGame && view === "home";
+  const usesFullTopHeader = !selectedPlayer && !selectedGame && !showReturnGame && (view === "home" || view === "scores");
 
   return (
-    <main className={`retro-page min-h-screen pb-28 ${isScoresRootView || isHomeRootView ? "px-4 sm:px-6 pt-0" : "p-4 sm:p-6"}`}>
+    <main className={`retro-page min-h-screen pb-28 px-4 sm:px-6 ${usesFullTopHeader ? "pt-0" : "app-safe-top"}`}>
       <PullToRefresh>
       <div className="max-w-3xl mx-auto">
         {!selectedPlayer && !showReturnGame && !selectedGame && view === "home" && (
           <div className="home-topbar">
-            <h1 className="home-topbar-title">My Teams</h1>
+            <h1 className="home-topbar-title">Home</h1>
             <AppSettingsButton />
           </div>
         )}

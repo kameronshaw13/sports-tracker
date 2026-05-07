@@ -1824,3 +1824,124 @@ html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-outline-copy {
   -webkit-filter: brightness(0) invert(1) !important;
   filter: brightness(0) invert(1) !important;
 }
+
+/* v26: home header parity, thicker logo outline, cleaner nav active state */
+.app-safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.retro-nav button.active {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.retro-nav button.active svg {
+  filter:
+    drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 52%, transparent))
+    drop-shadow(0 1px 0 rgba(0,0,0,.42));
+}
+
+.home-topbar {
+  margin: 0 -1rem .9rem !important;
+  padding: max(1.12rem, env(safe-area-inset-top)) 1rem .5rem !important;
+  background: var(--bg) !important;
+  border-bottom: 1px solid transparent !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 640px) {
+  .home-topbar {
+    margin-left: -1.5rem !important;
+    margin-right: -1.5rem !important;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+}
+
+.home-topbar {
+  min-height: calc(4.05rem + max(1.12rem, env(safe-area-inset-top)));
+}
+
+.home-topbar-title {
+  font-size: 2.42rem !important;
+  line-height: 1.12 !important;
+  letter-spacing: .02em !important;
+  text-transform: none !important;
+  text-shadow: none !important;
+}
+
+.home-team-main {
+  min-height: 5.65rem;
+  padding-top: .92rem;
+  padding-bottom: .92rem;
+}
+
+.home-team-logo-shell {
+  width: 3.8rem;
+  height: 3.8rem;
+}
+
+.home-team-game {
+  padding-top: .9rem;
+  padding-bottom: 1rem;
+}
+
+.home-team-game-head {
+  position: relative;
+  justify-content: center;
+  min-height: 1.52rem;
+  margin-bottom: .7rem;
+}
+
+.home-team-game-status {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  max-width: 42%;
+  transform: translateY(-50%);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home-team-pill {
+  justify-content: center;
+}
+
+.home-team-opponent-logo {
+  width: 2.82rem;
+  height: 2.82rem;
+}
+
+.home-team-matchup {
+  line-height: 1.32;
+  padding-top: .08em;
+  padding-bottom: .02em;
+}
+
+.home-team-time {
+  margin-top: .12rem;
+}
+
+.espn-team-logo-outline-copy {
+  opacity: .98 !important;
+}
+
+.logo-outline-dark,
+.logo-outline-dark img,
+html[data-theme="light"] .logo-outline-dark,
+html[data-theme="light"] .logo-outline-dark img {
+  -webkit-filter:
+    drop-shadow(0.9px 0 0 rgba(255,255,255,.96))
+    drop-shadow(-0.9px 0 0 rgba(255,255,255,.96))
+    drop-shadow(0 0.9px 0 rgba(255,255,255,.96))
+    drop-shadow(0 -0.9px 0 rgba(255,255,255,.96)) !important;
+  filter:
+    drop-shadow(0.9px 0 0 rgba(255,255,255,.96))
+    drop-shadow(-0.9px 0 0 rgba(255,255,255,.96))
+    drop-shadow(0 0.9px 0 rgba(255,255,255,.96))
+    drop-shadow(0 -0.9px 0 rgba(255,255,255,.96)) !important;
+}

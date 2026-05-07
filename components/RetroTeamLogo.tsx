@@ -18,14 +18,14 @@ function espnLogo(team: TeamLike, league?: League | string) {
 }
 
 const OUTLINE_OFFSETS = [
-  [0, -0.55],
-  [0.55, 0],
-  [0, 0.55],
-  [-0.55, 0],
-  [0.42, -0.42],
-  [0.42, 0.42],
-  [-0.42, 0.42],
-  [-0.42, -0.42],
+  [0, -0.9],
+  [0.9, 0],
+  [0, 0.9],
+  [-0.9, 0],
+  [0.68, -0.68],
+  [0.68, 0.68],
+  [-0.68, 0.68],
+  [-0.68, -0.68],
 ];
 
 export default function RetroTeamLogo({
