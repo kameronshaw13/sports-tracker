@@ -77,31 +77,27 @@ export default function Stats({ team, onPlayerClick }: Props) {
 
   const sections = SECTIONS_BY_LEAGUE[team.league] || [];
   const players: Player[] = playersData?.players || [];
+  const [view, setView] = useState<"team" | "player">("team");
 
   return (
-    <div className="space-y-8">
-      <section>
-        <SectionHeader
-          title="Team Summary"
-          subtitle="Season-to-date team performance"
-        />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {summaryStats.map((s) => (
-            <SummaryCard key={s.label} label={s.label} value={s.value} />
-          ))}
-        </div>
-      </section>
+    <div className="team-stats-page space-y-4">
+      <div className="team-stats-toggle" role="tablist">
+        <button type="button" className={view === "team" ? "is-active" : ""} onClick={() => setView("team")}>Team Stats</button>
+        <button type="button" className={view === "player" ? "is-active" : ""} onClick={() => setView("player")}>Player Stats</button>
+      </div>
 
-      <section>
-        <SectionHeader
-          title="Player Stats"
-          subtitle={
-            playersData?.total != null
-              ? `${playersData.total} players on roster · only those with relevant stats shown`
-              : "Per-player stats for the active roster"
-          }
-        />
+      {view === "team" && (
+        <section>
+          <div className="team-summary-grid grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {summaryStats.map((s) => (
+              <SummaryCard key={s.label} label={s.label} value={s.value} />
+            ))}
+          </div>
+        </section>
+      )}
 
+      {view === "player" && (
+        <section>
         {playersLoading || !playersData ? (
           <PlayersLoading />
         ) : team.league === "mlb" ? (
@@ -109,9 +105,10 @@ export default function Stats({ team, onPlayerClick }: Props) {
         ) : (
           <StackedSections sections={sections} players={players} onPlayerClick={onPlayerClick ? (p) => onPlayerClick({ id: p.id, name: p.name, league: team.league, teamKey: team.key }) : undefined} />
         )}
-      </section>
+        </section>
+      )}
 
-      <p className="text-xs px-1" style={{ color: "var(--text-3)" }}>
+      <p className="team-stats-footnote text-xs px-1" style={{ color: "var(--text-3)" }}>
         Data from ESPN, refreshed hourly. Click any column header to sort. Player stats may take a few seconds to load on first visit.
       </p>
     </div>
@@ -128,7 +125,7 @@ function MlbBattingPitching({ sections, players, onPlayerClick }: { sections: Se
   return (
     <div>
       <div
-        className="inline-flex p-1 rounded-xl mb-4"
+        className="team-player-stat-tabs inline-flex p-1 rounded-xl mb-4"
         style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
         role="tablist"
       >

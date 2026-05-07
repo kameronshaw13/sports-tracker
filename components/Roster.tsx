@@ -8,7 +8,11 @@ import { useFreshKey } from "@/lib/freshKey";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-type Props = { team: TeamConfig; onPlayerClick?: (player: { id: string; name: string; league: string; teamKey: string }) => void };
+type Props = {
+  team: TeamConfig;
+  mode?: "active" | "injured";
+  onPlayerClick?: (player: { id: string; name: string; league: string; teamKey: string }) => void;
+};
 
 type InjuryView = {
   status: string;
@@ -35,13 +39,12 @@ type PositionGroup = { id: string; label: string; players: Player[] };
 
 // v21 Roster: Tab 1 (Active) → position-grouped sections, Tab 2 (Injured) →
 // flat list with injury narrative. v21.1 adds freshKey for refresh-on-mount.
-export default function Roster({ team, onPlayerClick }: Props) {
+export default function Roster({ team, mode = "active", onPlayerClick }: Props) {
   const freshKey = useFreshKey();
   const { data, error, isLoading } = useSWR(
     `/api/roster?team=${team.key}&_t=${freshKey}`,
     fetcher
   );
-  const [tab, setTab] = useState<"active" | "injured">("active");
   const [filter, setFilter] = useState("");
 
   if (isLoading) {
@@ -92,39 +95,16 @@ export default function Roster({ team, onPlayerClick }: Props) {
   const filteredInjured = injured.filter(matches);
 
   const isCollege = team.league === "cfb" || team.league === "cbb";
-  const showInjuredTab = !isCollege && injured.length > 0;
-
-  if (tab === "injured" && !showInjuredTab) {
-    Promise.resolve().then(() => setTab("active"));
-  }
+  const tab = mode === "injured" && !isCollege ? "injured" : "active";
 
   return (
     <div>
-      {showInjuredTab && (
-        <div
-          className="inline-flex p-1 rounded-xl mb-3"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-          role="tablist"
-        >
-          <TabButton
-            label={`Active (${active.length})`}
-            isActive={tab === "active"}
-            onClick={() => setTab("active")}
-          />
-          <TabButton
-            label={`Injured (${injured.length})`}
-            isActive={tab === "injured"}
-            onClick={() => setTab("injured")}
-          />
-        </div>
-      )}
-
       <input
         type="text"
         placeholder={`Search ${tab === "active" ? "players" : "injured players"}...`}
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
-        className="w-full mb-0 px-4 py-3 text-base outline-none"
+        className="team-roster-search w-full mb-0 px-4 py-3 text-base outline-none"
         style={{
           background: "var(--surface)",
           border: "1px solid var(--border)",
@@ -171,32 +151,6 @@ export default function Roster({ team, onPlayerClick }: Props) {
         </>
       )}
     </div>
-  );
-}
-
-function TabButton({
-  label,
-  isActive,
-  onClick,
-}: {
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={isActive}
-      onClick={onClick}
-      className="px-4 py-2 text-base font-black transition-colors relative"
-      style={{
-        background: "transparent",
-        color: isActive ? "var(--text)" : "var(--text-2)",
-      }}
-    >
-      {label}
-    </button>
   );
 }
 
@@ -255,11 +209,11 @@ function ActivePlayerCard({ player, onClick }: { player: Player; onClick?: () =>
   return (
     <Comp
       onClick={onClick}
-      className="cbs-roster-row w-full text-left flex items-center gap-3 hover:opacity-90 transition-opacity"
+      className="cbs-roster-row team-roster-row w-full text-left flex items-center gap-3 hover:opacity-90 transition-opacity"
     >
-      <Headshot player={player} size={48} />
+      <Headshot player={player} size={36} />
       <div className="flex-1 min-w-0">
-        <div className="text-lg font-black truncate">{player.name}</div>
+        <div className="team-roster-name text-lg font-black truncate">{player.name}</div>
         <div
           className="text-xs flex items-center gap-2 mt-0.5"
           style={{ color: "var(--text-3)" }}
@@ -286,12 +240,12 @@ function InjuredPlayerCard({ player, onClick }: { player: Player; onClick?: () =
   return (
     <Comp
       onClick={onClick}
-      className="cbs-roster-row w-full text-left flex items-start gap-3 hover:opacity-90 transition-opacity"
+      className="cbs-roster-row team-roster-row w-full text-left flex items-start gap-3 hover:opacity-90 transition-opacity"
     >
-      <Headshot player={player} size={48} />
+      <Headshot player={player} size={36} />
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <div className="text-lg font-black truncate flex-1 min-w-0">
+          <div className="team-roster-name text-lg font-black truncate flex-1 min-w-0">
             {player.name}
           </div>
           <span

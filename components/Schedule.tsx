@@ -112,23 +112,23 @@ function ScheduleRow({ ev, team, onClick }: any) {
   const result = isResult && !nonPlayed ? (ev.us?.winner ? "W" : "L") : "";
 
   return (
-    <button onClick={onClick} className="cbs-schedule-row w-full text-left">
-      <div className="w-14 shrink-0 text-sm font-black leading-tight" style={{ color: "var(--text-2)" }}>
+    <button onClick={onClick} className="cbs-schedule-row team-schedule-row w-full text-left">
+      <div className="team-schedule-date shrink-0 text-sm font-black leading-tight" style={{ color: "var(--text-2)" }}>
         <div>{weekday(ev.date)}</div>
         <div>{monthDay(ev.date)}</div>
       </div>
-      <div className="w-7 text-center text-xl font-black" style={{ color: "var(--text-2)" }}>{ev.home ? "vs" : "@"}</div>
-      <div className="w-10 h-10 flex items-center justify-center shrink-0">
-        {opp?.logo && <Image src={opp.logo} alt={opp.abbr || opp.name || ""} width={36} height={36} className="object-contain logo-outline-dark" unoptimized />}
+      <div className="team-schedule-at text-center font-black" style={{ color: "var(--text-2)" }}>{ev.home ? "vs" : "@"}</div>
+      <div className="team-schedule-logo flex items-center justify-center shrink-0">
+        {opp?.logo && <Image src={opp.logo} alt={opp.abbr || opp.name || ""} width={28} height={28} className="object-contain logo-outline-dark" unoptimized />}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-xl font-black truncate">{opp?.name || opp?.abbr}</div>
+        <div className="team-schedule-opponent font-black truncate">{opp?.name || opp?.abbr}</div>
         {ev.weekText && <div className="text-xs font-bold truncate" style={{ color: "var(--text-3)" }}>{ev.weekText}</div>}
       </div>
-      <div className="text-right shrink-0 min-w-[68px]">
-        <div className="text-base font-black" style={{ color: isLive ? "var(--danger)" : "var(--text-2)" }}>{statusLabel}</div>
+      <div className="team-schedule-status text-right shrink-0">
+        <div className="font-black" style={{ color: isLive ? "var(--danger)" : "var(--text-2)" }}>{statusLabel}</div>
         {isResult && !nonPlayed && (
-          <div className="text-sm font-black tabular-nums">
+          <div className="font-black tabular-nums">
             <span style={{ color: ev.us?.winner ? "var(--success)" : "var(--danger)" }}>{result}</span>{" "}{ev.us?.score ?? "—"} - {opp?.score ?? "—"}
           </div>
         )}

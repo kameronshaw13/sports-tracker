@@ -3903,3 +3903,267 @@ main.retro-page {
 .standings-team-link:active .standings-team-name {
   color: var(--accent);
 }
+
+/* v55: full-width team pages and compact CBS-style tables */
+.team-sticky-shell {
+  margin-left: -1rem !important;
+  margin-right: -1rem !important;
+  border-radius: 0 !important;
+}
+
+.cbs-panel-list,
+.team-transactions-empty {
+  margin-left: -1rem !important;
+  margin-right: -1rem !important;
+}
+
+@media (min-width: 640px) {
+  .team-sticky-shell,
+  .cbs-panel-list,
+  .team-transactions-empty {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+.team-page-hero-inner {
+  min-height: 8.65rem !important;
+  padding: .48rem .82rem .78rem !important;
+  flex-direction: column;
+  justify-content: center;
+  gap: .34rem !important;
+  text-align: center;
+}
+
+.team-page-logo-box {
+  order: 2;
+  width: 4.35rem !important;
+  height: 4.35rem !important;
+  flex: 0 0 4.35rem !important;
+  margin-top: .32rem;
+  border: 0;
+  background: transparent;
+}
+
+.team-page-logo-box .score-team-logo-wrap,
+.team-page-logo-box .espn-team-logo-wrap {
+  width: 4.1rem !important;
+  height: 4.1rem !important;
+}
+
+.team-page-copy {
+  order: 1;
+  width: 100%;
+}
+
+.team-page-name {
+  font-size: 1.14rem !important;
+  line-height: 1.14 !important;
+  text-align: center;
+}
+
+.team-page-record {
+  font-size: .76rem !important;
+  text-align: center;
+}
+
+.team-page-hero.is-compact .team-page-hero-inner {
+  min-height: 5.05rem !important;
+  flex-direction: row;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.team-page-hero.is-compact .team-page-logo-box {
+  order: 1;
+  margin-top: 0;
+}
+
+.team-page-hero.is-compact .team-page-copy {
+  order: 2;
+}
+
+.team-page-hero.is-compact .team-page-name,
+.team-page-hero.is-compact .team-page-record {
+  text-align: left;
+}
+
+.team-sticky-shell .cbs-tabs > div {
+  gap: 1.28rem !important;
+}
+
+.team-sticky-shell .cbs-tabs button {
+  font-size: .84rem !important;
+  padding-top: .7rem !important;
+  padding-bottom: .64rem !important;
+}
+
+.team-schedule-row {
+  min-height: 3.86rem !important;
+  gap: .34rem !important;
+  padding: .44rem .62rem !important;
+}
+
+.team-schedule-date {
+  width: 2.08rem !important;
+  font-size: .62rem !important;
+  line-height: 1.12 !important;
+}
+
+.team-schedule-at {
+  width: 1rem !important;
+  font-size: .68rem !important;
+  line-height: 1 !important;
+}
+
+.team-schedule-logo {
+  width: 1.68rem !important;
+  height: 1.68rem !important;
+}
+
+.team-schedule-logo img {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+}
+
+.team-schedule-opponent {
+  font-size: .78rem !important;
+  line-height: 1.12 !important;
+  letter-spacing: 0 !important;
+}
+
+.team-schedule-status {
+  min-width: 3.25rem !important;
+  font-size: .64rem !important;
+  line-height: 1.12 !important;
+}
+
+.team-schedule-status > div {
+  font-size: .64rem !important;
+  line-height: 1.12 !important;
+}
+
+.team-roster-search {
+  min-height: 2.55rem;
+  padding-top: .72rem !important;
+  padding-bottom: .52rem !important;
+  font-size: .82rem !important;
+}
+
+.team-roster-row,
+.cbs-roster-row {
+  min-height: 3.95rem !important;
+  padding: .52rem .78rem !important;
+  gap: .72rem !important;
+}
+
+.team-roster-name {
+  font-size: .88rem !important;
+  line-height: 1.12 !important;
+  letter-spacing: 0 !important;
+}
+
+.team-roster-row .rounded-full {
+  width: 2.16rem !important;
+  height: 2.16rem !important;
+}
+
+.team-roster-row img {
+  width: 2.16rem !important;
+  height: 2.16rem !important;
+}
+
+.team-roster-row .text-xs,
+.team-roster-row .text-\[12px\] {
+  font-size: .66rem !important;
+  line-height: 1.16 !important;
+}
+
+.team-stats-page {
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding-bottom: 1rem;
+}
+
+.team-stats-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.team-stats-toggle button {
+  min-height: 2.52rem;
+  color: var(--text-2);
+  font-size: .86rem;
+  font-weight: 950;
+  position: relative;
+}
+
+.team-stats-toggle button.is-active {
+  color: var(--text);
+}
+
+.team-stats-toggle button.is-active::after {
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 0;
+  height: 3px;
+  background: var(--accent);
+}
+
+.team-summary-grid {
+  padding: .75rem;
+}
+
+.team-summary-grid > div {
+  border-radius: .35rem !important;
+  padding: .72rem .76rem !important;
+}
+
+.team-summary-grid .text-2xl {
+  font-size: 1.18rem !important;
+}
+
+.team-player-stat-tabs {
+  margin: .72rem .72rem .5rem !important;
+  border-radius: .45rem !important;
+}
+
+.team-player-stat-tabs button {
+  font-size: .78rem !important;
+  border-radius: .32rem !important;
+}
+
+.team-stats-page table {
+  font-size: .72rem !important;
+}
+
+.team-stats-page th,
+.team-stats-page td {
+  padding-top: .54rem !important;
+  padding-bottom: .5rem !important;
+}
+
+.team-stats-page td:first-child,
+.team-stats-page th:first-child {
+  padding-left: .72rem !important;
+}
+
+.team-stats-page table .rounded-full {
+  width: 1.55rem !important;
+  height: 1.55rem !important;
+}
+
+.team-stats-page table img {
+  width: 1.55rem !important;
+  height: 1.55rem !important;
+}
+
+.team-stats-footnote {
+  padding-left: .78rem !important;
+  padding-right: .78rem !important;
+  font-size: .64rem !important;
+}

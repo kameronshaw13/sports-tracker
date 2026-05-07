@@ -2,7 +2,7 @@
 
 import { TeamConfig } from "@/lib/teams";
 
-export type TabId = "live" | "schedule" | "stats" | "roster" | "standings" | "transactions";
+export type TabId = "live" | "schedule" | "stats" | "roster" | "standings" | "injuries" | "transactions";
 
 type Props = {
   team: TeamConfig;
@@ -17,6 +17,7 @@ export default function Tabs({ team, active, onChange, hasLive }: Props) {
     { id: "stats", label: "Stats" },
     { id: "roster", label: "Roster" },
     { id: "standings", label: "Standings" },
+    { id: "injuries", label: "Injuries" },
     { id: "transactions", label: "Transactions" },
   ];
 
