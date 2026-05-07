@@ -5,12 +5,13 @@ import { useSWRConfig } from "swr";
 
 type Props = {
   children: ReactNode;
+  disabled?: boolean;
 };
 
 const PULL_START_THRESHOLD = 28;
 const RELEASE_THRESHOLD = 110;
 
-export default function PullToRefresh({ children }: Props) {
+export default function PullToRefresh({ children, disabled = false }: Props) {
   const { mutate } = useSWRConfig();
   const startY = useRef<number | null>(null);
   const [pullDistance, setPullDistance] = useState(0);
@@ -37,11 +38,13 @@ export default function PullToRefresh({ children }: Props) {
   return (
     <div
       onTouchStart={(e) => {
+        if (disabled) return;
         if (typeof window !== "undefined" && window.scrollY <= 0) {
           startY.current = e.touches[0]?.clientY ?? null;
         }
       }}
       onTouchMove={(e) => {
+        if (disabled) return;
         if (startY.current === null || typeof window === "undefined" || window.scrollY > 0) return;
         const y = e.touches[0]?.clientY ?? startY.current;
         const delta = Math.max(0, y - startY.current);
@@ -53,6 +56,10 @@ export default function PullToRefresh({ children }: Props) {
         setPullDistance(eased);
       }}
       onTouchEnd={() => {
+        if (disabled) {
+          reset();
+          return;
+        }
         if (ready) refresh();
         else reset();
       }}

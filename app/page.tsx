@@ -148,7 +148,7 @@ export default function Home() {
         </div>
       )}
       {activeTeam ? (
-        <div key={activeTeam.key}>
+        <div key={activeTeam.key} className="team-page-shell">
           <div className="team-sticky-shell" style={{ ["--team-primary" as any]: activeTeam.primary, ["--team-secondary" as any]: activeTeam.secondary }}>
             <div className="team-header-actions -mx-4 sm:mx-0">
               <button
@@ -171,7 +171,7 @@ export default function Home() {
             <TeamHeader team={activeTeam} />
             <Tabs team={activeTeam} active={activeTab} onChange={setActiveTab} hasLive={hasLive} />
           </div>
-          <div>
+          <div className="team-page-content">
             {activeTab === "live" && (
               <LiveGame team={activeTeam} onTeamLogoClick={handleTeamLogoClick} onPlayerClick={(p) => setSelectedPlayer({ ...p, teamKey: activeTeam.key })} />
             )}
@@ -206,7 +206,7 @@ export default function Home() {
 
   return (
     <main className={`retro-page min-h-screen pb-28 px-4 sm:px-6 ${usesFullTopHeader ? "pt-0" : "app-safe-top"}`}>
-      <PullToRefresh>
+      <PullToRefresh disabled={!selectedPlayer && !selectedGame && !showReturnGame && view === "teamPage"}>
       <div className="max-w-3xl mx-auto">
         {!selectedPlayer && !showReturnGame && !selectedGame && view === "home" && (
           <div className="home-topbar">

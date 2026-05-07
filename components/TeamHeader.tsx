@@ -1,7 +1,6 @@
 "use client";
 
 import RetroTeamLogo from "./RetroTeamLogo";
-import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { TeamConfig, displayTeamName } from "@/lib/teams";
 
@@ -11,21 +10,13 @@ type Props = { team: TeamConfig };
 
 export default function TeamHeader({ team }: Props) {
   const { data } = useSWR(`/api/team?team=${team.key}`, fetcher, { refreshInterval: 60_000 });
-  const [compact, setCompact] = useState(false);
   const record = data?.record || "—";
   const standing = team.league === "cfb" || team.league === "cbb"
     ? team.conference || data?.standingSummary || ""
     : data?.standingSummary || "";
 
-  useEffect(() => {
-    const onScroll = () => setCompact(window.scrollY > 88);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [team.key]);
-
   return (
-    <section className={`team-page-hero cbs-team-hero -mx-4 sm:mx-0 mb-0 ${compact ? "is-compact" : ""}`} style={{ ["--team-primary" as any]: team.primary, ["--team-secondary" as any]: team.secondary }}>
+    <section className="team-page-hero cbs-team-hero -mx-4 sm:mx-0 mb-0" style={{ ["--team-primary" as any]: team.primary, ["--team-secondary" as any]: team.secondary }}>
       <div className="team-page-hero-inner px-4">
         <div className="team-page-logo-box">
           <RetroTeamLogo team={team} league={team.league} size={52} />

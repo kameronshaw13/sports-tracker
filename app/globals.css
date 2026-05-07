@@ -4427,3 +4427,157 @@ main.retro-page {
 .team-stats-page table button {
   gap: 0 !important;
 }
+
+/* v57: fixed team header and schedule sizing pass */
+.team-page-shell {
+  --team-fixed-header-height: calc(12.45rem + env(safe-area-inset-top));
+}
+
+.team-sticky-shell {
+  position: fixed !important;
+  top: 0 !important;
+  left: 50% !important;
+  right: auto !important;
+  width: 100% !important;
+  max-width: 48rem !important;
+  margin: 0 !important;
+  transform: translateX(-50%);
+  z-index: 60 !important;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--team-primary) 72%, #11100d), color-mix(in srgb, var(--team-primary) 62%, var(--surface))) !important;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--border) 72%, #fff), 0 10px 18px rgba(0,0,0,.18) !important;
+}
+
+.team-page-content {
+  padding-top: var(--team-fixed-header-height);
+}
+
+.team-header-actions {
+  min-height: calc(1.9rem + env(safe-area-inset-top)) !important;
+  padding: calc(env(safe-area-inset-top) + .18rem) .66rem 0 !important;
+}
+
+.team-back-btn {
+  width: 2.08rem !important;
+  height: 2.08rem !important;
+  min-height: 2.08rem !important;
+}
+
+.team-back-btn svg {
+  width: 1.82rem !important;
+  height: 1.82rem !important;
+}
+
+.team-page-hero-inner {
+  min-height: 6.02rem !important;
+  padding-top: 0 !important;
+  padding-bottom: .38rem !important;
+  gap: .2rem !important;
+}
+
+.team-page-name {
+  font-size: 1.08rem !important;
+  line-height: 1.08 !important;
+}
+
+.team-page-record {
+  margin-top: .1rem !important;
+  font-size: .7rem !important;
+  line-height: 1.08 !important;
+}
+
+.team-page-logo-box {
+  width: 3.52rem !important;
+  height: 3.52rem !important;
+  flex-basis: 3.52rem !important;
+  margin-top: .18rem !important;
+}
+
+.team-page-logo-box .score-team-logo-wrap,
+.team-page-logo-box .espn-team-logo-wrap {
+  width: 3.32rem !important;
+  height: 3.32rem !important;
+}
+
+.team-sticky-shell .cbs-tabs > div {
+  gap: 1.42rem !important;
+  padding-left: .66rem !important;
+  padding-right: .66rem !important;
+}
+
+.team-sticky-shell .cbs-tabs button {
+  min-height: 2.62rem !important;
+  padding-top: .62rem !important;
+  padding-bottom: .78rem !important;
+  font-size: .86rem !important;
+  line-height: 1 !important;
+}
+
+.team-sticky-shell .cbs-tabs .team-tab-label {
+  height: auto !important;
+  bottom: auto !important;
+  background: transparent !important;
+}
+
+.team-sticky-shell .cbs-tabs .team-tab-rule {
+  height: 3px !important;
+  bottom: .16rem !important;
+  background: var(--text) !important;
+}
+
+.team-month-toggle {
+  min-height: 2.56rem !important;
+  padding: .26rem .66rem .2rem !important;
+  grid-template-columns: 2rem 1fr 2rem !important;
+}
+
+.team-month-toggle button {
+  min-height: 1.85rem !important;
+  font-size: 1rem !important;
+  line-height: 1 !important;
+}
+
+.team-month-toggle div {
+  transform: translateY(2px) !important;
+  font-size: .82rem !important;
+  line-height: 1 !important;
+}
+
+.team-schedule-row {
+  min-height: 4.42rem !important;
+  gap: .34rem !important;
+  padding: .54rem .72rem !important;
+}
+
+.team-schedule-date {
+  width: 2.28rem !important;
+  font-size: .78rem !important;
+  line-height: 1.2 !important;
+}
+
+.team-schedule-at {
+  width: 1.08rem !important;
+  font-size: .88rem !important;
+}
+
+.team-schedule-logo {
+  width: 2rem !important;
+  height: 2rem !important;
+}
+
+.team-schedule-logo img {
+  width: 1.82rem !important;
+  height: 1.82rem !important;
+}
+
+.team-schedule-opponent {
+  font-size: 1rem !important;
+  line-height: 1.12 !important;
+}
+
+.team-schedule-status,
+.team-schedule-status > div {
+  min-width: 3.55rem !important;
+  font-size: .78rem !important;
+  line-height: 1.18 !important;
+}
