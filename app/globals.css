@@ -4817,3 +4817,84 @@ main.retro-page {
   line-height: 1.22 !important;
   overflow: visible !important;
 }
+
+/* v60: header logo and schedule flush/outline tune */
+.team-page-shell {
+  --team-fixed-header-height: calc(10.74rem + env(safe-area-inset-top));
+}
+
+.team-page-hero-inner {
+  min-height: 4.92rem !important;
+  padding-bottom: 0 !important;
+}
+
+.team-page-logo-box {
+  margin-top: -.16rem !important;
+  transform: translateY(-.22rem);
+}
+
+.team-page-content {
+  padding-top: var(--team-fixed-header-height) !important;
+}
+
+.cbs-panel-list {
+  margin-top: 0 !important;
+  background: var(--surface) !important;
+}
+
+.team-month-toggle {
+  margin-top: 0 !important;
+  border-top: 0 !important;
+  box-shadow: none !important;
+}
+
+.team-schedule-logo img.logo-outline-dark,
+.team-schedule-logo .logo-outline-dark,
+.team-schedule-logo img {
+  -webkit-filter:
+    drop-shadow(1px 0 0 rgba(255,255,255,.96))
+    drop-shadow(-1px 0 0 rgba(255,255,255,.96))
+    drop-shadow(0 1px 0 rgba(255,255,255,.96))
+    drop-shadow(0 -1px 0 rgba(255,255,255,.96)) !important;
+  filter:
+    drop-shadow(1px 0 0 rgba(255,255,255,.96))
+    drop-shadow(-1px 0 0 rgba(255,255,255,.96))
+    drop-shadow(0 1px 0 rgba(255,255,255,.96))
+    drop-shadow(0 -1px 0 rgba(255,255,255,.96)) !important;
+}
+
+/* v61: move whole header up; center schedule opponent logos */
+.team-page-shell {
+  --team-fixed-header-height: calc(10.42rem + env(safe-area-inset-top));
+}
+
+.team-header-actions {
+  min-height: calc(1.42rem + env(safe-area-inset-top)) !important;
+  padding-top: calc(env(safe-area-inset-top) + .02rem) !important;
+}
+
+.team-page-hero-inner {
+  min-height: 4.74rem !important;
+  padding-top: 0 !important;
+}
+
+.team-page-logo-box {
+  margin-top: .02rem !important;
+  transform: none !important;
+}
+
+.team-page-content {
+  padding-top: var(--team-fixed-header-height) !important;
+}
+
+.team-schedule-logo {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transform: translateY(-.06rem) !important;
+}
+
+.team-schedule-logo img {
+  object-position: center center !important;
+  transform: translateY(-.03rem) !important;
+}
