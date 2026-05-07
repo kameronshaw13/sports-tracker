@@ -257,8 +257,8 @@ function StandingsTable({ title, rows, league, teamAbbr, markers = {}, gbMode = 
               <>
                 <tr style={{ color: "var(--text-3)" }}>
                   <th className="text-left px-3 pt-2"></th>
-                  <th colSpan={2} className="text-center px-2 pt-2 uppercase tracking-wider">Overall</th>
-                  <th colSpan={3} className="text-center px-2 pt-2 uppercase tracking-wider">Conference</th>
+                  <th colSpan={2} className="standings-colgroup standings-colgroup-overall text-center px-2 pt-2 uppercase tracking-wider">Overall</th>
+                  <th colSpan={3} className="standings-colgroup standings-colgroup-conference text-center px-2 pt-2 uppercase tracking-wider">Conference</th>
                 </tr>
                 <tr style={{ color: "var(--text-3)" }}><th className="text-left px-3 py-2">Team</th>{columns.map((key, idx) => <th key={key} className={`text-right py-2 ${idx === columns.length - 1 ? "px-3" : "px-2"}`}>{colLabel(key)}</th>)}</tr>
               </>

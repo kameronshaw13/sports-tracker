@@ -3367,3 +3367,47 @@ body::-webkit-scrollbar,
 .more-league-row span {
   transform: translateY(1px);
 }
+
+/* v46: standings text clipping and college header alignment */
+.standings-table td {
+  padding-top: .56rem !important;
+  padding-bottom: .5rem !important;
+}
+
+.standings-team-name {
+  font-size: .77rem;
+  line-height: 1.18 !important;
+  transform: none !important;
+  padding-top: 1px;
+}
+
+.standings-row td:first-child > div {
+  align-items: center !important;
+}
+
+.standings-table-mlb th:last-child,
+.standings-table-mlb td:last-child,
+.standings-table-nfl th:last-child,
+.standings-table-nfl td:last-child,
+.standings-table-nba th:last-child,
+.standings-table-nba td:last-child,
+.standings-table-cfb th:last-child,
+.standings-table-cfb td:last-child,
+.standings-table-cbb th:last-child,
+.standings-table-cbb td:last-child {
+  padding-right: .78rem !important;
+}
+
+.standings-colgroup {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  text-align: center !important;
+}
+
+.standings-colgroup-overall {
+  transform: translateX(-.04rem);
+}
+
+.standings-colgroup-conference {
+  transform: translateX(.04rem);
+}
