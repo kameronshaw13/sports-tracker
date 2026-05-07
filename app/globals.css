@@ -786,94 +786,291 @@ html[data-theme="light"] { --score-meta: #4b5563; }
 }
 
 
-/* Scores page polish v12 */
-.retro-league-head {
-  padding-top: 0.58rem !important;
-  padding-bottom: 0.38rem !important;
-  min-height: 2.48rem !important;
-  align-items: center !important;
-  overflow: visible !important;
-}
-
-.retro-league-head h2 {
-  display: flex;
-  align-items: center;
-  min-height: 1.35rem;
-  font-size: 0.9rem !important;
-  line-height: 1.18 !important;
-  padding-top: 2px !important;
-  padding-bottom: 0 !important;
-  margin: 0 !important;
-}
-
-.retro-league-head .standings-header-btn {
-  min-height: 1.7rem;
-  height: 1.7rem;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  line-height: 1 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  text-align: center !important;
-}
-
-.retro-league-head button:not(.standings-header-btn) {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
+/* v13 logo sizing + stronger mobile outline */
 .score-team-logo-cell {
-  width: 2rem !important;
-  height: 2rem !important;
-  flex: 0 0 2rem !important;
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  flex: 0 0 2.25rem !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  overflow: visible !important;
 }
 
 .score-team-logo-wrap,
+.retro-team-logo-wrap,
 .favorite-score-card .score-team-logo-wrap {
   position: relative !important;
-  width: 1.72rem !important;
-  height: 1.72rem !important;
-  flex: 0 0 1.72rem !important;
+  width: 1.95rem !important;
+  height: 1.95rem !important;
+  flex: 0 0 1.95rem !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  transform: none !important;
+  overflow: visible !important;
+}
+
+.favorite-score-card .score-team-logo-wrap {
+  width: 2rem !important;
+  height: 2rem !important;
+  flex: 0 0 2rem !important;
+}
+
+.score-team-logo-wrap img,
+.retro-team-logo-img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: scale(1.08) !important;
+  transform-origin: center center !important;
+}
+
+.logo-outline-dark,
+.logo-outline-dark img,
+.score-team-logo-wrap,
+.score-team-logo-wrap img,
+.retro-team-logo-wrap,
+.retro-team-logo-img {
+  -webkit-filter:
+    drop-shadow(1px 0 0 rgba(255,255,255,.96))
+    drop-shadow(-1px 0 0 rgba(255,255,255,.96))
+    drop-shadow(0 1px 0 rgba(255,255,255,.96))
+    drop-shadow(0 -1px 0 rgba(255,255,255,.96))
+    drop-shadow(.7px .7px 0 rgba(255,255,255,.88))
+    drop-shadow(-.7px .7px 0 rgba(255,255,255,.88))
+    drop-shadow(.7px -.7px 0 rgba(255,255,255,.88))
+    drop-shadow(-.7px -.7px 0 rgba(255,255,255,.88)) !important;
+  filter:
+    drop-shadow(1px 0 0 rgba(255,255,255,.96))
+    drop-shadow(-1px 0 0 rgba(255,255,255,.96))
+    drop-shadow(0 1px 0 rgba(255,255,255,.96))
+    drop-shadow(0 -1px 0 rgba(255,255,255,.96))
+    drop-shadow(.7px .7px 0 rgba(255,255,255,.88))
+    drop-shadow(-.7px .7px 0 rgba(255,255,255,.88))
+    drop-shadow(.7px -.7px 0 rgba(255,255,255,.88))
+    drop-shadow(-.7px -.7px 0 rgba(255,255,255,.88)) !important;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* v14 normalized retro logo display */
+.score-team-logo-cell {
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  flex: 0 0 2.25rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.score-team-logo-wrap,
+.retro-team-logo-wrap,
+.favorite-score-card .score-team-logo-wrap {
+  position: relative !important;
+  width: 2rem !important;
+  height: 2rem !important;
+  flex: 0 0 2rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   overflow: visible !important;
 }
 
 .score-team-logo-wrap img,
+.retro-team-logo-img,
 .favorite-score-card .score-team-logo-wrap img {
   width: 100% !important;
   height: 100% !important;
-  object-fit: contain !important;
-  object-position: center center !important;
   max-width: 100% !important;
   max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: none !important;
 }
 
 .logo-outline-dark,
+.logo-outline-dark img,
 .score-team-logo-wrap,
-.score-team-logo-wrap img {
+.score-team-logo-wrap img,
+.retro-team-logo-wrap,
+.retro-team-logo-img {
   -webkit-filter:
-    drop-shadow(0.8px 0 0 rgba(255,255,255,.86))
-    drop-shadow(-0.8px 0 0 rgba(255,255,255,.86))
-    drop-shadow(0 0.8px 0 rgba(255,255,255,.86))
-    drop-shadow(0 -0.8px 0 rgba(255,255,255,.86)) !important;
+    drop-shadow(1px 0 0 rgba(255,255,255,.98))
+    drop-shadow(-1px 0 0 rgba(255,255,255,.98))
+    drop-shadow(0 1px 0 rgba(255,255,255,.98))
+    drop-shadow(0 -1px 0 rgba(255,255,255,.98))
+    drop-shadow(.8px .8px 0 rgba(255,255,255,.92))
+    drop-shadow(-.8px .8px 0 rgba(255,255,255,.92))
+    drop-shadow(.8px -.8px 0 rgba(255,255,255,.92))
+    drop-shadow(-.8px -.8px 0 rgba(255,255,255,.92)) !important;
   filter:
-    drop-shadow(0.8px 0 0 rgba(255,255,255,.86))
-    drop-shadow(-0.8px 0 0 rgba(255,255,255,.86))
-    drop-shadow(0 0.8px 0 rgba(255,255,255,.86))
-    drop-shadow(0 -0.8px 0 rgba(255,255,255,.86)) !important;
+    drop-shadow(1px 0 0 rgba(255,255,255,.98))
+    drop-shadow(-1px 0 0 rgba(255,255,255,.98))
+    drop-shadow(0 1px 0 rgba(255,255,255,.98))
+    drop-shadow(0 -1px 0 rgba(255,255,255,.98))
+    drop-shadow(.8px .8px 0 rgba(255,255,255,.92))
+    drop-shadow(-.8px .8px 0 rgba(255,255,255,.92))
+    drop-shadow(.8px -.8px 0 rgba(255,255,255,.92))
+    drop-shadow(-.8px -.8px 0 rgba(255,255,255,.92)) !important;
 }
 
-html[data-theme="light"] .score-team-logo-wrap,
-html[data-theme="light"] .score-team-logo-wrap img {
-  -webkit-filter: none !important;
-  filter: none !important;
+
+/* v15 logo refinement: larger logos, smaller white outline */
+.score-team-logo-cell {
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  flex: 0 0 2.25rem !important;
+}
+
+.score-team-logo-wrap,
+.retro-team-logo-wrap,
+.favorite-score-card .score-team-logo-wrap {
+  width: 2.05rem !important;
+  height: 2.05rem !important;
+  flex: 0 0 2.05rem !important;
+}
+
+.score-team-logo-wrap img,
+.retro-team-logo-img,
+.favorite-score-card .score-team-logo-wrap img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: none !important;
+}
+
+.logo-outline-dark,
+.logo-outline-dark img,
+.score-team-logo-wrap,
+.score-team-logo-wrap img,
+.retro-team-logo-wrap,
+.retro-team-logo-img {
+  -webkit-filter:
+    drop-shadow(0.45px 0 0 rgba(255,255,255,.78))
+    drop-shadow(-0.45px 0 0 rgba(255,255,255,.78))
+    drop-shadow(0 0.45px 0 rgba(255,255,255,.78))
+    drop-shadow(0 -0.45px 0 rgba(255,255,255,.78)) !important;
+  filter:
+    drop-shadow(0.45px 0 0 rgba(255,255,255,.78))
+    drop-shadow(-0.45px 0 0 rgba(255,255,255,.78))
+    drop-shadow(0 0.45px 0 rgba(255,255,255,.78))
+    drop-shadow(0 -0.45px 0 rgba(255,255,255,.78)) !important;
+}
+
+/* v17: thinner subtle logo outline + consistent logo box */
+.score-team-logo-cell {
+  width: 2.28rem !important;
+  height: 2.28rem !important;
+  flex: 0 0 2.28rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.score-team-logo-wrap,
+.retro-team-logo-wrap,
+.favorite-score-card .score-team-logo-wrap {
+  position: relative !important;
+  width: 2.08rem !important;
+  height: 2.08rem !important;
+  flex: 0 0 2.08rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
+}
+
+.score-team-logo-wrap img,
+.retro-team-logo-img,
+.favorite-score-card .score-team-logo-wrap img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: none !important;
+}
+
+.logo-outline-dark,
+.logo-outline-dark img,
+.score-team-logo-wrap,
+.score-team-logo-wrap img,
+.retro-team-logo-wrap,
+.retro-team-logo-img {
+  -webkit-filter:
+    drop-shadow(.42px 0 0 rgba(241,222,185,.68))
+    drop-shadow(-.42px 0 0 rgba(241,222,185,.68))
+    drop-shadow(0 .42px 0 rgba(241,222,185,.68))
+    drop-shadow(0 -.42px 0 rgba(241,222,185,.68)) !important;
+  filter:
+    drop-shadow(.42px 0 0 rgba(241,222,185,.68))
+    drop-shadow(-.42px 0 0 rgba(241,222,185,.68))
+    drop-shadow(0 .42px 0 rgba(241,222,185,.68))
+    drop-shadow(0 -.42px 0 rgba(241,222,185,.68)) !important;
+}
+
+/* v18: restore ESPN logos, equal visual box, subtle thin white outline */
+.score-team-logo-cell {
+  width: 2.28rem !important;
+  height: 2.28rem !important;
+  flex: 0 0 2.28rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.score-team-logo-wrap,
+.espn-team-logo-wrap,
+.favorite-score-card .score-team-logo-wrap {
+  position: relative !important;
+  width: 2.02rem !important;
+  height: 2.02rem !important;
+  flex: 0 0 2.02rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
+  transform: none !important;
+}
+
+.score-team-logo-wrap img,
+.espn-team-logo-img,
+.favorite-score-card .score-team-logo-wrap img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: none !important;
+}
+
+.logo-outline-dark,
+.logo-outline-dark img,
+.score-team-logo-wrap,
+.score-team-logo-wrap img,
+.espn-team-logo-wrap,
+.espn-team-logo-img {
+  -webkit-filter:
+    drop-shadow(.48px 0 0 rgba(255,255,255,.72))
+    drop-shadow(-.48px 0 0 rgba(255,255,255,.72))
+    drop-shadow(0 .48px 0 rgba(255,255,255,.72))
+    drop-shadow(0 -.48px 0 rgba(255,255,255,.72)) !important;
+  filter:
+    drop-shadow(.48px 0 0 rgba(255,255,255,.72))
+    drop-shadow(-.48px 0 0 rgba(255,255,255,.72))
+    drop-shadow(0 .48px 0 rgba(255,255,255,.72))
+    drop-shadow(0 -.48px 0 rgba(255,255,255,.72)) !important;
+}
+
+.scores-page-heading {
+  text-transform: none !important;
 }
