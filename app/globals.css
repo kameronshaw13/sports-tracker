@@ -3473,3 +3473,69 @@ body::-webkit-scrollbar,
 .more-topbar .relative > span {
   transform: translateY(-38%) !important;
 }
+
+/* v50: final alignment pass */
+.standings-table {
+  width: calc(100% - .42rem) !important;
+  position: relative;
+}
+
+.standings-row {
+  position: relative;
+}
+
+.standings-row::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: -.42rem;
+  height: 1px;
+  background: var(--border);
+  pointer-events: none;
+}
+
+.standings-row {
+  border-top-color: transparent !important;
+}
+
+.standings-cut-solid::before {
+  height: 2px;
+  background: rgba(255,255,255,.92);
+}
+
+.standings-cut-dash::before {
+  background: repeating-linear-gradient(90deg, color-mix(in srgb, #fff 72%, var(--border)) 0 5px, transparent 5px 9px);
+}
+
+.standings-colgroup-overall {
+  transform: translateX(.56rem);
+}
+
+.standings-colgroup-conference {
+  transform: translateX(.72rem);
+}
+
+.more-topbar .relative > span {
+  transform: translateY(-30%) !important;
+}
+
+.pull-refresh-indicator {
+  top: calc(max(env(safe-area-inset-top), 0px) + 1.7rem);
+}
+
+.pull-refresh-indicator > div {
+  line-height: 1 !important;
+  padding-top: .48rem !important;
+  padding-bottom: .28rem !important;
+}
+
+.more-league-row {
+  overflow: visible !important;
+}
+
+.more-league-row span {
+  line-height: 1.15 !important;
+  transform: translateY(3px) !important;
+  padding-top: 1px;
+}
