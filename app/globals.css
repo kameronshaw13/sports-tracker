@@ -5145,3 +5145,53 @@ main.retro-page {
   padding-bottom: .12rem !important;
   line-height: 1.05 !important;
 }
+
+/* v66: true bottom header rule, flush schedule start, and centered larger header logo */
+.team-page-shell {
+  --team-fixed-header-height: calc(9.76rem + env(safe-area-inset-top));
+}
+
+.team-sticky-shell {
+  position: fixed !important;
+  overflow: hidden !important;
+  box-shadow: none !important;
+}
+
+.team-sticky-shell::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  height: 1px;
+  background: color-mix(in srgb, var(--border) 72%, #fff);
+  pointer-events: none;
+}
+
+.team-sticky-shell .cbs-tabs {
+  border-bottom: 0 !important;
+}
+
+.team-page-content {
+  padding-top: var(--team-fixed-header-height) !important;
+}
+
+.team-page-logo-box {
+  width: 3.56rem !important;
+  height: 3.56rem !important;
+  flex-basis: 3.56rem !important;
+  margin-top: .04rem !important;
+  margin-bottom: .04rem !important;
+  transform: translateY(-.28rem) !important;
+}
+
+.team-page-logo-box .score-team-logo-wrap,
+.team-page-logo-box .espn-team-logo-wrap {
+  width: 3.34rem !important;
+  height: 3.34rem !important;
+}
+
+.team-month-toggle {
+  margin-top: 0 !important;
+}
