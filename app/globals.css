@@ -3437,3 +3437,18 @@ body::-webkit-scrollbar,
 .standings-colgroup-conference {
   transform: translateX(.3rem);
 }
+
+/* v48: college header nudge and NHL name wrapping */
+.standings-colgroup-overall {
+  transform: translateX(.34rem);
+}
+
+.standings-colgroup-conference {
+  transform: translateX(.46rem);
+}
+
+.standings-table-nhl .standings-team-name {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+}
