@@ -97,6 +97,7 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
   );
   const label = liveEvent ? "Live now" : nextEvent ? "Next game" : "Last game";
   const liveSituation = liveSummary?.situation || featured?.situation || null;
+  const liveInning = liveSummary?.status?.detail || featured?.status?.detail || "Live";
   const summaryHome = liveSummary?.home;
   const summaryAway = liveSummary?.away;
   const summaryUs = [summaryHome, summaryAway].find((t: any) => String(t?.abbr || "").toLowerCase() === team.abbr.toLowerCase());
@@ -151,7 +152,11 @@ function TeamCard({ team, onTeamClick, onGameClick }: { team: TeamConfig; onTeam
             {featured.status?.state !== "pre" && (
               <div className="text-right">
                 <div className="retro-score home-team-score tabular-nums">{displayUsScore}<span> - </span>{displayOppScore}</div>
-                {featured.status?.state !== "in" && (
+                {featured.status?.state === "in" ? (
+                  <div className="home-team-result" style={{ color: team.primary }}>
+                    {liveInning}
+                  </div>
+                ) : (
                   <div className="home-team-result" style={{ color: featured.us?.winner ? "var(--success)" : featured.status?.state === "post" ? "var(--danger)" : team.primary }}>
                     {featured.us?.winner ? "W" : "L"}
                   </div>
@@ -181,7 +186,7 @@ function BasesMini({ situation }: { situation: any }) {
   const empty = "transparent";
   const stroke = "var(--text-3)";
   return (
-    <svg width="18" height="18" viewBox="-1 -1 20 20" fill="none" aria-hidden>
+    <svg width="18" height="18" viewBox="-3 -3 24 24" fill="none" aria-hidden>
       <rect x="7" y="1.5" width="4" height="4" transform="rotate(45 7 1.5)" fill={situation.onSecond ? filled : empty} stroke={stroke} strokeWidth="1" />
       <rect x="12.5" y="7" width="4" height="4" transform="rotate(45 12.5 7)" fill={situation.onFirst ? filled : empty} stroke={stroke} strokeWidth="1" />
       <rect x="1.5" y="7" width="4" height="4" transform="rotate(45 1.5 7)" fill={situation.onThird ? filled : empty} stroke={stroke} strokeWidth="1" />

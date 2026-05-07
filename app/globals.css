@@ -5088,3 +5088,60 @@ main.retro-page {
   max-width: 52%;
   overflow: visible;
 }
+
+/* v65: logo lift, single header rule, tighter month join, and larger live state */
+.team-page-shell {
+  --team-fixed-header-height: calc(9.98rem + env(safe-area-inset-top));
+}
+
+.team-sticky-shell {
+  box-shadow: none !important;
+}
+
+.team-page-logo-box {
+  transform: translateY(-.18rem) !important;
+  margin-bottom: .08rem !important;
+}
+
+.team-sticky-shell .cbs-tabs {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, #fff) !important;
+}
+
+.team-page-content {
+  padding-top: var(--team-fixed-header-height) !important;
+}
+
+.team-month-toggle {
+  margin-top: 0 !important;
+}
+
+.home-live-situation {
+  right: .08rem;
+  gap: .4rem;
+  max-width: none;
+  min-width: max-content;
+  overflow: visible;
+  font-size: .78rem;
+  line-height: 1.05;
+}
+
+.home-live-situation svg {
+  width: 1.44rem !important;
+  height: 1.44rem !important;
+  overflow: visible;
+}
+
+.home-team-pill {
+  min-height: 1.58rem !important;
+  padding-top: .28rem !important;
+  padding-bottom: .08rem !important;
+  align-items: center !important;
+  line-height: 1.05 !important;
+  overflow: visible !important;
+}
+
+.home-manage-btn {
+  padding-top: .34rem !important;
+  padding-bottom: .12rem !important;
+  line-height: 1.05 !important;
+}
