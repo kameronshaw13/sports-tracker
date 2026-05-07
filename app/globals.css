@@ -2231,3 +2231,40 @@ html[data-theme="light"] .logo-outline-dark img {
   padding-top: 2px !important;
   padding-bottom: 0 !important;
 }
+
+/* v30: use the More-tab logo outline method everywhere + phone sticky offset */
+.espn-team-logo-outline-copy {
+  display: none !important;
+}
+
+.score-team-logo-wrap.logo-outline-dark,
+.espn-team-logo-wrap.logo-outline-dark {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+.espn-team-logo-img.logo-outline-dark,
+.score-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+.espn-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .score-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img.logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(1.05px 0 0 rgba(255,255,255,.95))
+    drop-shadow(-1.05px 0 0 rgba(255,255,255,.95))
+    drop-shadow(0 1.05px 0 rgba(255,255,255,.95))
+    drop-shadow(0 -1.05px 0 rgba(255,255,255,.95)) !important;
+  filter:
+    drop-shadow(1.05px 0 0 rgba(255,255,255,.95))
+    drop-shadow(-1.05px 0 0 rgba(255,255,255,.95))
+    drop-shadow(0 1.05px 0 rgba(255,255,255,.95))
+    drop-shadow(0 -1.05px 0 rgba(255,255,255,.95)) !important;
+}
+
+.scores-sticky-header {
+  --scores-safe-top: max(1.12rem, env(safe-area-inset-top));
+}
+
+.retro-league-head.sticky {
+  scroll-margin-top: calc(128px + env(safe-area-inset-top));
+}

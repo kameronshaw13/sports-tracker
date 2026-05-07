@@ -42,6 +42,8 @@ const LEAGUE_LOGOS: Record<League, string> = {
   cbb: NCAA_LOGO,
 };
 
+const SCORES_SECTION_STICKY_TOP = "calc(128px + env(safe-area-inset-top))";
+
 type Props = {
   onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
   onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
@@ -124,7 +126,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
       <div>
         <FavoritesScores date={date} favoriteKeys={favoriteKeys} onGameClick={(league, eventId) => setSelectedEvent({ league, eventId })} />
         {leagues.map((lg) => (
-          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={128} />
+          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={SCORES_SECTION_STICKY_TOP} />
         ))}
       </div>
     </div>
@@ -203,7 +205,7 @@ function FavoritesScores({ date, favoriteKeys, onGameClick }: { date: string; fa
   return (
     <>
       <section className="mt-3 border-b" style={{ borderColor: "var(--border)" }}>
-        <SectionHeader title="Favorites" sticky stickyTop={128} />
+        <SectionHeader title="Favorites" sticky stickyTop={SCORES_SECTION_STICKY_TOP} />
         <div className="grid grid-cols-1">
           {games.slice(0, 4).map((game: any) => <ScoreCard key={`${game.league}-${game.id}`} league={game.league} game={game} density="expanded" favorite favoriteSide={game.favoriteSide} onClick={() => onGameClick(game.league, game.id)} />)}
         </div>
@@ -212,7 +214,7 @@ function FavoritesScores({ date, favoriteKeys, onGameClick }: { date: string; fa
   );
 }
 
-function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick, stickyTop = 124 }: { league: League; date: string; density: ScoreDensity; onGameClick: (eventId: string) => void; onStandingsClick?: (league: League) => void; stickyTop?: number }) {
+function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick, stickyTop = 124 }: { league: League; date: string; density: ScoreDensity; onGameClick: (eventId: string) => void; onStandingsClick?: (league: League) => void; stickyTop?: number | string }) {
   const freshKey = useFreshKey();
   const [collapsed, setCollapsed] = useState(false);
   const { data, error, isLoading } = useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, {
@@ -252,7 +254,7 @@ function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick
   );
 }
 
-function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggle, onStandingsClick, stickyTop = 124 }: { title: string; logo?: string; sticky?: boolean; collapsed?: boolean; onToggle?: () => void; onStandingsClick?: () => void; stickyTop?: number }) {
+function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggle, onStandingsClick, stickyTop = 124 }: { title: string; logo?: string; sticky?: boolean; collapsed?: boolean; onToggle?: () => void; onStandingsClick?: () => void; stickyTop?: number | string }) {
   return (
     <div
       className={`retro-league-head px-4 py-1.5 flex items-center justify-between ${sticky ? "sticky z-20" : ""}`}
@@ -308,38 +310,14 @@ function ScoreTeamLogo({ team, league, size }: { team: any; league: League; size
   if (!src) return null;
 
   const alt = team?.abbr || team?.name || "Team logo";
-  const outlineOffsets = [
-    [0, -1.05],
-    [1.05, 0],
-    [0, 1.05],
-    [-1.05, 0],
-    [0.76, -0.76],
-    [0.76, 0.76],
-    [-0.76, 0.76],
-    [-0.76, -0.76],
-  ];
-
   return (
     <span className="score-team-logo-wrap espn-team-logo-wrap" style={{ width: size, height: size }}>
-      {outlineOffsets.map(([x, y], idx) => (
-        <Image
-          key={`outline-${idx}`}
-          src={src}
-          alt=""
-          fill
-          sizes={`${size}px`}
-          className="object-contain espn-team-logo-outline-copy"
-          style={{ transform: `translate(${x}px, ${y}px)` }}
-          aria-hidden
-          unoptimized
-        />
-      ))}
       <Image
         src={src}
         alt={alt}
         fill
         sizes={`${size}px`}
-        className="object-contain espn-team-logo-img"
+        className="object-contain espn-team-logo-img logo-outline-dark"
         unoptimized
       />
     </span>

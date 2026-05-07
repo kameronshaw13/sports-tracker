@@ -17,17 +17,6 @@ function espnLogo(team: TeamLike, league?: League | string) {
   return team?.logo || (team?.abbr ? logoUrl({ league: lg, abbr: String(team.abbr), logo: null }) : "");
 }
 
-const OUTLINE_OFFSETS = [
-  [0, -1.05],
-  [1.05, 0],
-  [0, 1.05],
-  [-1.05, 0],
-  [0.76, -0.76],
-  [0.76, 0.76],
-  [-0.76, 0.76],
-  [-0.76, -0.76],
-];
-
 export default function RetroTeamLogo({
   team,
   league,
@@ -44,25 +33,12 @@ export default function RetroTeamLogo({
 
   return (
     <span className={`score-team-logo-wrap espn-team-logo-wrap logo-outline-dark ${className}`} style={{ width: size, height: size }}>
-      {OUTLINE_OFFSETS.map(([x, y], idx) => (
-        <Image
-          key={`outline-${idx}`}
-          src={src}
-          alt=""
-          fill
-          sizes={`${size}px`}
-          className="object-contain espn-team-logo-outline-copy"
-          style={{ transform: `translate(${x}px, ${y}px)` }}
-          aria-hidden
-          unoptimized
-        />
-      ))}
       <Image
         src={src}
         alt={team?.abbr || team?.name || "Team logo"}
         fill
         sizes={`${size}px`}
-        className="object-contain espn-team-logo-img"
+        className="object-contain espn-team-logo-img logo-outline-dark"
         unoptimized
       />
     </span>
