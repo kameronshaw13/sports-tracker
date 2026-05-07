@@ -29,12 +29,12 @@ export default function TopNav({ active, onChange }: Props) {
     { id: "more", label: "More", icon: "more" },
   ];
   return (
-    <nav className="retro-nav fixed bottom-0 left-0 right-0 z-40 px-3 pb-[max(1.35rem,env(safe-area-inset-bottom))] pt-2">
+    <nav className="retro-nav fixed bottom-0 left-0 right-0 z-40 px-3 pb-[max(.88rem,env(safe-area-inset-bottom))] pt-1.5">
       <div className="max-w-3xl mx-auto grid grid-cols-4 gap-2">
         {items.map((it) => {
           const isActive = active === it.id;
           return (
-            <button key={it.id} onClick={() => onChange(it.id)} className={`min-h-[66px] px-1 pt-2 pb-1 text-[10px] font-black uppercase tracking-[.02em] transition-all flex flex-col items-center justify-start gap-1 active:scale-[0.98] ${isActive ? "active" : ""}`} style={{ color: isActive ? "var(--accent)" : "var(--text-3)" }}>
+            <button key={it.id} onClick={() => onChange(it.id)} className={`min-h-[58px] px-1 pt-1.5 pb-0.5 text-[10px] font-black uppercase tracking-[.02em] transition-all flex flex-col items-center justify-start gap-0.5 active:scale-[0.98] ${isActive ? "active" : ""}`} style={{ color: isActive ? "var(--accent)" : "var(--text-3)" }}>
               {icons[it.icon](isActive)}
               <span className="bottom-nav-label truncate max-w-full">{it.label}</span>
             </button>

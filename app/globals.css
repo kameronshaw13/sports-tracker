@@ -3473,3 +3473,101 @@ body::-webkit-scrollbar,
 .more-topbar .relative > span {
   transform: translateY(-38%) !important;
 }
+
+
+/* v50: requested final formatting polish
+   - move standings stat columns left without shortening row separators
+   - center More tab league labels/header text lower
+   - reduce bottom ticker height
+   - move pull-to-refresh indicator up */
+.standings-table {
+  width: 100% !important;
+}
+
+.standings-table th:not(:first-child),
+.standings-table td:not(:first-child) {
+  padding-left: .12rem !important;
+  padding-right: .12rem !important;
+}
+
+.standings-table th:last-child,
+.standings-table td:last-child,
+.standings-table-mlb th:last-child,
+.standings-table-mlb td:last-child,
+.standings-table-nfl th:last-child,
+.standings-table-nfl td:last-child,
+.standings-table-nba th:last-child,
+.standings-table-nba td:last-child,
+.standings-table-nhl th:last-child,
+.standings-table-nhl td:last-child,
+.standings-table-cfb th:last-child,
+.standings-table-cfb td:last-child,
+.standings-table-cbb th:last-child,
+.standings-table-cbb td:last-child {
+  padding-right: .95rem !important;
+}
+
+.standings-row,
+.standings-cut-solid,
+.standings-cut-dash {
+  width: 100% !important;
+}
+
+.more-section-head {
+  align-items: center !important;
+}
+
+.more-section-head .retro-title,
+.more-page-title {
+  line-height: 1.16 !important;
+  padding-top: 2px !important;
+  transform: translateY(1px);
+}
+
+.more-section.mt-3 .more-section-head {
+  padding-top: 1.08rem !important;
+  padding-bottom: .72rem !important;
+}
+
+.more-section.mt-3 .more-section-head .retro-title {
+  transform: translateY(2px);
+}
+
+.more-league-row {
+  align-items: center !important;
+  min-height: 3.58rem !important;
+  padding-top: .86rem !important;
+  padding-bottom: .72rem !important;
+}
+
+.more-league-row span {
+  line-height: 1.14 !important;
+  transform: translateY(2px) !important;
+}
+
+.retro-nav {
+  padding-top: .36rem !important;
+  padding-bottom: max(.82rem, env(safe-area-inset-bottom)) !important;
+}
+
+.retro-nav button {
+  min-height: 56px !important;
+  padding-top: .34rem !important;
+  padding-bottom: .1rem !important;
+  gap: .12rem !important;
+}
+
+.retro-nav svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+.bottom-nav-label {
+  line-height: 1.12 !important;
+  padding-top: .02em !important;
+  padding-bottom: 0 !important;
+}
+
+.pull-refresh-indicator {
+  top: calc(max(env(safe-area-inset-top), 0px) + 1.22rem) !important;
+}
