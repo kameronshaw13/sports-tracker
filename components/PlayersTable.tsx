@@ -85,7 +85,8 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
     return `clamp(6.15rem, calc(${longest}ch + .28rem), 10.6rem)`;
   }, [eligible]);
 
-  const statColumnsWidth = `${(section.columns.length * 2.55).toFixed(2)}rem`;
+  const statColumnWidth = 2.52;
+  const statColumnsWidth = `${(section.columns.length * statColumnWidth + 1.25).toFixed(2)}rem`;
 
   const tableStyle = {
     "--player-name-column-width": nameColumnWidth,
@@ -152,8 +153,8 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
       className="player-stats-table overflow-hidden"
       style={{ ...tableStyle, background: "var(--surface)", border: "1px solid var(--border)" }}
     >
-      <div className="player-stats-grid">
-        <table className="player-stats-lock-table text-sm">
+      <div className="player-stats-scroll overflow-x-auto">
+        <table className="text-sm">
           <thead>
             <tr
               className="text-left"
@@ -171,6 +172,23 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
               >
                 Player
               </th>
+              {section.columns.map((col) => {
+                const isActive = sortColName === col.name;
+                return (
+                  <th
+                    key={`${col.category}.${col.name}`}
+                    className="px-2.5 py-2.5 font-semibold whitespace-nowrap text-right cursor-pointer select-none"
+                    onClick={() => handleSortClick(col.name)}
+                    style={{
+                      color: isActive ? "var(--text)" : "var(--text-2)",
+                    }}
+                  >
+                    <span className="inline-flex items-center">
+                      {col.label}
+                    </span>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
@@ -202,65 +220,24 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
                     </div>
                   </button>
                 </td>
+                {section.columns.map((col) => {
+                  const s = p.stats[statKey(col.category, col.name)];
+                  return (
+                    <td
+                      key={`${col.category}.${col.name}`}
+                      className="px-2.5 py-2 text-right tabular-nums whitespace-nowrap"
+                      style={{
+                        color: sortColName === col.name ? "var(--text)" : "var(--text-2)",
+                      }}
+                    >
+                      {s ? applyFormat(s.value, s.displayValue, col.format) : "—"}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
         </table>
-        <div className="player-stats-scroll overflow-x-auto">
-          <table className="player-stats-data-table text-sm">
-            <thead>
-              <tr
-                style={{
-                  background: "var(--surface-2, var(--surface))",
-                  borderBottom: "1px solid var(--border)",
-                }}
-              >
-                {section.columns.map((col) => {
-                  const isActive = sortColName === col.name;
-                  return (
-                    <th
-                      key={`${col.category}.${col.name}`}
-                      className="px-2.5 py-2.5 font-semibold whitespace-nowrap text-right cursor-pointer select-none"
-                      onClick={() => handleSortClick(col.name)}
-                      style={{
-                        color: isActive ? "var(--text)" : "var(--text-2)",
-                      }}
-                    >
-                      <span className="inline-flex items-center">
-                        {col.label}
-                      </span>
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((p, idx) => (
-                <tr
-                  key={p.id}
-                  style={{
-                    borderTop: idx === 0 ? "none" : "1px solid var(--border)",
-                  }}
-                >
-                  {section.columns.map((col) => {
-                    const s = p.stats[statKey(col.category, col.name)];
-                    return (
-                      <td
-                        key={`${col.category}.${col.name}`}
-                        className="px-2.5 py-2 text-right tabular-nums whitespace-nowrap"
-                        style={{
-                          color: sortColName === col.name ? "var(--text)" : "var(--text-2)",
-                        }}
-                      >
-                        {s ? applyFormat(s.value, s.displayValue, col.format) : "—"}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </div>
 
       {/* v20 footnote — only renders when at least one player on this table

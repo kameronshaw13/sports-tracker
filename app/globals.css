@@ -6375,3 +6375,77 @@ main.retro-page.view-leaguePage {
   padding-left: .04rem !important;
   padding-right: .08rem !important;
 }
+
+/* v88: single-table player stats, sticky names, reliable pitcher scroll */
+.player-stats-table {
+  overflow: hidden !important;
+}
+
+.player-stats-table .player-stats-scroll {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-x: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.player-stats-table .player-stats-scroll > table {
+  width: var(--player-stats-table-width) !important;
+  min-width: var(--player-stats-table-width) !important;
+  max-width: none !important;
+  table-layout: fixed !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.player-stats-table .player-stats-scroll th,
+.player-stats-table .player-stats-scroll td {
+  min-width: 2.52rem !important;
+  width: 2.52rem !important;
+  max-width: 2.52rem !important;
+  padding-left: .05rem !important;
+  padding-right: .08rem !important;
+  text-align: right !important;
+  vertical-align: middle !important;
+}
+
+.player-stats-table .player-stats-scroll th:first-child,
+.player-stats-table .player-stats-scroll td:first-child {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 28 !important;
+  min-width: var(--player-name-column-width) !important;
+  width: var(--player-name-column-width) !important;
+  max-width: var(--player-name-column-width) !important;
+  padding-left: .2rem !important;
+  padding-right: .14rem !important;
+  text-align: left !important;
+  background: var(--surface) !important;
+  box-shadow: 1px 0 0 var(--border);
+}
+
+.player-stats-table .player-stats-scroll thead th:first-child {
+  z-index: 38 !important;
+  background: var(--surface-2, var(--surface)) !important;
+}
+
+.player-stats-table .player-stats-scroll th:last-child,
+.player-stats-table .player-stats-scroll td:last-child {
+  padding-right: 1.1rem !important;
+}
+
+.player-stats-table .player-stats-scroll th:not(:first-child) span {
+  display: flex !important;
+  justify-content: flex-end !important;
+  width: 100% !important;
+}
+
+.player-stat-name {
+  display: block !important;
+  max-width: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+}
