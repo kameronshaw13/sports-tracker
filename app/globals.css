@@ -5303,6 +5303,50 @@ main.retro-page {
   font-size: .62rem !important;
 }
 
+/* v75: tighter stat columns and starter/reliever pitching groups */
+.player-pitching-groups {
+  display: grid;
+  gap: .72rem;
+}
+
+.player-stats-group-title {
+  min-height: 2.08rem;
+  display: flex;
+  align-items: center;
+  padding: .22rem .86rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: .72rem;
+  line-height: 1;
+  font-weight: 950;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.player-stats-table th,
+.player-stats-table td {
+  min-width: 2.35rem !important;
+  width: 2.35rem !important;
+  padding-left: .22rem !important;
+  padding-right: .22rem !important;
+  text-align: right !important;
+}
+
+.player-stats-table th:first-child,
+.player-stats-table td:first-child {
+  min-width: 8.55rem !important;
+  width: 8.55rem !important;
+  max-width: 8.55rem !important;
+  text-align: left !important;
+}
+
+.player-stats-table th:not(:first-child) span {
+  justify-content: flex-end !important;
+  width: 100%;
+}
+
 /* v69: final winning override after earlier header blocks */
 .team-page-shell {
   --team-fixed-header-height: calc(9.5rem + env(safe-area-inset-top));

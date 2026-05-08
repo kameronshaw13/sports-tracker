@@ -160,7 +160,7 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
                 return (
                   <th
                     key={`${col.category}.${col.name}`}
-                    className="px-2.5 py-2.5 font-semibold whitespace-nowrap text-center cursor-pointer select-none"
+                    className="px-2.5 py-2.5 font-semibold whitespace-nowrap text-right cursor-pointer select-none"
                     onClick={() => handleSortClick(col.name)}
                     style={{
                       color: isActive ? "var(--text)" : "var(--text-2)",
@@ -214,7 +214,7 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
                   return (
                     <td
                       key={`${col.category}.${col.name}`}
-                      className="px-2.5 py-2 text-center tabular-nums whitespace-nowrap"
+                      className="px-2.5 py-2 text-right tabular-nums whitespace-nowrap"
                       style={{
                         color: sortColName === col.name ? "var(--text)" : "var(--text-2)",
                       }}

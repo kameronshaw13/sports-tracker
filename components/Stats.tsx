@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import useSWR from "swr";
 import { TeamConfig } from "@/lib/teams";
 import { SECTIONS_BY_LEAGUE, Section } from "@/lib/playerColumns";
@@ -129,28 +129,7 @@ export default function Stats({ team, onPlayerClick }: Props) {
 function MlbBattingPitching({ sections, players, onPlayerClick }: { sections: Section[]; players: Player[]; onPlayerClick?: (p: Player) => void }) {
   const battingSection = sections.find((s) => s.id === "batting");
   const startersSection = sections.find((s) => s.id === "starters");
-  const pitchingSection: Section | undefined = startersSection
-    ? {
-        ...startersSection,
-        id: "pitching",
-        label: "Pitching",
-        positions: undefined,
-        columns: [
-          { category: "pitching", name: "gamesPlayed", label: "G", format: "count" },
-          { category: "pitching", name: "gamesStarted", label: "GS", format: "count" },
-          { category: "pitching", name: "wins", label: "W", format: "count" },
-          { category: "pitching", name: "losses", label: "L", format: "count" },
-          { category: "pitching", name: "saves", label: "SV", format: "count" },
-          { category: "pitching", name: "innings", label: "IP", format: "decimal1" },
-          { category: "pitching", name: "hits", label: "H", format: "count" },
-          { category: "pitching", name: "earnedRuns", label: "ER", format: "count" },
-          { category: "pitching", name: "walks", label: "BB", format: "count" },
-          { category: "pitching", name: "strikeouts", label: "K", format: "count" },
-          { category: "pitching", name: "ERA", label: "ERA", format: "rate2" },
-          { category: "pitching", name: "WHIP", label: "WHIP", format: "rate2" },
-        ],
-      }
-    : undefined;
+  const relieversSection = sections.find((s) => s.id === "relievers");
 
   const [active, setActive] = useState<"batting" | "pitching">("batting");
   const playerTabs = [
@@ -166,10 +145,30 @@ function MlbBattingPitching({ sections, players, onPlayerClick }: { sections: Se
         <PlayersTable section={battingSection} players={players} onPlayerClick={onPlayerClick} />
       )}
 
-      {active === "pitching" && pitchingSection && (
-        <PlayersTable section={pitchingSection} players={players} onPlayerClick={onPlayerClick} />
+      {active === "pitching" && (
+        <div className="player-pitching-groups">
+          {startersSection && (
+            <PlayerStatsGroup title="Starters">
+              <PlayersTable section={startersSection} players={players} onPlayerClick={onPlayerClick} />
+            </PlayerStatsGroup>
+          )}
+          {relieversSection && (
+            <PlayerStatsGroup title="Relievers">
+              <PlayersTable section={relieversSection} players={players} onPlayerClick={onPlayerClick} />
+            </PlayerStatsGroup>
+          )}
+        </div>
       )}
     </div>
+  );
+}
+
+function PlayerStatsGroup({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="player-stats-group">
+      <div className="player-stats-group-title">{title}</div>
+      {children}
+    </section>
   );
 }
 
