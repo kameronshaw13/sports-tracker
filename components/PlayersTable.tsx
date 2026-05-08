@@ -82,16 +82,18 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
       const extra = player.tradedIn ? 1 : 0;
       return Math.max(max, player.name.length + extra);
     }, "Player".length);
-    return `clamp(6.15rem, calc(${longest}ch + .28rem), 10.6rem)`;
+    return Math.min(10.6, Math.max(6.35, longest * 0.52 + 0.85));
   }, [eligible]);
 
   const statColumnWidth = 2.52;
-  const statColumnsWidth = `${(section.columns.length * statColumnWidth + 1.25).toFixed(2)}rem`;
+  const endSpacerWidth = 1.1;
+  const statColumnsWidth = section.columns.length * statColumnWidth + endSpacerWidth;
+  const tableWidth = nameColumnWidth + statColumnsWidth;
 
   const tableStyle = {
-    "--player-name-column-width": nameColumnWidth,
-    "--player-stat-columns-width": statColumnsWidth,
-    "--player-stats-table-width": `calc(${nameColumnWidth} + ${statColumnsWidth})`,
+    "--player-name-column-width": `${nameColumnWidth.toFixed(2)}rem`,
+    "--player-stat-columns-width": `${statColumnsWidth.toFixed(2)}rem`,
+    "--player-stats-table-width": `${tableWidth.toFixed(2)}rem`,
   } as CSSProperties;
 
   const [sortColName, setSortColName] = useState<string>(section.defaultSort.column);
@@ -150,7 +152,7 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
 
   return (
     <div
-      className="player-stats-table overflow-hidden"
+      className={`player-stats-table player-stats-${section.id} overflow-hidden`}
       style={{ ...tableStyle, background: "var(--surface)", border: "1px solid var(--border)" }}
     >
       <div className="player-stats-scroll overflow-x-auto">
@@ -189,6 +191,7 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
                   </th>
                 );
               })}
+              <th className="player-stat-end-spacer" aria-hidden="true" />
             </tr>
           </thead>
           <tbody>
@@ -234,6 +237,7 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
                     </td>
                   );
                 })}
+                <td className="player-stat-end-spacer" aria-hidden="true" />
               </tr>
             ))}
           </tbody>
