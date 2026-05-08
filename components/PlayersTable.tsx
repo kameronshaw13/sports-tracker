@@ -82,7 +82,7 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
       const extra = player.tradedIn ? 1 : 0;
       return Math.max(max, player.name.length + extra);
     }, "Player".length);
-    return `clamp(6.7rem, calc(${longest}ch + .85rem), 11.8rem)`;
+    return `clamp(6.15rem, calc(${longest}ch + .28rem), 10.6rem)`;
   }, [eligible]);
 
   const statColumnsWidth = `${(section.columns.length * 2.55).toFixed(2)}rem`;

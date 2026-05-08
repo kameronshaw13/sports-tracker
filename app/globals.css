@@ -5271,6 +5271,40 @@ main.retro-page.view-leaguePage {
   width: 100% !important;
 }
 
+/* v86: higher-specificity fix so the locked name lane does not inherit full table width */
+.player-stats-table .player-stats-lock-table {
+  flex: 0 0 var(--player-name-column-width) !important;
+  width: var(--player-name-column-width) !important;
+  min-width: var(--player-name-column-width) !important;
+  max-width: var(--player-name-column-width) !important;
+}
+
+.player-stats-table .player-stats-data-table {
+  width: var(--player-stat-columns-width) !important;
+  min-width: var(--player-stat-columns-width) !important;
+  max-width: var(--player-stat-columns-width) !important;
+}
+
+.player-stats-table .player-stats-lock-table th,
+.player-stats-table .player-stats-lock-table td {
+  min-width: var(--player-name-column-width) !important;
+  width: var(--player-name-column-width) !important;
+  max-width: var(--player-name-column-width) !important;
+  padding-left: .2rem !important;
+  padding-right: .18rem !important;
+}
+
+.player-stats-table .player-stats-data-table th,
+.player-stats-table .player-stats-data-table td,
+.player-stats-table .player-stats-data-table th:first-child,
+.player-stats-table .player-stats-data-table td:first-child {
+  min-width: 2.45rem !important;
+  width: 2.45rem !important;
+  max-width: 2.45rem !important;
+  padding-left: .05rem !important;
+  padding-right: .08rem !important;
+}
+
 /* v83: split player stat tables so pitcher groups scroll like batting */
 .player-stats-grid {
   display: flex !important;
@@ -6306,4 +6340,38 @@ main.retro-page.view-leaguePage {
   display: flex !important;
   justify-content: flex-end !important;
   width: 100% !important;
+}
+
+/* v87: literal EOF fix so the name lane starts and ends at the player names */
+.player-stats-table .player-stats-lock-table {
+  flex: 0 0 var(--player-name-column-width) !important;
+  width: var(--player-name-column-width) !important;
+  min-width: var(--player-name-column-width) !important;
+  max-width: var(--player-name-column-width) !important;
+}
+
+.player-stats-table .player-stats-data-table {
+  width: var(--player-stat-columns-width) !important;
+  min-width: var(--player-stat-columns-width) !important;
+  max-width: var(--player-stat-columns-width) !important;
+}
+
+.player-stats-table .player-stats-lock-table th,
+.player-stats-table .player-stats-lock-table td {
+  min-width: var(--player-name-column-width) !important;
+  width: var(--player-name-column-width) !important;
+  max-width: var(--player-name-column-width) !important;
+  padding-left: .18rem !important;
+  padding-right: .12rem !important;
+}
+
+.player-stats-table .player-stats-data-table th,
+.player-stats-table .player-stats-data-table td,
+.player-stats-table .player-stats-data-table th:first-child,
+.player-stats-table .player-stats-data-table td:first-child {
+  min-width: 2.42rem !important;
+  width: 2.42rem !important;
+  max-width: 2.42rem !important;
+  padding-left: .04rem !important;
+  padding-right: .08rem !important;
 }
