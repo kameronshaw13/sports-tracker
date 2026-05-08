@@ -5115,6 +5115,80 @@ main.retro-page {
   margin-top: 0 !important;
 }
 
+/* v70: absolute end-of-file header override */
+.team-page-shell {
+  --team-fixed-header-height: calc(9.5rem + env(safe-area-inset-top));
+}
+
+.team-sticky-shell {
+  overflow: visible !important;
+  box-shadow: none !important;
+}
+
+.team-sticky-shell::after {
+  bottom: -1px !important;
+  height: 1px !important;
+}
+
+.team-page-content {
+  padding-top: var(--team-fixed-header-height) !important;
+}
+
+.cbs-panel-list {
+  margin-top: -.08rem !important;
+}
+
+.team-page-logo-box {
+  width: 4rem !important;
+  height: 4rem !important;
+  flex-basis: 4rem !important;
+  transform: translateY(-.34rem) !important;
+}
+
+.team-page-logo-box .score-team-logo-wrap,
+.team-page-logo-box .espn-team-logo-wrap,
+.team-page-logo-box .team-logo-svg {
+  width: 3.82rem !important;
+  height: 3.82rem !important;
+}
+
+/* v69: final winning override after earlier header blocks */
+.team-page-shell {
+  --team-fixed-header-height: calc(9.5rem + env(safe-area-inset-top));
+}
+
+.team-sticky-shell {
+  overflow: visible !important;
+  box-shadow: none !important;
+}
+
+.team-sticky-shell::after {
+  bottom: -1px !important;
+  height: 1px !important;
+}
+
+.team-page-content {
+  padding-top: var(--team-fixed-header-height) !important;
+}
+
+.cbs-panel-list {
+  margin-top: -.08rem !important;
+}
+
+.team-page-logo-box {
+  width: 4rem !important;
+  height: 4rem !important;
+  flex-basis: 4rem !important;
+  transform: translateY(-.34rem) !important;
+}
+
+.team-page-logo-box .score-team-logo-wrap,
+.team-page-logo-box .espn-team-logo-wrap,
+.team-page-logo-box .team-logo-svg {
+  width: 3.82rem !important;
+  height: 3.82rem !important;
+}
+
 /* v68: visible header flush nudge and actual logo SVG scale */
 .team-page-shell {
   --team-fixed-header-height: calc(9.38rem + env(safe-area-inset-top));
@@ -5242,4 +5316,41 @@ main.retro-page {
 
 .team-month-toggle {
   margin-top: 0 !important;
+}
+
+/* v71: true final cascade winner for header spacing */
+.team-page-shell {
+  --team-fixed-header-height: calc(9.5rem + env(safe-area-inset-top));
+}
+
+.team-sticky-shell {
+  overflow: visible !important;
+  box-shadow: none !important;
+}
+
+.team-sticky-shell::after {
+  bottom: -1px !important;
+  height: 1px !important;
+}
+
+.team-page-content {
+  padding-top: var(--team-fixed-header-height) !important;
+}
+
+.cbs-panel-list {
+  margin-top: -.08rem !important;
+}
+
+.team-page-logo-box {
+  width: 4rem !important;
+  height: 4rem !important;
+  flex-basis: 4rem !important;
+  transform: translateY(-.34rem) !important;
+}
+
+.team-page-logo-box .score-team-logo-wrap,
+.team-page-logo-box .espn-team-logo-wrap,
+.team-page-logo-box .team-logo-svg {
+  width: 3.82rem !important;
+  height: 3.82rem !important;
 }

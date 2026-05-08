@@ -19,7 +19,7 @@ export default function TeamHeader({ team }: Props) {
     <section className="team-page-hero cbs-team-hero -mx-4 sm:mx-0 mb-0" style={{ ["--team-primary" as any]: team.primary, ["--team-secondary" as any]: team.secondary }}>
       <div className="team-page-hero-inner px-4">
         <div className="team-page-logo-box">
-          <RetroTeamLogo team={team} league={team.league} size={52} />
+          <RetroTeamLogo team={team} league={team.league} size={60} />
         </div>
         <div className="team-page-copy">
           <h1 className="team-page-name">{displayTeamName(team)}</h1>
