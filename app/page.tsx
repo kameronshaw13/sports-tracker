@@ -182,7 +182,7 @@ export default function Home() {
             {activeTab === "stats" && <Stats team={activeTeam} onPlayerClick={(p) => setSelectedPlayer(p)} />}
             {activeTab === "standings" && <Standings league={activeTeam.league} teamKey={activeTeam.key} teamView onTeamClick={handleTeamLogoClick} />}
             {activeTab === "injuries" && <Roster team={activeTeam} mode="injured" onPlayerClick={(p) => setSelectedPlayer(p)} />}
-            {activeTab === "transactions" && <div className="team-transactions-empty -mx-4 sm:mx-0">Transactions will appear here when the feed is connected.</div>}
+            {activeTab === "transactions" && <Roster team={activeTeam} mode="transactions" onPlayerClick={(p) => setSelectedPlayer(p)} />}
           </div>
         </div>
       ) : (

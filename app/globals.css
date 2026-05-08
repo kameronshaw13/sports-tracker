@@ -6576,3 +6576,252 @@ main.retro-page.view-leaguePage {
   width: .72rem !important;
   max-width: .72rem !important;
 }
+
+/* v92: ESPN-inspired roster, injuries, and transactions feeds with retro surface colors */
+.team-roster-modern,
+.team-feed-list {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.team-depth-chart-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(100% - 1.5rem);
+  min-height: 3.05rem;
+  margin: .72rem .75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: .18rem;
+  background: color-mix(in srgb, var(--surface) 88%, #000);
+  color: var(--text);
+  font-size: .94rem;
+  font-weight: 950;
+  letter-spacing: .02em;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+}
+
+.team-roster-table-head {
+  display: grid;
+  grid-template-columns: 3.35rem minmax(0, 1fr) 5.6rem;
+  align-items: end;
+  min-height: 2.72rem;
+  padding: 0 .92rem .52rem;
+  background: color-mix(in srgb, var(--surface) 90%, #fff 4%);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: .74rem;
+  font-weight: 950;
+  letter-spacing: .04em;
+}
+
+.team-roster-table-head > div {
+  text-decoration: underline;
+  text-underline-offset: .28rem;
+  text-decoration-thickness: 1px;
+}
+
+.team-roster-table-head > div:last-child,
+.team-roster-position {
+  text-align: right;
+}
+
+.team-roster-player-head {
+  display: flex;
+  align-items: center;
+  gap: .2rem;
+}
+
+.team-roster-player-head span {
+  font-size: .6rem;
+  transform: translateY(-.03rem);
+  opacity: .9;
+}
+
+.team-roster-table-body {
+  background: var(--surface);
+}
+
+.team-roster-table-row {
+  display: grid;
+  grid-template-columns: 3.35rem minmax(0, 1fr) 5.6rem;
+  align-items: center;
+  width: 100%;
+  min-height: 4.18rem;
+  padding: .42rem .92rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+}
+
+.team-roster-table-row:active,
+.team-feed-row:active {
+  background: color-mix(in srgb, var(--surface) 82%, #fff 7%);
+}
+
+.team-roster-number {
+  color: var(--text-3);
+  font-size: .88rem;
+  font-weight: 750;
+}
+
+.team-roster-player-cell {
+  display: flex;
+  align-items: center;
+  gap: .82rem;
+  min-width: 0;
+  font-size: .94rem;
+  font-weight: 950;
+  letter-spacing: -.01em;
+}
+
+.team-roster-player-cell > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-roster-position {
+  font-size: .9rem;
+  font-weight: 950;
+  color: var(--text);
+}
+
+.team-feed-date {
+  min-height: 2.65rem;
+  display: flex;
+  align-items: center;
+  padding: .72rem 1rem .48rem;
+  background: color-mix(in srgb, var(--surface) 58%, #000 42%);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: .78rem;
+  font-weight: 950;
+  letter-spacing: .04em;
+}
+
+.team-feed-panel {
+  background: var(--surface);
+}
+
+.team-feed-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 5.9rem;
+  padding: .92rem 1rem;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+}
+
+.team-feed-avatar {
+  border-radius: 9999px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--surface-2) 90%, #fff 4%);
+  border: 1px solid color-mix(in srgb, var(--border) 70%, #fff 15%);
+}
+
+.team-feed-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.team-feed-avatar span {
+  color: var(--text-3);
+  font-size: .72rem;
+  font-weight: 950;
+}
+
+.team-feed-title {
+  display: flex;
+  align-items: baseline;
+  gap: .62rem;
+  min-width: 0;
+  font-size: 1.02rem;
+  font-weight: 950;
+  line-height: 1.15;
+  letter-spacing: -.015em;
+}
+
+.team-feed-title span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-feed-title em {
+  color: var(--text-2);
+  font-style: normal;
+  font-size: .9rem;
+  font-weight: 850;
+  flex: 0 0 auto;
+}
+
+.team-feed-subtitle {
+  margin-top: .22rem;
+  color: var(--text-2);
+  font-size: .88rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.team-feed-empty {
+  padding: 1.2rem 1rem;
+  min-height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: .9rem;
+  font-weight: 850;
+}
+
+@media (min-width: 640px) {
+  .team-depth-chart-btn,
+  .team-roster-table-head,
+  .team-roster-table-row,
+  .team-feed-date,
+  .team-feed-row,
+  .team-feed-empty {
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+}
+
+@media (max-width: 420px) {
+  .team-roster-table-head,
+  .team-roster-table-row {
+    grid-template-columns: 2.82rem minmax(0, 1fr) 4.8rem;
+    padding-left: .78rem;
+    padding-right: .78rem;
+  }
+
+  .team-roster-player-cell {
+    gap: .72rem;
+    font-size: .9rem;
+  }
+
+  .team-feed-row {
+    min-height: 5.55rem;
+    padding: .82rem .9rem;
+    gap: .9rem;
+  }
+
+  .team-feed-title { font-size: .98rem; }
+  .team-feed-subtitle { font-size: .84rem; }
+}

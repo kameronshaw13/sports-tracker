@@ -72,6 +72,7 @@ type InjuryView = {
   detail: string | null;
   longDetail: string | null;
   returnDate: string | null;
+  date?: string | null;
   ilDesignation?: string | null;
 };
 
@@ -197,7 +198,8 @@ function buildInjuryView(inj: any, ilDesignation?: string | null): InjuryView | 
     status: String(status),
     detail,
     longDetail: inj?.longComment || inj?.shortComment || inj?.injuryComment || inj?.comment || null,
-    returnDate: inj?.details?.returnDate || inj?.expectedReturnDate || inj?.returnDate || inj?.date || null,
+    returnDate: inj?.details?.returnDate || inj?.expectedReturnDate || inj?.returnDate || null,
+    date: inj?.date || inj?.updateDate || inj?.lastUpdateDate || inj?.timestamp || null,
     ilDesignation: ilDesignation || null,
   };
 }
