@@ -205,7 +205,7 @@ export default function Home() {
   const usesFullTopHeader = !selectedPlayer && !selectedGame && !showReturnGame && (view === "home" || view === "scores" || view === "standings" || view === "more" || view === "teamPage");
 
   return (
-    <main className={`retro-page min-h-screen pb-28 px-4 sm:px-6 ${usesFullTopHeader ? "pt-0" : "app-safe-top"}`}>
+    <main className={`retro-page view-${view} min-h-screen pb-28 px-4 sm:px-6 ${usesFullTopHeader ? "pt-0" : "app-safe-top"}`}>
       <PullToRefresh disabled={!selectedPlayer && !selectedGame && !showReturnGame && view === "teamPage"}>
       <div className="max-w-3xl mx-auto">
         {!selectedPlayer && !showReturnGame && !selectedGame && view === "home" && (

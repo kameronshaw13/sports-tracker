@@ -137,7 +137,7 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
       style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
     >
       <div className="player-stats-scroll overflow-x-auto">
-        <table className="text-sm" style={{ minWidth: `calc(8.15rem + ${section.columns.length * 2.35}rem)` }}>
+        <table className="text-sm" style={{ minWidth: `calc(11.35rem + ${section.columns.length * 2.35}rem)` }}>
           <thead>
             <tr
               className="text-left"
@@ -168,7 +168,6 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
                   >
                     <span className="inline-flex items-center">
                       {col.label}
-                      {isActive && <span className="ml-0.5 text-[10px] opacity-60">{sortDir === "asc" ? "▲" : "▼"}</span>}
                     </span>
                   </th>
                 );
