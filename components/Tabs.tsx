@@ -34,11 +34,11 @@ export default function Tabs({ team, active, onChange, hasLive }: Props) {
               className="relative py-4 text-base font-black whitespace-nowrap tracking-tight"
               style={{ color: isActive ? "var(--text)" : "var(--text-2)" }}
             >
-              <span className="team-tab-label inline-flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-1.5">
                 {showDot && <span className="w-2 h-2 rounded-full live-dot" style={{ background: "var(--danger)" }} />}
                 {tab.label}
               </span>
-              {isActive && <span className="team-tab-rule absolute left-0 right-0 bottom-0 h-1" style={{ background: "var(--accent)" }} />}
+              {isActive && <span className="absolute left-0 right-0 bottom-0 h-1" style={{ background: "var(--accent)" }} />}
             </button>
           );
         })}

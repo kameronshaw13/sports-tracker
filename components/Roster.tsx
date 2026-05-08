@@ -111,13 +111,14 @@ function EmptyMessage({ label }: { label: string }) {
 function RosterTable({ players, team, onPlayerClick }: { players: Player[]; team: TeamConfig; onPlayerClick?: Props["onPlayerClick"] }) {
   const sorted = useMemo(() => [...players].sort((a, b) => rosterSortName(a.name).localeCompare(rosterSortName(b.name))), [players]);
 
+  const isBaseball = team.league === "mlb";
+
   return (
     <div className="team-roster-modern -mx-4 sm:mx-0">
-      <button className="team-depth-chart-btn" type="button">View Depth Chart</button>
       <div className="team-roster-table-head">
-        <div>#</div>
-        <div className="team-roster-player-head">PLAYER <span aria-hidden>▲</span></div>
-        <div>POSITION</div>
+        <div>{isBaseball ? "NO" : "#"}</div>
+        <div className="team-roster-player-head">{isBaseball ? "NAME" : "PLAYER"}</div>
+        <div>{isBaseball ? "POS" : "POSITION"}</div>
       </div>
       <div className="team-roster-table-body">
         {sorted.map((player) => (
@@ -129,7 +130,7 @@ function RosterTable({ players, team, onPlayerClick }: { players: Player[]; team
           >
             <div className="team-roster-number">{player.jersey || "—"}</div>
             <div className="team-roster-player-cell">
-              <Headshot player={player} size={42} />
+              <Headshot player={player} size={36} />
               <span>{formatRosterName(player.name)}</span>
             </div>
             <div className="team-roster-position">{player.positionAbbr || player.position || "—"}</div>
@@ -151,7 +152,7 @@ function InjuryList({ players, team, onPlayerClick }: { players: Player[]; team:
         onClick={onPlayerClick ? () => onPlayerClick({ id: player.id, name: player.name, league: team.league, teamKey: team.key }) : undefined}
         className="team-feed-row team-injury-row"
       >
-        <Headshot player={player} size={54} />
+        <Headshot player={player} size={46} />
         <div className="min-w-0 flex-1">
           <div className="team-feed-title"><span>{player.name}</span>{(player.positionAbbr || player.position) && <em>{player.positionAbbr || player.position}</em>}</div>
           <div className="team-feed-subtitle">{injuryLine(player)}</div>
@@ -174,7 +175,7 @@ function TransactionList({ transactions, team, onPlayerClick }: { transactions: 
         onClick={onPlayerClick && tx.playerId ? () => onPlayerClick({ id: String(tx.playerId), name: tx.playerName, league: team.league, teamKey: team.key }) : undefined}
         className="team-feed-row team-transaction-row"
       >
-        <Headshot player={{ id: tx.playerId || tx.id, name: tx.playerName, headshot: tx.headshot || undefined }} size={54} />
+        <Headshot player={{ id: tx.playerId || tx.id, name: tx.playerName, headshot: tx.headshot || undefined }} size={46} />
         <div className="min-w-0 flex-1">
           <div className="team-feed-title"><span>{tx.playerName}</span>{tx.position && <em>{tx.position}</em>}</div>
           <div className="team-feed-subtitle">{tx.text}</div>
@@ -230,14 +231,22 @@ function Headshot({ player, size }: { player: Pick<Player, "name" | "headshot" |
 
 function injuryLine(player: Player): string {
   const inj = player.injury;
-  const status = inj?.status || player.statusLabel || "Injured";
-  const rawDetail = inj?.detail || inj?.longDetail || "";
+  const status = cleanupSentence(inj?.ilDesignation || inj?.status || player.statusLabel || "Injured");
+  const rawDetail = inj?.detail || "";
   const detail = cleanupSentence(rawDetail);
-  const ret = inj?.returnDate ? `Expected to be out until at least ${formatShortDate(inj.returnDate)}` : "";
-  if (detail && ret && !detail.toLowerCase().includes("expected")) return `${detail}, ${ret}`;
-  if (detail) return detail;
-  if (ret) return ret;
-  return status;
+  const longDetail = cleanupSentence(inj?.longDetail || "");
+  const ret = inj?.returnDate ? `Expected back ${formatShortDate(inj.returnDate)}` : "";
+
+  const statusPart = detail && !status.toLowerCase().includes(detail.toLowerCase())
+    ? `${detail} · ${status}`
+    : status;
+
+  const extras = [longDetail, ret]
+    .filter(Boolean)
+    .filter((part, index, arr) => arr.findIndex((p) => p.toLowerCase() === part.toLowerCase()) === index)
+    .filter((part) => !part.toLowerCase().includes(statusPart.toLowerCase()));
+
+  return [statusPart, ...extras].join(" · ");
 }
 
 function cleanupSentence(value: string): string {

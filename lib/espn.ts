@@ -350,86 +350,6 @@ export function getMlbHeadshotUrl(mlbId: number | string, size = 213): string {
   return `https://img.mlbstatic.com/mlb-photos/image/upload/w_${size},q_auto:best/v1/people/${mlbId}/headshot/67/current`;
 }
 
-export type MlbTeamStatEntry = {
-  key: string;
-  label: string;
-  displayValue: string;
-  value: string | number | null;
-  rank: number | null;
-};
-
-function displayMlbStat(value: any): string {
-  if (value == null || value === "") return "—";
-  if (typeof value === "string") return value;
-  if (typeof value === "number") return Number.isInteger(value) ? value.toLocaleString("en-US") : String(value);
-  return String(value);
-}
-
-async function getMlbTeamRank(teamId: number, season: number, group: "hitting" | "pitching", sortStat: string): Promise<number | null> {
-  try {
-    const url = `${MLB_STATSAPI}/teams/stats?stats=season&group=${group}&season=${season}&gameType=R&sportIds=1&sortStat=${sortStat}`;
-    const data = await fetchJson(url, 1800);
-    const split = (data?.stats?.[0]?.splits || []).find((s: any) => Number(s?.team?.id) === teamId);
-    return typeof split?.rank === "number" ? split.rank : null;
-  } catch {
-    return null;
-  }
-}
-
-export async function getMlbTeamSeasonStats(
-  abbr: string,
-  year?: number
-): Promise<{ hitting: MlbTeamStatEntry[]; pitching: MlbTeamStatEntry[] } | null> {
-  const teamId = getMlbTeamId(abbr);
-  if (!teamId) return null;
-  const season = year || currentSeasonYear("mlb");
-
-  const groups = {
-    hitting: [
-      { key: "atBats", label: "AB" },
-      { key: "runs", label: "R" },
-      { key: "hits", label: "H" },
-      { key: "doubles", label: "2B" },
-      { key: "triples", label: "3B" },
-      { key: "homeRuns", label: "HR" },
-      { key: "rbi", label: "RBI" },
-      { key: "avg", label: "AVG" },
-      { key: "obp", label: "OBP" },
-      { key: "slg", label: "SLG" },
-      { key: "ops", label: "OPS" },
-    ],
-    pitching: [
-      { key: "era", label: "ERA" },
-      { key: "avg", label: "OBA" },
-      { key: "obp", label: "OOBP" },
-      { key: "slg", label: "OSLG" },
-      { key: "ops", label: "OOPS" },
-      { key: "strikeOuts", label: "K" },
-      { key: "baseOnBalls", label: "BB" },
-      { key: "saves", label: "SV" },
-      { key: "saveOpportunities", label: "SVOP" },
-    ],
-  } as const;
-
-  const fetchGroup = async (group: "hitting" | "pitching") => {
-    const url = `${MLB_STATSAPI}/teams/${teamId}/stats?stats=season&group=${group}&season=${season}&gameType=R`;
-    const data = await fetchJson(url, 1800);
-    const stat = data?.stats?.[0]?.splits?.[0]?.stat || {};
-    return Promise.all(
-      groups[group].map(async ({ key, label }) => ({
-        key,
-        label,
-        value: stat[key] ?? null,
-        displayValue: displayMlbStat(stat[key]),
-        rank: await getMlbTeamRank(teamId, season, group, key),
-      }))
-    );
-  };
-
-  const [hitting, pitching] = await Promise.all([fetchGroup("hitting"), fetchGroup("pitching")]);
-  return { hitting, pitching };
-}
-
 export type MlbSeasonPlayerStatLine = {
   mlbId: number;
   name: string;
@@ -543,6 +463,7 @@ export type MlbRosterEntry = {
   injuryDetail?: string | null;
   injuryComment?: string | null;
   injuryReturnDate?: string | null;
+  injuryDate?: string | null;
 };
 
 // v21: Fetch the full 40-man roster from MLB's official statsapi. The 40-man
@@ -594,7 +515,8 @@ export async function getMlbFortyManRoster(abbr: string): Promise<MlbRosterEntry
           injuryStatus: injury?.status || injury?.injuredListStatus || null,
           injuryDetail: injuryDetail ? String(injuryDetail) : null,
           injuryComment: injuryComment ? String(injuryComment) : null,
-          injuryReturnDate: injury?.expectedReturnDate || injury?.returnDate || injury?.dateUpdated || null,
+          injuryReturnDate: injury?.expectedReturnDate || injury?.returnDate || null,
+          injuryDate: injury?.dateUpdated || injury?.updated || injury?.date || injury?.startDate || null,
         };
       })
       .filter((p) => p.mlbId && p.name);

@@ -281,6 +281,7 @@ function normalizeMlbPlayer(
     injuryDetail: entry.injuryDetail,
     injuryComment: entry.injuryComment,
     returnDate: entry.injuryReturnDate,
+    date: entry.injuryDate,
   };
   const injury = isInjured ? buildInjuryView(espnInj || mlbInj, ilDesignation) : null;
 
