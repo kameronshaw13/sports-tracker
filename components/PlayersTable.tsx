@@ -136,8 +136,8 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
       className="player-stats-table overflow-hidden"
       style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
     >
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm" style={{ minWidth: "fit-content" }}>
+      <div className="player-stats-scroll overflow-x-auto">
+        <table className="text-sm" style={{ minWidth: `calc(8.15rem + ${section.columns.length * 2.35}rem)` }}>
           <thead>
             <tr
               className="text-left"
@@ -166,14 +166,9 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
                       color: isActive ? "var(--text)" : "var(--text-2)",
                     }}
                   >
-                    <span className="inline-flex items-center gap-1">
+                    <span className="inline-flex items-center">
                       {col.label}
-                      <span
-                        className="text-[10px] opacity-60"
-                        style={{ visibility: isActive ? "visible" : "hidden" }}
-                      >
-                        {sortDir === "asc" ? "▲" : "▼"}
-                      </span>
+                      {isActive && <span className="ml-0.5 text-[10px] opacity-60">{sortDir === "asc" ? "▲" : "▼"}</span>}
                     </span>
                   </th>
                 );
