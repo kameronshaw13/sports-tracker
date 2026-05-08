@@ -344,10 +344,10 @@ export function getMlbTeamId(abbr: string): number | null {
 }
 
 export function getMlbHeadshotUrl(mlbId: number | string, size = 213): string {
-  // Official MLB image CDN used by MLB.com player pages. The URL stays stable
-  // across active, injured-list, and optioned players because it is keyed by
-  // MLBAM person id rather than ESPN athlete id.
-  return `https://img.mlbstatic.com/mlb-photos/image/upload/w_${size},q_auto:best/v1/people/${mlbId}/headshot/67/current`;
+  // MLB's "spots" endpoint is keyed by MLBAM person id and usually returns a
+  // cleaner transparent cutout than the white-card MLB.com headshot image.
+  void size;
+  return `https://midfield.mlbstatic.com/v1/people/${mlbId}/spots/120`;
 }
 
 export type MlbSeasonPlayerStatLine = {

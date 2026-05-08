@@ -55,24 +55,13 @@ export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Pro
 
       {league === "mlb" && data.lineScore && <MlbLineScore lineScore={data.lineScore} />}
 
-      {/* Boxscore */}
       <div>
-        <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>
-          Boxscore
-        </h3>
-
-        {/* Team toggle */}
-        <div className="flex gap-1 mb-3 p-1 rounded-xl" style={{ background: "var(--surface-2)" }}>
+        <div className="boxscore-team-toggle">
           {data.teams.map((t: any, i: number) => (
             <button
               key={t.team.id}
               onClick={() => setActiveTeamIdx(i)}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-              style={{
-                background: activeTeamIdx === i ? "var(--surface)" : "transparent",
-                color: activeTeamIdx === i ? "var(--text)" : "var(--text-2)",
-                border: activeTeamIdx === i ? "1px solid var(--border)" : "1px solid transparent",
-              }}
+              className={activeTeamIdx === i ? "is-active" : ""}
             >
               {t.team.logo && (
                 <Image src={t.team.logo} alt="" width={20} height={20} className="object-contain logo-outline-dark" unoptimized />
@@ -98,10 +87,7 @@ function MlbLineScore({ lineScore }: { lineScore: any }) {
   const innings = Number(lineScore.innings || 0);
   return (
     <div>
-      <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>
-        Line score
-      </h3>
-      <div className="rounded-xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+      <div className="boxscore-line-table">
         <table className="w-full text-[10px] sm:text-xs table-fixed">
           <thead>
             <tr style={{ background: "var(--surface-2)", color: "var(--text-3)" }}>
@@ -115,7 +101,12 @@ function MlbLineScore({ lineScore }: { lineScore: any }) {
           <tbody>
             {teams.map((t: any) => (
               <tr key={t.id || t.abbr} style={{ borderTop: "1px solid var(--border)" }}>
-                <td className="px-1.5 py-2 font-bold">{t.abbr}</td>
+                <td className="px-1.5 py-2 font-bold">
+                  <span className="boxscore-line-team">
+                    {t.logo && <Image src={t.logo} alt="" width={18} height={18} className="object-contain logo-outline-dark" unoptimized />}
+                    {t.abbr}
+                  </span>
+                </td>
                 {Array.from({ length: innings }).map((_, i) => <td key={i} className="text-center px-1 py-2 tabular-nums">{t.innings?.[i] ?? "–"}</td>)}
                 <td className="text-center px-1 py-2 font-black tabular-nums">{t.runs ?? "–"}</td>
                 <td className="text-center px-1 py-2 font-black tabular-nums">{t.hits ?? "0"}</td>
@@ -217,7 +208,11 @@ function pickColumnKeys(group: any, league: string): string[] {
     return allKeys;
   }
 
-  // MLB / NFL: 6-column cap (pre-v17 behavior preserved)
+  if (league === "mlb") {
+    return allKeys.filter((key) => !/^H[-_/]?AB$/i.test(key)).slice(0, 6);
+  }
+
+  // NFL: 6-column cap (pre-v17 behavior preserved)
   return allKeys.slice(0, 6);
 }
 
@@ -252,7 +247,7 @@ function StatGroup({ group, league, teamKey, onPlayerClick }: { group: any; leag
       <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider" style={{ background: "var(--surface-2)", color: "var(--text-2)" }}>
         {displayGroupName(league, group)}
       </div>
-      <div className="overflow-x-auto">
+      <div className="boxscore-stat-scroll overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
             <tr style={{ color: "var(--text-3)" }}>
@@ -281,10 +276,10 @@ function StatGroup({ group, league, teamKey, onPlayerClick }: { group: any; leag
                     className="px-3 py-2 whitespace-nowrap sticky left-0"
                     style={{ background: "var(--surface)" }}
                   >
-                    <button type="button" onClick={() => onPlayerClick?.({ id: row.id, name: row.name || row.shortName, league, teamKey })} disabled={!onPlayerClick || !row.id} className="font-medium text-left hover:opacity-80">{row.shortName || row.name}</button>
-                    {row.position && (
-                      <span className="text-[10px] block" style={{ color: "var(--text-3)" }}>{row.position}</span>
-                    )}
+                    <div className="boxscore-player-name">
+                      <button type="button" onClick={() => onPlayerClick?.({ id: row.id, name: row.name || row.shortName, league, teamKey })} disabled={!onPlayerClick || !row.id} className="font-medium text-left hover:opacity-80">{row.shortName || row.name}</button>
+                      {row.position && <span>{row.position}</span>}
+                    </div>
                   </td>
                   {columnKeys.map((k: string) => (
                     <td key={k} className="text-right px-2 py-2 tabular-nums" style={{ color: "var(--text-2)" }}>

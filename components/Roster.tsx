@@ -206,6 +206,7 @@ function DatedFeed({ groups, fallbackLabel }: { groups: { label: string; items: 
 
 function Headshot({ player, size }: { player: Pick<Player, "name" | "headshot" | "id">; size: number }) {
   const [failed, setFailed] = useState(false);
+  const isMlbFallback = /midfield\.mlbstatic\.com|img\.mlbstatic\.com|mlb-photos/i.test(player.headshot || "");
   const initials = player.name
     .split(/\s+/)
     .filter(Boolean)
@@ -214,14 +215,14 @@ function Headshot({ player, size }: { player: Pick<Player, "name" | "headshot" |
     .join("");
 
   return (
-    <div className="team-feed-avatar" style={{ width: size, height: size }}>
+    <div className={`team-feed-avatar ${isMlbFallback ? "team-feed-avatar-mlb" : ""}`} style={{ width: size, height: size }}>
       {player.headshot && !failed ? (
         <Image
           src={player.headshot}
           alt={player.name}
           width={size}
           height={size}
-          className="object-cover"
+          className={isMlbFallback ? "team-feed-img-mlb" : "object-cover"}
           onError={() => setFailed(true)}
         />
       ) : (

@@ -7143,3 +7143,254 @@ main.retro-page.view-leaguePage {
     gap: .58rem;
   }
 }
+
+/* v103: GameTracker/boxscore polish, compact score ribbon, cleaner MLB headshot fallbacks */
+.team-feed-avatar-mlb {
+  background: transparent;
+}
+
+.team-feed-avatar .team-feed-img-mlb {
+  width: 94%;
+  height: 94%;
+  object-fit: contain;
+  transform: translateY(2%);
+}
+
+.game-detail-page {
+  padding-top: max(.55rem, env(safe-area-inset-top));
+}
+
+.game-scores-ribbon {
+  display: flex;
+  gap: .45rem;
+  overflow-x: auto;
+  padding: .2rem .72rem .55rem;
+  scroll-snap-type: x proximity;
+}
+
+.game-score-chip {
+  flex: 0 0 8.8rem;
+  scroll-snap-align: start;
+  padding: .46rem .55rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 91%, #fff 3%);
+  color: var(--text-2);
+}
+
+.game-score-chip.is-active {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: color-mix(in srgb, var(--surface-2) 86%, var(--accent) 14%);
+}
+
+.game-score-chip-status {
+  margin-bottom: .25rem;
+  color: var(--text-3);
+  font-size: .58rem;
+  line-height: 1;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-score-chip-team {
+  display: grid;
+  grid-template-columns: 1.15rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .3rem;
+  min-height: 1.2rem;
+  font-size: .68rem;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.game-score-chip-team span {
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game-score-chip-team b {
+  color: var(--text);
+  font-size: .76rem;
+}
+
+.game-detail-topbar {
+  min-height: 3.55rem;
+}
+
+.game-detail-grabber {
+  top: .35rem;
+}
+
+.game-detail-title {
+  font-size: 1.02rem;
+  padding-top: .34rem;
+}
+
+.game-score-hero {
+  min-height: 8.45rem;
+}
+
+.game-score-rail {
+  top: 0;
+  bottom: 0;
+  width: 36%;
+  opacity: .58;
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--team-color) 72%, transparent) 0%, transparent 68%);
+}
+
+.game-score-rail-away {
+  left: -15%;
+  transform: none;
+}
+
+.game-score-rail-home {
+  right: -15%;
+  transform: none;
+}
+
+.game-score-logo-wrap {
+  width: 3.9rem;
+  height: 3.9rem;
+}
+
+.game-score-logo {
+  width: 3.62rem;
+  height: 3.62rem;
+}
+
+.game-score-record,
+.game-score-date,
+.game-score-series {
+  font-size: .68rem;
+}
+
+.game-score-score {
+  font-family: var(--font-sans, inherit);
+  font-size: 2.25rem;
+  line-height: .96;
+}
+
+.game-score-abbr {
+  font-size: .7rem;
+}
+
+.game-score-status {
+  margin-top: 1.05rem;
+  font-size: .84rem;
+}
+
+.game-detail-tab {
+  min-height: 3.05rem;
+  padding: .76rem 0 .7rem;
+  font-size: .82rem;
+}
+
+.game-detail-tab-line {
+  height: .18rem;
+}
+
+.game-detail-content {
+  padding-top: .72rem;
+}
+
+.gamecast-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boxscore-team-toggle {
+  display: flex;
+  gap: .18rem;
+  margin: 0 0 .72rem;
+  padding: .18rem;
+  background: color-mix(in srgb, var(--surface-2) 82%, #fff 4%);
+  border: 1px solid var(--border);
+}
+
+.boxscore-team-toggle button {
+  flex: 1;
+  min-height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .42rem;
+  padding: .38rem .7rem;
+  color: var(--text-2);
+  font-size: .76rem;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.boxscore-team-toggle button.is-active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.boxscore-line-table {
+  overflow: hidden;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.boxscore-line-team {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  min-width: 0;
+}
+
+.boxscore-stat-scroll table {
+  min-width: 24rem;
+}
+
+.boxscore-player-name {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .35rem;
+  max-width: 10.8rem;
+}
+
+.boxscore-player-name button {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.boxscore-player-name span {
+  color: var(--text-3);
+  font-size: .58rem;
+  line-height: 1;
+  font-weight: 900;
+}
+
+@media (max-width: 420px) {
+  .game-score-logo-wrap {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .game-score-logo {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+
+  .game-score-score {
+    font-size: 2.05rem;
+  }
+
+  .game-score-status {
+    margin-top: .95rem;
+  }
+
+  .game-detail-tab {
+    font-size: .8rem;
+  }
+}

@@ -36,6 +36,7 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
 
   return (
     <div className="retro-page -mx-4 sm:mx-0 cbs-game-page game-detail-page">
+      <GameScoresRibbon league={league} eventId={eventId} />
       <GameTopBar title={`${away?.abbr || ""} @ ${home?.abbr || ""}`} onClose={onClose} />
       <ScoreboardHero league={league} home={home} away={away} status={status} situation={situation} eventId={eventId} gameDate={data?.date} onTeamClick={onTeamClick} />
       <div className="game-detail-tabs" role="tablist">
@@ -51,6 +52,42 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
         {activeTab === "main" && isNonPlayed && <div className="m-4 p-6 text-center text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>This game was {nonPlayedLabel(statusName).toLowerCase()}.</div>}
         {activeTab === "boxscore" && <Boxscore league={league} eventId={eventId} isLive={isLive} onPlayerClick={onPlayerClick} />}
       </div>
+    </div>
+  );
+}
+
+function GameScoresRibbon({ league, eventId }: { league: string; eventId: string }) {
+  const freshKey = useFreshKey();
+  const { data } = useSWR(`/api/league?league=${league}&date=${localDateKey()}&_t=${freshKey}`, fetcher, {
+    refreshInterval: 30_000,
+    dedupingInterval: 12_000,
+    revalidateOnFocus: true,
+  });
+  const events = (data?.events || []).filter((ev: any) => ev?.home && ev?.away);
+  if (events.length <= 1) return null;
+
+  return (
+    <div className="game-scores-ribbon no-scrollbar" aria-label="Other games">
+      {events.map((ev: any) => {
+        const active = String(ev.id) === String(eventId);
+        return (
+          <div key={ev.id} className={`game-score-chip ${active ? "is-active" : ""}`}>
+            <div className="game-score-chip-status">{ev.status?.detail || ""}</div>
+            <ScoreChipTeam team={ev.away} />
+            <ScoreChipTeam team={ev.home} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ScoreChipTeam({ team }: { team: any }) {
+  return (
+    <div className="game-score-chip-team">
+      {team.logo && <Image src={team.logo} alt="" width={18} height={18} className="object-contain logo-outline-dark" unoptimized />}
+      <span>{team.abbr}</span>
+      <b>{team.score ?? ""}</b>
     </div>
   );
 }
@@ -72,8 +109,8 @@ function ScoreboardHero({ league, home, away, status, situation, eventId, gameDa
   return (
     <section className="game-score-hero relative overflow-hidden">
       <div className="game-score-field" aria-hidden="true" />
-      <div className="game-score-rail game-score-rail-away" style={{ background: away?.color || "#1d4ed8" }} />
-      <div className="game-score-rail game-score-rail-home" style={{ background: home?.color || "#7c2d12" }} />
+      <div className="game-score-rail game-score-rail-away" style={{ ["--team-color" as string]: away?.color || "#1d4ed8" } as any} />
+      <div className="game-score-rail game-score-rail-home" style={{ ["--team-color" as string]: home?.color || "#7c2d12" } as any} />
       <div className="relative px-4 py-5">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
           <TeamBlock team={away} league={league} eventId={eventId} onClick={onTeamClick} align="left" showScore={showScore} />
@@ -95,7 +132,7 @@ function TeamBlock({ team, league, eventId, onClick, align, showScore }: any) {
   const Comp: any = onClick && team.abbr ? "button" : "div";
   return (
     <Comp onClick={onClick && team.abbr ? () => onClick(league, String(team.abbr).toLowerCase(), { league, eventId }) : undefined} className={`game-score-team min-w-0 ${align === "right" ? "game-score-team-home text-right" : "game-score-team-away text-left"}`}>
-      <div className="game-score-logo-wrap">{team.logo && <Image src={team.logo} alt={team.abbr || team.name || ""} width={84} height={84} className="game-score-logo object-contain logo-outline-dark" unoptimized />}</div>
+      <div className="game-score-logo-wrap">{team.logo && <Image src={team.logo} alt={team.abbr || team.name || ""} width={72} height={72} className="game-score-logo object-contain logo-outline-dark" unoptimized />}</div>
       <div className="game-score-team-copy min-w-0">
         <div className="game-score-record">{team.seriesRecord || team.record || ""}</div>
         <div className="game-score-score retro-score tabular-nums">{showScore ? team.score ?? "—" : ""}</div>
@@ -131,4 +168,12 @@ function formatGameDate(value?: string | null): string {
   const d = new Date(value);
   if (isNaN(d.getTime())) return "";
   return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+}
+
+function localDateKey(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}${m}${day}`;
 }
