@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { currentSeasonYear } from "@/lib/espn";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 600;
 
 const SITE_WEB_API = "https://site.web.api.espn.com/apis/site/v2/sports";
 const CORE_API = "https://sports.core.api.espn.com/v2/sports";
@@ -24,7 +23,7 @@ type StatCell = { label: string; value: string };
 type GameLogRow = { id: string; date: string; opponent: string; stats: StatCell[] };
 
 async function fetchJson(url: string) {
-  const res = await fetch(url, { cache: "no-store", headers: { "User-Agent": "Mozilla/5.0 SportsTracker/1.0" } });
+  const res = await fetch(url, { next: { revalidate }, headers: { "User-Agent": "Mozilla/5.0 SportsTracker/1.0" } });
   if (!res.ok) throw new Error(`${res.status}: ${url}`);
   return res.json();
 }

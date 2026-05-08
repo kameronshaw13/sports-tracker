@@ -5,7 +5,6 @@ import useSWR from "swr";
 import { TeamConfig } from "@/lib/teams";
 import { SECTIONS_BY_LEAGUE, Section } from "@/lib/playerColumns";
 import PlayersTable, { Player } from "@/components/PlayersTable";
-import { useFreshKey } from "@/lib/freshKey";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -14,20 +13,25 @@ type StatRow = { label: string; value: string; rank?: number | null };
 type TeamStatTab = { id: "overall" | "hitting" | "pitching"; label: string; rows: StatRow[] };
 
 export default function Stats({ team, onPlayerClick }: Props) {
-  // v21.1: every mount of the Stats tab now busts the route cache, so the
-  // user sees fresh data each time they navigate here.
-  const freshKey = useFreshKey();
+  const staticStatsOptions = {
+    dedupingInterval: 300_000,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  };
   const { data: teamData } = useSWR(
-    `/api/team?team=${team.key}&_t=${freshKey}`,
-    fetcher
+    `/api/team?team=${team.key}`,
+    fetcher,
+    staticStatsOptions
   );
   const { data: scheduleData } = useSWR(
-    `/api/scoreboard?team=${team.key}&_t=${freshKey}`,
-    fetcher
+    `/api/scoreboard?team=${team.key}`,
+    fetcher,
+    { dedupingInterval: 120_000, refreshInterval: 300_000, revalidateOnFocus: false }
   );
   const { data: playersData, isLoading: playersLoading } = useSWR(
-    `/api/players?team=${team.key}&_t=${freshKey}`,
-    fetcher
+    `/api/players?team=${team.key}`,
+    fetcher,
+    staticStatsOptions
   );
 
   const events = scheduleData?.events || [];

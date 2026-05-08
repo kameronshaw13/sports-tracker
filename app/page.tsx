@@ -1,24 +1,13 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import useSWR from "swr";
 import TopNav, { ViewId } from "@/components/TopNav";
-import HomeDashboard from "@/components/HomeDashboard";
-import LeaguesView from "@/components/LeaguesView";
-import MoreView from "@/components/MoreView";
 import TeamSelector from "@/components/TeamSelector";
 import TeamHeader from "@/components/TeamHeader";
 import Tabs, { TabId } from "@/components/Tabs";
-import Schedule from "@/components/Schedule";
-import Roster from "@/components/Roster";
-import Stats from "@/components/Stats";
-import Standings from "@/components/Standings";
-import StandingsPage from "@/components/StandingsPage";
-import LiveGame from "@/components/LiveGame";
-import ManageTeams from "@/components/ManageTeams";
 import PullToRefresh from "@/components/PullToRefresh";
-import GameDetail from "@/components/GameDetail";
-import PlayerDetail from "@/components/PlayerDetail";
 import {
   TeamConfig,
   League,
@@ -29,6 +18,18 @@ import {
 import { useFavoriteTeams } from "@/lib/useFavorites";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const HomeDashboard = dynamic(() => import("@/components/HomeDashboard"));
+const LeaguesView = dynamic(() => import("@/components/LeaguesView"));
+const MoreView = dynamic(() => import("@/components/MoreView"));
+const Schedule = dynamic(() => import("@/components/Schedule"));
+const Roster = dynamic(() => import("@/components/Roster"));
+const Stats = dynamic(() => import("@/components/Stats"));
+const Standings = dynamic(() => import("@/components/Standings"));
+const StandingsPage = dynamic(() => import("@/components/StandingsPage"));
+const LiveGame = dynamic(() => import("@/components/LiveGame"));
+const ManageTeams = dynamic(() => import("@/components/ManageTeams"));
+const GameDetail = dynamic(() => import("@/components/GameDetail"));
+const PlayerDetail = dynamic(() => import("@/components/PlayerDetail"));
 
 export default function Home() {
   const [view, setView] = useState<ViewId>("scores");

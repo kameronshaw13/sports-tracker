@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import useSWR from "swr";
-import { useFreshKey } from "@/lib/freshKey";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -23,10 +22,10 @@ type Props = {
 // plain prose. This matches the "auto-summary" feel the user wanted: read
 // it like an article, not a scoreboard.
 export default function GameRecap({ league, eventId }: Props) {
-  const freshKey = useFreshKey();
   const { data, error, isLoading } = useSWR(
-    eventId ? `/api/recap?league=${league}&event=${eventId}&_t=${freshKey}` : null,
-    fetcher
+    eventId ? `/api/recap?league=${league}&event=${eventId}` : null,
+    fetcher,
+    { dedupingInterval: 300_000, revalidateOnFocus: false }
   );
 
   if (isLoading) {

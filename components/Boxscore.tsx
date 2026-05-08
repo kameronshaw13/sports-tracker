@@ -17,10 +17,11 @@ type Props = {
 export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Props) {
   // v17 behavior preserved: live polling at 15s for parity with summary.
   const freshKey = useFreshKey();
+  const cacheBust = isLive ? `&_t=${freshKey}` : "";
   const { data, error, isLoading } = useSWR(
-    eventId ? `/api/boxscore?league=${league}&event=${eventId}&_t=${freshKey}` : null,
+    eventId ? `/api/boxscore?league=${league}&event=${eventId}${cacheBust}` : null,
     fetcher,
-    { refreshInterval: isLive ? 15_000 : 0 }
+    { refreshInterval: isLive ? 15_000 : 0, dedupingInterval: isLive ? 4_000 : 300_000, revalidateOnFocus: isLive }
   );
 
   const [activeTeamIdx, setActiveTeamIdx] = useState(0);

@@ -5,7 +5,6 @@ import type React from "react";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { TeamConfig } from "@/lib/teams";
-import { useFreshKey } from "@/lib/freshKey";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -49,14 +48,19 @@ type Transaction = {
 };
 
 export default function Roster({ team, mode = "active", onPlayerClick }: Props) {
-  const freshKey = useFreshKey();
-  const rosterUrl = `/api/roster?team=${team.key}&_t=${freshKey}`;
-  const transactionsUrl = `/api/transactions?team=${team.key}&_t=${freshKey}`;
+  const rosterUrl = `/api/roster?team=${team.key}`;
+  const transactionsUrl = `/api/transactions?team=${team.key}`;
+  const staticFeedOptions = {
+    dedupingInterval: 300_000,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  };
 
-  const { data, error, isLoading } = useSWR(mode === "transactions" ? null : rosterUrl, fetcher);
+  const { data, error, isLoading } = useSWR(mode === "transactions" ? null : rosterUrl, fetcher, staticFeedOptions);
   const { data: transactionsData, error: txError, isLoading: txLoading } = useSWR(
     mode === "transactions" ? transactionsUrl : null,
-    fetcher
+    fetcher,
+    staticFeedOptions
   );
 
   if (mode === "transactions") {

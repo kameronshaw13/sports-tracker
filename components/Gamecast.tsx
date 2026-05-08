@@ -63,10 +63,11 @@ type MlbSection = {
 
 export default function Gamecast({ league, eventId, isLive, situation: summarySituation, onPlayerClick }: Props) {
   const freshKey = useFreshKey();
+  const cacheBust = isLive ? `&_t=${freshKey}` : "";
   const { data, error, isLoading } = useSWR(
-    eventId ? `/api/plays?league=${league}&event=${eventId}&_t=${freshKey}` : null,
+    eventId ? `/api/plays?league=${league}&event=${eventId}${cacheBust}` : null,
     fetcher,
-    { refreshInterval: isLive ? 5_000 : 0 }
+    { refreshInterval: isLive ? 5_000 : 0, dedupingInterval: isLive ? 2_000 : 300_000, revalidateOnFocus: isLive }
   );
 
   if (league === "mlb") {

@@ -3,7 +3,7 @@ import { TeamConfig, League, VALID_LEAGUES, makeKey, ensureHash, pickTextColor, 
 import { COLLEGE_FOOTBALL_TEAMS_2026 } from "@/lib/collegeFootballTeams2026";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 86400;
 
 const SPORT_PATH: Record<League, string> = {
   mlb: "baseball/mlb",
@@ -42,7 +42,7 @@ const COLLEGE_FOOTBALL_GROUPS = [
 ];
 
 async function fetchJson(url: string) {
-  const res = await fetch(url, { cache: "no-store", headers: { "User-Agent": "Mozilla/5.0 SportsTracker/1.0" } });
+  const res = await fetch(url, { next: { revalidate }, headers: { "User-Agent": "Mozilla/5.0 SportsTracker/1.0" } });
   if (!res.ok) throw new Error(`ESPN ${res.status}: ${url}`);
   return res.json();
 }
