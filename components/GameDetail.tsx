@@ -6,6 +6,7 @@ import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
 import Boxscore from "./Boxscore";
 import Gamecast from "./Gamecast";
+import GameRecap from "./GameRecap";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -17,7 +18,7 @@ type Props = {
   onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
 };
 
-type TabId = "main" | "boxscore";
+type TabId = "recap" | "main" | "boxscore";
 
 export default function GameDetail({ league, eventId, onClose, onTeamClick, onPlayerClick }: Props) {
   const freshKey = useFreshKey();
@@ -29,20 +30,23 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
 
   const { home, away, status, situation } = data;
   const isLive = status?.state === "in";
+  const isFinal = status?.state === "post";
   const statusName = String(status?.statusName || "").toUpperCase();
   const isNonPlayed = /POSTPONED|CANCELED|CANCELLED|SUSPENDED/.test(statusName);
 
   return (
-    <div className="retro-page -mx-4 sm:mx-0 cbs-game-page">
+    <div className="retro-page -mx-4 sm:mx-0 cbs-game-page game-detail-page">
       <GameTopBar title={`${away?.abbr || ""} @ ${home?.abbr || ""}`} onClose={onClose} />
-      <ScoreboardHero league={league} home={home} away={away} status={status} situation={situation} eventId={eventId} onTeamClick={onTeamClick} />
-      <div className="retro-panel mb-0 mx-4" role="tablist">
-        <div className="flex overflow-x-auto no-scrollbar px-4 gap-8">
+      <ScoreboardHero league={league} home={home} away={away} status={status} situation={situation} eventId={eventId} gameDate={data?.date} onTeamClick={onTeamClick} />
+      <div className="game-detail-tabs" role="tablist">
+        <div className="flex overflow-x-auto no-scrollbar px-4 gap-7">
+          {isFinal && <TabBtn label="Recap" isActive={activeTab === "recap"} onClick={() => setActiveTab("recap")} />}
           <TabBtn label="GameTracker" isActive={activeTab === "main"} onClick={() => setActiveTab("main")} />
           <TabBtn label="Box Score" isActive={activeTab === "boxscore"} onClick={() => setActiveTab("boxscore")} />
         </div>
       </div>
-      <div className="pt-3">
+      <div className="game-detail-content">
+        {activeTab === "recap" && <GameRecap league={league} eventId={eventId} />}
         {activeTab === "main" && !isNonPlayed && <Gamecast league={league} eventId={eventId} isLive={isLive} situation={situation} onPlayerClick={onPlayerClick} />}
         {activeTab === "main" && isNonPlayed && <div className="m-4 p-6 text-center text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>This game was {nonPlayedLabel(statusName).toLowerCase()}.</div>}
         {activeTab === "boxscore" && <Boxscore league={league} eventId={eventId} isLive={isLive} onPlayerClick={onPlayerClick} />}
@@ -53,28 +57,31 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
 
 function GameTopBar({ title, onClose }: { title: string; onClose?: () => void }) {
   return (
-    <div className="sticky top-0 z-40 retro-card flex items-center justify-center px-4 py-3">
-      <button onClick={onClose} className="absolute left-4 h-10 w-10 flex items-center justify-center" aria-label="Close game">
+    <div className="game-detail-topbar sticky top-0 z-40 flex items-center justify-center px-4">
+      <button onClick={onClose} className="game-detail-close absolute left-4 h-10 w-10 flex items-center justify-center" aria-label="Close game">
         <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M18 6 6 18M6 6l12 12" /></svg>
       </button>
-      <h1 className="retro-title text-xl">{title}</h1>
+      <div className="game-detail-grabber" aria-hidden="true" />
+      <h1 className="game-detail-title retro-title">{title}</h1>
     </div>
   );
 }
 
-function ScoreboardHero({ league, home, away, status, situation, eventId, onTeamClick }: any) {
+function ScoreboardHero({ league, home, away, status, situation, eventId, gameDate, onTeamClick }: any) {
   const showScore = scoreShouldShow(status);
   return (
-    <section className="retro-panel relative overflow-hidden my-3 mx-4">
-      <div className="absolute inset-y-0 left-0 w-[29%] opacity-75" style={{ background: away?.color ? `linear-gradient(90deg, ${away.color}, transparent)` : "linear-gradient(90deg,#1d4ed8,transparent)" }} />
-      <div className="absolute inset-y-0 right-0 w-[29%] opacity-75" style={{ background: home?.color ? `linear-gradient(270deg, ${home.color}, transparent)` : "linear-gradient(270deg,#7c2d12,transparent)" }} />
-      <div className="relative px-5 py-5">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+    <section className="game-score-hero relative overflow-hidden">
+      <div className="game-score-field" aria-hidden="true" />
+      <div className="game-score-rail game-score-rail-away" style={{ background: away?.color || "#1d4ed8" }} />
+      <div className="game-score-rail game-score-rail-home" style={{ background: home?.color || "#7c2d12" }} />
+      <div className="relative px-4 py-5">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
           <TeamBlock team={away} league={league} eventId={eventId} onClick={onTeamClick} align="left" showScore={showScore} />
-          <div className="text-center min-w-[82px]">
-            <div className="text-sm font-black" style={{ color: "var(--text-2)" }}>{status?.detail || ""}</div>
+          <div className="game-score-center text-center min-w-[82px]">
+            <div className="game-score-date">{formatGameDate(gameDate)}</div>
+            <div className="game-score-status">{status?.detail || ""}</div>
             {league === "mlb" && status?.state === "in" && hasBaseballSituation(situation) && <BaseballSituationBlock situation={situation} />}
-            {status?.seriesGame && <div className="mt-2 text-xs font-black uppercase" style={{ color: "var(--text-2)" }}>{status.seriesGame}</div>}
+            {status?.seriesGame && <div className="game-score-series">{status.seriesGame}</div>}
           </div>
           <TeamBlock team={home} league={league} eventId={eventId} onClick={onTeamClick} align="right" showScore={showScore} />
         </div>
@@ -87,19 +94,19 @@ function TeamBlock({ team, league, eventId, onClick, align, showScore }: any) {
   if (!team) return null;
   const Comp: any = onClick && team.abbr ? "button" : "div";
   return (
-    <Comp onClick={onClick && team.abbr ? () => onClick(league, String(team.abbr).toLowerCase(), { league, eventId }) : undefined} className={`min-w-0 flex items-center gap-3 ${align === "right" ? "justify-end text-right flex-row-reverse" : "justify-start text-left"}`}>
-      <div className="w-20 h-20 flex items-center justify-center shrink-0">{team.logo && <Image src={team.logo} alt={team.abbr || team.name || ""} width={78} height={78} className="object-contain logo-outline-dark" unoptimized />}</div>
-      <div className="min-w-0">
-        <div className="text-xs font-black" style={{ color: "var(--text-2)" }}>{team.seriesRecord || team.record || ""}</div>
-        <div className="retro-score text-5xl font-black tabular-nums leading-none">{showScore ? team.score ?? "—" : ""}</div>
-        <div className="mt-1 text-sm font-black truncate">{team.abbr}</div>
+    <Comp onClick={onClick && team.abbr ? () => onClick(league, String(team.abbr).toLowerCase(), { league, eventId }) : undefined} className={`game-score-team min-w-0 ${align === "right" ? "game-score-team-home text-right" : "game-score-team-away text-left"}`}>
+      <div className="game-score-logo-wrap">{team.logo && <Image src={team.logo} alt={team.abbr || team.name || ""} width={84} height={84} className="game-score-logo object-contain logo-outline-dark" unoptimized />}</div>
+      <div className="game-score-team-copy min-w-0">
+        <div className="game-score-record">{team.seriesRecord || team.record || ""}</div>
+        <div className="game-score-score retro-score tabular-nums">{showScore ? team.score ?? "—" : ""}</div>
+        <div className="game-score-abbr truncate">{team.abbr}</div>
       </div>
     </Comp>
   );
 }
 
 function TabBtn({ label, isActive, onClick }: { label: string; isActive: boolean; onClick: () => void }) {
-  return <button type="button" role="tab" aria-selected={isActive} onClick={onClick} className="relative py-4 text-base font-black whitespace-nowrap" style={{ color: isActive ? "var(--text)" : "var(--text-2)" }}>{label}{isActive && <span className="absolute left-0 right-0 bottom-0 h-1" style={{ background: "var(--accent)" }} />}</button>;
+  return <button type="button" role="tab" aria-selected={isActive} onClick={onClick} className="game-detail-tab relative whitespace-nowrap">{label}{isActive && <span className="game-detail-tab-line absolute left-0 right-0 bottom-0" />}</button>;
 }
 
 function scoreShouldShow(status: any) {
@@ -117,4 +124,11 @@ function BaseballSituationBlock({ situation }: { situation: any }) {
 function BasesDiamond({ onFirst, onSecond, onThird }: { onFirst: boolean; onSecond: boolean; onThird: boolean }) {
   const filled = "var(--accent)"; const empty = "var(--surface-2)"; const stroke = "var(--text-3)";
   return <svg width="44" height="36" viewBox="0 0 34 28" aria-label="Bases"><g transform="translate(17 7) rotate(45)"><rect x="-5" y="-5" width="10" height="10" rx="1.5" fill={onSecond ? filled : empty} stroke={stroke} strokeWidth="1.1" /></g><g transform="translate(26 17) rotate(45)"><rect x="-5" y="-5" width="10" height="10" rx="1.5" fill={onFirst ? filled : empty} stroke={stroke} strokeWidth="1.1" /></g><g transform="translate(8 17) rotate(45)"><rect x="-5" y="-5" width="10" height="10" rx="1.5" fill={onThird ? filled : empty} stroke={stroke} strokeWidth="1.1" /></g></svg>;
+}
+
+function formatGameDate(value?: string | null): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
 }

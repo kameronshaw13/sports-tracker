@@ -6860,3 +6860,286 @@ main.retro-page.view-leaguePage {
   font-size: .74rem;
   line-height: 1.2;
 }
+
+/* v102: retro GameTracker sheet */
+.game-detail-page {
+  padding-top: max(.9rem, env(safe-area-inset-top));
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.18), transparent 16rem),
+    var(--bg);
+  overflow-x: hidden;
+}
+
+.game-detail-topbar {
+  min-height: 4.35rem;
+  background: color-mix(in srgb, var(--surface) 91%, #000 9%);
+  border-top-left-radius: .78rem;
+  border-top-right-radius: .78rem;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 -10px 24px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.game-detail-grabber {
+  position: absolute;
+  top: .5rem;
+  left: 50%;
+  width: 3.5rem;
+  height: .34rem;
+  border-radius: 99rem;
+  transform: translateX(-50%);
+  background: color-mix(in srgb, var(--text-3) 50%, transparent);
+}
+
+.game-detail-close {
+  color: var(--text);
+}
+
+.game-detail-title {
+  font-size: 1.18rem;
+  line-height: 1.16;
+  letter-spacing: .02em;
+  padding-top: .45rem;
+}
+
+.game-score-hero {
+  min-height: 10.6rem;
+  background: #030302;
+  border-bottom: 1px solid var(--border);
+  isolation: isolate;
+}
+
+.game-score-field {
+  position: absolute;
+  inset: 0;
+  opacity: .18;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 2.15rem, rgba(255,255,255,.14) 2.2rem 2.26rem),
+    linear-gradient(90deg, rgba(255,255,255,.1), transparent 16%, transparent 84%, rgba(255,255,255,.1));
+}
+
+.game-score-rail {
+  position: absolute;
+  top: -1rem;
+  bottom: -1rem;
+  width: .72rem;
+  opacity: .96;
+  filter: saturate(1.1);
+}
+
+.game-score-rail-away {
+  left: 4.05rem;
+  transform: rotate(4deg);
+}
+
+.game-score-rail-home {
+  right: 4.05rem;
+  transform: rotate(-4deg);
+}
+
+.game-score-team {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  color: var(--text);
+}
+
+.game-score-team-home {
+  flex-direction: row-reverse;
+}
+
+.game-score-logo-wrap {
+  width: 4.8rem;
+  height: 4.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.game-score-logo {
+  width: 4.55rem;
+  height: 4.55rem;
+}
+
+.game-score-record,
+.game-score-date,
+.game-score-series {
+  color: var(--text-2);
+  font-size: .78rem;
+  line-height: 1.15;
+  font-weight: 850;
+}
+
+.game-score-score {
+  font-size: 2.72rem;
+  line-height: .94;
+  color: var(--text);
+  text-shadow: none;
+}
+
+.game-score-abbr {
+  margin-top: .28rem;
+  font-size: .78rem;
+  line-height: 1.1;
+  font-weight: 950;
+  letter-spacing: .04em;
+}
+
+.game-score-status {
+  margin-top: 1.88rem;
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.1;
+  font-weight: 950;
+}
+
+.game-detail-tabs {
+  background: color-mix(in srgb, var(--surface) 93%, #fff 2%);
+  border-bottom: 1px solid var(--border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+.game-detail-tab {
+  min-height: 3.7rem;
+  padding: .95rem 0 .88rem;
+  color: var(--text-2);
+  font-size: .96rem;
+  line-height: 1.18;
+  font-weight: 950;
+  letter-spacing: .02em;
+}
+
+.game-detail-tab[aria-selected="true"] {
+  color: var(--text);
+}
+
+.game-detail-tab-line {
+  height: .26rem;
+  background: var(--accent);
+}
+
+.game-detail-content {
+  padding: .9rem 0 1.5rem;
+}
+
+.gamecast-shell {
+  display: grid;
+  gap: 0;
+}
+
+.gamecast-toggle {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .16rem;
+  margin: 0 .92rem .92rem;
+  padding: .18rem;
+  background: color-mix(in srgb, var(--surface-2) 82%, #fff 4%);
+  border: 1px solid var(--border);
+  border-radius: .5rem;
+}
+
+.gamecast-toggle-btn {
+  min-height: 2.72rem;
+  border-radius: .38rem;
+  color: var(--text-3);
+  font-size: .9rem;
+  line-height: 1.18;
+  font-weight: 950;
+  letter-spacing: .02em;
+}
+
+.gamecast-toggle-btn.is-active {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text-3) 36%, var(--surface-2));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.gamecast-scoring-list {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.gamecast-scoring-section {
+  border-bottom: 1px solid var(--border);
+}
+
+.gamecast-scoring-head {
+  min-height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .9rem .92rem;
+  background: color-mix(in srgb, var(--surface) 86%, #000 14%);
+}
+
+.gamecast-inning-title {
+  color: var(--text);
+  font-size: 1.2rem;
+  line-height: 1.18;
+  font-weight: 950;
+}
+
+.gamecast-scoring-teamheads {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+}
+
+.gamecast-scoring-row {
+  display: grid;
+  grid-template-columns: 3.1rem minmax(0, 1fr) 2.15rem 2.15rem;
+  gap: .72rem;
+  align-items: center;
+  min-height: 5.6rem;
+  padding: .95rem .92rem;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 94%, #fff 2%);
+}
+
+.gamecast-scoring-logo {
+  width: 2.5rem;
+  min-width: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gamecast-scoring-text {
+  color: var(--text-2);
+  font-size: .88rem;
+  line-height: 1.35;
+  font-weight: 725;
+}
+
+.gamecast-scoring-score {
+  color: var(--text);
+  text-align: center;
+  font-size: 1.05rem;
+  line-height: 1;
+  font-weight: 950;
+}
+
+@media (max-width: 420px) {
+  .game-score-logo-wrap {
+    width: 4.2rem;
+    height: 4.2rem;
+  }
+
+  .game-score-logo {
+    width: 4rem;
+    height: 4rem;
+  }
+
+  .game-score-rail-away { left: 3.55rem; }
+  .game-score-rail-home { right: 3.55rem; }
+  .game-score-score { font-size: 2.42rem; }
+  .game-score-status { margin-top: 1.7rem; }
+  .game-detail-tab { font-size: .9rem; }
+  .gamecast-scoring-row {
+    grid-template-columns: 2.8rem minmax(0, 1fr) 1.92rem 1.92rem;
+    gap: .58rem;
+  }
+}
