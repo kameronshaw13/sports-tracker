@@ -344,10 +344,9 @@ export function getMlbTeamId(abbr: string): number | null {
 }
 
 export function getMlbHeadshotUrl(mlbId: number | string, size = 213): string {
-  // MLB's "spots" endpoint is keyed by MLBAM person id and usually returns a
-  // cleaner transparent cutout than the white-card MLB.com headshot image.
-  void size;
-  return `https://midfield.mlbstatic.com/v1/people/${mlbId}/spots/120`;
+  // Reliable MLBAM-id fallback for players ESPN does not expose headshots for.
+  // CSS blends the white-card background into the app's avatar surface.
+  return `https://img.mlbstatic.com/mlb-photos/image/upload/w_${Math.min(Number(size) || 120, 120)},q_auto:best/v1/people/${mlbId}/headshot/67/current`;
 }
 
 export type MlbSeasonPlayerStatLine = {

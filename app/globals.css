@@ -7295,6 +7295,194 @@ main.retro-page.view-leaguePage {
   }
 }
 
+/* v106: final GameTracker/box score tuning */
+.game-scores-ribbon,
+.game-detail-grabber {
+  display: none !important;
+}
+
+.game-detail-topbar {
+  min-height: 3.08rem !important;
+}
+
+.game-detail-title {
+  font-size: .98rem !important;
+  padding-top: .08rem !important;
+}
+
+.game-score-hero {
+  min-height: 8.35rem !important;
+  background: color-mix(in srgb, var(--surface) 94%, #000 6%) !important;
+}
+
+.game-score-hero > .relative {
+  padding-top: .82rem !important;
+  padding-bottom: .72rem !important;
+}
+
+.game-score-team {
+  transform: translateY(.92rem) !important;
+}
+
+.game-score-team-away .game-score-team-copy {
+  margin-left: .7rem;
+  transform: translateY(.22rem) !important;
+}
+
+.game-score-team-home .game-score-team-copy {
+  margin-right: .7rem;
+  transform: translateY(.22rem) !important;
+}
+
+.game-score-record {
+  display: block;
+  transform: translateY(-.48rem);
+  margin-bottom: -.25rem;
+}
+
+.game-score-logo-wrap {
+  transform: translateY(.66rem) !important;
+}
+
+.game-score-logo {
+  filter:
+    drop-shadow(0 0 1.35px rgba(255,255,255,1))
+    drop-shadow(0 0 2.6px rgba(255,255,255,.86))
+    drop-shadow(0 2px 4px rgba(0,0,0,.5)) !important;
+}
+
+.team-feed-avatar-mlb {
+  background: color-mix(in srgb, var(--surface-2) 90%, #fff 4%) !important;
+}
+
+.team-feed-avatar .team-feed-img-mlb {
+  width: 91% !important;
+  height: 91% !important;
+  object-fit: contain !important;
+  transform: translateY(3%) !important;
+  mix-blend-mode: multiply;
+  filter: contrast(1.06) saturate(1.05);
+}
+
+.boxscore-line-table th:first-child,
+.boxscore-line-table td:first-child {
+  padding-left: .62rem !important;
+}
+
+.boxscore-line-team {
+  transform: translate(.18rem, .08rem) !important;
+  align-items: center;
+}
+
+.boxscore-team-toggle {
+  border-radius: .68rem !important;
+  padding: .2rem !important;
+  gap: .2rem !important;
+  overflow: hidden;
+}
+
+.boxscore-team-toggle button {
+  border-radius: .5rem !important;
+  border: 1px solid transparent !important;
+  min-height: 2.24rem !important;
+  padding-top: .48rem !important;
+  padding-bottom: .4rem !important;
+  transform: none !important;
+  background: transparent;
+}
+
+.boxscore-team-toggle button.is-active {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  box-shadow: none !important;
+}
+
+.boxscore-team-toggle button img {
+  transform: translateY(-.06rem);
+}
+
+.boxscore-team-toggle button {
+  line-height: 1;
+}
+
+.boxscore-team-stats {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: .72rem;
+  overflow: hidden;
+}
+
+.boxscore-team-stats-head,
+.boxscore-team-stat-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3.25rem 3.25rem;
+  align-items: center;
+}
+
+.boxscore-team-stats-head {
+  min-height: 3.1rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.boxscore-team-stats-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boxscore-team-stat-row {
+  min-height: 3.05rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: .88rem;
+  line-height: 1.15;
+  font-weight: 750;
+}
+
+.boxscore-team-stat-row:last-child {
+  border-bottom: 0;
+}
+
+.boxscore-team-stat-row > div:first-child {
+  padding-left: .92rem;
+  color: var(--text);
+  font-weight: 900;
+}
+
+.boxscore-team-stat-row > div:not(:first-child) {
+  text-align: center;
+  font-weight: 850;
+}
+
+.boxscore-player-stat-head {
+  background: var(--surface-2) !important;
+}
+
+.boxscore-player-stat-head th {
+  background: var(--surface-2) !important;
+  color: var(--text-2);
+  font-size: .68rem;
+  font-weight: 950 !important;
+  text-transform: uppercase;
+  letter-spacing: .035em;
+}
+
+@media (max-width: 420px) {
+  .game-score-team-away .game-score-team-copy {
+    margin-left: .45rem;
+  }
+
+  .game-score-team-home .game-score-team-copy {
+    margin-right: .45rem;
+  }
+
+  .boxscore-team-stats-head,
+  .boxscore-team-stat-row {
+    grid-template-columns: minmax(0, 1fr) 2.92rem 2.92rem;
+  }
+}
+
 /* v103: GameTracker/boxscore polish, compact score ribbon, cleaner MLB headshot fallbacks */
 .team-feed-avatar-mlb {
   background: transparent;

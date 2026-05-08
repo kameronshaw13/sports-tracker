@@ -36,7 +36,6 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
 
   return (
     <div className="retro-page -mx-4 sm:mx-0 cbs-game-page game-detail-page">
-      <GameScoresRibbon league={league} eventId={eventId} />
       <GameTopBar title={`${away?.abbr || ""} @ ${home?.abbr || ""}`} onClose={onClose} />
       <ScoreboardHero league={league} home={home} away={away} status={status} situation={situation} eventId={eventId} gameDate={data?.date} onTeamClick={onTeamClick} />
       <div className="game-detail-tabs" role="tablist">
@@ -56,49 +55,12 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
   );
 }
 
-function GameScoresRibbon({ league, eventId }: { league: string; eventId: string }) {
-  const freshKey = useFreshKey();
-  const { data } = useSWR(`/api/league?league=${league}&date=${localDateKey()}&_t=${freshKey}`, fetcher, {
-    refreshInterval: 30_000,
-    dedupingInterval: 12_000,
-    revalidateOnFocus: true,
-  });
-  const events = (data?.events || []).filter((ev: any) => ev?.home && ev?.away);
-  if (events.length <= 1) return null;
-
-  return (
-    <div className="game-scores-ribbon no-scrollbar" aria-label="Other games">
-      {events.map((ev: any) => {
-        const active = String(ev.id) === String(eventId);
-        return (
-          <div key={ev.id} className={`game-score-chip ${active ? "is-active" : ""}`}>
-            <div className="game-score-chip-status">{ev.status?.detail || ""}</div>
-            <ScoreChipTeam team={ev.away} />
-            <ScoreChipTeam team={ev.home} />
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function ScoreChipTeam({ team }: { team: any }) {
-  return (
-    <div className="game-score-chip-team">
-      {team.logo && <Image src={team.logo} alt="" width={18} height={18} className="object-contain logo-outline-dark" unoptimized />}
-      <span>{team.abbr}</span>
-      <b>{team.score ?? ""}</b>
-    </div>
-  );
-}
-
 function GameTopBar({ title, onClose }: { title: string; onClose?: () => void }) {
   return (
     <div className="game-detail-topbar sticky top-0 z-40 flex items-center justify-center px-4">
       <button onClick={onClose} className="game-detail-close absolute left-4 h-10 w-10 flex items-center justify-center" aria-label="Close game">
         <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M18 6 6 18M6 6l12 12" /></svg>
       </button>
-      <div className="game-detail-grabber" aria-hidden="true" />
       <h1 className="game-detail-title retro-title">{title}</h1>
     </div>
   );
@@ -168,12 +130,4 @@ function formatGameDate(value?: string | null): string {
   const d = new Date(value);
   if (isNaN(d.getTime())) return "";
   return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
-}
-
-function localDateKey(): string {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}${m}${day}`;
 }
