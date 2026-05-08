@@ -259,13 +259,18 @@ function cleanupSentence(value: string): string {
 }
 
 function groupByDate<T extends { date?: string | null; renderKey: string; node: React.ReactNode }>(items: T[]) {
-  const map = new Map<string, T[]>();
+  const map = new Map<string, { sortTime: number; rows: T[] }>();
   for (const item of items) {
     const label = dateHeader(item.date);
-    if (!map.has(label)) map.set(label, []);
-    map.get(label)!.push(item);
+    const sortTime = dateSortTime(item.date);
+    if (!map.has(label)) map.set(label, { sortTime, rows: [] });
+    const group = map.get(label)!;
+    group.sortTime = Math.max(group.sortTime, sortTime);
+    group.rows.push(item);
   }
-  return Array.from(map.entries()).map(([label, rows]) => ({ label, items: rows }));
+  return Array.from(map.entries())
+    .sort((a, b) => b[1].sortTime - a[1].sortTime)
+    .map(([label, group]) => ({ label, items: group.rows }));
 }
 
 function dateHeader(value?: string | null): string {
@@ -273,6 +278,12 @@ function dateHeader(value?: string | null): string {
   const d = new Date(value);
   if (isNaN(d.getTime())) return String(value).toUpperCase();
   return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }).toUpperCase();
+}
+
+function dateSortTime(value?: string | null): number {
+  if (!value) return -Infinity;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? -Infinity : d.getTime();
 }
 
 function formatShortDate(value: string): string {

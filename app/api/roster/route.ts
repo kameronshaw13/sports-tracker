@@ -95,7 +95,12 @@ type Player = {
 };
 
 type PositionGroup = { id: string; label: string; players: Player[] };
-type MlbIlTransactionInfo = { date: string | null; type: string | null };
+type MlbIlTransactionInfo = {
+  date: string | null;
+  detail: string | null;
+  ilDesignation: string | null;
+  type: string | null;
+};
 
 function normalizeNameKey(value: any): string {
   return String(value || "")
@@ -257,6 +262,61 @@ function readEspnAthleteFromInjury(inj: any): any | null {
   return inj?.athlete || inj?.player || inj?.person || null;
 }
 
+function titleCaseBodyPart(value: string): string {
+  const normalized = value.toLowerCase() === "quad" || value.toLowerCase() === "quadriceps"
+    ? "Quad"
+    : value;
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1).toLowerCase();
+}
+
+function extractInjuryDetailFromTransaction(value: any): string | null {
+  const text = String(value || "").toLowerCase();
+  const bodyTerms = [
+    "concussion",
+    "illness",
+    "shoulder",
+    "forearm",
+    "elbow",
+    "biceps",
+    "triceps",
+    "wrist",
+    "thumb",
+    "finger",
+    "hand",
+    "oblique",
+    "lat",
+    "rib",
+    "back",
+    "hip",
+    "groin",
+    "hamstring",
+    "quadriceps",
+    "quad",
+    "knee",
+    "calf",
+    "achilles",
+    "ankle",
+    "foot",
+    "toe",
+    "neck",
+  ];
+
+  for (const term of bodyTerms) {
+    const pattern = new RegExp(`\\b${term}\\b`, "i");
+    if (pattern.test(text)) return titleCaseBodyPart(term);
+  }
+  return null;
+}
+
+function extractIlDesignationFromTransaction(value: any): string | null {
+  const text = String(value || "");
+  const dayMatch = text.match(/\b(7|10|15|60)[-\s]*day\b/i);
+  if (dayMatch) return `${dayMatch[1]}-Day IL`;
+  if (/\binjured reserve\b|\bIR\b/i.test(text)) return "IR";
+  if (/\binjured list\b|\binjury list\b|\bIL\b/i.test(text)) return "IL";
+  return null;
+}
+
 async function getMlbIlTransactionsByName(abbr: string): Promise<Map<string, MlbIlTransactionInfo>> {
   const teamId = getMlbTeamId(abbr);
   if (!teamId) return new Map();
@@ -273,13 +333,16 @@ async function getMlbIlTransactionsByName(abbr: string): Promise<Map<string, Mlb
     const name = normalizeNameKey(person?.fullName || person?.displayName || person?.name || tx?.player);
     if (!name || map.has(name)) continue;
 
-    const text = String(tx?.description || tx?.typeDesc || tx?.typeCode || "").toLowerCase();
+    const rawText = String(tx?.description || tx?.typeDesc || tx?.typeCode || "");
+    const text = rawText.toLowerCase();
     const isIlMove = /injured list|injury list|\bil\b|disabled list|injured reserve|\bir\b/.test(text);
     const isPlaced = /placed|transfer|selected|assigned|returned/.test(text) || /injured list|injury list/.test(text);
     if (!isIlMove || !isPlaced) continue;
 
     map.set(name, {
       date: tx?.date || tx?.effectiveDate || null,
+      detail: extractInjuryDetailFromTransaction(rawText),
+      ilDesignation: extractIlDesignationFromTransaction(rawText),
       type: tx?.typeDesc || tx?.typeCode || null,
     });
   }
@@ -564,7 +627,8 @@ async function handleMlb(abbr: string) {
             returnDate: null,
           }),
           date: ilTx.date || player.injury?.date || null,
-          ilDesignation: player.injury?.ilDesignation || player.statusLabel || ilTx.type || null,
+          detail: ilTx.detail || player.injury?.detail || null,
+          ilDesignation: player.injury?.ilDesignation || ilTx.ilDesignation || player.statusLabel || ilTx.type || null,
         };
       }
     }
