@@ -5345,7 +5345,7 @@ main.retro-page {
   width: 4rem !important;
   height: 4rem !important;
   flex-basis: 4rem !important;
-  transform: translateY(-.34rem) !important;
+  transform: translateY(-.24rem) !important;
 }
 
 .team-page-logo-box .score-team-logo-wrap,
