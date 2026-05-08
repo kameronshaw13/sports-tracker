@@ -5115,6 +5115,27 @@ main.retro-page {
   margin-top: 0 !important;
 }
 
+/* v67: tiny final header nudge and logo scale */
+.team-page-shell {
+  --team-fixed-header-height: calc(9.68rem + env(safe-area-inset-top));
+}
+
+.team-page-content {
+  padding-top: var(--team-fixed-header-height) !important;
+}
+
+.team-page-logo-box {
+  width: 3.7rem !important;
+  height: 3.7rem !important;
+  flex-basis: 3.7rem !important;
+}
+
+.team-page-logo-box .score-team-logo-wrap,
+.team-page-logo-box .espn-team-logo-wrap {
+  width: 3.5rem !important;
+  height: 3.5rem !important;
+}
+
 .home-live-situation {
   right: .08rem;
   gap: .4rem;
