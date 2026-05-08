@@ -108,7 +108,7 @@ function MlbLineScore({ lineScore }: { lineScore: any }) {
           </colgroup>
           <thead>
             <tr style={{ background: "var(--surface-2)", color: "var(--text-3)" }}>
-              <th className="text-left px-1.5 py-2 font-semibold">Team</th>
+              <th className="text-left px-1.5 py-2 font-semibold" aria-label="Team"></th>
               {Array.from({ length: innings }).map((_, i) => <th key={i} className="text-center px-1 py-2 font-semibold">{i + 1}</th>)}
               <th className="text-center px-1 py-2 font-black">R</th>
               <th className="text-center px-1 py-2 font-black">H</th>
@@ -225,11 +225,43 @@ function teamStatValue(teamBox: any, keys: string[], lineKey: string | undefined
     return name.includes("bat") || name.includes("hit");
   }) || teamBox.groups?.[0];
 
+  const totalFromGroup = groupTotalValue(hitting, keys);
+  if (totalFromGroup != null) return totalFromGroup;
+
   const total = (hitting?.athletes || []).reduce((sum: number, player: any) => {
-    const stat = keys.map((key) => player?.stats?.[key]).find((value) => value != null && value !== "" && value !== "—");
+    const stat = keys.flatMap((key) => statKeyVariants(key)).map((key) => player?.stats?.[key]).find((value) => value != null && value !== "" && value !== "—");
     return sum + numericBoxStat(stat);
   }, 0);
   return String(total);
+}
+
+function groupTotalValue(group: any, keys: string[]): string | null {
+  if (!group) return null;
+  const labels: string[] = Array.isArray(group.keys) ? group.keys : [];
+  const totals = group.totals;
+  if (!Array.isArray(totals) || !labels.length) return null;
+  for (const key of keys.flatMap((k) => statKeyVariants(k))) {
+    const index = labels.findIndex((label) => canonicalStatKey(label) === canonicalStatKey(key));
+    const value = index >= 0 ? totals[index] : null;
+    if (value != null && value !== "" && value !== "—") return String(value);
+  }
+  return null;
+}
+
+function statKeyVariants(key: string): string[] {
+  const variants: Record<string, string[]> = {
+    "2B": ["2B", "Doubles", "Double"],
+    "3B": ["3B", "Triples", "Triple"],
+    TB: ["TB", "Total Bases", "TotalBases"],
+    HBP: ["HBP", "Hit By Pitch", "Hit by Pitch", "HitByPitch"],
+    SO: ["SO", "K", "Strikeouts", "Strike Outs"],
+    BB: ["BB", "Walks", "Base on Balls", "BaseOnBalls"],
+  };
+  return variants[key] || [key];
+}
+
+function canonicalStatKey(value: string): string {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
 function numericBoxStat(value: any): number {
@@ -383,8 +415,9 @@ function displayGroupName(league: string, group: any): string {
   const raw = String(group?.name || "Stats");
   if (league === "mlb") {
     const lower = raw.toLowerCase();
-    if (lower.includes("bat") || lower.includes("hit")) return "Hitters";
-    if (lower.includes("pitch")) return "Pitchers";
+    const keys = Array.isArray(group?.keys) ? group.keys.join(" ").toLowerCase() : "";
+    if (lower.includes("bat") || lower.includes("hit") || /\bab\b/.test(keys)) return "Hitters";
+    if (lower.includes("pitch") || /\b(ip|era|pc-st)\b/.test(keys)) return "Pitchers";
   }
   return raw;
 }

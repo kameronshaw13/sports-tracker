@@ -97,6 +97,10 @@ function readTransactionAthlete(item: any): any {
   );
 }
 
+function readInjuryAthlete(item: any): any {
+  return item?.athlete || item?.player || item?.person || {};
+}
+
 function getByName<T>(map: Map<string, T>, name: string): T | undefined {
   const key = normalizeNameKey(name);
   if (map.has(key)) return map.get(key);
@@ -125,6 +129,19 @@ async function getMlbEspnProfilesByName(abbr: string): Promise<Map<string, any>>
     for (const athlete of parseAthletes(data)) {
       const key = normalizeNameKey(athlete?.fullName || athlete?.displayName || athlete?.name);
       if (key) map.set(key, athlete);
+    }
+    const injuries = data?.team?.injuries || data?.injuries || [];
+    if (Array.isArray(injuries)) {
+      for (const injury of injuries) {
+        const athlete = readInjuryAthlete(injury);
+        const key = normalizeNameKey(athlete?.fullName || athlete?.displayName || athlete?.name);
+        if (key && athlete) map.set(key, athlete);
+      }
+    }
+    for (const tx of extractTransactions(data)) {
+      const athlete = readTransactionAthlete(tx);
+      const key = normalizeNameKey(athlete?.fullName || athlete?.displayName || athlete?.name);
+      if (key && athlete) map.set(key, athlete);
     }
     if (map.size > 0) break;
   }
