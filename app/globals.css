@@ -7144,6 +7144,157 @@ main.retro-page.view-leaguePage {
   }
 }
 
+/* v105: team stats restore polish + GameTracker and boxscore tightening */
+.team-feed-avatar-mlb {
+  background: color-mix(in srgb, var(--surface-2) 90%, #fff 4%);
+}
+
+.team-feed-avatar .team-feed-img-mlb {
+  width: 88%;
+  height: 88%;
+  object-fit: contain;
+  transform: translateY(3%);
+}
+
+.game-score-hero {
+  min-height: 8.85rem;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 92%, #000 8%), var(--surface));
+}
+
+.game-score-field {
+  opacity: .08;
+}
+
+.game-score-rail {
+  display: none;
+}
+
+.game-score-hero > .relative {
+  padding-top: 1.45rem !important;
+  padding-bottom: 1rem !important;
+}
+
+.game-score-team {
+  align-items: center;
+  transform: translateY(.72rem);
+}
+
+.game-score-team-copy {
+  transform: translateY(.34rem);
+}
+
+.game-score-logo-wrap {
+  transform: translateY(.5rem);
+}
+
+.game-score-logo {
+  filter:
+    drop-shadow(0 0 .95px rgba(255,255,255,.95))
+    drop-shadow(0 0 1.85px rgba(255,255,255,.7))
+    drop-shadow(0 2px 4px rgba(0,0,0,.45));
+}
+
+.game-score-abbr {
+  display: none;
+}
+
+.game-score-score {
+  margin-top: .18rem;
+}
+
+.boxscore-line-table {
+  overflow-x: auto;
+}
+
+.boxscore-line-table table {
+  table-layout: fixed;
+  min-width: 22.2rem;
+}
+
+.boxscore-line-team-col {
+  width: 4.65rem;
+}
+
+.boxscore-line-inning-col {
+  width: 1.32rem;
+}
+
+.boxscore-line-total-col {
+  width: 1.45rem;
+}
+
+.boxscore-line-table th,
+.boxscore-line-table td {
+  padding-left: .18rem !important;
+  padding-right: .18rem !important;
+}
+
+.boxscore-line-team {
+  transform: translateY(.05rem);
+  line-height: 1.18;
+}
+
+.boxscore-team-toggle {
+  align-items: stretch;
+  border-radius: 0;
+}
+
+.boxscore-team-toggle button {
+  padding-top: .48rem;
+  padding-bottom: .34rem;
+  transform: translateY(.04rem);
+}
+
+.boxscore-team-toggle button.is-active {
+  box-shadow: none;
+  border: 1px solid var(--border);
+}
+
+.boxscore-team-stats-label {
+  flex: .92;
+  min-height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: .4rem .45rem .32rem;
+  color: var(--text-2);
+  font-size: .68rem;
+  line-height: 1;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: .035em;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+@media (max-width: 420px) {
+  .game-score-hero {
+    min-height: 8.65rem;
+  }
+
+  .game-score-team {
+    transform: translateY(.68rem);
+  }
+
+  .game-score-logo-wrap {
+    transform: translateY(.48rem);
+  }
+
+  .boxscore-line-table table {
+    min-width: 21.6rem;
+  }
+
+  .boxscore-line-team-col {
+    width: 4.35rem;
+  }
+
+  .boxscore-line-inning-col {
+    width: 1.22rem;
+  }
+}
+
 /* v103: GameTracker/boxscore polish, compact score ribbon, cleaner MLB headshot fallbacks */
 .team-feed-avatar-mlb {
   background: transparent;

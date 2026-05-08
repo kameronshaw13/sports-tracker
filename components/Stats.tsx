@@ -19,7 +19,7 @@ export default function Stats({ team, onPlayerClick }: Props) {
     revalidateOnReconnect: false,
   };
   const { data: teamData } = useSWR(
-    `/api/team?team=${team.key}&stats=v2`,
+    `/api/team?team=${team.key}&stats=v3`,
     fetcher,
     staticStatsOptions
   );

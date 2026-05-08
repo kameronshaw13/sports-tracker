@@ -361,6 +361,18 @@ export type MlbSeasonPlayerStatLine = {
   stat: Record<string, any>;
 };
 
+type MlbTeamStatRow = {
+  label: string;
+  key: string;
+  displayValue: string;
+  rank: number | null;
+};
+
+export type MlbTeamSeasonStats = {
+  hitting: MlbTeamStatRow[];
+  pitching: MlbTeamStatRow[];
+};
+
 export async function getMlbSeasonPlayerStats(
   abbr: string,
   year?: number
@@ -396,13 +408,184 @@ export async function getMlbSeasonPlayerStats(
 }
 
 
-// Backward-compatible alias used by older /api/team builds.
-// It returns all MLB player season lines for a team from MLB StatsAPI.
 export async function getMlbTeamSeasonStats(
   abbr: string,
   year?: number
-): Promise<MlbSeasonPlayerStatLine[]> {
-  return getMlbSeasonPlayerStats(abbr, year);
+): Promise<MlbTeamSeasonStats> {
+  const teamId = getMlbTeamId(abbr);
+  const season = year || currentSeasonYear("mlb");
+  if (!teamId) return { hitting: [], pitching: [] };
+
+  const hittingDefs = [
+    ["AB", "atBats", "desc"],
+    ["R", "runs", "desc"],
+    ["H", "hits", "desc"],
+    ["2B", "doubles", "desc"],
+    ["3B", "triples", "desc"],
+    ["HR", "homeRuns", "desc"],
+    ["RBI", "rbi", "desc"],
+    ["AVG", "avg", "desc"],
+    ["OBP", "obp", "desc"],
+    ["SLG", "slg", "desc"],
+    ["OPS", "ops", "desc"],
+  ] as const;
+  const pitchingDefs = [
+    ["ERA", "era", "asc"],
+    ["OBA", "avg", "asc"],
+    ["OOBP", "obp", "asc"],
+    ["OSLG", "slg", "asc"],
+    ["OOPS", "ops", "asc"],
+    ["K", "strikeOuts", "desc"],
+    ["BB", "baseOnBalls", "asc"],
+    ["SV", "saves", "desc"],
+    ["SVOP", "saveOpportunities", "desc"],
+  ] as const;
+
+  const buildFromTeamStats = async (group: "hitting" | "pitching", defs: readonly (readonly [string, string, "asc" | "desc"])[]) => {
+    const splits = await fetchMlbTeamStatSplits(group, season);
+    const teamSplit = splits.find((split: any) => Number(split?.team?.id) === teamId);
+    const stat = teamSplit?.stat || null;
+    if (!stat) return [];
+    return defs.map(([label, key, direction]) => ({
+      label,
+      key,
+      displayValue: formatMlbTeamStatValue(stat[key], key),
+      rank: rankMlbTeamStat(splits, key, teamId, direction),
+    }));
+  };
+
+  let [hitting, pitching] = await Promise.all([
+    buildFromTeamStats("hitting", hittingDefs),
+    buildFromTeamStats("pitching", pitchingDefs),
+  ]);
+
+  if (!hitting.length || !pitching.length) {
+    const playerLines = await getMlbSeasonPlayerStats(abbr, season);
+    if (!hitting.length) hitting = buildMlbAggregateRows(aggregateMlbLines(playerLines.filter((line) => line.group === "hitting"), "hitting"), hittingDefs);
+    if (!pitching.length) pitching = buildMlbAggregateRows(aggregateMlbLines(playerLines.filter((line) => line.group === "pitching"), "pitching"), pitchingDefs);
+  }
+
+  return { hitting, pitching };
+}
+
+async function fetchMlbTeamStatSplits(group: "hitting" | "pitching", season: number): Promise<any[]> {
+  const uniqueTeamIds = Array.from(new Set(Object.values(MLB_TEAM_IDS))).join(",");
+  const urls = [
+    `${MLB_STATSAPI}/teams/stats?stats=season&group=${group}&season=${season}&gameType=R&sportIds=1`,
+    `${MLB_STATSAPI}/teams/stats?stats=season&group=${group}&season=${season}&gameType=R&teamIds=${uniqueTeamIds}`,
+  ];
+
+  for (const url of urls) {
+    try {
+      const data = await fetchJson(url, 1800);
+      const splits = extractMlbStatSplits(data);
+      if (splits.length) return splits;
+    } catch {}
+  }
+  return [];
+}
+
+function extractMlbStatSplits(data: any): any[] {
+  if (!Array.isArray(data?.stats)) return [];
+  return data.stats.flatMap((bucket: any) => Array.isArray(bucket?.splits) ? bucket.splits : []);
+}
+
+function rankMlbTeamStat(splits: any[], key: string, teamId: number, direction: "asc" | "desc"): number | null {
+  const rows = splits
+    .map((split: any) => ({ teamId: Number(split?.team?.id), value: numericMlbStat(split?.stat?.[key]) }))
+    .filter((row) => row.teamId && Number.isFinite(row.value));
+  if (!rows.length) return null;
+  rows.sort((a, b) => direction === "asc" ? a.value - b.value : b.value - a.value);
+  const index = rows.findIndex((row) => row.teamId === teamId);
+  return index >= 0 ? index + 1 : null;
+}
+
+function buildMlbAggregateRows(stat: Record<string, any>, defs: readonly (readonly [string, string, "asc" | "desc"])[]): MlbTeamStatRow[] {
+  return defs.map(([label, key]) => ({
+    label,
+    key,
+    displayValue: formatMlbTeamStatValue(stat[key], key),
+    rank: null,
+  }));
+}
+
+function aggregateMlbLines(lines: MlbSeasonPlayerStatLine[], group: "hitting" | "pitching"): Record<string, any> {
+  const sum = (key: string) => lines.reduce((acc, line) => acc + numericMlbStat(line.stat?.[key]), 0);
+  if (group === "hitting") {
+    const atBats = sum("atBats");
+    const hits = sum("hits");
+    const doubles = sum("doubles");
+    const triples = sum("triples");
+    const homeRuns = sum("homeRuns");
+    const walks = sum("baseOnBalls");
+    const hbp = sum("hitByPitch");
+    const sacFlies = sum("sacFlies");
+    const totalBases = sum("totalBases") || (hits + doubles + (triples * 2) + (homeRuns * 3));
+    const obpDenom = atBats + walks + hbp + sacFlies;
+    return {
+      atBats,
+      runs: sum("runs"),
+      hits,
+      doubles,
+      triples,
+      homeRuns,
+      rbi: sum("rbi"),
+      avg: atBats ? hits / atBats : 0,
+      obp: obpDenom ? (hits + walks + hbp) / obpDenom : 0,
+      slg: atBats ? totalBases / atBats : 0,
+      ops: (obpDenom ? (hits + walks + hbp) / obpDenom : 0) + (atBats ? totalBases / atBats : 0),
+    };
+  }
+
+  const innings = lines.reduce((acc, line) => acc + inningsToNumber(line.stat?.inningsPitched), 0);
+  const earnedRuns = sum("earnedRuns");
+  const atBats = sum("atBats");
+  const hits = sum("hits");
+  const walks = sum("baseOnBalls");
+  const hbp = sum("hitBatsmen") || sum("hitByPitch");
+  const sacFlies = sum("sacFlies");
+  const totalBases = sum("totalBases") || hits + sum("doubles") + (sum("triples") * 2) + (sum("homeRuns") * 3);
+  const obpDenom = atBats + walks + hbp + sacFlies;
+  const avg = atBats ? hits / atBats : 0;
+  const obp = obpDenom ? (hits + walks + hbp) / obpDenom : 0;
+  const slg = atBats ? totalBases / atBats : 0;
+  return {
+    era: innings ? (earnedRuns * 9) / innings : 0,
+    avg,
+    obp,
+    slg,
+    ops: obp + slg,
+    strikeOuts: sum("strikeOuts"),
+    baseOnBalls: walks,
+    saves: sum("saves"),
+    saveOpportunities: sum("saveOpportunities"),
+  };
+}
+
+function numericMlbStat(value: any): number {
+  if (typeof value === "number") return value;
+  const n = Number(String(value ?? "").replace(/[^0-9.-]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+}
+
+function inningsToNumber(value: any): number {
+  const text = String(value ?? "0");
+  const [whole, frac] = text.split(".");
+  const outs = Number(whole || 0) * 3 + Number(frac || 0);
+  return outs / 3;
+}
+
+function formatMlbTeamStatValue(value: any, key: string): string {
+  if (value == null || value === "") return "—";
+  if (["avg", "obp", "slg", "ops"].includes(key)) {
+    const n = numericMlbStat(value);
+    return n ? n.toFixed(3).replace(/^0/, "") : ".000";
+  }
+  if (key === "era") {
+    const n = numericMlbStat(value);
+    return Number.isFinite(n) ? n.toFixed(2) : "—";
+  }
+  return String(Math.round(numericMlbStat(value)));
 }
 
 export async function getMlbPersonSeasonStats(

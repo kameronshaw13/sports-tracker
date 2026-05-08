@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import type React from "react";
 import { useState } from "react";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
@@ -58,16 +59,17 @@ export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Pro
       <div>
         <div className="boxscore-team-toggle">
           {data.teams.map((t: any, i: number) => (
-            <button
-              key={t.team.id}
-              onClick={() => setActiveTeamIdx(i)}
-              className={activeTeamIdx === i ? "is-active" : ""}
-            >
-              {t.team.logo && (
-                <Image src={t.team.logo} alt="" width={20} height={20} className="object-contain logo-outline-dark" unoptimized />
-              )}
-              {t.team.abbr}
-            </button>
+            <FragmentWithTeamStats key={t.team.id} showLabelAfter={i === 0 && data.teams.length > 1}>
+              <button
+                onClick={() => setActiveTeamIdx(i)}
+                className={activeTeamIdx === i ? "is-active" : ""}
+              >
+                {t.team.logo && (
+                  <Image src={t.team.logo} alt="" width={20} height={20} className="object-contain logo-outline-dark" unoptimized />
+                )}
+                {t.team.abbr}
+              </button>
+            </FragmentWithTeamStats>
           ))}
         </div>
 
@@ -89,6 +91,13 @@ function MlbLineScore({ lineScore }: { lineScore: any }) {
     <div>
       <div className="boxscore-line-table">
         <table className="w-full text-[10px] sm:text-xs table-fixed">
+          <colgroup>
+            <col className="boxscore-line-team-col" />
+            {Array.from({ length: innings }).map((_, i) => <col key={i} className="boxscore-line-inning-col" />)}
+            <col className="boxscore-line-total-col" />
+            <col className="boxscore-line-total-col" />
+            <col className="boxscore-line-total-col" />
+          </colgroup>
           <thead>
             <tr style={{ background: "var(--surface-2)", color: "var(--text-3)" }}>
               <th className="text-left px-1.5 py-2 font-semibold">Team</th>
@@ -150,6 +159,15 @@ function LeaderCard({ cat, teamLogo, teamAbbr, league, teamKey, onPlayerClick }:
         </div>
       </div>
     </Wrapper>
+  );
+}
+
+function FragmentWithTeamStats({ children, showLabelAfter }: { children: React.ReactNode; showLabelAfter: boolean }) {
+  return (
+    <>
+      {children}
+      {showLabelAfter && <div className="boxscore-team-stats-label">Team Stats</div>}
+    </>
   );
 }
 
@@ -230,13 +248,12 @@ function looksLikeGoalies(group: any, keys: string[]): boolean {
 // in ESPN's NHL boxscore.
 function canonicalLabel(key: string): string {
   if (key === "S" || key === "SOG") return "SOG";
-  if (key === "HT" || key === "H") return "HT";
+  if (key === "HT" || key === "H") return "H";
   return key;
 }
 
 function StatGroup({ group, league, teamKey, onPlayerClick }: { group: any; league: string; teamKey?: string; onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void }) {
-  const [expanded, setExpanded] = useState(false);
-  const visible = expanded ? group.athletes : group.athletes.slice(0, 5);
+  const visible = group.athletes;
 
   if (group.athletes.length === 0) return null;
 
@@ -292,15 +309,6 @@ function StatGroup({ group, league, teamKey, onPlayerClick }: { group: any; leag
           </tbody>
         </table>
       </div>
-      {group.athletes.length > 5 && (
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="w-full px-3 py-2 text-xs font-medium border-t"
-          style={{ borderColor: "var(--border)", color: "var(--text-2)" }}
-        >
-          {expanded ? "Show less" : `Show all ${group.athletes.length}`}
-        </button>
-      )}
     </div>
   );
 }

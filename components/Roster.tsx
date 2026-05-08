@@ -206,7 +206,9 @@ function DatedFeed({ groups, fallbackLabel }: { groups: { label: string; items: 
 
 function Headshot({ player, size }: { player: Pick<Player, "name" | "headshot" | "id">; size: number }) {
   const [failed, setFailed] = useState(false);
-  const isMlbFallback = /midfield\.mlbstatic\.com|img\.mlbstatic\.com|mlb-photos/i.test(player.headshot || "");
+  const fallbackSrc = fallbackMlbHeadshot(player.headshot || "");
+  const [src, setSrc] = useState(player.headshot || "");
+  const isMlbFallback = /midfield\.mlbstatic\.com|img\.mlbstatic\.com|mlb-photos/i.test(src);
   const initials = player.name
     .split(/\s+/)
     .filter(Boolean)
@@ -216,20 +218,29 @@ function Headshot({ player, size }: { player: Pick<Player, "name" | "headshot" |
 
   return (
     <div className={`team-feed-avatar ${isMlbFallback ? "team-feed-avatar-mlb" : ""}`} style={{ width: size, height: size }}>
-      {player.headshot && !failed ? (
+      {src && !failed ? (
         <Image
-          src={player.headshot}
+          src={src}
           alt={player.name}
           width={size}
           height={size}
           className={isMlbFallback ? "team-feed-img-mlb" : "object-cover"}
-          onError={() => setFailed(true)}
+          onError={() => {
+            if (fallbackSrc && src !== fallbackSrc) setSrc(fallbackSrc);
+            else setFailed(true);
+          }}
         />
       ) : (
         <span>{initials || "—"}</span>
       )}
     </div>
   );
+}
+
+function fallbackMlbHeadshot(src: string): string | null {
+  const match = src.match(/midfield\.mlbstatic\.com\/v1\/people\/(\d+)\/spots/i);
+  if (!match) return null;
+  return `https://img.mlbstatic.com/mlb-photos/image/upload/w_120,q_auto:best/v1/people/${match[1]}/headshot/67/current`;
 }
 
 function injuryLine(player: Player): string {
