@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import useSWR from "swr";
 import { TeamConfig } from "@/lib/teams";
 import { SECTIONS_BY_LEAGUE, Section } from "@/lib/playerColumns";
@@ -130,7 +130,6 @@ function MlbBattingPitching({ sections, players, onPlayerClick }: { sections: Se
   const battingSection = sections.find((s) => s.id === "batting");
   const startersSection = sections.find((s) => s.id === "starters");
   const relieversSection = sections.find((s) => s.id === "relievers");
-  const pitchingSection = buildMlbPitchingSection(startersSection, relieversSection);
 
   const [active, setActive] = useState<"batting" | "pitching">("batting");
   const playerTabs = [
@@ -146,31 +145,35 @@ function MlbBattingPitching({ sections, players, onPlayerClick }: { sections: Se
         <PlayersTable section={battingSection} players={players} onPlayerClick={onPlayerClick} />
       )}
 
-      {active === "pitching" && pitchingSection && (
-        <PlayersTable section={pitchingSection} players={players} onPlayerClick={onPlayerClick} />
+      {active === "pitching" && (
+        <div className="player-pitching-groups">
+          {startersSection && (
+            <PlayerStatsGroup title="Starters">
+              <PlayersTable section={asPitchingGroupSection(startersSection)} players={players} onPlayerClick={onPlayerClick} />
+            </PlayerStatsGroup>
+          )}
+          {relieversSection && (
+            <PlayerStatsGroup title="Relievers">
+              <PlayersTable section={asPitchingGroupSection(relieversSection)} players={players} onPlayerClick={onPlayerClick} />
+            </PlayerStatsGroup>
+          )}
+        </div>
       )}
     </div>
   );
 }
 
-function buildMlbPitchingSection(startersSection?: Section, relieversSection?: Section): Section | undefined {
-  if (!startersSection && !relieversSection) return undefined;
+function asPitchingGroupSection(section: Section): Section {
+  return { ...section, id: `pitching-${section.id}` };
+}
 
-  const columns = [
-    ...(startersSection?.columns || []),
-    ...(relieversSection?.columns || []),
-  ].filter((column, index, all) => (
-    all.findIndex((candidate) => candidate.category === column.category && candidate.name === column.name) === index
-  ));
-
-  return {
-    id: "pitching",
-    label: "Pitching",
-    qualifier: { category: "pitching", name: "innings" },
-    positions: ["SP", "RP", "CL", "P"],
-    defaultSort: { column: "ERA", dir: "asc" },
-    columns,
-  };
+function PlayerStatsGroup({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="player-stats-group">
+      <div className="player-stats-group-title">{title}</div>
+      {children}
+    </section>
+  );
 }
 
 function StackedSections({ sections, players, onPlayerClick }: { sections: Section[]; players: Player[]; onPlayerClick?: (p: Player) => void }) {

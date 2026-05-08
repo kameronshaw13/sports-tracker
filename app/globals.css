@@ -6561,3 +6561,18 @@ main.retro-page.view-leaguePage {
   padding-left: 0 !important;
   padding-right: .06rem !important;
 }
+
+/* v91: hockey-style MLB pitching groups with reliable scroll and smaller end spacer */
+.player-stats-table.player-stats-pitching-starters .player-stats-scroll > table,
+.player-stats-table.player-stats-pitching-relievers .player-stats-scroll > table {
+  width: max(var(--player-stats-table-width), 39rem) !important;
+  min-width: max(var(--player-stats-table-width), 39rem) !important;
+}
+
+.player-stats-table .player-stats-scroll .player-stat-end-spacer,
+.player-stats-table .player-stats-scroll th.player-stat-end-spacer:first-child,
+.player-stats-table .player-stats-scroll td.player-stat-end-spacer:first-child {
+  min-width: .72rem !important;
+  width: .72rem !important;
+  max-width: .72rem !important;
+}

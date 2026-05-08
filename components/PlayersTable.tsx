@@ -86,7 +86,7 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
   }, [eligible]);
 
   const statColumnWidth = 2.52;
-  const endSpacerWidth = 1.1;
+  const endSpacerWidth = 0.72;
   const statColumnsWidth = section.columns.length * statColumnWidth + endSpacerWidth;
   const tableWidth = nameColumnWidth + statColumnsWidth;
 
