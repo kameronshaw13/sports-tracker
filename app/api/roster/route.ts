@@ -262,6 +262,51 @@ function readEspnAthleteFromInjury(inj: any): any | null {
   return inj?.athlete || inj?.player || inj?.person || null;
 }
 
+function readEspnAthleteFromTransaction(tx: any): any | null {
+  return (
+    tx?.athlete ||
+    tx?.player ||
+    tx?.person ||
+    tx?.participant?.athlete ||
+    tx?.participants?.[0]?.athlete ||
+    tx?.athletes?.[0] ||
+    null
+  );
+}
+
+function extractTransactions(data: any): any[] {
+  if (!data) return [];
+  const direct = data?.transactions || data?.team?.transactions || data?.items || data?.events;
+  if (Array.isArray(direct)) return direct;
+
+  const found: any[] = [];
+  const visited = new Set<any>();
+  const walk = (value: any, depth: number) => {
+    if (!value || depth > 5 || visited.has(value)) return;
+    if (typeof value !== "object") return;
+    visited.add(value);
+    for (const [key, child] of Object.entries(value)) {
+      if (/transactions?/i.test(key) && Array.isArray(child)) {
+        found.push(...child);
+      } else if (child && typeof child === "object") {
+        walk(child, depth + 1);
+      }
+    }
+  };
+  walk(data, 0);
+  return found;
+}
+
+function mergeEspnTransactionAthletes(data: any, map: Map<string, any>) {
+  for (const tx of extractTransactions(data)) {
+    const athlete = readEspnAthleteFromTransaction(tx);
+    const name = normalizeNameKey(athlete?.fullName || athlete?.displayName || athlete?.name);
+    if (!name || !athlete) continue;
+    const existing = map.get(name);
+    if (!existing || !readEspnHeadshot(existing, "mlb", existing?.id)) map.set(name, athlete);
+  }
+}
+
 function titleCaseBodyPart(value: string): string {
   const normalized = value.toLowerCase() === "quad" || value.toLowerCase() === "quadriceps"
     ? "Quad"
@@ -593,6 +638,10 @@ async function handleMlb(abbr: string) {
       }
     } catch {}
   }
+  try {
+    const teamData = await getTeamPage("mlb", abbr, ["transactions"]);
+    mergeEspnTransactionAthletes(teamData, espnByName);
+  } catch {}
 
   const players: Player[] = [];
 

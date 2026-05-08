@@ -28,6 +28,8 @@ type Transaction = {
   type?: string | null;
 };
 
+const TRANSACTION_LOOKBACK_DAYS = 24;
+
 function path(league: string): string {
   const p = PATHS[league];
   if (!p) throw new Error(`Unknown league: ${league}`);
@@ -83,6 +85,18 @@ function readEspnHeadshot(profile: any, league: string): string | null {
   );
 }
 
+function readTransactionAthlete(item: any): any {
+  return (
+    item?.athlete ||
+    item?.player ||
+    item?.person ||
+    item?.participant?.athlete ||
+    item?.participants?.[0]?.athlete ||
+    item?.athletes?.[0] ||
+    {}
+  );
+}
+
 function getByName<T>(map: Map<string, T>, name: string): T | undefined {
   const key = normalizeNameKey(name);
   if (map.has(key)) return map.get(key);
@@ -121,7 +135,7 @@ async function getMlbTransactions(abbr: string): Promise<Transaction[]> {
   const teamId = getMlbTeamId(abbr);
   if (!teamId) return [];
 
-  const startDate = todayMinus(60);
+  const startDate = todayMinus(TRANSACTION_LOOKBACK_DAYS);
   const endDate = new Date().toISOString().slice(0, 10);
   const [data, espnByName, espnTransactions] = await Promise.all([
     fetchJson(`${MLB_STATSAPI}/transactions?teamId=${teamId}&startDate=${startDate}&endDate=${endDate}`),
@@ -133,9 +147,14 @@ async function getMlbTransactions(abbr: string): Promise<Transaction[]> {
       .filter((tx) => tx.headshot)
       .map((tx) => [normalizeNameKey(tx.playerName), tx])
   );
+  const cutoffTime = new Date(startDate).getTime();
   const items: any[] = data?.transactions || [];
 
   return items
+    .filter((tx) => {
+      const time = new Date(tx?.date || tx?.effectiveDate || 0).getTime();
+      return Number.isFinite(time) && time >= cutoffTime;
+    })
     .map((tx, index) => {
       const person = tx?.person || tx?.player || {};
       const playerId = person?.id ? String(person.id) : null;
@@ -157,7 +176,7 @@ async function getMlbTransactions(abbr: string): Promise<Transaction[]> {
     })
     .filter((tx) => tx.playerName && tx.text)
     .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
-    .slice(0, 60);
+    .slice(0, 40);
 }
 
 async function getEspnTransactions(league: string, abbr: string): Promise<Transaction[]> {
@@ -217,7 +236,7 @@ function extractTransactions(data: any): any[] {
 
 function normalizeEspnTransaction(item: any, league: string, index: number): Transaction | null {
   if (!item || typeof item !== "object") return null;
-  const athlete = item?.athlete || item?.player || item?.person || item?.participants?.[0]?.athlete || {};
+  const athlete = readTransactionAthlete(item);
   const playerId = athlete?.id ? String(athlete.id) : item?.athleteId ? String(item.athleteId) : null;
   const playerName =
     athlete?.fullName ||
