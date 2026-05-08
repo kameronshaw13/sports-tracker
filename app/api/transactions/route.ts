@@ -54,7 +54,15 @@ function todayMinus(days: number) {
 }
 
 function normalizeNameKey(value: any): string {
-  return String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[.'-]/g, "")
+    .replace(/\b(jr|sr|ii|iii|iv|v)\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function parseAthletes(data: any): any[] {
@@ -73,6 +81,19 @@ function readEspnHeadshot(profile: any, league: string): string | null {
     (typeof profile?.headshot === "string" ? profile.headshot : null) ||
     (id ? `https://a.espncdn.com/i/headshots/${league}/players/full/${id}.png` : null)
   );
+}
+
+function getByName<T>(map: Map<string, T>, name: string): T | undefined {
+  const key = normalizeNameKey(name);
+  if (map.has(key)) return map.get(key);
+  const parts = key.split(" ").filter(Boolean);
+  if (parts.length < 2) return undefined;
+  const last = parts[parts.length - 1];
+  const first = parts[0];
+  for (const [candidate, value] of map.entries()) {
+    if (candidate.endsWith(` ${last}`) && candidate.startsWith(first)) return value;
+  }
+  return undefined;
 }
 
 async function getMlbEspnProfilesByName(abbr: string): Promise<Map<string, any>> {
@@ -121,8 +142,8 @@ async function getMlbTransactions(abbr: string): Promise<Transaction[]> {
       const playerName = person?.fullName || person?.displayName || person?.name || tx?.player || "Team Transaction";
       const type = tx?.typeDesc || tx?.typeCode || tx?.description || "Transaction";
       const text = cleanupTransactionText(tx?.description || tx?.typeDesc || type, String(playerName));
-      const espnProfile = espnByName.get(normalizeNameKey(playerName));
-      const espnTx = espnTxByName.get(normalizeNameKey(playerName));
+      const espnProfile = getByName(espnByName, playerName);
+      const espnTx = getByName(espnTxByName, playerName);
       return {
         id: String(tx?.id || `${playerId || playerName}-${tx?.date || index}-${index}`),
         date: tx?.date || tx?.effectiveDate || null,

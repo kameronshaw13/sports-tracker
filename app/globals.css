@@ -6831,12 +6831,18 @@ main.retro-page.view-leaguePage {
 /* v97: roster feed centering and transaction density */
 .team-roster-table-head {
   align-items: center;
-  min-height: 2.4rem;
-  padding-top: .2rem;
+  min-height: 2.48rem;
+  padding-top: .34rem;
+  padding-bottom: .32rem;
+  line-height: 1.22;
 }
 
 .team-roster-table-head > div:first-child {
   padding-left: .12rem;
+}
+
+.team-roster-table-head > div {
+  transform: translateY(.04rem);
 }
 
 .team-transaction-row .team-feed-subtitle {

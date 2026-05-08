@@ -93,7 +93,15 @@ type Player = {
 type PositionGroup = { id: string; label: string; players: Player[] };
 
 function normalizeNameKey(value: any): string {
-  return String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[.'-]/g, "")
+    .replace(/\b(jr|sr|ii|iii|iv|v)\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 // ---- ESPN response parsing (defensive across schema variants) ----
@@ -219,6 +227,10 @@ function readEspnHeadshot(profile: any, league: string, id?: string | number | n
     (typeof profile?.headshot === "string" ? profile.headshot : undefined) ||
     (id ? `https://a.espncdn.com/i/headshots/${leagueHeadshotPath(league)}/players/full/${id}.png` : undefined)
   );
+}
+
+function readEspnAthleteFromInjury(inj: any): any | null {
+  return inj?.athlete || inj?.player || inj?.person || null;
 }
 
 function normalizePlayer(
@@ -437,7 +449,7 @@ async function handleMlb(abbr: string) {
       const injuries = teamData?.team?.injuries || teamData?.injuries || [];
       if (Array.isArray(injuries)) {
         for (const inj of injuries) {
-          const athlete = inj?.athlete || inj?.player;
+          const athlete = readEspnAthleteFromInjury(inj);
           const name = normalizeNameKey(athlete?.fullName || athlete?.displayName || athlete?.name);
           if (name) {
             espnInjuriesByName.set(name, inj);
@@ -453,7 +465,7 @@ async function handleMlb(abbr: string) {
       const injuries = teamData?.team?.injuries || teamData?.injuries || [];
       if (Array.isArray(injuries)) {
         for (const inj of injuries) {
-          const athlete = inj?.athlete || inj?.player;
+          const athlete = readEspnAthleteFromInjury(inj);
           const name = normalizeNameKey(athlete?.fullName || athlete?.displayName || athlete?.name);
           if (name) {
             espnInjuriesByName.set(name, inj);
@@ -478,6 +490,9 @@ async function handleMlb(abbr: string) {
     const espnInjury = espnInjuriesByName.get(espnNameKey);
     if (player.isInjured && espnInjury) {
       player.injury = buildInjuryView(espnInjury, player.injury?.ilDesignation || null) || player.injury;
+      const injuryAthlete = readEspnAthleteFromInjury(espnInjury);
+      const injuryEspnId = injuryAthlete?.id ? String(injuryAthlete.id) : null;
+      player.headshot = readEspnHeadshot(injuryAthlete, "mlb", injuryEspnId) || player.headshot;
     }
 
     // MLB's roster endpoint usually says every pitcher is just "P". For the

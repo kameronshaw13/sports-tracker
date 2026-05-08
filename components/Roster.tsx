@@ -230,9 +230,25 @@ function Headshot({ player, size }: { player: Pick<Player, "name" | "headshot" |
 function injuryLine(player: Player): string {
   const inj = player.injury;
   const status = cleanupSentence(inj?.ilDesignation || inj?.status || player.statusLabel || "Injured");
-  const detail = cleanupSentence(inj?.detail || "");
+  const detail = cleanupInjuryDetail(inj?.detail || inj?.longDetail || "");
 
   return [detail, status].filter(Boolean).join(", ");
+}
+
+function cleanupInjuryDetail(value: string): string {
+  let text = cleanupSentence(value);
+  text = text
+    .replace(/\b(expected|out)\b.*$/i, "")
+    .replace(/\bwill\b.*$/i, "")
+    .replace(/\bat least\b.*$/i, "")
+    .replace(/\s*,\s*$/g, "")
+    .trim();
+  if (text.includes(",")) text = text.split(",")[0].trim();
+  if (text.length > 28) {
+    const short = text.match(/\b(shoulder|elbow|forearm|wrist|hand|finger|thumb|back|hip|groin|hamstring|quad|knee|ankle|foot|toe|calf|neck|oblique|concussion|illness)\b/i);
+    if (short) text = short[0];
+  }
+  return cleanupSentence(text);
 }
 
 function cleanupSentence(value: string): string {
