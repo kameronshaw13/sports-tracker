@@ -5152,7 +5152,7 @@ main.retro-page {
   height: 3.82rem !important;
 }
 
-/* v82: true final winner for score stickies, bottom nav, and locked stat tables */
+/* v84: true final winner for score stickies, bottom nav, and split stat tables */
 html:has(main.retro-page.view-scores),
 body:has(main.retro-page.view-scores),
 html:has(main.retro-page.view-leaguePage),
@@ -5180,52 +5180,80 @@ main.retro-page.view-leaguePage {
   z-index: 30 !important;
 }
 
-.player-stats-scroll {
-  overflow-x: auto !important;
-  overflow-y: visible !important;
-  overscroll-behavior-x: none;
-  -webkit-overflow-scrolling: touch;
-}
-
 .player-stats-table {
   overflow: hidden !important;
 }
 
-.player-stats-table table {
-  width: var(--player-stats-table-width) !important;
-  min-width: var(--player-stats-table-width) !important;
+.player-stats-grid {
+  display: flex !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  align-items: stretch !important;
+}
+
+.player-stats-lock-table {
+  flex: 0 0 var(--player-name-column-width) !important;
+  width: var(--player-name-column-width) !important;
+  min-width: var(--player-name-column-width) !important;
+  max-width: var(--player-name-column-width) !important;
   table-layout: fixed !important;
   border-collapse: separate !important;
   border-spacing: 0 !important;
 }
 
-.player-stats-table th,
-.player-stats-table td {
+.player-stats-scroll {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-x: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.player-stats-data-table {
+  width: var(--player-stat-columns-width) !important;
+  min-width: var(--player-stat-columns-width) !important;
+  table-layout: fixed !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.player-stats-lock-table th,
+.player-stats-lock-table td {
+  position: static !important;
+  min-width: var(--player-name-column-width) !important;
+  width: var(--player-name-column-width) !important;
+  max-width: var(--player-name-column-width) !important;
+  padding-left: .28rem !important;
+  padding-right: .38rem !important;
+  text-align: left !important;
+  background: var(--surface) !important;
+  box-shadow: 1px 0 0 var(--border);
+}
+
+.player-stats-lock-table th {
+  background: var(--surface-2, var(--surface)) !important;
+  color: var(--text-2) !important;
+}
+
+.player-stats-data-table th,
+.player-stats-data-table td,
+.player-stats-data-table th:first-child,
+.player-stats-data-table td:first-child {
+  position: static !important;
+  left: auto !important;
+  z-index: auto !important;
   min-width: 2.55rem !important;
   width: 2.55rem !important;
   max-width: 2.55rem !important;
   padding-left: .08rem !important;
   padding-right: .1rem !important;
   text-align: right !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
-.player-stats-table th:first-child,
-.player-stats-table td:first-child {
-  position: sticky !important;
-  left: 0 !important;
-  z-index: 28 !important;
-  min-width: var(--player-name-column-width) !important;
-  width: var(--player-name-column-width) !important;
-  max-width: var(--player-name-column-width) !important;
-  padding-left: .28rem !important;
-  padding-right: .6rem !important;
-  text-align: left !important;
-  background: var(--surface) !important;
-  box-shadow: 1px 0 0 var(--border);
-}
-
-.player-stats-table thead th:first-child {
-  z-index: 38 !important;
+.player-stats-data-table th {
   background: var(--surface-2, var(--surface)) !important;
 }
 
@@ -5237,7 +5265,86 @@ main.retro-page.view-leaguePage {
   white-space: nowrap !important;
 }
 
-.player-stats-table th:not(:first-child) span {
+.player-stats-data-table th span {
+  display: flex !important;
+  justify-content: flex-end !important;
+  width: 100% !important;
+}
+
+/* v83: split player stat tables so pitcher groups scroll like batting */
+.player-stats-grid {
+  display: flex !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  align-items: stretch !important;
+}
+
+.player-stats-lock-table {
+  flex: 0 0 var(--player-name-column-width) !important;
+  width: var(--player-name-column-width) !important;
+  min-width: var(--player-name-column-width) !important;
+  max-width: var(--player-name-column-width) !important;
+  table-layout: fixed !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.player-stats-scroll {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.player-stats-data-table {
+  width: var(--player-stat-columns-width) !important;
+  min-width: var(--player-stat-columns-width) !important;
+  table-layout: fixed !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.player-stats-lock-table th,
+.player-stats-lock-table td {
+  position: static !important;
+  min-width: var(--player-name-column-width) !important;
+  width: var(--player-name-column-width) !important;
+  max-width: var(--player-name-column-width) !important;
+  padding-left: .28rem !important;
+  padding-right: .38rem !important;
+  text-align: left !important;
+  background: var(--surface) !important;
+  box-shadow: 1px 0 0 var(--border);
+}
+
+.player-stats-lock-table th {
+  background: var(--surface-2, var(--surface)) !important;
+  color: var(--text-2) !important;
+}
+
+.player-stats-data-table th,
+.player-stats-data-table td,
+.player-stats-data-table th:first-child,
+.player-stats-data-table td:first-child {
+  position: static !important;
+  left: auto !important;
+  z-index: auto !important;
+  min-width: 2.55rem !important;
+  width: 2.55rem !important;
+  max-width: 2.55rem !important;
+  padding-left: .08rem !important;
+  padding-right: .1rem !important;
+  text-align: right !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.player-stats-data-table th {
+  background: var(--surface-2, var(--surface)) !important;
+}
+
+.player-stats-data-table th span {
   display: flex !important;
   justify-content: flex-end !important;
   width: 100% !important;
@@ -5346,6 +5453,86 @@ main.retro-page.view-leaguePage {
 }
 
 .player-stats-table th:not(:first-child) span {
+  display: flex !important;
+  justify-content: flex-end !important;
+  width: 100% !important;
+}
+
+/* v84: true EOF winner for split player stat tables */
+.player-stats-grid {
+  display: flex !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  align-items: stretch !important;
+}
+
+.player-stats-lock-table {
+  flex: 0 0 var(--player-name-column-width) !important;
+  width: var(--player-name-column-width) !important;
+  min-width: var(--player-name-column-width) !important;
+  max-width: var(--player-name-column-width) !important;
+  table-layout: fixed !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.player-stats-scroll {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-x: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.player-stats-data-table {
+  width: var(--player-stat-columns-width) !important;
+  min-width: var(--player-stat-columns-width) !important;
+  table-layout: fixed !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.player-stats-lock-table th,
+.player-stats-lock-table td {
+  position: static !important;
+  min-width: var(--player-name-column-width) !important;
+  width: var(--player-name-column-width) !important;
+  max-width: var(--player-name-column-width) !important;
+  padding-left: .28rem !important;
+  padding-right: .38rem !important;
+  text-align: left !important;
+  background: var(--surface) !important;
+  box-shadow: 1px 0 0 var(--border);
+}
+
+.player-stats-lock-table th {
+  background: var(--surface-2, var(--surface)) !important;
+  color: var(--text-2) !important;
+}
+
+.player-stats-data-table th,
+.player-stats-data-table td,
+.player-stats-data-table th:first-child,
+.player-stats-data-table td:first-child {
+  position: static !important;
+  left: auto !important;
+  z-index: auto !important;
+  min-width: 2.55rem !important;
+  width: 2.55rem !important;
+  max-width: 2.55rem !important;
+  padding-left: .08rem !important;
+  padding-right: .1rem !important;
+  text-align: right !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.player-stats-data-table th {
+  background: var(--surface-2, var(--surface)) !important;
+}
+
+.player-stats-data-table th span {
   display: flex !important;
   justify-content: flex-end !important;
   width: 100% !important;
@@ -6037,6 +6224,85 @@ main.retro-page.view-leaguePage {
 }
 
 .player-stats-table th:not(:first-child) span {
+  display: flex !important;
+  justify-content: flex-end !important;
+  width: 100% !important;
+}
+/* v85: absolute EOF stat split winner */
+.player-stats-grid {
+  display: flex !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  align-items: stretch !important;
+}
+
+.player-stats-lock-table {
+  flex: 0 0 var(--player-name-column-width) !important;
+  width: var(--player-name-column-width) !important;
+  min-width: var(--player-name-column-width) !important;
+  max-width: var(--player-name-column-width) !important;
+  table-layout: fixed !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.player-stats-scroll {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-x: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.player-stats-data-table {
+  width: var(--player-stat-columns-width) !important;
+  min-width: var(--player-stat-columns-width) !important;
+  table-layout: fixed !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.player-stats-lock-table th,
+.player-stats-lock-table td {
+  position: static !important;
+  min-width: var(--player-name-column-width) !important;
+  width: var(--player-name-column-width) !important;
+  max-width: var(--player-name-column-width) !important;
+  padding-left: .28rem !important;
+  padding-right: .38rem !important;
+  text-align: left !important;
+  background: var(--surface) !important;
+  box-shadow: 1px 0 0 var(--border);
+}
+
+.player-stats-lock-table th {
+  background: var(--surface-2, var(--surface)) !important;
+  color: var(--text-2) !important;
+}
+
+.player-stats-data-table th,
+.player-stats-data-table td,
+.player-stats-data-table th:first-child,
+.player-stats-data-table td:first-child {
+  position: static !important;
+  left: auto !important;
+  z-index: auto !important;
+  min-width: 2.55rem !important;
+  width: 2.55rem !important;
+  max-width: 2.55rem !important;
+  padding-left: .08rem !important;
+  padding-right: .1rem !important;
+  text-align: right !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.player-stats-data-table th {
+  background: var(--surface-2, var(--surface)) !important;
+}
+
+.player-stats-data-table th span {
   display: flex !important;
   justify-content: flex-end !important;
   width: 100% !important;
