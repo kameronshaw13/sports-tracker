@@ -396,6 +396,15 @@ export async function getMlbSeasonPlayerStats(
 }
 
 
+// Backward-compatible alias used by older /api/team builds.
+// It returns all MLB player season lines for a team from MLB StatsAPI.
+export async function getMlbTeamSeasonStats(
+  abbr: string,
+  year?: number
+): Promise<MlbSeasonPlayerStatLine[]> {
+  return getMlbSeasonPlayerStats(abbr, year);
+}
+
 export async function getMlbPersonSeasonStats(
   mlbId: number,
   teamId?: number | null,
