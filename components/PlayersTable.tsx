@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type CSSProperties, useMemo, useState } from "react";
 import type { Section } from "@/lib/playerColumns";
 import { fmtAvg, fmtPct, fmtRate2, fmtDecimal1, fmtCount } from "@/lib/format";
 
@@ -50,6 +50,10 @@ function applyFormat(value: number | null, displayValue: string, format?: string
 }
 
 export default function PlayersTable({ section, players, onPlayerClick }: Props) {
+  const tableStyle = {
+    "--player-stats-table-width": `calc(13.5rem + ${section.columns.length * 2.55}rem)`,
+  } as CSSProperties;
+
   const eligible = useMemo(() => {
     const positionSet = section.positions
       ? new Set(section.positions.map((p) => p.toUpperCase()))
@@ -134,10 +138,10 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
   return (
     <div
       className="player-stats-table overflow-hidden"
-      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+      style={{ ...tableStyle, background: "var(--surface)", border: "1px solid var(--border)" }}
     >
       <div className="player-stats-scroll overflow-x-auto">
-        <table className="text-sm" style={{ minWidth: `calc(11.35rem + ${section.columns.length * 2.35}rem)` }}>
+        <table className="text-sm">
           <thead>
             <tr
               className="text-left"
@@ -188,7 +192,7 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
                 >
                   <button type="button" onClick={() => onPlayerClick?.(p)} className="flex items-center text-left hover:opacity-80 transition-opacity" disabled={!onPlayerClick}>
                     <div className="min-w-0">
-                      <div className="player-stat-name font-semibold truncate">
+                      <div className="player-stat-name font-semibold">
                         {p.name}
                         {p.tradedIn && (
                           <span
