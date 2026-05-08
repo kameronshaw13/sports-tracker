@@ -57,12 +57,16 @@ import {
   getTeamRoster,
   getTeamPage,
   getMlbFortyManRoster,
+  getMlbHeadshotUrl,
+  getMlbTeamId,
   getMlbSeasonPlayerStats,
   MlbRosterEntry,
 } from "@/lib/espn";
 import { parseTeamKey } from "@/lib/teams";
 
 export const revalidate = 1800;
+
+const MLB_STATSAPI = "https://statsapi.mlb.com/api/v1";
 
 // ---- Types ----
 
@@ -91,6 +95,7 @@ type Player = {
 };
 
 type PositionGroup = { id: string; label: string; players: Player[] };
+type MlbIlTransactionInfo = { date: string | null; type: string | null };
 
 function normalizeNameKey(value: any): string {
   return String(value || "")
@@ -102,6 +107,25 @@ function normalizeNameKey(value: any): string {
     .replace(/\b(jr|sr|ii|iii|iv|v)\b/g, "")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+async function fetchJson(url: string): Promise<any | null> {
+  try {
+    const res = await fetch(url, {
+      next: { revalidate },
+      headers: { "User-Agent": "Mozilla/5.0 SportsTracker/1.0" },
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+function todayMinus(days: number) {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString().slice(0, 10);
 }
 
 // ---- ESPN response parsing (defensive across schema variants) ----
@@ -233,6 +257,36 @@ function readEspnAthleteFromInjury(inj: any): any | null {
   return inj?.athlete || inj?.player || inj?.person || null;
 }
 
+async function getMlbIlTransactionsByName(abbr: string): Promise<Map<string, MlbIlTransactionInfo>> {
+  const teamId = getMlbTeamId(abbr);
+  if (!teamId) return new Map();
+
+  const startDate = todayMinus(240);
+  const endDate = new Date().toISOString().slice(0, 10);
+  const data = await fetchJson(`${MLB_STATSAPI}/transactions?teamId=${teamId}&startDate=${startDate}&endDate=${endDate}`);
+  const items: any[] = Array.isArray(data?.transactions) ? data.transactions : [];
+  const map = new Map<string, MlbIlTransactionInfo>();
+
+  const sorted = [...items].sort((a, b) => new Date(b?.date || b?.effectiveDate || 0).getTime() - new Date(a?.date || a?.effectiveDate || 0).getTime());
+  for (const tx of sorted) {
+    const person = tx?.person || tx?.player || {};
+    const name = normalizeNameKey(person?.fullName || person?.displayName || person?.name || tx?.player);
+    if (!name || map.has(name)) continue;
+
+    const text = String(tx?.description || tx?.typeDesc || tx?.typeCode || "").toLowerCase();
+    const isIlMove = /injured list|injury list|\bil\b|disabled list|injured reserve|\bir\b/.test(text);
+    const isPlaced = /placed|transfer|selected|assigned|returned/.test(text) || /injured list|injury list/.test(text);
+    if (!isIlMove || !isPlaced) continue;
+
+    map.set(name, {
+      date: tx?.date || tx?.effectiveDate || null,
+      type: tx?.typeDesc || tx?.typeCode || null,
+    });
+  }
+
+  return map;
+}
+
 function normalizePlayer(
   league: string,
   a: any,
@@ -289,7 +343,7 @@ function normalizeMlbPlayer(
   }
 
   const espnId = espnProfile?.id ? String(espnProfile.id) : null;
-  const headshot = readEspnHeadshot(espnProfile, "mlb", espnId);
+  const headshot = readEspnHeadshot(espnProfile, "mlb", espnId) || getMlbHeadshotUrl(entry.mlbId);
 
   // Build an ESPN-style "injury narrative" for the injured tab. We don't get
   // the rich detail (body part, expected return) from MLB statsapi's roster
@@ -415,6 +469,7 @@ async function handleMlb(abbr: string) {
     getMlbFortyManRoster(abbr),
     getMlbSeasonPlayerStats(abbr),
   ]);
+  const ilTransactionsByName = await getMlbIlTransactionsByName(abbr);
 
   const pitchingRoleByMlbId = new Map<number, "SP" | "RP">();
   for (const line of statLines) {
@@ -489,10 +544,29 @@ async function handleMlb(abbr: string) {
     const player = normalizeMlbPlayer(entry, espnProfile);
     const espnInjury = espnInjuriesByName.get(espnNameKey);
     if (player.isInjured && espnInjury) {
-      player.injury = buildInjuryView(espnInjury, player.injury?.ilDesignation || null) || player.injury;
+      const existingInjury = player.injury;
+      const espnInjuryView = buildInjuryView(espnInjury, existingInjury?.ilDesignation || null);
+      player.injury = espnInjuryView
+        ? { ...espnInjuryView, date: espnInjuryView.date || existingInjury?.date || null }
+        : existingInjury;
       const injuryAthlete = readEspnAthleteFromInjury(espnInjury);
       const injuryEspnId = injuryAthlete?.id ? String(injuryAthlete.id) : null;
       player.headshot = readEspnHeadshot(injuryAthlete, "mlb", injuryEspnId) || player.headshot;
+    }
+    if (player.isInjured) {
+      const ilTx = ilTransactionsByName.get(espnNameKey);
+      if (ilTx) {
+        player.injury = {
+          ...(player.injury || {
+            status: player.statusLabel || "Injured",
+            detail: null,
+            longDetail: null,
+            returnDate: null,
+          }),
+          date: ilTx.date || player.injury?.date || null,
+          ilDesignation: player.injury?.ilDesignation || player.statusLabel || ilTx.type || null,
+        };
+      }
     }
 
     // MLB's roster endpoint usually says every pitcher is just "P". For the

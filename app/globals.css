@@ -6814,27 +6814,31 @@ main.retro-page.view-leaguePage {
 .team-roster-number,
 .team-roster-position,
 .team-roster-player-cell > span {
-  line-height: 1.24;
-  transform: translateY(.02rem);
+  line-height: 1.42;
+  transform: translateY(.05rem);
 }
 
 .team-roster-player-cell {
   align-items: center;
+  min-height: 1.72rem;
+  overflow: visible;
 }
 
 .team-roster-table-row {
   align-items: center;
-  padding-top: .4rem;
-  padding-bottom: .38rem;
+  min-height: 3.86rem;
+  padding-top: .52rem;
+  padding-bottom: .48rem;
 }
 
 /* v97: roster feed centering and transaction density */
 .team-roster-table-head {
   align-items: center;
-  min-height: 2.48rem;
-  padding-top: .34rem;
-  padding-bottom: .32rem;
-  line-height: 1.22;
+  min-height: 2.7rem;
+  padding-top: .52rem;
+  padding-bottom: .44rem;
+  line-height: 1.42;
+  overflow: visible;
 }
 
 .team-roster-table-head > div:first-child {
@@ -6842,7 +6846,9 @@ main.retro-page.view-leaguePage {
 }
 
 .team-roster-table-head > div {
-  transform: translateY(.04rem);
+  line-height: 1.42;
+  transform: translateY(.08rem);
+  overflow: visible;
 }
 
 .team-transaction-row .team-feed-subtitle {
