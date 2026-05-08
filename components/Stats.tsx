@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { useState } from "react";
 import useSWR from "swr";
 import { TeamConfig } from "@/lib/teams";
 import { SECTIONS_BY_LEAGUE, Section } from "@/lib/playerColumns";
@@ -130,6 +130,7 @@ function MlbBattingPitching({ sections, players, onPlayerClick }: { sections: Se
   const battingSection = sections.find((s) => s.id === "batting");
   const startersSection = sections.find((s) => s.id === "starters");
   const relieversSection = sections.find((s) => s.id === "relievers");
+  const pitchingSections = [startersSection, relieversSection].filter(Boolean) as Section[];
 
   const [active, setActive] = useState<"batting" | "pitching">("batting");
   const playerTabs = [
@@ -145,34 +146,10 @@ function MlbBattingPitching({ sections, players, onPlayerClick }: { sections: Se
         <PlayersTable section={battingSection} players={players} onPlayerClick={onPlayerClick} />
       )}
 
-      {active === "pitching" && (
-        <div className="player-pitching-groups">
-          {startersSection && (
-            <PlayerStatsGroup title="Starters">
-              <PlayersTable section={asPitchingGroupSection(startersSection)} players={players} onPlayerClick={onPlayerClick} />
-            </PlayerStatsGroup>
-          )}
-          {relieversSection && (
-            <PlayerStatsGroup title="Relievers">
-              <PlayersTable section={asPitchingGroupSection(relieversSection)} players={players} onPlayerClick={onPlayerClick} />
-            </PlayerStatsGroup>
-          )}
-        </div>
+      {active === "pitching" && pitchingSections.length > 0 && (
+        <StackedSections sections={pitchingSections} players={players} onPlayerClick={onPlayerClick} />
       )}
     </div>
-  );
-}
-
-function asPitchingGroupSection(section: Section): Section {
-  return { ...section, id: `pitching-${section.id}` };
-}
-
-function PlayerStatsGroup({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="player-stats-group">
-      <div className="player-stats-group-title">{title}</div>
-      {children}
-    </section>
   );
 }
 
