@@ -57,7 +57,6 @@ import {
   getTeamRoster,
   getTeamPage,
   getMlbFortyManRoster,
-  getMlbHeadshotUrl,
   getMlbSeasonPlayerStats,
   MlbRosterEntry,
 } from "@/lib/espn";
@@ -92,6 +91,10 @@ type Player = {
 };
 
 type PositionGroup = { id: string; label: string; players: Player[] };
+
+function normalizeNameKey(value: any): string {
+  return String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
 
 // ---- ESPN response parsing (defensive across schema variants) ----
 
@@ -274,7 +277,7 @@ function normalizeMlbPlayer(
   }
 
   const espnId = espnProfile?.id ? String(espnProfile.id) : null;
-  const headshot = readEspnHeadshot(espnProfile, "mlb", espnId) || getMlbHeadshotUrl(entry.mlbId);
+  const headshot = readEspnHeadshot(espnProfile, "mlb", espnId);
 
   // Build an ESPN-style "injury narrative" for the injured tab. We don't get
   // the rich detail (body part, expected return) from MLB statsapi's roster
@@ -408,14 +411,15 @@ async function handleMlb(abbr: string) {
     pitchingRoleByMlbId.set(line.mlbId, gs > 0 ? "SP" : "RP");
   }
 
-  // Build a lookup of ESPN profile data so we can grab heights/weights and,
-  // when available, richer injury notes. Headshots still come from MLB.com.
+  // Build a lookup of ESPN profile data so we can grab headshots, heights,
+  // weights, and richer injury notes.
   const espnByName = new Map<string, any>();
   const espnById = new Map<string, any>();
+  const espnInjuriesByName = new Map<string, any>();
   try {
     const espnRoster = await getTeamRoster("mlb", abbr);
     for (const a of parseAthletes(espnRoster)) {
-      const name = String(a?.fullName || a?.displayName || "").trim().toLowerCase();
+      const name = normalizeNameKey(a?.fullName || a?.displayName || a?.name);
       if (name) espnByName.set(name, a);
       const id = String(a?.id || "");
       if (id) espnById.set(id, a);
@@ -423,12 +427,39 @@ async function handleMlb(abbr: string) {
   } catch {}
   if (espnByName.size === 0) {
     try {
-      const teamData = await getTeamPage("mlb", abbr, ["roster"]);
+      const teamData = await getTeamPage("mlb", abbr, ["roster", "injuries"]);
       for (const a of parseAthletes(teamData)) {
-        const name = String(a?.fullName || a?.displayName || "").trim().toLowerCase();
+        const name = normalizeNameKey(a?.fullName || a?.displayName || a?.name);
         if (name) espnByName.set(name, a);
         const id = String(a?.id || "");
         if (id) espnById.set(id, a);
+      }
+      const injuries = teamData?.team?.injuries || teamData?.injuries || [];
+      if (Array.isArray(injuries)) {
+        for (const inj of injuries) {
+          const athlete = inj?.athlete || inj?.player;
+          const name = normalizeNameKey(athlete?.fullName || athlete?.displayName || athlete?.name);
+          if (name) {
+            espnInjuriesByName.set(name, inj);
+            if (!espnByName.has(name) && athlete) espnByName.set(name, athlete);
+          }
+        }
+      }
+    } catch {}
+  }
+  if (espnInjuriesByName.size === 0) {
+    try {
+      const teamData = await getTeamPage("mlb", abbr, ["injuries"]);
+      const injuries = teamData?.team?.injuries || teamData?.injuries || [];
+      if (Array.isArray(injuries)) {
+        for (const inj of injuries) {
+          const athlete = inj?.athlete || inj?.player;
+          const name = normalizeNameKey(athlete?.fullName || athlete?.displayName || athlete?.name);
+          if (name) {
+            espnInjuriesByName.set(name, inj);
+            if (!espnByName.has(name) && athlete) espnByName.set(name, athlete);
+          }
+        }
       }
     } catch {}
   }
@@ -441,8 +472,13 @@ async function handleMlb(abbr: string) {
     const isOnIl = /^D(7|10|15|60)$/i.test(code);
     if (!isActive && !isOnIl) continue;
 
-    const espnProfile = espnByName.get(entry.name.toLowerCase()) || null;
+    const espnNameKey = normalizeNameKey(entry.name);
+    const espnProfile = espnByName.get(espnNameKey) || null;
     const player = normalizeMlbPlayer(entry, espnProfile);
+    const espnInjury = espnInjuriesByName.get(espnNameKey);
+    if (player.isInjured && espnInjury) {
+      player.injury = buildInjuryView(espnInjury, player.injury?.ilDesignation || null) || player.injury;
+    }
 
     // MLB's roster endpoint usually says every pitcher is just "P". For the
     // active tab we split active pitchers into rotation vs bullpen using the

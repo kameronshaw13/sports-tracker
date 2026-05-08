@@ -6814,8 +6814,8 @@ main.retro-page.view-leaguePage {
 .team-roster-number,
 .team-roster-position,
 .team-roster-player-cell > span {
-  line-height: 1.12;
-  transform: translateY(.04rem);
+  line-height: 1.24;
+  transform: translateY(.02rem);
 }
 
 .team-roster-player-cell {
@@ -6824,4 +6824,27 @@ main.retro-page.view-leaguePage {
 
 .team-roster-table-row {
   align-items: center;
+  padding-top: .4rem;
+  padding-bottom: .38rem;
+}
+
+/* v97: roster feed centering and transaction density */
+.team-roster-table-head {
+  align-items: center;
+  min-height: 2.4rem;
+  padding-top: .2rem;
+}
+
+.team-roster-table-head > div:first-child {
+  padding-left: .12rem;
+}
+
+.team-transaction-row .team-feed-subtitle {
+  font-size: .72rem;
+  line-height: 1.18;
+}
+
+.team-injury-row .team-feed-subtitle {
+  font-size: .74rem;
+  line-height: 1.2;
 }

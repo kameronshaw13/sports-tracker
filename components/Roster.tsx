@@ -230,18 +230,9 @@ function Headshot({ player, size }: { player: Pick<Player, "name" | "headshot" |
 function injuryLine(player: Player): string {
   const inj = player.injury;
   const status = cleanupSentence(inj?.ilDesignation || inj?.status || player.statusLabel || "Injured");
-  const rawDetail = inj?.detail || "";
-  const detail = cleanupSentence(rawDetail);
-  const longDetail = cleanupSentence(inj?.longDetail || "");
-  const ret = inj?.returnDate ? `Expected back ${formatShortDate(inj.returnDate)}` : "";
+  const detail = cleanupSentence(inj?.detail || "");
 
-  const extras = [longDetail, ret]
-    .filter(Boolean)
-    .filter((part, index, arr) => arr.findIndex((p) => p.toLowerCase() === part.toLowerCase()) === index)
-    .filter((part) => !part.toLowerCase().includes(status.toLowerCase()))
-    .filter((part) => !detail || !part.toLowerCase().includes(detail.toLowerCase()));
-
-  return [status, detail, ...extras].filter(Boolean).join(" · ");
+  return [detail, status].filter(Boolean).join(", ");
 }
 
 function cleanupSentence(value: string): string {

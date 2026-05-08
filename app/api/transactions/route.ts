@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getMlbHeadshotUrl, getMlbTeamId } from "@/lib/espn";
+import { getMlbTeamId } from "@/lib/espn";
 import { parseTeamKey } from "@/lib/teams";
 
 export const revalidate = 1800;
@@ -102,10 +102,16 @@ async function getMlbTransactions(abbr: string): Promise<Transaction[]> {
 
   const startDate = todayMinus(60);
   const endDate = new Date().toISOString().slice(0, 10);
-  const [data, espnByName] = await Promise.all([
+  const [data, espnByName, espnTransactions] = await Promise.all([
     fetchJson(`${MLB_STATSAPI}/transactions?teamId=${teamId}&startDate=${startDate}&endDate=${endDate}`),
     getMlbEspnProfilesByName(abbr),
+    getEspnTransactions("mlb", abbr),
   ]);
+  const espnTxByName = new Map(
+    espnTransactions
+      .filter((tx) => tx.headshot)
+      .map((tx) => [normalizeNameKey(tx.playerName), tx])
+  );
   const items: any[] = data?.transactions || [];
 
   return items
@@ -116,13 +122,14 @@ async function getMlbTransactions(abbr: string): Promise<Transaction[]> {
       const type = tx?.typeDesc || tx?.typeCode || tx?.description || "Transaction";
       const text = cleanupTransactionText(tx?.description || tx?.typeDesc || type, String(playerName));
       const espnProfile = espnByName.get(normalizeNameKey(playerName));
+      const espnTx = espnTxByName.get(normalizeNameKey(playerName));
       return {
         id: String(tx?.id || `${playerId || playerName}-${tx?.date || index}-${index}`),
         date: tx?.date || tx?.effectiveDate || null,
         playerName: String(playerName),
         playerId,
         position: tx?.position || person?.primaryPosition?.abbreviation || null,
-        headshot: readEspnHeadshot(espnProfile, "mlb") || (playerId ? getMlbHeadshotUrl(playerId) : null),
+        headshot: readEspnHeadshot(espnProfile, "mlb") || espnTx?.headshot || null,
         text,
         type: String(type),
       };
