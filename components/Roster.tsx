@@ -111,14 +111,12 @@ function EmptyMessage({ label }: { label: string }) {
 function RosterTable({ players, team, onPlayerClick }: { players: Player[]; team: TeamConfig; onPlayerClick?: Props["onPlayerClick"] }) {
   const sorted = useMemo(() => [...players].sort((a, b) => rosterSortName(a.name).localeCompare(rosterSortName(b.name))), [players]);
 
-  const isBaseball = team.league === "mlb";
-
   return (
     <div className="team-roster-modern -mx-4 sm:mx-0">
       <div className="team-roster-table-head">
-        <div>{isBaseball ? "NO" : "#"}</div>
-        <div className="team-roster-player-head">{isBaseball ? "NAME" : "PLAYER"}</div>
-        <div>{isBaseball ? "POS" : "POSITION"}</div>
+        <div>#</div>
+        <div className="team-roster-player-head">PLAYER</div>
+        <div>POSITION</div>
       </div>
       <div className="team-roster-table-body">
         {sorted.map((player) => (
@@ -144,7 +142,7 @@ function RosterTable({ players, team, onPlayerClick }: { players: Player[]; team
 function InjuryList({ players, team, onPlayerClick }: { players: Player[]; team: TeamConfig; onPlayerClick?: Props["onPlayerClick"] }) {
   const grouped = groupByDate(players.map((player) => ({
     id: player.id,
-    date: player.injury?.date || player.injury?.returnDate || null,
+    date: player.injury?.date || null,
     renderKey: player.id,
     node: (
       <button
@@ -237,16 +235,13 @@ function injuryLine(player: Player): string {
   const longDetail = cleanupSentence(inj?.longDetail || "");
   const ret = inj?.returnDate ? `Expected back ${formatShortDate(inj.returnDate)}` : "";
 
-  const statusPart = detail && !status.toLowerCase().includes(detail.toLowerCase())
-    ? `${detail} · ${status}`
-    : status;
-
   const extras = [longDetail, ret]
     .filter(Boolean)
     .filter((part, index, arr) => arr.findIndex((p) => p.toLowerCase() === part.toLowerCase()) === index)
-    .filter((part) => !part.toLowerCase().includes(statusPart.toLowerCase()));
+    .filter((part) => !part.toLowerCase().includes(status.toLowerCase()))
+    .filter((part) => !detail || !part.toLowerCase().includes(detail.toLowerCase()));
 
-  return [statusPart, ...extras].join(" · ");
+  return [status, detail, ...extras].filter(Boolean).join(" · ");
 }
 
 function cleanupSentence(value: string): string {

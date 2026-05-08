@@ -210,6 +210,14 @@ function leagueHeadshotPath(league: string): string {
   return league;
 }
 
+function readEspnHeadshot(profile: any, league: string, id?: string | number | null): string | undefined {
+  return (
+    profile?.headshot?.href ||
+    (typeof profile?.headshot === "string" ? profile.headshot : undefined) ||
+    (id ? `https://a.espncdn.com/i/headshots/${leagueHeadshotPath(league)}/players/full/${id}.png` : undefined)
+  );
+}
+
 function normalizePlayer(
   league: string,
   a: any,
@@ -265,10 +273,8 @@ function normalizeMlbPlayer(
     ilDesignation = m ? `${m[1]}-Day IL` : entry.statusDescription;
   }
 
-  // MLB headshots come from MLB.com's official CDN and are keyed by MLBAM id.
-  // This works for active players, injured-list players, and optioned players
-  // without needing an ESPN athlete id.
-  const headshot = getMlbHeadshotUrl(entry.mlbId);
+  const espnId = espnProfile?.id ? String(espnProfile.id) : null;
+  const headshot = readEspnHeadshot(espnProfile, "mlb", espnId) || getMlbHeadshotUrl(entry.mlbId);
 
   // Build an ESPN-style "injury narrative" for the injured tab. We don't get
   // the rich detail (body part, expected return) from MLB statsapi's roster

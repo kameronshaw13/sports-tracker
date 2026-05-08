@@ -53,13 +53,59 @@ function todayMinus(days: number) {
   return d.toISOString().slice(0, 10);
 }
 
+function normalizeNameKey(value: any): string {
+  return String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function parseAthletes(data: any): any[] {
+  const top = data?.athletes || data?.team?.athletes;
+  if (!Array.isArray(top)) return [];
+  if (top.length > 0 && Array.isArray(top[0]?.items)) {
+    return top.flatMap((group: any) => Array.isArray(group?.items) ? group.items : []);
+  }
+  return top;
+}
+
+function readEspnHeadshot(profile: any, league: string): string | null {
+  const id = profile?.id ? String(profile.id) : null;
+  return (
+    profile?.headshot?.href ||
+    (typeof profile?.headshot === "string" ? profile.headshot : null) ||
+    (id ? `https://a.espncdn.com/i/headshots/${league}/players/full/${id}.png` : null)
+  );
+}
+
+async function getMlbEspnProfilesByName(abbr: string): Promise<Map<string, any>> {
+  const p = path("mlb");
+  const urls = [
+    `${SITE_API}/${p}/teams/${abbr}/roster`,
+    `${SITE_WEB_API}/${p}/teams/${abbr}/roster`,
+    `${SITE_API}/${p}/teams/${abbr}?enable=roster`,
+    `${SITE_WEB_API}/${p}/teams/${abbr}?enable=roster`,
+  ];
+
+  const map = new Map<string, any>();
+  for (const url of urls) {
+    const data = await fetchJson(url);
+    for (const athlete of parseAthletes(data)) {
+      const key = normalizeNameKey(athlete?.fullName || athlete?.displayName || athlete?.name);
+      if (key) map.set(key, athlete);
+    }
+    if (map.size > 0) break;
+  }
+  return map;
+}
+
 async function getMlbTransactions(abbr: string): Promise<Transaction[]> {
   const teamId = getMlbTeamId(abbr);
   if (!teamId) return [];
 
   const startDate = todayMinus(60);
   const endDate = new Date().toISOString().slice(0, 10);
-  const data = await fetchJson(`${MLB_STATSAPI}/transactions?teamId=${teamId}&startDate=${startDate}&endDate=${endDate}`);
+  const [data, espnByName] = await Promise.all([
+    fetchJson(`${MLB_STATSAPI}/transactions?teamId=${teamId}&startDate=${startDate}&endDate=${endDate}`),
+    getMlbEspnProfilesByName(abbr),
+  ]);
   const items: any[] = data?.transactions || [];
 
   return items
@@ -69,13 +115,14 @@ async function getMlbTransactions(abbr: string): Promise<Transaction[]> {
       const playerName = person?.fullName || person?.displayName || person?.name || tx?.player || "Team Transaction";
       const type = tx?.typeDesc || tx?.typeCode || tx?.description || "Transaction";
       const text = cleanupTransactionText(tx?.description || tx?.typeDesc || type, String(playerName));
+      const espnProfile = espnByName.get(normalizeNameKey(playerName));
       return {
         id: String(tx?.id || `${playerId || playerName}-${tx?.date || index}-${index}`),
         date: tx?.date || tx?.effectiveDate || null,
         playerName: String(playerName),
         playerId,
         position: tx?.position || person?.primaryPosition?.abbreviation || null,
-        headshot: playerId ? getMlbHeadshotUrl(playerId) : null,
+        headshot: readEspnHeadshot(espnProfile, "mlb") || (playerId ? getMlbHeadshotUrl(playerId) : null),
         text,
         type: String(type),
       };

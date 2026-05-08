@@ -6809,3 +6809,19 @@ main.retro-page.view-leaguePage {
   .team-feed-title em { font-size: .7rem; }
   .team-feed-subtitle { font-size: .72rem; }
 }
+
+/* v96: roster label/headshot polish */
+.team-roster-number,
+.team-roster-position,
+.team-roster-player-cell > span {
+  line-height: 1.12;
+  transform: translateY(.04rem);
+}
+
+.team-roster-player-cell {
+  align-items: center;
+}
+
+.team-roster-table-row {
+  align-items: center;
+}
