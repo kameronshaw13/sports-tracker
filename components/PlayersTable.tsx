@@ -50,10 +50,6 @@ function applyFormat(value: number | null, displayValue: string, format?: string
 }
 
 export default function PlayersTable({ section, players, onPlayerClick }: Props) {
-  const tableStyle = {
-    "--player-stats-table-width": `calc(13.5rem + ${section.columns.length * 2.55}rem)`,
-  } as CSSProperties;
-
   const eligible = useMemo(() => {
     const positionSet = section.positions
       ? new Set(section.positions.map((p) => p.toUpperCase()))
@@ -80,6 +76,21 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
       return true;
     });
   }, [players, section.positions, section.qualifier.category, section.qualifier.name]);
+
+  const nameColumnWidth = useMemo(() => {
+    const longest = eligible.reduce((max, player) => {
+      const extra = player.tradedIn ? 1 : 0;
+      return Math.max(max, player.name.length + extra);
+    }, "Player".length);
+    return `${Math.max(7.5, longest * 0.58 + 1.45).toFixed(2)}rem`;
+  }, [eligible]);
+
+  const tableWidth = `${(Number.parseFloat(nameColumnWidth) + section.columns.length * 2.55).toFixed(2)}rem`;
+
+  const tableStyle = {
+    "--player-name-column-width": nameColumnWidth,
+    "--player-stats-table-width": tableWidth,
+  } as CSSProperties;
 
   const [sortColName, setSortColName] = useState<string>(section.defaultSort.column);
   const [sortDir, setSortDir] = useState<"asc" | "desc">(section.defaultSort.dir);
