@@ -6538,3 +6538,26 @@ main.retro-page.view-leaguePage {
   text-overflow: clip !important;
   white-space: nowrap !important;
 }
+
+/* v90: combined pitching scroll, steadier sticky names, first stat closer */
+.player-stats-table.player-stats-pitching .player-stats-scroll > table {
+  width: max(var(--player-stats-table-width), 39rem) !important;
+  min-width: max(var(--player-stats-table-width), 39rem) !important;
+}
+
+.player-stats-table .player-stats-scroll th:first-child,
+.player-stats-table .player-stats-scroll td:first-child {
+  left: 0 !important;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.player-stats-table .player-stats-scroll th:nth-child(2),
+.player-stats-table .player-stats-scroll td:nth-child(2) {
+  min-width: 2.12rem !important;
+  width: 2.12rem !important;
+  max-width: 2.12rem !important;
+  padding-left: 0 !important;
+  padding-right: .06rem !important;
+}
