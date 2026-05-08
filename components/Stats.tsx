@@ -10,6 +10,8 @@ import { useFreshKey } from "@/lib/freshKey";
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 type Props = { team: TeamConfig; onPlayerClick?: (player: { id: string; name: string; league: string; teamKey: string }) => void };
+type StatRow = { label: string; value: string; rank?: number | null };
+type TeamStatTab = { id: "overall" | "hitting" | "pitching"; label: string; rows: StatRow[] };
 
 export default function Stats({ team, onPlayerClick }: Props) {
   // v21.1: every mount of the Stats tab now busts the route cache, so the
@@ -68,7 +70,6 @@ export default function Stats({ team, onPlayerClick }: Props) {
     { label: "Record", value: teamData?.record || `${wins}–${losses}` },
     { label: "Last 10", value: completed.length ? `${last10W}–${last10L}` : "—" },
     { label: "Streak", value: streak.count > 0 ? `${streak.type}${streak.count}` : "—" },
-    { label: "Standing", value: teamData?.standingSummary?.split(",")[0] || "—" },
     { label: "Home", value: homeGames.length ? `${homeW}–${homeGames.length - homeW}` : "—" },
     { label: "Away", value: awayGames.length ? `${awayW}–${awayGames.length - awayW}` : "—" },
     { label: scoredLabel(team.league), value: avgFor },
@@ -78,6 +79,15 @@ export default function Stats({ team, onPlayerClick }: Props) {
   const sections = SECTIONS_BY_LEAGUE[team.league] || [];
   const players: Player[] = playersData?.players || [];
   const [view, setView] = useState<"team" | "player">("team");
+  const [teamStatView, setTeamStatView] = useState<"overall" | "hitting" | "pitching">("overall");
+  const mlbTeamStats = teamData?.mlbTeamStats;
+  const rawTeamStatTabs: TeamStatTab[] = [
+    { id: "overall", label: "Overall", rows: summaryStats },
+    { id: "hitting", label: "Hitting", rows: (mlbTeamStats?.hitting || []).map((s: any) => ({ label: s.label, value: s.displayValue, rank: s.rank })) },
+    { id: "pitching", label: "Pitching", rows: (mlbTeamStats?.pitching || []).map((s: any) => ({ label: s.label, value: s.displayValue, rank: s.rank })) },
+  ];
+  const teamStatTabs = rawTeamStatTabs.filter((tab) => tab.id === "overall" || team.league === "mlb");
+  const activeTeamStat = teamStatTabs.find((tab) => tab.id === teamStatView) || teamStatTabs[0];
 
   return (
     <div className="team-stats-page space-y-4">
@@ -87,12 +97,13 @@ export default function Stats({ team, onPlayerClick }: Props) {
       </div>
 
       {view === "team" && (
-        <section>
-          <div className="team-summary-grid grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {summaryStats.map((s) => (
-              <SummaryCard key={s.label} label={s.label} value={s.value} />
-            ))}
-          </div>
+        <section className="team-stat-panel">
+          <SegmentTabs
+            tabs={teamStatTabs}
+            active={activeTeamStat.id}
+            onChange={(id) => setTeamStatView(id as "overall" | "hitting" | "pitching")}
+          />
+          <TeamStatRows rows={activeTeamStat.rows} showRank={activeTeamStat.id !== "overall"} />
         </section>
       )}
 
@@ -118,67 +129,45 @@ export default function Stats({ team, onPlayerClick }: Props) {
 function MlbBattingPitching({ sections, players, onPlayerClick }: { sections: Section[]; players: Player[]; onPlayerClick?: (p: Player) => void }) {
   const battingSection = sections.find((s) => s.id === "batting");
   const startersSection = sections.find((s) => s.id === "starters");
-  const relieversSection = sections.find((s) => s.id === "relievers");
+  const pitchingSection: Section | undefined = startersSection
+    ? {
+        ...startersSection,
+        id: "pitching",
+        label: "Pitching",
+        positions: undefined,
+        columns: [
+          { category: "pitching", name: "gamesPlayed", label: "G", format: "count" },
+          { category: "pitching", name: "gamesStarted", label: "GS", format: "count" },
+          { category: "pitching", name: "wins", label: "W", format: "count" },
+          { category: "pitching", name: "losses", label: "L", format: "count" },
+          { category: "pitching", name: "saves", label: "SV", format: "count" },
+          { category: "pitching", name: "innings", label: "IP", format: "decimal1" },
+          { category: "pitching", name: "hits", label: "H", format: "count" },
+          { category: "pitching", name: "earnedRuns", label: "ER", format: "count" },
+          { category: "pitching", name: "walks", label: "BB", format: "count" },
+          { category: "pitching", name: "strikeouts", label: "K", format: "count" },
+          { category: "pitching", name: "ERA", label: "ERA", format: "rate2" },
+          { category: "pitching", name: "WHIP", label: "WHIP", format: "rate2" },
+        ],
+      }
+    : undefined;
 
   const [active, setActive] = useState<"batting" | "pitching">("batting");
+  const playerTabs = [
+    { id: "batting", label: "Batting" },
+    { id: "pitching", label: "Pitching" },
+  ];
 
   return (
     <div>
-      <div
-        className="team-player-stat-tabs inline-flex p-1 rounded-xl mb-4"
-        style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-        role="tablist"
-      >
-        {(["batting", "pitching"] as const).map((id) => {
-          const isActive = id === active;
-          return (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => setActive(id)}
-              className="px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors capitalize"
-              style={{
-                background: isActive ? "var(--text)" : "transparent",
-                color: isActive ? "var(--bg)" : "var(--text-2)",
-              }}
-            >
-              {id}
-            </button>
-          );
-        })}
-      </div>
+      <SegmentTabs tabs={playerTabs} active={active} onChange={(id) => setActive(id as "batting" | "pitching")} className="team-player-stat-tabs" />
 
       {active === "batting" && battingSection && (
         <PlayersTable section={battingSection} players={players} onPlayerClick={onPlayerClick} />
       )}
 
-      {active === "pitching" && (
-        <div className="space-y-6">
-          {startersSection && (
-            <div>
-              <h4
-                className="text-xs uppercase tracking-widest font-bold mb-2.5 px-1"
-                style={{ color: "var(--text-2)", letterSpacing: "0.1em" }}
-              >
-                {startersSection.label}
-              </h4>
-              <PlayersTable section={startersSection} players={players} onPlayerClick={onPlayerClick} />
-            </div>
-          )}
-          {relieversSection && (
-            <div>
-              <h4
-                className="text-xs uppercase tracking-widest font-bold mb-2.5 px-1"
-                style={{ color: "var(--text-2)", letterSpacing: "0.1em" }}
-              >
-                {relieversSection.label}
-              </h4>
-              <PlayersTable section={relieversSection} players={players} onPlayerClick={onPlayerClick} />
-            </div>
-          )}
-        </div>
+      {active === "pitching" && pitchingSection && (
+        <PlayersTable section={pitchingSection} players={players} onPlayerClick={onPlayerClick} />
       )}
     </div>
   );
@@ -230,32 +219,36 @@ function allowedLabel(league: string): string {
   return "Opp Pts/G";
 }
 
-function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+function SegmentTabs({ tabs, active, onChange, className = "" }: { tabs: { id: string; label: string }[]; active: string; onChange: (id: string) => void; className?: string }) {
   return (
-    <header className="mb-3">
-      <h3 className="text-base font-bold tracking-tight">{title}</h3>
-      {subtitle && (
-        <p className="text-xs mt-0.5" style={{ color: "var(--text-3)" }}>
-          {subtitle}
-        </p>
-      )}
-    </header>
+    <div className={`stats-segment-tabs ${className}`} role="tablist">
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          type="button"
+          role="tab"
+          aria-selected={active === tab.id}
+          className={active === tab.id ? "is-active" : ""}
+          onClick={() => onChange(tab.id)}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
   );
 }
 
-function SummaryCard({ label, value }: { label: string; value: string }) {
+function TeamStatRows({ rows, showRank }: { rows: StatRow[]; showRank?: boolean }) {
+  if (!rows.length) return <div className="team-stat-empty">No team stats available yet.</div>;
   return (
-    <div
-      className="px-4 py-3 rounded-xl"
-      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-    >
-      <div
-        className="text-[11px] uppercase tracking-wider font-semibold mb-1.5 truncate"
-        style={{ color: "var(--text-3)", letterSpacing: "0.08em" }}
-      >
-        {label}
-      </div>
-      <div className="text-2xl font-bold tabular-nums leading-none">{value}</div>
+    <div className="team-stat-rows">
+      {rows.map((row) => (
+        <div className="team-stat-row" key={row.label}>
+          <div className="team-stat-label">{row.label}</div>
+          {showRank && <div className="team-stat-rank">{row.rank ? `MLB #${row.rank}` : "—"}</div>}
+          <div className="team-stat-value">{row.value}</div>
+        </div>
+      ))}
     </div>
   );
 }

@@ -133,7 +133,7 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
 
   return (
     <div
-      className="rounded-xl overflow-hidden"
+      className="player-stats-table overflow-hidden"
       style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
     >
       <div className="overflow-x-auto">
@@ -160,7 +160,7 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
                 return (
                   <th
                     key={`${col.category}.${col.name}`}
-                    className="px-2.5 py-2.5 font-semibold whitespace-nowrap text-right cursor-pointer select-none"
+                    className="px-2.5 py-2.5 font-semibold whitespace-nowrap text-center cursor-pointer select-none"
                     onClick={() => handleSortClick(col.name)}
                     style={{
                       color: isActive ? "var(--text)" : "var(--text-2)",
@@ -194,7 +194,7 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
                 >
                   <button type="button" onClick={() => onPlayerClick?.(p)} className="flex items-center text-left hover:opacity-80 transition-opacity" disabled={!onPlayerClick}>
                     <div className="min-w-0">
-                      <div className="font-semibold truncate max-w-[140px] sm:max-w-[180px]">
+                      <div className="player-stat-name font-semibold truncate">
                         {p.name}
                         {p.tradedIn && (
                           <span
@@ -206,11 +206,6 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px]" style={{ color: "var(--text-3)" }}>
-                        {p.jersey && `#${p.jersey}`}
-                        {p.jersey && p.position && " · "}
-                        {p.position}
-                      </div>
                     </div>
                   </button>
                 </td>
@@ -219,7 +214,7 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
                   return (
                     <td
                       key={`${col.category}.${col.name}`}
-                      className="px-2.5 py-2 text-right tabular-nums whitespace-nowrap"
+                      className="px-2.5 py-2 text-center tabular-nums whitespace-nowrap"
                       style={{
                         color: sortColName === col.name ? "var(--text)" : "var(--text-2)",
                       }}

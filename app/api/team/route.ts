@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTeamPage, getTeamSchedule } from "@/lib/espn";
+import { getMlbTeamSeasonStats, getTeamPage, getTeamSchedule } from "@/lib/espn";
 import { parseTeamKey } from "@/lib/teams";
 
 export const revalidate = 60;
@@ -95,6 +95,8 @@ export async function GET(req: NextRequest) {
       } catch {}
     }
 
+    const mlbTeamStats = parsed.league === "mlb" ? await getMlbTeamSeasonStats(parsed.abbr) : null;
+
     return NextResponse.json({
       id: t?.id,
       name: t?.displayName,
@@ -104,6 +106,7 @@ export async function GET(req: NextRequest) {
       record,
       standingSummary: t?.standingSummary || null,
       stats,
+      mlbTeamStats,
       nextEvent: t?.nextEvent?.[0]
         ? {
             id: t.nextEvent[0].id,

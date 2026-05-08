@@ -5152,6 +5152,157 @@ main.retro-page {
   height: 3.82rem !important;
 }
 
+/* v74: compact team and player stats layout */
+.team-stats-page {
+  margin-left: -1rem !important;
+  margin-right: -1rem !important;
+  padding-bottom: 1rem !important;
+}
+
+.team-stat-panel {
+  background: var(--surface);
+}
+
+.stats-segment-tabs {
+  display: grid !important;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  width: 100%;
+  min-height: 2.44rem;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface) !important;
+}
+
+.stats-segment-tabs button {
+  position: relative;
+  min-height: 2.44rem;
+  padding: .18rem .5rem 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--text-2) !important;
+  font-size: .84rem !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  text-align: center;
+}
+
+.stats-segment-tabs button.is-active,
+.stats-segment-tabs button[aria-selected="true"] {
+  color: var(--text) !important;
+}
+
+.stats-segment-tabs button.is-active::after,
+.stats-segment-tabs button[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  bottom: 0;
+  height: 3px;
+  background: var(--accent);
+}
+
+.team-stat-rows {
+  width: 100%;
+  background: var(--surface);
+}
+
+.team-stat-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: .7rem;
+  min-height: 3.05rem;
+  padding: .54rem .88rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.team-stat-label {
+  min-width: 0;
+  color: var(--text);
+  font-size: .9rem;
+  line-height: 1.12;
+  font-weight: 850;
+}
+
+.team-stat-rank {
+  color: var(--text-3);
+  font-size: .64rem;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.team-stat-value {
+  min-width: 3.2rem;
+  color: var(--text);
+  font-size: .94rem;
+  line-height: 1;
+  font-weight: 950;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.team-stat-empty {
+  padding: 1rem .9rem;
+  color: var(--text-3);
+  font-size: .8rem;
+}
+
+.player-stats-table {
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-radius: 0 !important;
+}
+
+.player-stats-table table {
+  table-layout: fixed;
+  min-width: max-content !important;
+  font-size: .72rem !important;
+}
+
+.player-stats-table th,
+.player-stats-table td {
+  min-width: 2.75rem;
+  width: 2.75rem;
+  padding: .54rem .35rem .5rem !important;
+  line-height: 1.05 !important;
+}
+
+.player-stats-table th:first-child,
+.player-stats-table td:first-child {
+  min-width: 8.8rem;
+  width: 8.8rem;
+  max-width: 8.8rem;
+  padding-left: .78rem !important;
+  padding-right: .5rem !important;
+  text-align: left !important;
+  box-shadow: 1px 0 0 var(--border);
+}
+
+.player-stat-name {
+  max-width: 7.6rem;
+  color: var(--text);
+  font-size: .76rem;
+  line-height: 1.1;
+  font-weight: 950;
+}
+
+.player-stats-table th:not(:first-child) span {
+  justify-content: center;
+}
+
+.player-stats-table tfoot,
+.player-stats-table + div {
+  font-size: .62rem !important;
+}
+
 /* v69: final winning override after earlier header blocks */
 .team-page-shell {
   --team-fixed-header-height: calc(9.5rem + env(safe-area-inset-top));
