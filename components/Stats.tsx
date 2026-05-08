@@ -119,9 +119,6 @@ export default function Stats({ team, onPlayerClick }: Props) {
         </section>
       )}
 
-      <p className="team-stats-footnote text-xs px-1" style={{ color: "var(--text-3)" }}>
-        Data from ESPN, refreshed hourly. Click any column header to sort. Player stats may take a few seconds to load on first visit.
-      </p>
     </div>
   );
 }
@@ -160,7 +157,7 @@ function StackedSections({ sections, players, onPlayerClick }: { sections: Secti
         <div key={section.id}>
           {sections.length > 1 && (
             <h4
-              className="text-xs uppercase tracking-widest font-bold mb-2.5 px-1"
+              className="text-xs uppercase tracking-widest font-bold mt-1.5 mb-1 px-1"
               style={{ color: "var(--text-2)", letterSpacing: "0.1em" }}
             >
               {section.label}

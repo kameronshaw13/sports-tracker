@@ -258,13 +258,6 @@ export default function PlayersTable({ section, players, onPlayerClick }: Props)
           {" — totals include games with prior team this season."}
         </div>
       )}
-
-      <div
-        className="px-3 py-2 text-[11px]"
-        style={{ color: "var(--text-3)", borderTop: "1px solid var(--border)" }}
-      >
-        {sorted.length} player{sorted.length === 1 ? "" : "s"} · click any column to sort
-      </div>
     </div>
   );
 }
