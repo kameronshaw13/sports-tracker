@@ -8535,3 +8535,94 @@ main.retro-page.view-leaguePage {
     font-size: .82rem !important;
   }
 }
+
+/* v112: tune GameTracker hero into record/score columns */
+.game-score-team-away .game-score-record {
+  right: 3.04rem !important;
+}
+
+.game-score-team-home .game-score-record {
+  left: 3.04rem !important;
+}
+
+.game-score-logo-wrap {
+  width: 3.28rem !important;
+  height: 3.28rem !important;
+}
+
+.game-score-logo,
+.game-score-logo.logo-outline-dark {
+  width: 3.08rem !important;
+  height: 3.08rem !important;
+}
+
+.game-score-score {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 2.35rem !important;
+  min-width: 2.1rem !important;
+  font-size: 2.22rem !important;
+  line-height: .9 !important;
+}
+
+.game-score-team-away .game-score-score {
+  right: 2.16rem !important;
+}
+
+.game-score-team-home .game-score-score {
+  left: 2.16rem !important;
+}
+
+.game-score-team-away .game-score-score,
+.game-score-team-home .game-score-score {
+  transform: translateY(-50%) !important;
+}
+
+.game-score-status {
+  top: 2.82rem !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-team-away .game-score-record {
+    right: 2.64rem !important;
+  }
+
+  .game-score-team-home .game-score-record {
+    left: 2.64rem !important;
+  }
+
+  .game-score-logo-wrap {
+    width: 3.08rem !important;
+    height: 3.08rem !important;
+  }
+
+  .game-score-logo,
+  .game-score-logo.logo-outline-dark {
+    width: 2.9rem !important;
+    height: 2.9rem !important;
+  }
+
+  .game-score-score {
+    height: 2.22rem !important;
+    min-width: 1.95rem !important;
+    font-size: 2.08rem !important;
+  }
+
+  .game-score-team-away .game-score-score {
+    right: 1.86rem !important;
+  }
+
+  .game-score-team-home .game-score-score {
+    left: 1.86rem !important;
+  }
+
+  .game-score-team-away .game-score-score,
+  .game-score-team-home .game-score-score {
+    transform: translateY(-50%) !important;
+  }
+
+  .game-score-status {
+    top: 2.74rem !important;
+  }
+}
