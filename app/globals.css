@@ -8626,3 +8626,65 @@ main.retro-page.view-leaguePage {
     top: 2.74rem !important;
   }
 }
+
+/* v113: final GameTracker score column polish */
+.game-score-hero {
+  background:
+    repeating-linear-gradient(90deg, rgba(239,222,185,.075) 0 1px, transparent 1px 1.34rem),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 88%, #6c3418 12%), color-mix(in srgb, var(--surface) 96%, #000 4%)) !important;
+}
+
+.game-score-field {
+  opacity: .34 !important;
+  background: repeating-linear-gradient(90deg, rgba(239,222,185,.09) 0 1px, transparent 1px 1.34rem) !important;
+}
+
+.game-score-team-away .game-score-record {
+  right: 3.28rem !important;
+}
+
+.game-score-team-home .game-score-record {
+  left: 3.28rem !important;
+}
+
+.game-score-score {
+  top: 4.32rem !important;
+}
+
+.game-score-team-away .game-score-score {
+  right: 2.82rem !important;
+}
+
+.game-score-team-home .game-score-score {
+  left: 2.82rem !important;
+}
+
+.game-score-status {
+  top: 2.44rem !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-team-away .game-score-record {
+    right: 2.88rem !important;
+  }
+
+  .game-score-team-home .game-score-record {
+    left: 2.88rem !important;
+  }
+
+  .game-score-score {
+    top: 4.24rem !important;
+  }
+
+  .game-score-team-away .game-score-score {
+    right: 2.42rem !important;
+  }
+
+  .game-score-team-home .game-score-score {
+    left: 2.42rem !important;
+  }
+
+  .game-score-status {
+    top: 2.38rem !important;
+  }
+}
