@@ -9058,3 +9058,30 @@ main.retro-page.view-leaguePage {
     top: 2rem !important;
   }
 }
+
+/* v120: lock live header label and score columns */
+.game-score-team-away .game-score-score {
+  right: 3.32rem !important;
+}
+
+.game-score-team-home .game-score-score {
+  left: 3.46rem !important;
+}
+
+.game-score-status.is-live {
+  top: 1.48rem !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-team-away .game-score-score {
+    right: 2.84rem !important;
+  }
+
+  .game-score-team-home .game-score-score {
+    left: 2.96rem !important;
+  }
+
+  .game-score-status.is-live {
+    top: 1.4rem !important;
+  }
+}
