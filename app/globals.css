@@ -8156,6 +8156,105 @@ main.retro-page.view-leaguePage {
   }
 }
 
+/* v110: mirror team hero spacing and align records with date */
+.game-score-layout {
+  grid-template-columns: minmax(0, 1fr) 5.15rem minmax(0, 1fr) !important;
+  padding-left: 1.42rem !important;
+  padding-right: 1.42rem !important;
+}
+
+.game-score-team {
+  grid-template-rows: 1.1rem minmax(0, 1fr) !important;
+}
+
+.game-score-team-main {
+  min-height: 4.64rem !important;
+  grid-template-columns: 3.46rem 2.42rem !important;
+  column-gap: .9rem !important;
+}
+
+.game-score-team-home .game-score-team-main {
+  grid-template-columns: 2.42rem 3.46rem !important;
+}
+
+.game-score-team-away .game-score-logo-wrap {
+  justify-self: start !important;
+}
+
+.game-score-team-home .game-score-logo-wrap {
+  justify-self: end !important;
+}
+
+.game-score-record {
+  justify-self: end !important;
+  align-self: end !important;
+  margin-right: .02rem !important;
+  margin-bottom: .1rem !important;
+}
+
+.game-score-team-home .game-score-record {
+  justify-self: start !important;
+  margin-left: .02rem !important;
+  margin-right: 0 !important;
+}
+
+.game-score-logo-wrap {
+  width: 3.36rem !important;
+  height: 3.36rem !important;
+  align-self: center !important;
+  transform: translateY(-.08rem) !important;
+}
+
+.game-score-logo,
+.game-score-logo.logo-outline-dark {
+  width: 3.16rem !important;
+  height: 3.16rem !important;
+}
+
+.game-score-score {
+  min-width: 2.2rem !important;
+  font-size: 1.98rem !important;
+  justify-self: start !important;
+  transform: translateY(.12rem) !important;
+}
+
+.game-score-team-home .game-score-score {
+  justify-self: end !important;
+  transform: translateY(.12rem) !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-layout {
+    padding-left: 1.05rem !important;
+    padding-right: 1.05rem !important;
+  }
+
+  .game-score-team-main {
+    grid-template-columns: 3.08rem 2.24rem !important;
+    column-gap: .68rem !important;
+  }
+
+  .game-score-team-home .game-score-team-main {
+    grid-template-columns: 2.24rem 3.08rem !important;
+  }
+
+  .game-score-logo-wrap {
+    width: 3.04rem !important;
+    height: 3.04rem !important;
+  }
+
+  .game-score-logo,
+  .game-score-logo.logo-outline-dark {
+    width: 2.84rem !important;
+    height: 2.84rem !important;
+  }
+
+  .game-score-score {
+    font-size: 1.82rem !important;
+    min-width: 2rem !important;
+  }
+}
+
 @media (max-width: 420px) {
   .game-score-layout {
     grid-template-columns: minmax(0, 1fr) 5.35rem minmax(0, 1fr);
