@@ -8287,3 +8287,251 @@ main.retro-page.view-leaguePage {
     min-width: 2.45rem;
   }
 }
+
+/* v111: simple mirrored GameTracker hero geometry */
+.game-score-hero {
+  position: relative !important;
+  min-height: 7.72rem !important;
+  height: 7.72rem !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255,255,255,.055), transparent 26%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.055) 0 1px, transparent 1px 2.45rem),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 88%, #6c3418 12%), color-mix(in srgb, var(--surface) 96%, #000 4%)) !important;
+}
+
+.game-score-layout {
+  position: relative !important;
+  display: block !important;
+  height: 7.72rem !important;
+  min-height: 7.72rem !important;
+  padding: 0 !important;
+}
+
+.game-score-team,
+.game-score-team-away,
+.game-score-team-home {
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 42.5% !important;
+  display: block !important;
+  min-width: 0 !important;
+  color: var(--text) !important;
+}
+
+.game-score-team-away {
+  left: 0 !important;
+}
+
+.game-score-team-home {
+  right: 0 !important;
+}
+
+.game-score-team-main {
+  display: block !important;
+  min-height: 0 !important;
+}
+
+.game-score-center {
+  position: absolute !important;
+  top: 1.58rem !important;
+  left: 50% !important;
+  width: 7.3rem !important;
+  height: 5rem !important;
+  display: block !important;
+  text-align: center !important;
+  transform: translateX(-50%) !important;
+  z-index: 3 !important;
+}
+
+.game-score-date {
+  position: absolute !important;
+  top: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  color: var(--text-2) !important;
+  font-size: .68rem !important;
+  line-height: 1 !important;
+  font-weight: 850 !important;
+  white-space: nowrap !important;
+}
+
+.game-score-status {
+  position: absolute !important;
+  top: 3.23rem !important;
+  left: 50% !important;
+  margin: 0 !important;
+  transform: translateX(-50%) !important;
+  color: var(--text) !important;
+  font-size: .86rem !important;
+  line-height: 1 !important;
+  font-weight: 950 !important;
+  white-space: nowrap !important;
+}
+
+.game-score-record {
+  position: absolute !important;
+  top: 1.58rem !important;
+  color: var(--text-2) !important;
+  font-size: .68rem !important;
+  line-height: 1 !important;
+  font-weight: 850 !important;
+  white-space: nowrap !important;
+  transform: none !important;
+  margin: 0 !important;
+  z-index: 3 !important;
+}
+
+.game-score-team-away .game-score-record {
+  right: 2.86rem !important;
+}
+
+.game-score-team-home .game-score-record {
+  left: 2.86rem !important;
+}
+
+.game-score-logo-wrap {
+  position: absolute !important;
+  top: 4.02rem !important;
+  width: 3.04rem !important;
+  height: 3.04rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+  z-index: 2 !important;
+}
+
+.game-score-team-away .game-score-logo-wrap {
+  left: 1.05rem !important;
+}
+
+.game-score-team-home .game-score-logo-wrap {
+  right: 1.05rem !important;
+}
+
+.game-score-logo,
+.game-score-logo.logo-outline-dark {
+  width: 2.84rem !important;
+  height: 2.84rem !important;
+  object-fit: contain !important;
+  filter:
+    drop-shadow(0 -1.6px 0 rgba(255,255,255,1))
+    drop-shadow(1.6px 0 0 rgba(255,255,255,1))
+    drop-shadow(0 1.6px 0 rgba(255,255,255,1))
+    drop-shadow(-1.6px 0 0 rgba(255,255,255,1))
+    drop-shadow(0 2px 4px rgba(0,0,0,.58)) !important;
+  -webkit-filter:
+    drop-shadow(0 -1.6px 0 rgba(255,255,255,1))
+    drop-shadow(1.6px 0 0 rgba(255,255,255,1))
+    drop-shadow(0 1.6px 0 rgba(255,255,255,1))
+    drop-shadow(-1.6px 0 0 rgba(255,255,255,1))
+    drop-shadow(0 2px 4px rgba(0,0,0,.58)) !important;
+}
+
+.game-score-score {
+  position: absolute !important;
+  top: 4.02rem !important;
+  min-width: 2rem !important;
+  color: var(--text) !important;
+  font-size: 2.16rem !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+  z-index: 3 !important;
+}
+
+.game-score-team-away .game-score-score {
+  right: .72rem !important;
+}
+
+.game-score-team-home .game-score-score {
+  left: .72rem !important;
+}
+
+.game-score-series {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: .2rem !important;
+  transform: translateX(-50%) !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-hero,
+  .game-score-layout {
+    height: 7.55rem !important;
+    min-height: 7.55rem !important;
+  }
+
+  .game-score-team,
+  .game-score-team-away,
+  .game-score-team-home {
+    width: 43% !important;
+  }
+
+  .game-score-center {
+    top: 1.52rem !important;
+    width: 6.95rem !important;
+  }
+
+  .game-score-date,
+  .game-score-record {
+    top: 0 !important;
+    font-size: .64rem !important;
+  }
+
+  .game-score-record {
+    top: 1.52rem !important;
+  }
+
+  .game-score-team-away .game-score-record {
+    right: 2.42rem !important;
+  }
+
+  .game-score-team-home .game-score-record {
+    left: 2.42rem !important;
+  }
+
+  .game-score-logo-wrap {
+    top: 3.96rem !important;
+    width: 2.82rem !important;
+    height: 2.82rem !important;
+  }
+
+  .game-score-team-away .game-score-logo-wrap {
+    left: .68rem !important;
+  }
+
+  .game-score-team-home .game-score-logo-wrap {
+    right: .68rem !important;
+  }
+
+  .game-score-logo,
+  .game-score-logo.logo-outline-dark {
+    width: 2.62rem !important;
+    height: 2.62rem !important;
+  }
+
+  .game-score-score {
+    top: 3.96rem !important;
+    font-size: 2rem !important;
+    min-width: 1.8rem !important;
+  }
+
+  .game-score-team-away .game-score-score {
+    right: .28rem !important;
+  }
+
+  .game-score-team-home .game-score-score {
+    left: .28rem !important;
+  }
+
+  .game-score-status {
+    top: 3.14rem !important;
+    font-size: .82rem !important;
+  }
+}
