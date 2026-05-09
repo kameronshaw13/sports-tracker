@@ -71,19 +71,15 @@ function ScoreboardHero({ league, home, away, status, situation, eventId, gameDa
   return (
     <section className="game-score-hero relative overflow-hidden">
       <div className="game-score-field" aria-hidden="true" />
-      <div className="game-score-rail game-score-rail-away" style={{ ["--team-color" as string]: away?.color || "#1d4ed8" } as any} />
-      <div className="game-score-rail game-score-rail-home" style={{ ["--team-color" as string]: home?.color || "#7c2d12" } as any} />
-      <div className="relative px-4 py-5">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+      <div className="game-score-layout">
           <TeamBlock team={away} league={league} eventId={eventId} onClick={onTeamClick} align="left" showScore={showScore} />
-          <div className="game-score-center text-center min-w-[82px]">
+          <div className="game-score-center">
             <div className="game-score-date">{formatGameDate(gameDate)}</div>
             <div className="game-score-status">{status?.detail || ""}</div>
             {league === "mlb" && status?.state === "in" && hasBaseballSituation(situation) && <BaseballSituationBlock situation={situation} />}
             {status?.seriesGame && <div className="game-score-series">{status.seriesGame}</div>}
           </div>
           <TeamBlock team={home} league={league} eventId={eventId} onClick={onTeamClick} align="right" showScore={showScore} />
-        </div>
       </div>
     </section>
   );
@@ -93,12 +89,11 @@ function TeamBlock({ team, league, eventId, onClick, align, showScore }: any) {
   if (!team) return null;
   const Comp: any = onClick && team.abbr ? "button" : "div";
   return (
-    <Comp onClick={onClick && team.abbr ? () => onClick(league, String(team.abbr).toLowerCase(), { league, eventId }) : undefined} className={`game-score-team min-w-0 ${align === "right" ? "game-score-team-home text-right" : "game-score-team-away text-left"}`}>
-      <div className="game-score-logo-wrap">{team.logo && <Image src={team.logo} alt={team.abbr || team.name || ""} width={72} height={72} className="game-score-logo object-contain logo-outline-dark" unoptimized />}</div>
-      <div className="game-score-team-copy min-w-0">
-        <div className="game-score-record">{team.seriesRecord || team.record || ""}</div>
+    <Comp onClick={onClick && team.abbr ? () => onClick(league, String(team.abbr).toLowerCase(), { league, eventId }) : undefined} className={`game-score-team ${align === "right" ? "game-score-team-home" : "game-score-team-away"}`}>
+      <div className="game-score-record">{team.seriesRecord || team.record || ""}</div>
+      <div className="game-score-team-main">
+        <div className="game-score-logo-wrap">{team.logo && <Image src={team.logo} alt={team.abbr || team.name || ""} width={84} height={84} className="game-score-logo object-contain logo-outline-dark" unoptimized />}</div>
         <div className="game-score-score retro-score tabular-nums">{showScore ? team.score ?? "—" : ""}</div>
-        <div className="game-score-abbr truncate">{team.abbr}</div>
       </div>
     </Comp>
   );

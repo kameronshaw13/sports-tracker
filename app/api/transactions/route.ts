@@ -119,6 +119,12 @@ async function getMlbEspnProfilesByName(abbr: string): Promise<Map<string, any>>
   const urls = [
     `${SITE_API}/${p}/teams/${abbr}/roster`,
     `${SITE_WEB_API}/${p}/teams/${abbr}/roster`,
+    `${SITE_API}/${p}/teams/${abbr}?enable=roster,injuries,transactions`,
+    `${SITE_WEB_API}/${p}/teams/${abbr}?enable=roster,injuries,transactions`,
+    `${SITE_API}/${p}/teams/${abbr}?enable=injuries`,
+    `${SITE_WEB_API}/${p}/teams/${abbr}?enable=injuries`,
+    `${SITE_API}/${p}/teams/${abbr}?enable=transactions`,
+    `${SITE_WEB_API}/${p}/teams/${abbr}?enable=transactions`,
     `${SITE_API}/${p}/teams/${abbr}?enable=roster`,
     `${SITE_WEB_API}/${p}/teams/${abbr}?enable=roster`,
   ];
@@ -143,7 +149,6 @@ async function getMlbEspnProfilesByName(abbr: string): Promise<Map<string, any>>
       const key = normalizeNameKey(athlete?.fullName || athlete?.displayName || athlete?.name);
       if (key && athlete) map.set(key, athlete);
     }
-    if (map.size > 0) break;
   }
   return map;
 }

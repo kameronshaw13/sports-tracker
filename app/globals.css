@@ -7845,3 +7845,219 @@ main.retro-page.view-leaguePage {
 .boxscore-player-stat-head th {
   transform: translateY(.04rem);
 }
+
+/* v108: rebuild GameTracker hero alignment from grid instead of pixel nudges */
+.game-score-hero {
+  min-height: 8.9rem !important;
+  display: block !important;
+  background: #050504 !important;
+}
+
+.game-score-field {
+  opacity: .12 !important;
+}
+
+.game-score-layout {
+  position: relative;
+  z-index: 1;
+  min-height: 8.9rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 5.8rem minmax(0, 1fr);
+  align-items: stretch;
+  padding: .84rem .9rem .92rem;
+}
+
+.game-score-team,
+.game-score-team-away,
+.game-score-team-home,
+.game-score-team-copy,
+.game-score-logo-wrap,
+.game-score-score,
+.game-score-record {
+  transform: none !important;
+  margin: 0 !important;
+}
+
+.game-score-team {
+  position: relative;
+  z-index: 1;
+  display: grid !important;
+  grid-template-rows: 1.25rem minmax(0, 1fr);
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  color: var(--text);
+}
+
+.game-score-team-main {
+  display: grid;
+  grid-template-columns: minmax(4.8rem, 1fr) 3.3rem;
+  align-items: center;
+  column-gap: .58rem;
+  min-height: 5.35rem;
+}
+
+.game-score-team-home .game-score-team-main {
+  grid-template-columns: 3.3rem minmax(4.8rem, 1fr);
+}
+
+.game-score-team-home .game-score-score {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.game-score-team-home .game-score-logo-wrap {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.game-score-record {
+  align-self: end;
+  justify-self: center;
+  color: var(--text-2);
+  font-size: .72rem !important;
+  line-height: 1;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.game-score-logo-wrap {
+  width: 5.05rem !important;
+  height: 5.05rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  justify-self: center;
+}
+
+.game-score-logo,
+.game-score-logo.logo-outline-dark {
+  width: 4.72rem !important;
+  height: 4.72rem !important;
+  object-fit: contain !important;
+  filter:
+    drop-shadow(0 -1.4px 0 rgba(255,255,255,1))
+    drop-shadow(1.4px 0 0 rgba(255,255,255,1))
+    drop-shadow(0 1.4px 0 rgba(255,255,255,1))
+    drop-shadow(-1.4px 0 0 rgba(255,255,255,1))
+    drop-shadow(0 2.5px 4px rgba(0,0,0,.55)) !important;
+  -webkit-filter:
+    drop-shadow(0 -1.4px 0 rgba(255,255,255,1))
+    drop-shadow(1.4px 0 0 rgba(255,255,255,1))
+    drop-shadow(0 1.4px 0 rgba(255,255,255,1))
+    drop-shadow(-1.4px 0 0 rgba(255,255,255,1))
+    drop-shadow(0 2.5px 4px rgba(0,0,0,.55)) !important;
+}
+
+.game-score-score {
+  justify-self: center;
+  align-self: center;
+  color: var(--text);
+  font-size: 2.62rem !important;
+  line-height: 1 !important;
+  text-align: center;
+  min-width: 2.7rem;
+}
+
+.game-score-center {
+  display: grid;
+  grid-template-rows: 1.25rem minmax(0, 1fr) 1.2rem;
+  align-items: center;
+  justify-items: center;
+  min-width: 0;
+  text-align: center;
+}
+
+.game-score-date {
+  align-self: end;
+  color: var(--text-2);
+  font-size: .72rem !important;
+  line-height: 1;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.game-score-status {
+  align-self: center;
+  margin: 0 !important;
+  color: var(--text);
+  font-size: .9rem !important;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.game-detail-topbar {
+  min-height: 3.26rem !important;
+}
+
+.game-detail-title {
+  transform: none !important;
+  padding-top: .15rem !important;
+  line-height: 1 !important;
+}
+
+.game-detail-close {
+  left: .15rem !important;
+}
+
+.game-detail-tabs > div {
+  align-items: center;
+}
+
+.game-detail-tab {
+  display: flex;
+  align-items: center;
+  min-height: 3.08rem !important;
+  padding-top: .1rem !important;
+  padding-bottom: 0 !important;
+}
+
+.game-detail-tab-line {
+  bottom: 0 !important;
+}
+
+.team-feed-avatar-mlb {
+  background: #20201e !important;
+}
+
+.team-feed-avatar .team-feed-img-mlb {
+  width: 112% !important;
+  height: 112% !important;
+  object-fit: cover !important;
+  transform: scale(1.08) !important;
+  mix-blend-mode: multiply !important;
+  filter: contrast(1.08) saturate(1.05) !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-layout {
+    grid-template-columns: minmax(0, 1fr) 5.35rem minmax(0, 1fr);
+    padding-left: .62rem;
+    padding-right: .62rem;
+  }
+
+  .game-score-team-main {
+    grid-template-columns: minmax(4.25rem, 1fr) 2.95rem;
+    column-gap: .42rem;
+  }
+
+  .game-score-team-home .game-score-team-main {
+    grid-template-columns: 2.95rem minmax(4.25rem, 1fr);
+  }
+
+  .game-score-logo-wrap {
+    width: 4.45rem !important;
+    height: 4.45rem !important;
+  }
+
+  .game-score-logo,
+  .game-score-logo.logo-outline-dark {
+    width: 4.14rem !important;
+    height: 4.14rem !important;
+  }
+
+  .game-score-score {
+    font-size: 2.36rem !important;
+    min-width: 2.45rem;
+  }
+}

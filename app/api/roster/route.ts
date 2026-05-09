@@ -600,6 +600,27 @@ async function handleMlb(abbr: string) {
       if (id) espnById.set(id, a);
     }
   } catch {}
+  try {
+    const teamData = await getTeamPage("mlb", abbr, ["roster", "injuries", "transactions"]);
+    for (const a of parseAthletes(teamData)) {
+      const name = normalizeNameKey(a?.fullName || a?.displayName || a?.name);
+      if (name) espnByName.set(name, a);
+      const id = String(a?.id || "");
+      if (id) espnById.set(id, a);
+    }
+    const injuries = teamData?.team?.injuries || teamData?.injuries || [];
+    if (Array.isArray(injuries)) {
+      for (const inj of injuries) {
+        const athlete = readEspnAthleteFromInjury(inj);
+        const name = normalizeNameKey(athlete?.fullName || athlete?.displayName || athlete?.name);
+        if (name) {
+          espnInjuriesByName.set(name, inj);
+          if (athlete) espnByName.set(name, athlete);
+        }
+      }
+    }
+    mergeEspnTransactionAthletes(teamData, espnByName);
+  } catch {}
   if (espnByName.size === 0) {
     try {
       const teamData = await getTeamPage("mlb", abbr, ["roster", "injuries"]);
