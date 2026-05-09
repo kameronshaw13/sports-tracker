@@ -9085,3 +9085,77 @@ main.retro-page.view-leaguePage {
     top: 1.4rem !important;
   }
 }
+
+/* v121: clean hero background and tighten MLB line score */
+.game-score-hero {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 91%, #6c3418 9%), color-mix(in srgb, var(--surface) 97%, #000 3%)) !important;
+}
+
+.game-score-field {
+  opacity: 0 !important;
+  background: none !important;
+}
+
+.game-score-status.is-live {
+  top: 1.16rem !important;
+}
+
+.boxscore-line-table table {
+  min-width: 23.8rem !important;
+  font-size: .78rem !important;
+}
+
+.boxscore-line-table th,
+.boxscore-line-table td {
+  height: 2.36rem !important;
+  font-size: .78rem !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+}
+
+.boxscore-line-table thead th {
+  height: 1.46rem !important;
+  padding-top: .2rem !important;
+  padding-bottom: .12rem !important;
+}
+
+.boxscore-line-table tbody td {
+  padding-top: .5rem !important;
+  padding-bottom: .3rem !important;
+}
+
+.boxscore-line-team {
+  transform: translate(.25rem, -.08rem) !important;
+  font-size: .8rem !important;
+  line-height: 1 !important;
+}
+
+.boxscore-line-team img {
+  transform: translateY(-.08rem) !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-status.is-live {
+    top: 1.08rem !important;
+  }
+
+  .boxscore-line-table table,
+  .boxscore-line-table th,
+  .boxscore-line-table td {
+    font-size: .76rem !important;
+  }
+
+  .boxscore-line-table thead th {
+    height: 1.42rem !important;
+    padding-top: .18rem !important;
+  }
+
+  .boxscore-line-table tbody td {
+    padding-top: .48rem !important;
+  }
+
+  .boxscore-line-team {
+    font-size: .78rem !important;
+  }
+}
