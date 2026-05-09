@@ -8029,6 +8029,133 @@ main.retro-page.view-leaguePage {
   filter: contrast(1.08) saturate(1.05) !important;
 }
 
+.team-feed-avatar span {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  transform: translateY(.04rem);
+  line-height: 1 !important;
+}
+
+/* v109: smaller, balanced GameTracker hero */
+.game-score-hero {
+  min-height: 7.7rem !important;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.055) 0 1px, transparent 1px 2.18rem),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 86%, #5b2b14 14%), color-mix(in srgb, var(--surface) 94%, #000 6%)) !important;
+}
+
+.game-score-layout {
+  min-height: 7.7rem !important;
+  grid-template-columns: minmax(0, 1fr) 5.15rem minmax(0, 1fr) !important;
+  padding: .62rem 1.18rem .78rem !important;
+}
+
+.game-score-team {
+  grid-template-rows: 1.1rem minmax(0, 1fr) !important;
+}
+
+.game-score-team-main {
+  grid-template-columns: 4.1rem 2.7rem !important;
+  column-gap: .5rem !important;
+  min-height: 4.7rem !important;
+}
+
+.game-score-team-home .game-score-team-main {
+  grid-template-columns: 2.7rem 4.1rem !important;
+}
+
+.game-score-team-away .game-score-logo-wrap {
+  justify-self: start !important;
+}
+
+.game-score-team-home .game-score-logo-wrap {
+  justify-self: end !important;
+}
+
+.game-score-record {
+  align-self: end !important;
+  justify-self: center !important;
+  font-size: .62rem !important;
+  line-height: 1 !important;
+  margin-bottom: .18rem !important;
+}
+
+.game-score-logo-wrap {
+  width: 3.98rem !important;
+  height: 3.98rem !important;
+}
+
+.game-score-logo,
+.game-score-logo.logo-outline-dark {
+  width: 3.7rem !important;
+  height: 3.7rem !important;
+}
+
+.game-score-score {
+  align-self: center !important;
+  justify-self: center !important;
+  min-width: 2.35rem !important;
+  font-size: 2.1rem !important;
+  line-height: 1 !important;
+  transform: translateY(.1rem) !important;
+}
+
+.game-score-team-home .game-score-score {
+  transform: translateY(.1rem) !important;
+}
+
+.game-score-center {
+  grid-template-rows: 1.1rem minmax(0, 1fr) 1rem !important;
+}
+
+.game-score-date {
+  font-size: .62rem !important;
+  line-height: 1 !important;
+}
+
+.game-score-status {
+  align-self: center !important;
+  transform: translateY(.58rem);
+  font-size: .76rem !important;
+  line-height: 1 !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-layout {
+    grid-template-columns: minmax(0, 1fr) 4.82rem minmax(0, 1fr) !important;
+    padding-left: .88rem !important;
+    padding-right: .88rem !important;
+  }
+
+  .game-score-team-main {
+    grid-template-columns: 3.68rem 2.42rem !important;
+    column-gap: .34rem !important;
+  }
+
+  .game-score-team-home .game-score-team-main {
+    grid-template-columns: 2.42rem 3.68rem !important;
+  }
+
+  .game-score-logo-wrap {
+    width: 3.62rem !important;
+    height: 3.62rem !important;
+  }
+
+  .game-score-logo,
+  .game-score-logo.logo-outline-dark {
+    width: 3.34rem !important;
+    height: 3.34rem !important;
+  }
+
+  .game-score-score {
+    font-size: 1.94rem !important;
+    min-width: 2.18rem !important;
+  }
+}
+
 @media (max-width: 420px) {
   .game-score-layout {
     grid-template-columns: minmax(0, 1fr) 5.35rem minmax(0, 1fr);
