@@ -8786,3 +8786,275 @@ main.retro-page.view-leaguePage {
     min-width: 23.4rem !important;
   }
 }
+
+/* v116: final live hero and boxscore row centering */
+.game-score-team-away .game-score-score {
+  right: 3.34rem !important;
+}
+
+.game-score-team-home .game-score-score {
+  left: 3.34rem !important;
+}
+
+.game-score-status.is-live {
+  top: 1.86rem !important;
+}
+
+.game-score-situation {
+  top: 3.42rem !important;
+}
+
+.boxscore-line-table table {
+  font-size: .72rem !important;
+}
+
+.boxscore-line-table th,
+.boxscore-line-table td {
+  font-size: .72rem !important;
+  height: 2.62rem !important;
+  padding-top: .76rem !important;
+  padding-bottom: .34rem !important;
+}
+
+.boxscore-line-table thead th {
+  padding-top: .84rem !important;
+  padding-bottom: .3rem !important;
+}
+
+.boxscore-line-table tbody td {
+  padding-top: .78rem !important;
+  padding-bottom: .28rem !important;
+}
+
+.boxscore-line-team {
+  transform: translate(.25rem, .27rem) !important;
+  font-size: .74rem !important;
+}
+
+.boxscore-line-team img,
+.boxscore-team-toggle button img,
+.boxscore-team-stats-logo img {
+  filter:
+    drop-shadow(0 -1.25px 0 rgba(255,255,255,.98))
+    drop-shadow(1.25px 0 0 rgba(255,255,255,.98))
+    drop-shadow(0 1.25px 0 rgba(255,255,255,.98))
+    drop-shadow(-1.25px 0 0 rgba(255,255,255,.98))
+    drop-shadow(0 1.5px 2px rgba(0,0,0,.52)) !important;
+  -webkit-filter:
+    drop-shadow(0 -1.25px 0 rgba(255,255,255,.98))
+    drop-shadow(1.25px 0 0 rgba(255,255,255,.98))
+    drop-shadow(0 1.25px 0 rgba(255,255,255,.98))
+    drop-shadow(-1.25px 0 0 rgba(255,255,255,.98))
+    drop-shadow(0 1.5px 2px rgba(0,0,0,.52)) !important;
+}
+
+.boxscore-line-team img {
+  transform: translateY(-.14rem) !important;
+}
+
+.boxscore-team-toggle button {
+  align-items: center !important;
+  padding-top: .14rem !important;
+  line-height: 1 !important;
+}
+
+.boxscore-team-toggle button img {
+  transform: translateY(-.07rem) !important;
+}
+
+.boxscore-team-toggle button:not(:has(img)) {
+  padding-top: .24rem !important;
+}
+
+.boxscore-player-stat-head th {
+  padding-top: .86rem !important;
+  padding-bottom: .48rem !important;
+  vertical-align: middle !important;
+  line-height: 1 !important;
+}
+
+.boxscore-stat-scroll tbody td {
+  padding-top: .72rem !important;
+  padding-bottom: .46rem !important;
+  vertical-align: middle !important;
+  line-height: 1.05 !important;
+}
+
+.boxscore-player-name {
+  transform: translateY(.08rem) !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-team-away .game-score-score {
+    right: 2.92rem !important;
+  }
+
+  .game-score-team-home .game-score-score {
+    left: 2.92rem !important;
+  }
+
+  .game-score-status.is-live {
+    top: 1.78rem !important;
+  }
+
+  .game-score-situation {
+    top: 3.28rem !important;
+  }
+
+  .boxscore-line-table table {
+    font-size: .7rem !important;
+  }
+
+  .boxscore-line-table th,
+  .boxscore-line-table td {
+    font-size: .7rem !important;
+  }
+
+  .boxscore-line-team {
+    font-size: .72rem !important;
+  }
+}
+
+/* v117: final visible preview adjustments */
+.game-score-score {
+  top: 4.56rem !important;
+}
+
+.game-score-team-away .game-score-score {
+  right: 3.52rem !important;
+}
+
+.game-score-team-home .game-score-score {
+  left: 3.52rem !important;
+}
+
+.game-score-status.is-live {
+  top: 1.62rem !important;
+}
+
+.game-score-situation {
+  top: 2.92rem !important;
+}
+
+.boxscore-line-table table {
+  font-size: .78rem !important;
+}
+
+.boxscore-line-table th,
+.boxscore-line-table td {
+  font-size: .78rem !important;
+  height: 2.72rem !important;
+  padding-top: .88rem !important;
+  padding-bottom: .26rem !important;
+}
+
+.boxscore-line-table thead th {
+  padding-top: .94rem !important;
+  padding-bottom: .24rem !important;
+}
+
+.boxscore-line-team {
+  font-size: .8rem !important;
+  transform: translate(.25rem, .3rem) !important;
+}
+
+.boxscore-line-team img {
+  transform: translateY(-.24rem) !important;
+}
+
+.boxscore-team-toggle button {
+  padding-top: .24rem !important;
+}
+
+.boxscore-team-toggle button img {
+  transform: translateY(-.18rem) !important;
+}
+
+.boxscore-team-toggle button:not(:has(img)) {
+  padding-top: .34rem !important;
+}
+
+.boxscore-player-stat-head th {
+  padding-top: 1rem !important;
+  padding-bottom: .34rem !important;
+}
+
+.boxscore-stat-scroll tbody td {
+  padding-top: .86rem !important;
+  padding-bottom: .34rem !important;
+}
+
+.boxscore-player-name {
+  transform: translateY(.12rem) !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-score {
+    top: 4.46rem !important;
+  }
+
+  .game-score-team-away .game-score-score {
+    right: 3.08rem !important;
+  }
+
+  .game-score-team-home .game-score-score {
+    left: 3.08rem !important;
+  }
+
+  .game-score-status.is-live {
+    top: 1.54rem !important;
+  }
+
+  .game-score-situation {
+    top: 2.76rem !important;
+  }
+
+  .boxscore-line-table table,
+  .boxscore-line-table th,
+  .boxscore-line-table td {
+    font-size: .76rem !important;
+  }
+
+  .boxscore-line-team {
+    font-size: .78rem !important;
+  }
+}
+
+/* v118: final live situation lift and score-column nudge */
+.game-score-score {
+  top: 4.62rem !important;
+}
+
+.game-score-team-away .game-score-score {
+  right: 3.68rem !important;
+}
+
+.game-score-team-home .game-score-score {
+  left: 3.68rem !important;
+}
+
+.game-score-situation {
+  top: 2.12rem !important;
+}
+
+.game-score-count {
+  white-space: nowrap !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-score {
+    top: 4.52rem !important;
+  }
+
+  .game-score-team-away .game-score-score {
+    right: 3.22rem !important;
+  }
+
+  .game-score-team-home .game-score-score {
+    left: 3.22rem !important;
+  }
+
+  .game-score-situation {
+    top: 2rem !important;
+  }
+}
