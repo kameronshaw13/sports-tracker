@@ -75,7 +75,7 @@ function ScoreboardHero({ league, home, away, status, situation, eventId, gameDa
           <TeamBlock team={away} league={league} eventId={eventId} onClick={onTeamClick} align="left" showScore={showScore} />
           <div className="game-score-center">
             <div className="game-score-date">{formatGameDate(gameDate)}</div>
-            <div className="game-score-status">{status?.detail || ""}</div>
+            <div className={`game-score-status ${status?.state === "in" ? "is-live" : "is-final"}`}>{status?.detail || ""}</div>
             {league === "mlb" && status?.state === "in" && hasBaseballSituation(situation) && <BaseballSituationBlock situation={situation} />}
             {status?.seriesGame && <div className="game-score-series">{status.seriesGame}</div>}
           </div>
@@ -113,7 +113,7 @@ function nonPlayedLabel(statusName: string): string { if (statusName.includes("P
 function hasBaseballSituation(s: any): boolean { return s && (typeof s.balls === "number" || typeof s.strikes === "number" || typeof s.outs === "number"); }
 function BaseballSituationBlock({ situation }: { situation: any }) {
   const balls = situation.balls ?? 0; const strikes = situation.strikes ?? 0; const outs = situation.outs ?? 0;
-  return <div className="mt-2 flex flex-col items-center gap-1"><BasesDiamond onFirst={!!situation.onFirst} onSecond={!!situation.onSecond} onThird={!!situation.onThird} /><div className="text-xs font-black tabular-nums" style={{ color: "var(--text-2)" }}>{balls}-{strikes}, {outs} {outs === 1 ? "Out" : "Outs"}</div></div>;
+  return <div className="game-score-situation flex flex-col items-center gap-1"><BasesDiamond onFirst={!!situation.onFirst} onSecond={!!situation.onSecond} onThird={!!situation.onThird} /><div className="game-score-count text-xs font-black tabular-nums" style={{ color: "var(--text-2)" }}>{balls}-{strikes}, {outs} {outs === 1 ? "Out" : "Outs"}</div></div>;
 }
 function BasesDiamond({ onFirst, onSecond, onThird }: { onFirst: boolean; onSecond: boolean; onThird: boolean }) {
   const filled = "var(--accent)"; const empty = "var(--surface-2)"; const stroke = "var(--text-3)";

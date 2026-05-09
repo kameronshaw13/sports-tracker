@@ -8688,3 +8688,101 @@ main.retro-page.view-leaguePage {
     top: 2.38rem !important;
   }
 }
+
+/* v115: live game status and line score alignment polish */
+.game-score-score {
+  top: 4.46rem !important;
+}
+
+.game-score-team-away .game-score-score {
+  right: 3.08rem !important;
+}
+
+.game-score-team-home .game-score-score {
+  left: 3.08rem !important;
+}
+
+.game-score-status.is-final {
+  top: 2.44rem !important;
+}
+
+.game-score-status.is-live {
+  top: 2.08rem !important;
+}
+
+.game-score-situation {
+  position: absolute !important;
+  top: 3.82rem !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin: 0 !important;
+  z-index: 4 !important;
+}
+
+.game-score-situation svg {
+  display: block !important;
+}
+
+.game-score-count {
+  line-height: 1 !important;
+  transform: translateY(.06rem);
+}
+
+.boxscore-line-table table {
+  min-width: 23.8rem !important;
+}
+
+.boxscore-line-table th,
+.boxscore-line-table td {
+  height: 2.52rem !important;
+  padding-top: .62rem !important;
+  padding-bottom: .42rem !important;
+  vertical-align: middle !important;
+  line-height: 1.05 !important;
+}
+
+.boxscore-line-table thead th {
+  padding-top: .72rem !important;
+  padding-bottom: .38rem !important;
+}
+
+.boxscore-line-table tbody td {
+  padding-top: .68rem !important;
+  padding-bottom: .36rem !important;
+}
+
+.boxscore-line-team {
+  align-items: center !important;
+  transform: translate(.25rem, .24rem) !important;
+  line-height: 1 !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-score {
+    top: 4.36rem !important;
+  }
+
+  .game-score-team-away .game-score-score {
+    right: 2.66rem !important;
+  }
+
+  .game-score-team-home .game-score-score {
+    left: 2.66rem !important;
+  }
+
+  .game-score-status.is-final {
+    top: 2.38rem !important;
+  }
+
+  .game-score-status.is-live {
+    top: 2rem !important;
+  }
+
+  .game-score-situation {
+    top: 3.68rem !important;
+  }
+
+  .boxscore-line-table table {
+    min-width: 23.4rem !important;
+  }
+}

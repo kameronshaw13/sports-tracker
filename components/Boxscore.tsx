@@ -94,7 +94,7 @@ export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Pro
 function MlbLineScore({ lineScore }: { lineScore: any }) {
   const teams = [...(lineScore?.teams || [])].sort((a: any, b: any) => a.homeAway === "away" ? -1 : b.homeAway === "away" ? 1 : 0);
   if (!teams.length) return null;
-  const innings = Number(lineScore.innings || 0);
+  const innings = Math.max(9, Number(lineScore.innings || 0));
   return (
     <div>
       <div className="boxscore-line-table">
