@@ -1,4 +1,5 @@
 app/globals.css
 components/Gamecast.tsx
-README_GAMECAST_LIVE_PLAYS_V128.txt
+components/GameDetail.tsx
+README_GAMECAST_PLAYS_V129.txt
 changed_files.txt

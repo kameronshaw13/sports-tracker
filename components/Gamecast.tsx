@@ -273,19 +273,18 @@ function HalfInningCard({
           {team?.logo && <Image src={team.logo} alt={team.abbr} width={24} height={24} className="object-contain logo-outline-dark" unoptimized />}
           <div className="gamecast-half-copy">
             <div className="gamecast-half-title">
-              {half === "bottom" ? "Bottom" : "Top"} of the {inningWord(period)} · {team?.abbr || "Batting"}
+              {team?.name || team?.abbr || "Batting"} - {half === "bottom" ? "Bottom" : "Top"} {inningWord(period)}
             </div>
-            {pitcher && (
-              <div className="gamecast-half-subtitle">
-                Pitching: {pitcher}
-              </div>
-            )}
           </div>
         </div>
-        <div className="gamecast-half-count tabular-nums">
-          {visible.filter((x) => x.isAtBat).length} AB
-        </div>
       </div>
+
+      {pitcher && (
+        <div className="gamecast-pitcher-tag">
+          <span className="gamecast-pitcher-ball" aria-hidden="true">⚾</span>
+          <span>{pitcher} pitching</span>
+        </div>
+      )}
 
       <div className="gamecast-half-rows">
         {visible.length === 0 ? (
@@ -370,16 +369,10 @@ function AtBatSummaryRow({ atBat, forceOpen = false, mode = "default" }: { atBat
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap mb-1">
               {atBat.isComplete === false && <StatusPill label="LIVE" tone="live" />}
-              {mode !== "scoring" && atBat.scoringPlay && <StatusPill label="SCORING" tone="scoring" />}
             </div>
-            <div className={`text-sm leading-snug ${atBat.scoringPlay && mode !== "scoring" ? "font-black" : "font-bold"}`}>{cleanResultText(atBat.result)}</div>
+            <div className={`gamecast-play-text ${atBat.scoringPlay && mode !== "scoring" ? "is-scoring-play" : ""}`}>{cleanResultText(atBat.result)}</div>
           </div>
-          {(atBat.awayScore != null || atBat.homeScore != null) && (
-            <div className="text-xs font-black tabular-nums rounded-lg px-2 py-1" style={{ color: "var(--text)", background: "var(--surface-2)", border: "1px solid var(--border)" }}>
-              {atBat.awayScore ?? ""}-{atBat.homeScore ?? ""}
-            </div>
-          )}
-          {pitchCount > 0 && <span className="text-xs font-bold transition-transform group-open/gcab:rotate-180 mt-1" style={{ color: "var(--text-3)" }}>⌄</span>}
+          {pitchCount > 0 && <span className="gamecast-play-caret transition-transform group-open/gcab:rotate-180" style={{ color: "var(--text-3)" }}>⌄</span>}
         </div>
       </summary>
 

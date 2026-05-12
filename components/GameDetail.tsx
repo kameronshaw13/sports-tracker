@@ -64,28 +64,33 @@ function GameTopBar({ title, onClose }: { title: string; onClose?: () => void })
 
 function ScoreboardHero({ league, home, away, status, situation, eventId, gameDate, onTeamClick }: any) {
   const showScore = scoreShouldShow(status);
+  const isFinal = status?.state === "post";
+  const awayScoreNum = Number(away?.score);
+  const homeScoreNum = Number(home?.score);
+  const hasFinalWinner = isFinal && Number.isFinite(awayScoreNum) && Number.isFinite(homeScoreNum) && awayScoreNum !== homeScoreNum;
   return (
     <section className="game-score-hero relative overflow-hidden">
       <div className="game-score-field" aria-hidden="true" />
       <div className="game-score-layout">
-          <TeamBlock team={away} league={league} eventId={eventId} onClick={onTeamClick} align="left" showScore={showScore} />
+          <TeamBlock team={away} league={league} eventId={eventId} onClick={onTeamClick} align="left" showScore={showScore} isWinner={hasFinalWinner && awayScoreNum > homeScoreNum} isLoser={hasFinalWinner && awayScoreNum < homeScoreNum} />
           <div className="game-score-center">
             <div className="game-score-date">{formatGameDate(gameDate)}</div>
             <div className={`game-score-status ${status?.state === "in" ? "is-live" : "is-final"}`}>{status?.detail || ""}</div>
             {league === "mlb" && status?.state === "in" && hasBaseballSituation(situation) && <BaseballSituationBlock situation={situation} />}
             {status?.seriesGame && <div className="game-score-series">{status.seriesGame}</div>}
           </div>
-          <TeamBlock team={home} league={league} eventId={eventId} onClick={onTeamClick} align="right" showScore={showScore} />
+          <TeamBlock team={home} league={league} eventId={eventId} onClick={onTeamClick} align="right" showScore={showScore} isWinner={hasFinalWinner && homeScoreNum > awayScoreNum} isLoser={hasFinalWinner && homeScoreNum < awayScoreNum} />
       </div>
     </section>
   );
 }
 
-function TeamBlock({ team, league, eventId, onClick, align, showScore }: any) {
+function TeamBlock({ team, league, eventId, onClick, align, showScore, isWinner, isLoser }: any) {
   if (!team) return null;
   const Comp: any = onClick && team.abbr ? "button" : "div";
+  const resultClass = isWinner ? " is-final-winner" : isLoser ? " is-final-loser" : "";
   return (
-    <Comp onClick={onClick && team.abbr ? () => onClick(league, String(team.abbr).toLowerCase(), { league, eventId }) : undefined} className={`game-score-team ${align === "right" ? "game-score-team-home" : "game-score-team-away"}`}>
+    <Comp onClick={onClick && team.abbr ? () => onClick(league, String(team.abbr).toLowerCase(), { league, eventId }) : undefined} className={`game-score-team ${align === "right" ? "game-score-team-home" : "game-score-team-away"}${resultClass}`}>
       <div className="game-score-record">{team.seriesRecord || team.record || ""}</div>
       <div className="game-score-team-main">
         <div className="game-score-logo-wrap">{team.logo && <Image src={team.logo} alt={team.abbr || team.name || ""} width={84} height={84} className="game-score-logo object-contain logo-outline-dark" unoptimized />}</div>
