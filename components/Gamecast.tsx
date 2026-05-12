@@ -467,11 +467,10 @@ function playerClickHandler(person: Person | null | undefined, onPlayerClick: ((
 }
 
 function espnHeadshot(person?: Person | null) {
-  const existing = person?.headshot ? String(person.headshot) : "";
-  if (existing) return existing;
   const rawId = person?.id ? String(person.id) : "";
-  if (!rawId || !/^\d+$/.test(rawId)) return null;
-  return `https://a.espncdn.com/i/headshots/mlb/players/full/${rawId}.png`;
+  if (rawId && /^\d+$/.test(rawId)) return `https://a.espncdn.com/i/headshots/mlb/players/full/${rawId}.png`;
+  const existing = person?.headshot ? String(person.headshot) : "";
+  return existing || null;
 }
 
 function PlayerMiniCard({ label, person, primaryStat, onClick }: { label: string; person?: Person | null; primaryStat?: string | null; onClick?: () => void }) {
@@ -657,8 +656,8 @@ function getStat(person: Person | null | undefined, keys: string[]): string | nu
 function batterStatText(person: Person | null | undefined): string | null {
   const avg = getStat(person, ["AVG", "BA"]);
   const game = getStat(person, ["H_AB", "H-AB", "H/AB"]);
-  if (game != null && avg != null) return `${game} today · ${avg} AVG`;
-  if (game != null) return `${game} today`;
+  if (game != null && avg != null) return `${game} · ${avg} AVG`;
+  if (game != null) return `${game}`;
   if (avg != null) return `${avg} AVG`;
   return null;
 }
