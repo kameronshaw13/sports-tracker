@@ -163,6 +163,7 @@ function MlbLiveGamecast({
 
           <HalfInningCard
             team={battingTeam}
+            pitcherTeam={currentHalf.half === "top" ? home : away}
             half={currentHalf.half}
             period={currentHalf.period}
             pitcher={halfAtBats.find((ab) => ab.pitcher?.displayName || ab.pitcher?.name)?.pitcher?.displayName || halfAtBats.find((ab) => ab.pitcher?.displayName || ab.pitcher?.name)?.pitcher?.name || null}
@@ -172,7 +173,7 @@ function MlbLiveGamecast({
       )}
 
       {activeSubTab === "scoring" && <ScoringPlaysView sections={scoringSections} home={home} away={away} />}
-      {activeSubTab === "plays" && <MlbPlaysView sections={sections} />}
+      {activeSubTab === "plays" && <MlbPlaysView sections={sections} home={home} away={away} />}
     </div>
   );
 }
@@ -265,12 +266,14 @@ function teamDisplayName(team?: TeamMeta): string {
 
 function HalfInningCard({
   team,
+  pitcherTeam,
   half,
   period,
   pitcher,
   atBats,
 }: {
   team?: TeamMeta;
+  pitcherTeam?: TeamMeta;
   half: "top" | "bottom" | null;
   period: number;
   pitcher?: string | null;
@@ -279,8 +282,9 @@ function HalfInningCard({
   const visible = atBats.length ? atBats : [];
   const lastScore = [...visible].reverse().find((ab) => typeof ab.awayScore === "number" || typeof ab.homeScore === "number");
   const teamColor = team?.color ? `#${String(team.color).replace(/^#/, "")}` : "var(--accent)";
+  const pitcherColor = pitcherTeam?.color ? `#${String(pitcherTeam.color).replace(/^#/, "")}` : teamColor;
   return (
-    <div className="gamecast-half-card" style={{ ["--gamecast-half-color" as any]: teamColor }}>
+    <div className="gamecast-half-card" style={{ ["--gamecast-half-color" as any]: teamColor, ["--gamecast-pitcher-color" as any]: pitcherColor }}>
       <div className="gamecast-half-head">
         <div className="gamecast-half-team">
           {team?.logo && <Image src={team.logo} alt={team.abbr} width={24} height={24} className="object-contain logo-outline-dark" unoptimized />}
@@ -294,7 +298,7 @@ function HalfInningCard({
 
       {pitcher && (
         <div className="gamecast-pitcher-tag">
-          <span className="gamecast-pitcher-ball" aria-hidden="true">⚾</span>
+          <span className="gamecast-pitcher-ball" aria-hidden="true" />
           <span>{pitcher} pitching</span>
         </div>
       )}
@@ -308,10 +312,8 @@ function HalfInningCard({
       </div>
 
       <div className="gamecast-half-end-row">
-        <span className="gamecast-half-end-icon" aria-hidden="true">‹›</span>
         <div className="gamecast-half-end-copy">
           <div className="gamecast-half-end-title">End - {half === "bottom" ? "Bottom" : "Top"} {ordinal(period)}</div>
-          <div className="gamecast-half-end-subtitle">{half === "bottom" ? "End of inning" : "Half inning complete"}</div>
         </div>
         <div className="gamecast-half-end-score tabular-nums">{lastScore?.awayScore ?? 0}</div>
         <div className="gamecast-half-end-score tabular-nums">{lastScore?.homeScore ?? 0}</div>
@@ -320,13 +322,14 @@ function HalfInningCard({
   );
 }
 
-function MlbPlaysView({ sections }: { sections: MlbSection[] }) {
+function MlbPlaysView({ sections, home, away }: { sections: MlbSection[]; home?: TeamMeta; away?: TeamMeta }) {
   return (
     <div className="gamecast-plays-list">
       {sections.map((section) => (
         <HalfInningCard
           key={`${section.period}-${section.half}`}
           team={section.team}
+          pitcherTeam={section.half === "top" ? home : away}
           half={section.half}
           period={section.period}
           pitcher={section.pitcher}

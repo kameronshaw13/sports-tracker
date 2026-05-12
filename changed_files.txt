@@ -1,2 +1,4 @@
 app/globals.css
 components/Gamecast.tsx
+components/GameDetail.tsx
+README_GAMECAST_V134.txt

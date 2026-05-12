@@ -10469,3 +10469,205 @@ main.retro-page.view-leaguePage {
     font-size: .82rem !important;
   }
 }
+
+/* v134: CBS-style plays timeline cleanup and team-color pitch rows */
+.gamecast-half-title {
+  font-size: .94rem !important;
+  line-height: 1.24 !important;
+  padding-top: .06rem !important;
+}
+
+.gamecast-half-card::before {
+  left: 1.46rem !important;
+  top: 3.18rem !important;
+  bottom: 3.42rem !important;
+  width: 1.5px !important;
+  background: color-mix(in srgb, var(--gamecast-half-color, var(--accent)) 74%, transparent) !important;
+  opacity: .82 !important;
+  z-index: 2 !important;
+}
+
+.gamecast-pitcher-tag,
+.gamecast-half-rows,
+.gamecast-half-end-row {
+  background: color-mix(in srgb, var(--surface) 88%, #8a603a 12%) !important;
+}
+
+.gamecast-pitcher-tag {
+  position: relative !important;
+  min-height: 2.34rem !important;
+  padding: .56rem .95rem .5rem .98rem !important;
+  gap: .72rem !important;
+  border-bottom: 0 !important;
+  color: color-mix(in srgb, var(--gamecast-pitcher-color, var(--accent)) 72%, var(--score-meta, rgba(255, 248, 236, 0.86)) 28%) !important;
+  font-size: .8rem !important;
+  line-height: 1.32 !important;
+  font-weight: 675 !important;
+}
+
+.gamecast-pitcher-tag::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 3.15rem !important;
+  right: .92rem !important;
+  bottom: 0 !important;
+  height: 1px !important;
+  transform: scaleY(.45) !important;
+  transform-origin: bottom !important;
+  background: rgba(214, 214, 214, .18) !important;
+  pointer-events: none !important;
+}
+
+.gamecast-pitcher-ball {
+  position: relative !important;
+  width: .92rem !important;
+  height: .92rem !important;
+  border-radius: 999px !important;
+  background: #f7f4eb !important;
+  border: 1px solid rgba(20,20,20,.38) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,.25) !important;
+  transform: translateY(.04rem) !important;
+  overflow: hidden !important;
+}
+
+.gamecast-pitcher-ball::before,
+.gamecast-pitcher-ball::after {
+  content: "" !important;
+  position: absolute !important;
+  top: .03rem !important;
+  width: .48rem !important;
+  height: .86rem !important;
+  border-radius: 999px !important;
+  border: 1.5px solid transparent !important;
+  pointer-events: none !important;
+}
+
+.gamecast-pitcher-ball::before {
+  left: -.24rem !important;
+  border-right-color: #bb1f2f !important;
+}
+
+.gamecast-pitcher-ball::after {
+  right: -.24rem !important;
+  border-left-color: #bb1f2f !important;
+}
+
+.gamecast-pitcher-tag span:last-child {
+  color: inherit !important;
+  font-size: .8rem !important;
+  line-height: 1.32 !important;
+  font-weight: 675 !important;
+  transform: translateY(.05rem) !important;
+}
+
+.gamecast-half-rows details {
+  position: relative !important;
+  border-bottom: 0 !important;
+  background: transparent !important;
+}
+
+.gamecast-half-rows details::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 3.15rem !important;
+  right: .92rem !important;
+  bottom: 0 !important;
+  height: 1px !important;
+  transform: scaleY(.45) !important;
+  transform-origin: bottom !important;
+  background: rgba(214, 214, 214, .16) !important;
+  pointer-events: none !important;
+}
+
+.gamecast-half-rows details summary {
+  padding-left: 3.15rem !important;
+  padding-top: .68rem !important;
+  padding-bottom: .68rem !important;
+}
+
+.gamecast-play-text,
+.gamecast-half-rows details summary .text-sm {
+  color: color-mix(in srgb, var(--gamecast-half-color, var(--accent)) 44%, var(--score-meta, rgba(255, 248, 236, 0.86)) 56%) !important;
+  font-size: .8rem !important;
+  line-height: 1.32 !important;
+  font-weight: 675 !important;
+  padding-top: .1rem !important;
+}
+
+.gamecast-half-end-row {
+  grid-template-columns: minmax(0, 1fr) 2.1rem 2.1rem !important;
+  min-height: 3.06rem !important;
+  padding: .68rem .98rem .72rem 3.15rem !important;
+  border-top: 0 !important;
+  border-bottom: 1px solid rgba(214, 214, 214, .16) !important;
+  position: relative !important;
+}
+
+.gamecast-half-end-icon,
+.gamecast-half-end-subtitle {
+  display: none !important;
+}
+
+.gamecast-half-end-title {
+  font-size: .86rem !important;
+  line-height: 1.22 !important;
+  padding-top: .08rem !important;
+  color: var(--text) !important;
+  font-weight: 820 !important;
+}
+
+.gamecast-half-end-score {
+  color: var(--score-meta, rgba(255, 248, 236, 0.86)) !important;
+  font-family: inherit !important;
+  font-size: .98rem !important;
+  line-height: 1.08 !important;
+  font-weight: 700 !important;
+  opacity: .82 !important;
+  padding-top: .08rem !important;
+}
+
+.gamecast-pitch-strip-wrap:not(.is-compact) {
+  background: color-mix(in srgb, var(--surface) 88%, #8a603a 12%) !important;
+  padding-left: 3.15rem !important;
+  padding-right: .92rem !important;
+}
+
+@media (max-width: 420px) {
+  .gamecast-half-title {
+    font-size: .88rem !important;
+  }
+
+  .gamecast-half-card::before {
+    left: 1.36rem !important;
+    top: 3.12rem !important;
+    bottom: 3.34rem !important;
+  }
+
+  .gamecast-pitcher-tag {
+    padding-left: .88rem !important;
+  }
+
+  .gamecast-pitcher-tag::after,
+  .gamecast-half-rows details::after {
+    left: 2.92rem !important;
+    right: .78rem !important;
+  }
+
+  .gamecast-half-rows details summary,
+  .gamecast-half-end-row,
+  .gamecast-pitch-strip-wrap:not(.is-compact) {
+    padding-left: 2.92rem !important;
+  }
+
+  .gamecast-play-text,
+  .gamecast-half-rows details summary .text-sm,
+  .gamecast-pitcher-tag,
+  .gamecast-pitcher-tag span:last-child {
+    font-size: .78rem !important;
+  }
+
+  .gamecast-half-end-row {
+    grid-template-columns: minmax(0, 1fr) 1.92rem 1.92rem !important;
+    padding-right: .78rem !important;
+  }
+}
