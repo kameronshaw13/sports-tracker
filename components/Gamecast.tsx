@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import RetroTeamLogo from "./RetroTeamLogo";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
-import RetroTeamLogo from "./RetroTeamLogo";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -64,10 +64,11 @@ type MlbSection = {
 
 export default function Gamecast({ league, eventId, isLive, situation: summarySituation, onPlayerClick }: Props) {
   const freshKey = useFreshKey();
+  const cacheBust = isLive ? `&_t=${freshKey}` : "";
   const { data, error, isLoading } = useSWR(
-    eventId ? `/api/plays?league=${league}&event=${eventId}&_t=${freshKey}` : null,
+    eventId ? `/api/plays?league=${league}&event=${eventId}${cacheBust}` : null,
     fetcher,
-    { refreshInterval: isLive ? 5_000 : 0 }
+    { refreshInterval: isLive ? 5_000 : 0, dedupingInterval: isLive ? 2_000 : 300_000, revalidateOnFocus: isLive }
   );
 
   if (league === "mlb") {
@@ -114,7 +115,7 @@ function MlbLiveGamecast({
   fallbackSituation?: any;
   onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
 }) {
-  const [activeSubTab, setActiveSubTab] = useState<"scoring" | "live" | "plays">("live");
+  const [activeSubTab, setActiveSubTab] = useState<"scoring" | "live" | "plays">(() => isLive ? "live" : "scoring");
   const home: TeamMeta | undefined = data?.home;
   const away: TeamMeta | undefined = data?.away;
   const atBats: MlbAtBat[] = data?.mlb?.atBats || [];
@@ -143,8 +144,8 @@ function MlbLiveGamecast({
   }
 
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-3 gap-1 rounded-xl p-1" style={{ background: "var(--surface-2)" }}>
+    <div className="gamecast-shell">
+      <div className="gamecast-toggle">
         <GamecastTab label="Scoring" active={activeSubTab === "scoring"} onClick={() => setActiveSubTab("scoring")} />
         <GamecastTab label="Live" active={activeSubTab === "live"} onClick={() => setActiveSubTab("live")} />
         <GamecastTab label="Plays" active={activeSubTab === "plays"} onClick={() => setActiveSubTab("plays")} />
@@ -170,7 +171,7 @@ function MlbLiveGamecast({
         </>
       )}
 
-      {activeSubTab === "scoring" && <ScoringPlaysView sections={scoringSections} />}
+      {activeSubTab === "scoring" && <ScoringPlaysView sections={scoringSections} home={home} away={away} />}
       {activeSubTab === "plays" && <MlbPlaysView sections={sections} />}
     </div>
   );
@@ -181,12 +182,7 @@ function GamecastTab({ label, active, onClick }: { label: string; active: boolea
     <button
       type="button"
       onClick={onClick}
-      className="gamecast-subtab rounded-lg px-3 py-2 text-sm font-bold transition-all"
-      style={{
-        background: active ? "var(--surface)" : "transparent",
-        border: active ? "1px solid var(--border)" : "1px solid transparent",
-        color: active ? "var(--text)" : "var(--text-2)",
-      }}
+      className={`gamecast-toggle-btn ${active ? "is-active" : ""}`}
     >
       {label}
     </button>
@@ -325,24 +321,38 @@ function MlbPlaysView({ sections }: { sections: MlbSection[] }) {
   );
 }
 
-function ScoringPlaysView({ sections }: { sections: MlbSection[] }) {
+function ScoringPlaysView({ sections, home, away }: { sections: MlbSection[]; home?: TeamMeta; away?: TeamMeta }) {
   if (!sections.length) return <UnavailableCard text="No scoring plays yet." />;
   return (
-    <div className="space-y-3">
+    <div className="gamecast-scoring-list">
       {sections.map((section) => (
-        <div key={`${section.period}-${section.half}-scoring`} className="rounded-2xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-          <div className="gamecast-scoring-inning-header px-4 py-2 flex items-center gap-2" style={{ borderBottom: "1px solid var(--border)" }}>
-            {section.team?.logo && <RetroTeamLogo team={section.team} league="mlb" size={24} className="gamecast-scoring-logo" />}
-            <div className="gamecast-scoring-inning-copy">
-              <div className="text-sm font-bold">{section.half === "bottom" ? "Bottom" : "Top"} of the {inningWord(section.period)} · {section.team?.abbr || "Team"}</div>
-              <div className="text-xs" style={{ color: "var(--text-3)" }}>{section.atBats.length} scoring play{section.atBats.length === 1 ? "" : "s"}</div>
+        <div key={`${section.period}-${section.half}-scoring`} className="gamecast-scoring-section">
+          <div className="gamecast-scoring-head">
+            <div className="gamecast-inning-title">{inningLabel(section.period)}</div>
+            <div className="gamecast-scoring-teamheads">
+              {away && <RetroTeamLogo team={away} league="mlb" size={26} className="gamecast-scoreboard-logo" />}
+              {home && <RetroTeamLogo team={home} league="mlb" size={26} className="gamecast-scoreboard-logo" />}
             </div>
           </div>
-          <div className="divide-y" style={{ borderColor: "var(--border)" }}>
-            {section.atBats.map((ab) => <AtBatSummaryRow key={ab.id} atBat={ab} forceOpen={false} mode="scoring" />)}
+          <div className="gamecast-scoring-rows">
+            {section.atBats.map((ab) => <ScoringAtBatRow key={ab.id} atBat={ab} team={ab.homeAway === "home" ? home : away} />)}
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function ScoringAtBatRow({ atBat, team }: { atBat: MlbAtBat; team?: TeamMeta }) {
+  const scoredSide = atBat.homeAway;
+  return (
+    <div className="gamecast-scoring-row">
+      <div className="gamecast-scoring-logo">
+        {team && <RetroTeamLogo team={team} league="mlb" size={30} className="gamecast-scoring-team-logo" />}
+      </div>
+      <div className="gamecast-scoring-text">{cleanResultText(atBat.result || atBat.text)}</div>
+      <div className={`gamecast-scoring-score tabular-nums ${scoredSide === "away" ? "is-scoring-team" : ""}`}>{atBat.awayScore ?? ""}</div>
+      <div className={`gamecast-scoring-score tabular-nums ${scoredSide === "home" ? "is-scoring-team" : ""}`}>{atBat.homeScore ?? ""}</div>
     </div>
   );
 }
@@ -361,20 +371,18 @@ function AtBatSummaryRow({ atBat, forceOpen = false, mode = "default" }: { atBat
 
   return (
     <details className="group/gcab" open={forceOpen}>
-      <summary className={`px-4 cursor-pointer list-none hover:bg-[var(--surface-2)] transition-colors ${mode === "scoring" ? "gamecast-scoring-play-summary py-2" : "py-3"}`}>
+      <summary className="px-4 py-3 cursor-pointer list-none hover:bg-[var(--surface-2)] transition-colors">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap mb-1">
               {atBat.isComplete === false && <StatusPill label="LIVE" tone="live" />}
               {mode !== "scoring" && atBat.scoringPlay && <StatusPill label="SCORING" tone="scoring" />}
             </div>
-            <div className={`${mode === "scoring" ? "gamecast-scoring-play-text text-xs" : "text-sm"} leading-snug ${atBat.scoringPlay && mode !== "scoring" ? "font-black" : "font-bold"}`}>{cleanResultText(atBat.result)}</div>
+            <div className={`text-sm leading-snug ${atBat.scoringPlay && mode !== "scoring" ? "font-black" : "font-bold"}`}>{cleanResultText(atBat.result)}</div>
           </div>
           {(atBat.awayScore != null || atBat.homeScore != null) && (
-            <div className="gamecast-score-chip text-xs font-black tabular-nums rounded-lg px-2 py-1" style={{ color: "var(--text)", background: "var(--surface-2)", border: "1px solid var(--border)" }}>
-              <span className={mode === "scoring" && atBat.halfInning === "top" ? "gamecast-scored-team-score" : undefined}>{atBat.awayScore ?? ""}</span>
-              <span>-</span>
-              <span className={mode === "scoring" && atBat.halfInning === "bottom" ? "gamecast-scored-team-score" : undefined}>{atBat.homeScore ?? ""}</span>
+            <div className="text-xs font-black tabular-nums rounded-lg px-2 py-1" style={{ color: "var(--text)", background: "var(--surface-2)", border: "1px solid var(--border)" }}>
+              {atBat.awayScore ?? ""}-{atBat.homeScore ?? ""}
             </div>
           )}
           {pitchCount > 0 && <span className="text-xs font-bold transition-transform group-open/gcab:rotate-180 mt-1" style={{ color: "var(--text-3)" }}>⌄</span>}
@@ -723,6 +731,10 @@ function initials(name: string): string {
 function inningWord(n: number): string {
   const words: Record<number, string> = { 1: "First", 2: "Second", 3: "Third", 4: "Fourth", 5: "Fifth", 6: "Sixth", 7: "Seventh", 8: "Eighth", 9: "Ninth", 10: "Tenth", 11: "11th", 12: "12th" };
   return words[n] || ordinal(n);
+}
+
+function inningLabel(n: number): string {
+  return `${ordinal(n)} Inning`;
 }
 
 function ordinal(n: number): string {
