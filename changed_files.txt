@@ -1,3 +1,4 @@
 app/globals.css
-README_GAMECAST_V130.txt
+components/Gamecast.tsx
+README_GAMECAST_V131.txt
 changed_files.txt

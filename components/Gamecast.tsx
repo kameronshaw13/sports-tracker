@@ -130,7 +130,7 @@ function MlbLiveGamecast({
   const lastCompletedInHalf = [...halfAtBatRows].reverse().find((ab) => ab.isComplete !== false) || null;
   const currentOrLast = liveAtBat || lastCompletedInHalf;
   const battingTeam = currentHalf.half === "top" ? away : home;
-  const sections = buildMlbSections(displayAtBats, home, away, "newest-first");
+  const sections = buildMlbSections(displayAtBats, home, away, "chronological");
   const scoringSections = buildMlbSections(displayAtBats.filter((ab) => ab.scoringPlay), home, away, "chronological").filter((s) => s.atBats.length > 0);
 
   if (isLoading) return <LoadingStack />;
@@ -273,7 +273,7 @@ function HalfInningCard({
           {team?.logo && <Image src={team.logo} alt={team.abbr} width={24} height={24} className="object-contain logo-outline-dark" unoptimized />}
           <div className="gamecast-half-copy">
             <div className="gamecast-half-title">
-              {team?.name || team?.abbr || "Batting"} - {half === "bottom" ? "Bottom" : "Top"} {inningWord(period)}
+              {team?.name || team?.abbr || "Batting"} - {half === "bottom" ? "Bottom" : "Top"} {ordinal(period)}
             </div>
           </div>
         </div>
@@ -367,9 +367,6 @@ function AtBatSummaryRow({ atBat, forceOpen = false, mode = "default" }: { atBat
       <summary className="px-4 py-3 cursor-pointer list-none hover:bg-[var(--surface-2)] transition-colors">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              {atBat.isComplete === false && <StatusPill label="LIVE" tone="live" />}
-            </div>
             <div className={`gamecast-play-text ${atBat.scoringPlay && mode !== "scoring" ? "is-scoring-play" : ""}`}>{cleanResultText(atBat.result)}</div>
           </div>
           {pitchCount > 0 && <span className="gamecast-play-caret transition-transform group-open/gcab:rotate-180" style={{ color: "var(--text-3)" }}>⌄</span>}
@@ -384,14 +381,14 @@ function AtBatSummaryRow({ atBat, forceOpen = false, mode = "default" }: { atBat
 function PitchSequence({ atBat, compact = false }: { atBat: MlbAtBat; compact?: boolean }) {
   if (!atBat.pitches?.length) return null;
   return (
-    <div className={compact ? "mt-3 rounded-lg overflow-hidden" : "px-4 pb-3 pl-4"}>
-      <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+    <div className={compact ? "gamecast-pitch-strip-wrap is-compact" : "gamecast-pitch-strip-wrap"}>
+      <div className="gamecast-pitch-strip">
         {atBat.pitches.map((pitch, idx) => {
           const parsed = formatPitch(pitch);
           return (
-            <div key={`${atBat.id}-${idx}`} className="px-3 py-2 text-xs border-b last:border-b-0 flex items-center gap-2" style={{ borderColor: "var(--border)", background: compact ? "var(--surface)" : "var(--surface-2)", color: "var(--text-2)" }}>
-              <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0" style={{ background: parsed.bg, color: parsed.color, border: parsed.border }}>{idx + 1}</span>
-              <span className="font-semibold">{parsed.label}</span>
+            <div key={`${atBat.id}-${idx}`} className="gamecast-pitch-item">
+              <span className="gamecast-pitch-ball" style={{ background: parsed.bg, color: parsed.color, border: parsed.border }}>{idx + 1}</span>
+              <span className="gamecast-pitch-label">{parsed.label}</span>
             </div>
           );
         })}
@@ -418,13 +415,13 @@ function StatusPill({ label, tone }: { label: string; tone: "live" | "scoring" }
 function formatPitch(raw: string) {
   const text = String(raw || "").replace(/^Pitch\s*\d+\s*:\s*/i, "").replace(/\s+/g, " ").trim();
   const lower = text.toLowerCase();
-  if (/ball in play|in play/.test(lower)) return { label: "In-play ball", bg: "rgba(59,130,246,0.14)", color: "var(--accent)", border: "1px solid rgba(59,130,246,0.3)" };
-  if (/foul|foul tip|bunt foul/.test(lower)) return { label: "Foul", bg: "rgba(148,163,184,0.18)", color: "var(--text-2)", border: "1px solid rgba(148,163,184,0.35)" };
-  if (/swinging|missed bunt/.test(lower)) return { label: "Strike Swinging", bg: "rgba(239,68,68,0.14)", color: "var(--danger)", border: "1px solid rgba(239,68,68,0.3)" };
-  if (/called strike|strike looking|looking/.test(lower)) return { label: "Strike Looking", bg: "rgba(239,68,68,0.14)", color: "var(--danger)", border: "1px solid rgba(239,68,68,0.3)" };
-  if (/strike/.test(lower)) return { label: "Strike", bg: "rgba(239,68,68,0.14)", color: "var(--danger)", border: "1px solid rgba(239,68,68,0.3)" };
-  if (/ball|intent ball|automatic ball/.test(lower)) return { label: "Ball", bg: "rgba(34,197,94,0.14)", color: "#16a34a", border: "1px solid rgba(34,197,94,0.3)" };
-  return { label: text || "Pitch", bg: "var(--surface)", color: "var(--text-2)", border: "1px solid var(--border)" };
+  if (/ball in play|in play/.test(lower)) return { label: "In-play ball", bg: "#3b82f6", color: "#fff", border: "0" };
+  if (/foul|foul tip|bunt foul/.test(lower)) return { label: "Foul", bg: "#64748b", color: "#fff", border: "0" };
+  if (/swinging|missed bunt/.test(lower)) return { label: "Strike Swinging", bg: "#ef4444", color: "#fff", border: "0" };
+  if (/called strike|strike looking|looking/.test(lower)) return { label: "Strike Looking", bg: "#ef4444", color: "#fff", border: "0" };
+  if (/strike/.test(lower)) return { label: "Strike", bg: "#ef4444", color: "#fff", border: "0" };
+  if (/ball|intent ball|automatic ball/.test(lower)) return { label: "Ball", bg: "#22c55e", color: "#fff", border: "0" };
+  return { label: text || "Pitch", bg: "#64748b", color: "#fff", border: "0" };
 }
 
 function cleanResultText(text: string) {

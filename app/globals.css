@@ -9994,3 +9994,176 @@ main.retro-page.view-leaguePage {
     padding-bottom: .18rem !important;
   }
 }
+
+/* v131: Plays/scoring alignment + pitch sequence cleanup */
+.gamecast-half-card {
+  overflow: visible !important;
+}
+
+.gamecast-half-head {
+  min-height: 2.82rem !important;
+  padding-top: .72rem !important;
+  padding-bottom: .48rem !important;
+  align-items: center !important;
+}
+
+.gamecast-half-team {
+  align-items: center !important;
+}
+
+.gamecast-half-team img {
+  transform: translateY(-1px) !important;
+}
+
+.gamecast-half-title {
+  font-size: .8rem !important;
+  line-height: 1.24 !important;
+  font-weight: 850 !important;
+  transform: translateY(.08rem) !important;
+  padding-top: .03rem !important;
+  overflow: visible !important;
+}
+
+.gamecast-pitcher-tag {
+  min-height: 2.28rem !important;
+  padding: .54rem .92rem .42rem .92rem !important;
+  gap: .46rem !important;
+  align-items: center !important;
+  overflow: visible !important;
+}
+
+.gamecast-pitcher-ball {
+  width: 1.34rem !important;
+  height: 1.34rem !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  font-size: .96rem !important;
+  line-height: 1 !important;
+  transform: translateY(.01rem) !important;
+}
+
+.gamecast-pitcher-tag span:last-child {
+  transform: translateY(.05rem) !important;
+  line-height: 1.24 !important;
+}
+
+.gamecast-half-rows details summary {
+  padding-top: .76rem !important;
+  padding-bottom: .58rem !important;
+  padding-left: 2.72rem !important;
+  min-height: 2.62rem !important;
+  overflow: visible !important;
+}
+
+.gamecast-half-rows details summary > div {
+  align-items: center !important;
+}
+
+.gamecast-play-text,
+.gamecast-half-rows details summary .text-sm {
+  font-size: .72rem !important;
+  line-height: 1.34 !important;
+  padding-top: .12rem !important;
+  transform: translateY(.03rem) !important;
+  overflow: visible !important;
+}
+
+.gamecast-scoring-logo {
+  transform: translateY(-1px) !important;
+}
+
+.gamecast-scoring-text {
+  font-size: .76rem !important;
+  line-height: 1.34 !important;
+  padding-top: .1rem !important;
+}
+
+.gamecast-pitch-strip-wrap {
+  padding: 0 .88rem .78rem 2.72rem !important;
+  margin-top: -.12rem !important;
+  overflow: visible !important;
+}
+
+.gamecast-pitch-strip-wrap.is-compact {
+  padding: .45rem 0 0 !important;
+  margin-top: 0 !important;
+}
+
+.gamecast-pitch-strip {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: .5rem .72rem !important;
+  border: 0 !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+.gamecast-pitch-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: .34rem !important;
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+  min-width: 0 !important;
+}
+
+.gamecast-pitch-ball {
+  width: 1.34rem !important;
+  height: 1.34rem !important;
+  border-radius: 999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  font-size: .58rem !important;
+  line-height: 1 !important;
+  font-weight: 950 !important;
+  padding-top: .08rem !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,.22) !important;
+}
+
+.gamecast-pitch-label {
+  color: var(--score-meta, rgba(255, 248, 236, 0.86)) !important;
+  font-size: .72rem !important;
+  line-height: 1.24 !important;
+  font-weight: 650 !important;
+  padding-top: .08rem !important;
+  transform: translateY(.03rem) !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 420px) {
+  .gamecast-half-head {
+    padding-top: .68rem !important;
+    padding-bottom: .44rem !important;
+  }
+
+  .gamecast-half-title {
+    font-size: .78rem !important;
+  }
+
+  .gamecast-half-rows details summary {
+    padding-left: 2.56rem !important;
+    padding-top: .74rem !important;
+  }
+
+  .gamecast-pitcher-tag {
+    padding-left: .84rem !important;
+  }
+
+  .gamecast-pitch-strip-wrap {
+    padding-left: 2.56rem !important;
+    padding-right: .74rem !important;
+  }
+
+  .gamecast-scoring-text {
+    font-size: .74rem !important;
+  }
+
+  .gamecast-pitch-label {
+    font-size: .7rem !important;
+  }
+}
