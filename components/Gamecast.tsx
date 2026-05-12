@@ -252,6 +252,17 @@ function LiveAtBatCard({
   );
 }
 
+function teamDisplayName(team?: TeamMeta): string {
+  const raw = String(team?.name || team?.abbr || "Batting").trim();
+  if (!raw) return "Batting";
+  const parts = raw.split(/\s+/).filter(Boolean);
+  if (parts.length <= 1) return raw;
+  const twoWordNicknames = new Set(["Red Sox", "White Sox", "Blue Jays", "D-backs", "Diamondbacks"]);
+  const lastTwo = parts.slice(-2).join(" ");
+  if (twoWordNicknames.has(lastTwo)) return lastTwo;
+  return parts[parts.length - 1];
+}
+
 function HalfInningCard({
   team,
   half,
@@ -273,7 +284,7 @@ function HalfInningCard({
           {team?.logo && <Image src={team.logo} alt={team.abbr} width={24} height={24} className="object-contain logo-outline-dark" unoptimized />}
           <div className="gamecast-half-copy">
             <div className="gamecast-half-title">
-              {team?.name || team?.abbr || "Batting"} - {half === "bottom" ? "Bottom" : "Top"} {ordinal(period)}
+              {teamDisplayName(team)} - {half === "bottom" ? "Bottom" : "Top"} {ordinal(period)}
             </div>
           </div>
         </div>

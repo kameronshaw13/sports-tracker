@@ -10167,3 +10167,145 @@ main.retro-page.view-leaguePage {
     font-size: .7rem !important;
   }
 }
+
+/* v132: final GameTracker scoring scores, plays header nicknames, pitch stack, safer final score */
+.gamecast-scoring-score,
+.gamecast-scoring-score.is-scoring-team {
+  font-family: inherit !important;
+  font-size: .76rem !important;
+  line-height: 1.34 !important;
+  padding-top: .1rem !important;
+  transform: none !important;
+  text-shadow: none !important;
+  font-weight: 650 !important;
+  color: var(--score-meta, rgba(255, 248, 236, 0.86)) !important;
+  opacity: .72 !important;
+}
+
+.gamecast-scoring-score.is-scoring-team {
+  color: color-mix(in srgb, var(--accent) 24%, var(--score-meta, rgba(255, 248, 236, 0.86)) 76%) !important;
+  opacity: 1 !important;
+  font-weight: 760 !important;
+}
+
+.game-score-hero,
+.game-score-layout,
+.game-score-team,
+.game-score-team-main,
+.game-score-score {
+  overflow: visible !important;
+}
+
+.game-score-team-main {
+  min-height: 5.72rem !important;
+  padding-top: .38rem !important;
+  padding-bottom: .28rem !important;
+  align-items: center !important;
+}
+
+.game-score-score {
+  line-height: 1.24 !important;
+  padding-top: .28rem !important;
+  padding-bottom: .18rem !important;
+  transform: translateY(.1rem) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.game-score-team.is-final-winner .game-score-score {
+  color: var(--text) !important;
+  font-weight: 950 !important;
+  opacity: 1 !important;
+}
+
+.game-score-team.is-final-loser .game-score-score {
+  color: color-mix(in srgb, var(--text) 58%, var(--text-3)) !important;
+  font-weight: 500 !important;
+  opacity: .68 !important;
+}
+
+.gamecast-pitcher-tag {
+  min-height: 2.24rem !important;
+  padding-top: .56rem !important;
+  padding-bottom: .44rem !important;
+  overflow: visible !important;
+}
+
+.gamecast-pitcher-ball {
+  width: 1.08rem !important;
+  height: 1.08rem !important;
+  font-size: .78rem !important;
+  line-height: 1 !important;
+  transform: translateY(.08rem) !important;
+  overflow: visible !important;
+  flex: 0 0 auto !important;
+}
+
+.gamecast-pitcher-tag span:last-child {
+  transform: translateY(.08rem) !important;
+}
+
+.gamecast-pitch-strip-wrap:not(.is-compact) {
+  padding-top: .04rem !important;
+  padding-bottom: .84rem !important;
+}
+
+.gamecast-pitch-strip-wrap:not(.is-compact) .gamecast-pitch-strip {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  align-items: flex-start !important;
+  gap: .46rem !important;
+}
+
+.gamecast-pitch-strip-wrap:not(.is-compact) .gamecast-pitch-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: .5rem !important;
+  width: 100% !important;
+}
+
+.gamecast-pitch-ball {
+  font-size: .72rem !important;
+  line-height: 1 !important;
+  padding-top: .14rem !important;
+  font-weight: 1000 !important;
+}
+
+.gamecast-pitch-label {
+  padding-top: .14rem !important;
+  transform: translateY(.06rem) !important;
+  line-height: 1.26 !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-team-main {
+    min-height: 5.62rem !important;
+    padding-top: .36rem !important;
+    padding-bottom: .3rem !important;
+  }
+
+  .game-score-score {
+    line-height: 1.24 !important;
+    padding-top: .3rem !important;
+    transform: translateY(.1rem) !important;
+  }
+
+  .gamecast-scoring-score,
+  .gamecast-scoring-score.is-scoring-team {
+    font-size: .74rem !important;
+  }
+
+  .gamecast-pitcher-ball {
+    width: 1.02rem !important;
+    height: 1.02rem !important;
+    font-size: .74rem !important;
+    transform: translateY(.08rem) !important;
+  }
+
+  .gamecast-pitch-ball {
+    font-size: .7rem !important;
+    padding-top: .14rem !important;
+  }
+}
