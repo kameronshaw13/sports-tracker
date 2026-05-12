@@ -9160,126 +9160,100 @@ main.retro-page.view-leaguePage {
   }
 }
 
-/* v123: GameTracker scoring tab polish */
-.gamecast-toggle {
-  align-items: stretch !important;
-}
-
+/* v124: GameTracker scoring polish follow-up */
 .gamecast-toggle-btn {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  min-height: 2.86rem !important;
-  padding: .18rem .55rem .12rem !important;
-  line-height: 1 !important;
-  white-space: nowrap !important;
-  overflow: visible !important;
-  transform: none !important;
+  padding-top: .16rem !important;
+  padding-bottom: 0 !important;
+  line-height: 1.05 !important;
 }
 
 .gamecast-scoring-head {
-  min-height: 4.35rem !important;
+  min-height: 3.05rem !important;
+  padding: .48rem .92rem .38rem !important;
   align-items: center !important;
-  padding: 1rem .92rem .95rem !important;
 }
 
 .gamecast-inning-title {
   display: flex !important;
   align-items: center !important;
   min-height: 2rem !important;
-  font-size: 1.08rem !important;
-  line-height: 1.1 !important;
-  transform: translateY(.05rem) !important;
+  padding-top: .16rem !important;
+  line-height: 1.05 !important;
 }
 
 .gamecast-scoring-teamheads {
   align-items: center !important;
-  transform: translateY(.04rem) !important;
-}
-
-.gamecast-scoring-teamheads img.logo-outline-dark,
-.gamecast-scoring-logo img.logo-outline-dark {
-  -webkit-filter:
-    drop-shadow(.9px 0 0 rgba(255,255,255,.98))
-    drop-shadow(-.9px 0 0 rgba(255,255,255,.98))
-    drop-shadow(0 .9px 0 rgba(255,255,255,.98))
-    drop-shadow(0 -.9px 0 rgba(255,255,255,.98))
-    drop-shadow(.62px .62px 0 rgba(255,255,255,.96))
-    drop-shadow(-.62px .62px 0 rgba(255,255,255,.96))
-    drop-shadow(.62px -.62px 0 rgba(255,255,255,.96))
-    drop-shadow(-.62px -.62px 0 rgba(255,255,255,.96))
-    drop-shadow(0 2px 3px rgba(0,0,0,.45)) !important;
-  filter:
-    drop-shadow(.9px 0 0 rgba(255,255,255,.98))
-    drop-shadow(-.9px 0 0 rgba(255,255,255,.98))
-    drop-shadow(0 .9px 0 rgba(255,255,255,.98))
-    drop-shadow(0 -.9px 0 rgba(255,255,255,.98))
-    drop-shadow(.62px .62px 0 rgba(255,255,255,.96))
-    drop-shadow(-.62px .62px 0 rgba(255,255,255,.96))
-    drop-shadow(.62px -.62px 0 rgba(255,255,255,.96))
-    drop-shadow(-.62px -.62px 0 rgba(255,255,255,.96))
-    drop-shadow(0 2px 3px rgba(0,0,0,.45)) !important;
+  padding-top: .1rem !important;
 }
 
 .gamecast-scoring-row {
-  min-height: 5.45rem !important;
-  padding: .92rem .92rem .88rem !important;
   align-items: center !important;
+  min-height: 5.35rem !important;
+  padding: 1.1rem .92rem .78rem !important;
 }
 
 .gamecast-scoring-logo {
-  align-items: center !important;
-  transform: translateY(.03rem) !important;
+  padding-top: .1rem !important;
 }
 
 .gamecast-scoring-text {
-  font-size: .76rem !important;
-  line-height: 1.42 !important;
-  font-weight: 700 !important;
+  font-size: .82rem !important;
+  line-height: 1.34 !important;
+  padding-top: .18rem !important;
   overflow: visible !important;
-  padding: .08rem 0 .1rem !important;
 }
 
 .gamecast-scoring-score {
+  color: color-mix(in srgb, var(--text-3) 78%, var(--text)) !important;
   font-size: .98rem !important;
-  line-height: 1.12 !important;
-  padding-top: .06rem !important;
+  line-height: 1.05 !important;
+  padding-top: .12rem !important;
+  font-weight: 850 !important;
+}
+
+.gamecast-scoring-score.is-scoring-team {
+  color: var(--text) !important;
+  font-size: 1.22rem !important;
+  font-weight: 1000 !important;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 46%, transparent) !important;
+  transform: translateY(-1px) scale(1.04) !important;
+}
+
+.gamecast-scoring-logo .score-team-logo-wrap,
+.gamecast-scoring-teamheads .score-team-logo-wrap,
+.gamecast-scoring-logo .espn-team-logo-wrap,
+.gamecast-scoring-teamheads .espn-team-logo-wrap {
+  overflow: visible !important;
+  flex: 0 0 auto !important;
+}
+
+.gamecast-scoring-logo .team-logo-svg,
+.gamecast-scoring-teamheads .team-logo-svg {
+  overflow: visible !important;
+  display: block !important;
 }
 
 @media (max-width: 420px) {
-  .gamecast-toggle-btn {
-    min-height: 2.74rem !important;
-    font-size: .86rem !important;
-    padding: .16rem .42rem .1rem !important;
-  }
-
   .gamecast-scoring-head {
-    min-height: 4.12rem !important;
-    padding: .92rem .78rem .86rem !important;
-  }
-
-  .gamecast-inning-title {
-    font-size: 1rem !important;
+    min-height: 2.95rem !important;
+    padding-top: .44rem !important;
+    padding-bottom: .34rem !important;
   }
 
   .gamecast-scoring-row {
-    grid-template-columns: 2.65rem minmax(0, 1fr) 1.85rem 1.85rem !important;
-    gap: .55rem !important;
-    min-height: 5.35rem !important;
-    padding: .9rem .78rem .86rem !important;
-  }
-
-  .gamecast-scoring-logo {
-    width: 2.25rem !important;
-    min-width: 2.25rem !important;
+    min-height: 5.25rem !important;
+    padding-top: 1.05rem !important;
+    padding-bottom: .75rem !important;
   }
 
   .gamecast-scoring-text {
-    font-size: .72rem !important;
-    line-height: 1.43 !important;
+    font-size: .8rem !important;
   }
 
-  .gamecast-scoring-score {
-    font-size: .92rem !important;
+  .gamecast-scoring-score.is-scoring-team {
+    font-size: 1.16rem !important;
   }
 }

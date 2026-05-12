@@ -1,1 +1,5 @@
 app/globals.css
+components/Gamecast.tsx
+components/GameDetail.tsx
+README_GAMECAST_SCORING_V124.txt
+changed_files.txt

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import RetroTeamLogo from "./RetroTeamLogo";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
 
@@ -329,8 +330,8 @@ function ScoringPlaysView({ sections, home, away }: { sections: MlbSection[]; ho
           <div className="gamecast-scoring-head">
             <div className="gamecast-inning-title">{inningLabel(section.period)}</div>
             <div className="gamecast-scoring-teamheads">
-              {away?.logo && <Image src={away.logo} alt={away.abbr} width={26} height={26} className="object-contain logo-outline-dark" unoptimized />}
-              {home?.logo && <Image src={home.logo} alt={home.abbr} width={26} height={26} className="object-contain logo-outline-dark" unoptimized />}
+              {away && <RetroTeamLogo team={away} league="mlb" size={26} className="gamecast-scoreboard-logo" />}
+              {home && <RetroTeamLogo team={home} league="mlb" size={26} className="gamecast-scoreboard-logo" />}
             </div>
           </div>
           <div className="gamecast-scoring-rows">
@@ -343,14 +344,15 @@ function ScoringPlaysView({ sections, home, away }: { sections: MlbSection[]; ho
 }
 
 function ScoringAtBatRow({ atBat, team }: { atBat: MlbAtBat; team?: TeamMeta }) {
+  const scoredSide = atBat.homeAway;
   return (
     <div className="gamecast-scoring-row">
       <div className="gamecast-scoring-logo">
-        {team?.logo && <Image src={team.logo} alt={team.abbr} width={30} height={30} className="object-contain logo-outline-dark" unoptimized />}
+        {team && <RetroTeamLogo team={team} league="mlb" size={30} className="gamecast-scoring-team-logo" />}
       </div>
       <div className="gamecast-scoring-text">{cleanResultText(atBat.result || atBat.text)}</div>
-      <div className="gamecast-scoring-score tabular-nums">{atBat.awayScore ?? ""}</div>
-      <div className="gamecast-scoring-score tabular-nums">{atBat.homeScore ?? ""}</div>
+      <div className={`gamecast-scoring-score tabular-nums ${scoredSide === "away" ? "is-scoring-team" : ""}`}>{atBat.awayScore ?? ""}</div>
+      <div className={`gamecast-scoring-score tabular-nums ${scoredSide === "home" ? "is-scoring-team" : ""}`}>{atBat.homeScore ?? ""}</div>
     </div>
   );
 }
