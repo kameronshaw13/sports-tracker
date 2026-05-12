@@ -9894,3 +9894,103 @@ main.retro-page.view-leaguePage {
     font-size: .78rem !important;
   }
 }
+
+/* v130: match score-card metadata typography in GameTracker + safer final score header */
+.gamecast-scoring-text,
+.gamecast-play-text,
+.gamecast-half-rows details summary .text-sm,
+.gamecast-pitcher-tag,
+.gamecast-half-rows .px-4.py-2.text-xs {
+  color: var(--score-meta, rgba(255, 248, 236, 0.86)) !important;
+  font-weight: 650 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.28 !important;
+  font-family: inherit !important;
+}
+
+.gamecast-scoring-text,
+.gamecast-play-text,
+.gamecast-half-rows details summary .text-sm {
+  font-size: .72rem !important;
+  padding-top: .07rem !important;
+  overflow: visible !important;
+}
+
+.gamecast-pitcher-tag {
+  font-size: .72rem !important;
+  padding-top: .54rem !important;
+  padding-bottom: .48rem !important;
+}
+
+.gamecast-play-text.is-scoring-play {
+  color: color-mix(in srgb, var(--accent) 42%, #ffffff 58%) !important;
+  font-weight: 800 !important;
+  text-shadow: 0 0 7px color-mix(in srgb, var(--accent) 18%, transparent) !important;
+}
+
+.gamecast-scoring-score.is-scoring-team {
+  color: color-mix(in srgb, var(--accent) 38%, #ffffff 62%) !important;
+  font-weight: 850 !important;
+  text-shadow: none !important;
+}
+
+.game-score-hero,
+.game-score-layout,
+.game-score-team,
+.game-score-team-main,
+.game-score-score {
+  overflow: visible !important;
+}
+
+.game-score-team-main {
+  align-items: center !important;
+  padding-top: .16rem !important;
+  padding-bottom: .18rem !important;
+  min-height: 5.45rem !important;
+}
+
+.game-score-score {
+  line-height: 1.12 !important;
+  padding-top: .16rem !important;
+  padding-bottom: .16rem !important;
+  transform: translateY(.03rem) !important;
+  color: var(--text) !important;
+}
+
+.game-score-team.is-final-winner .game-score-score {
+  color: var(--text) !important;
+  font-weight: 950 !important;
+  opacity: 1 !important;
+  text-shadow: 0 0 0.01px currentColor !important;
+}
+
+.game-score-team.is-final-loser .game-score-score {
+  color: color-mix(in srgb, var(--text) 58%, var(--text-3)) !important;
+  font-weight: 500 !important;
+  opacity: .68 !important;
+  text-shadow: none !important;
+}
+
+@media (max-width: 420px) {
+  .gamecast-scoring-text,
+  .gamecast-play-text,
+  .gamecast-half-rows details summary .text-sm {
+    font-size: .7rem !important;
+  }
+
+  .gamecast-pitcher-tag {
+    font-size: .7rem !important;
+  }
+
+  .game-score-team-main {
+    min-height: 5.35rem !important;
+    padding-top: .18rem !important;
+    padding-bottom: .2rem !important;
+  }
+
+  .game-score-score {
+    line-height: 1.14 !important;
+    padding-top: .18rem !important;
+    padding-bottom: .18rem !important;
+  }
+}

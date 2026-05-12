@@ -1,5 +1,3 @@
 app/globals.css
-components/Gamecast.tsx
-components/GameDetail.tsx
-README_GAMECAST_PLAYS_V129.txt
+README_GAMECAST_V130.txt
 changed_files.txt
