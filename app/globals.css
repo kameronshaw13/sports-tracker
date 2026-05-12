@@ -9257,3 +9257,99 @@ main.retro-page.view-leaguePage {
     font-size: 1.16rem !important;
   }
 }
+
+/* v126: recover correct GameTracker components and apply only tiny scoring/header UI nudges */
+.gamecast-toggle-btn {
+  padding-top: .22rem !important;
+  padding-bottom: 0 !important;
+  line-height: 1.05 !important;
+}
+
+.gamecast-scoring-row {
+  align-items: center !important;
+  padding-top: .94rem !important;
+  padding-bottom: .76rem !important;
+}
+
+.gamecast-scoring-logo,
+.gamecast-scoring-teamheads {
+  transform: translateY(-1px) !important;
+}
+
+.gamecast-scoring-text {
+  padding-top: .08rem !important;
+  line-height: 1.35 !important;
+  overflow: visible !important;
+}
+
+.gamecast-scoring-score,
+.gamecast-scoring-score.is-scoring-team {
+  font-size: .98rem !important;
+  line-height: 1.05 !important;
+  transform: none !important;
+  text-shadow: none !important;
+}
+
+.gamecast-scoring-score.is-scoring-team {
+  color: color-mix(in srgb, var(--accent) 54%, #ffffff 46%) !important;
+  font-weight: 950 !important;
+}
+
+.game-detail-tab {
+  min-height: 2.38rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding-top: .18rem !important;
+  overflow: visible !important;
+  line-height: 1.05 !important;
+}
+
+.game-detail-title,
+.game-detail-title span,
+.game-detail-tabs button,
+.game-detail-tab span {
+  line-height: 1.14 !important;
+  overflow: visible !important;
+}
+
+.game-score-hero {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--bg) 72%, #3a2418 28%) 0%,
+    color-mix(in srgb, var(--bg) 84%, #2a170f 16%) 100%) !important;
+  border-color: color-mix(in srgb, var(--border) 74%, #6b442d 26%) !important;
+}
+
+.gamecast-scoring-logo img,
+.gamecast-scoring-teamheads img,
+.gamecast-scoring-logo .team-logo-img,
+.gamecast-scoring-teamheads .team-logo-img {
+  filter:
+    drop-shadow(0 -1.25px 0 rgba(255,255,255,.98))
+    drop-shadow(1.25px 0 0 rgba(255,255,255,.98))
+    drop-shadow(0 1.25px 0 rgba(255,255,255,.98))
+    drop-shadow(-1.25px 0 0 rgba(255,255,255,.98))
+    drop-shadow(0 1.5px 2px rgba(0,0,0,.52)) !important;
+  -webkit-filter:
+    drop-shadow(0 -1.25px 0 rgba(255,255,255,.98))
+    drop-shadow(1.25px 0 0 rgba(255,255,255,.98))
+    drop-shadow(0 1.25px 0 rgba(255,255,255,.98))
+    drop-shadow(-1.25px 0 0 rgba(255,255,255,.98))
+    drop-shadow(0 1.5px 2px rgba(0,0,0,.52)) !important;
+}
+
+@media (max-width: 420px) {
+  .gamecast-toggle-btn {
+    padding-top: .24rem !important;
+  }
+
+  .gamecast-scoring-row {
+    padding-top: .9rem !important;
+    padding-bottom: .74rem !important;
+  }
+
+  .gamecast-scoring-score,
+  .gamecast-scoring-score.is-scoring-team {
+    font-size: .98rem !important;
+  }
+}
