@@ -277,8 +277,10 @@ function HalfInningCard({
   atBats: MlbAtBat[];
 }) {
   const visible = atBats.length ? atBats : [];
+  const lastScore = [...visible].reverse().find((ab) => typeof ab.awayScore === "number" || typeof ab.homeScore === "number");
+  const teamColor = team?.color ? `#${String(team.color).replace(/^#/, "")}` : "var(--accent)";
   return (
-    <div className="gamecast-half-card">
+    <div className="gamecast-half-card" style={{ ["--gamecast-half-color" as any]: teamColor }}>
       <div className="gamecast-half-head">
         <div className="gamecast-half-team">
           {team?.logo && <Image src={team.logo} alt={team.abbr} width={24} height={24} className="object-contain logo-outline-dark" unoptimized />}
@@ -303,6 +305,16 @@ function HalfInningCard({
         ) : (
           visible.map((ab) => <AtBatSummaryRow key={ab.id} atBat={ab} />)
         )}
+      </div>
+
+      <div className="gamecast-half-end-row">
+        <span className="gamecast-half-end-icon" aria-hidden="true">‹›</span>
+        <div className="gamecast-half-end-copy">
+          <div className="gamecast-half-end-title">End - {half === "bottom" ? "Bottom" : "Top"} {ordinal(period)}</div>
+          <div className="gamecast-half-end-subtitle">{half === "bottom" ? "End of inning" : "Half inning complete"}</div>
+        </div>
+        <div className="gamecast-half-end-score tabular-nums">{lastScore?.awayScore ?? 0}</div>
+        <div className="gamecast-half-end-score tabular-nums">{lastScore?.homeScore ?? 0}</div>
       </div>
     </div>
   );
