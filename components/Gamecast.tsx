@@ -210,23 +210,20 @@ function LiveAtBatCard({
   const outs = hasLiveAtBat && typeof situation?.outs === "number" ? situation.outs : null;
 
   return (
-    <div
-      className="rounded-2xl overflow-hidden"
-      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-    >
-      <div className="px-4 py-3 flex items-center justify-between gap-3" style={{ borderBottom: "1px solid var(--border)" }}>
-        <div className="flex items-center gap-2 min-w-0">
+    <div className="gamecast-live-card">
+      <div className="gamecast-live-head">
+        <div className="gamecast-live-team">
           {battingTeam?.logo && <Image src={battingTeam.logo} alt={battingTeam.abbr} width={30} height={30} className="object-contain logo-outline-dark" unoptimized />}
-          <div className="min-w-0">
-            <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: isLive ? "var(--danger)" : "var(--text-3)" }}>
+          <div className="gamecast-live-team-copy">
+            <div className="gamecast-live-kicker" style={{ color: isLive ? "var(--danger)" : "var(--text-3)" }}>
               {title}
             </div>
-            <div className="text-sm font-bold">
+            <div className="gamecast-live-title">
               {battingTeam?.abbr || "MLB"} batting
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-4 text-base md:text-lg font-black tabular-nums" style={{ color: "var(--text)" }}>
+        <div className="gamecast-live-state tabular-nums">
           <BasesDiamond
             onFirst={!!situation?.onFirst}
             onSecond={!!situation?.onSecond}
@@ -237,15 +234,15 @@ function LiveAtBatCard({
         </div>
       </div>
 
-      <div className="p-4 grid grid-cols-2 md:grid-cols-[1fr_auto_1fr] gap-3 items-stretch">
+      <div className="gamecast-live-matchup">
         <PlayerMiniCard label="Batter" person={batter} primaryStat={batterStatText(batter)} onClick={playerClickHandler(batter, onPlayerClick, "Batter")} />
-        <div className="hidden md:flex items-center justify-center text-xs font-bold" style={{ color: "var(--text-3)" }}>vs</div>
+        <div className="gamecast-live-vs">vs</div>
         <PlayerMiniCard label="Pitcher" person={pitcher} primaryStat={pitcherStatText(pitcher)} onClick={playerClickHandler(pitcher, onPlayerClick, "Pitcher")} />
       </div>
 
-      <div className="px-4 pb-4">
-        <div className="rounded-xl p-3" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
-          <div className="text-sm font-semibold">
+      <div className="gamecast-live-result-wrap">
+        <div className="gamecast-live-result">
+          <div className="gamecast-live-result-text">
             {currentAtBat?.result || (hasLiveAtBat ? situation?.lastPlay : null) || "Waiting for ESPN play update..."}
           </div>
           {currentAtBat?.pitches?.length ? <PitchSequence atBat={currentAtBat} compact /> : null}
@@ -270,30 +267,27 @@ function HalfInningCard({
 }) {
   const visible = atBats.length ? atBats : [];
   return (
-    <div
-      className="rounded-2xl overflow-hidden"
-      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-    >
-      <div className="px-4 py-3 flex items-center justify-between gap-3" style={{ borderBottom: "1px solid var(--border)" }}>
-        <div className="flex items-center gap-2 min-w-0">
+    <div className="gamecast-half-card">
+      <div className="gamecast-half-head">
+        <div className="gamecast-half-team">
           {team?.logo && <Image src={team.logo} alt={team.abbr} width={24} height={24} className="object-contain logo-outline-dark" unoptimized />}
-          <div>
-            <div className="text-sm font-bold">
+          <div className="gamecast-half-copy">
+            <div className="gamecast-half-title">
               {half === "bottom" ? "Bottom" : "Top"} of the {inningWord(period)} · {team?.abbr || "Batting"}
             </div>
             {pitcher && (
-              <div className="text-xs" style={{ color: "var(--text-3)" }}>
+              <div className="gamecast-half-subtitle">
                 Pitching: {pitcher}
               </div>
             )}
           </div>
         </div>
-        <div className="text-xs font-bold tabular-nums" style={{ color: "var(--text-2)" }}>
+        <div className="gamecast-half-count tabular-nums">
           {visible.filter((x) => x.isAtBat).length} AB
         </div>
       </div>
 
-      <div className="divide-y" style={{ borderColor: "var(--border)" }}>
+      <div className="gamecast-half-rows">
         {visible.length === 0 ? (
           <div className="p-4 text-sm" style={{ color: "var(--text-2)" }}>No at-bats yet this half inning.</div>
         ) : (
@@ -306,7 +300,7 @@ function HalfInningCard({
 
 function MlbPlaysView({ sections }: { sections: MlbSection[] }) {
   return (
-    <div className="space-y-3">
+    <div className="gamecast-plays-list">
       {sections.map((section) => (
         <HalfInningCard
           key={`${section.period}-${section.half}`}
@@ -456,23 +450,31 @@ function playerClickHandler(person: Person | null | undefined, onPlayerClick: ((
   return () => onPlayerClick({ id: String(id), name, league: "mlb" });
 }
 
+function espnHeadshot(person?: Person | null) {
+  const existing = person?.headshot ? String(person.headshot) : "";
+  if (existing) return existing;
+  const rawId = person?.id ? String(person.id) : "";
+  if (!rawId || !/^\d+$/.test(rawId)) return null;
+  return `https://a.espncdn.com/i/headshots/mlb/players/full/${rawId}.png`;
+}
+
 function PlayerMiniCard({ label, person, primaryStat, onClick }: { label: string; person?: Person | null; primaryStat?: string | null; onClick?: () => void }) {
   const name = person?.displayName || person?.name || person?.shortName || "—";
   const hasPlayer = name !== "—";
   const Wrapper: any = onClick ? "button" : "div";
   return (
-    <Wrapper type={onClick ? "button" : undefined} onClick={onClick} className="rounded-xl p-3 flex items-center gap-3 text-left" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
-      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center" style={{ background: "var(--surface)" }}>
-        {person?.headshot ? (
-          <Image src={person.headshot} alt={name} width={40} height={40} className="object-cover" />
+    <Wrapper type={onClick ? "button" : undefined} onClick={onClick} className="gamecast-player-card">
+      <div className="gamecast-player-photo">
+        {espnHeadshot(person) ? (
+          <Image src={espnHeadshot(person)!} alt={name} width={62} height={62} className="object-cover" unoptimized />
         ) : (
           <span className="text-xs font-bold" style={{ color: "var(--text-3)" }}>{initials(name)}</span>
         )}
       </div>
-      <div className="min-w-0">
-        <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--text-3)" }}>{label}</div>
-        <div className="text-sm font-bold">{name}</div>
-        {hasPlayer && primaryStat && <div className="text-xs" style={{ color: "var(--text-2)" }}>{primaryStat}</div>}
+      <div className="gamecast-player-copy">
+        <div className="gamecast-player-label">{label}</div>
+        <div className="gamecast-player-name">{name}</div>
+        {hasPlayer && primaryStat && <div className="gamecast-player-stat">{primaryStat}</div>}
       </div>
     </Wrapper>
   );

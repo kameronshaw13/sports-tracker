@@ -9353,3 +9353,321 @@ main.retro-page.view-leaguePage {
     font-size: .98rem !important;
   }
 }
+
+/* v128: GameTracker Live/Plays full-width polish + final scoring logo nudge */
+.gamecast-toggle {
+  margin: 0 0 .55rem !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+}
+
+.gamecast-toggle-btn {
+  min-height: 2.46rem !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--text-3) !important;
+  font-size: .82rem !important;
+  letter-spacing: .055em !important;
+  text-transform: uppercase !important;
+  padding: .22rem 0 0 !important;
+  position: relative !important;
+}
+
+.gamecast-toggle-btn.is-active {
+  color: var(--text) !important;
+  background: transparent !important;
+}
+
+.gamecast-toggle-btn.is-active::after {
+  content: "";
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  bottom: 0;
+  height: 3px;
+  border-radius: 999px 999px 0 0;
+  background: var(--accent);
+}
+
+.gamecast-scoring-logo {
+  transform: translateY(-3px) !important;
+}
+
+.gamecast-scoring-teamheads {
+  transform: translateY(-1px) !important;
+}
+
+.gamecast-live-card,
+.gamecast-half-card {
+  width: 100% !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  background: var(--surface) !important;
+  border: 0 !important;
+  border-top: 1px solid var(--border) !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: none !important;
+}
+
+.gamecast-live-card + .gamecast-half-card,
+.gamecast-half-card + .gamecast-half-card {
+  margin-top: .55rem !important;
+}
+
+.gamecast-live-head,
+.gamecast-half-head {
+  min-height: 3.18rem !important;
+  padding: .68rem .92rem .58rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: .75rem !important;
+  text-align: center !important;
+  border-bottom: 1px solid var(--border) !important;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--surface) 90%, #fff 4%),
+    color-mix(in srgb, var(--surface) 90%, #000 6%)) !important;
+}
+
+.gamecast-live-team,
+.gamecast-half-team {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .55rem !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.gamecast-live-team img,
+.gamecast-half-team img {
+  filter:
+    drop-shadow(0 -1.2px 0 rgba(255,255,255,.95))
+    drop-shadow(1.2px 0 0 rgba(255,255,255,.95))
+    drop-shadow(0 1.2px 0 rgba(255,255,255,.95))
+    drop-shadow(-1.2px 0 0 rgba(255,255,255,.95))
+    drop-shadow(0 1px 2px rgba(0,0,0,.45)) !important;
+}
+
+.gamecast-live-team-copy,
+.gamecast-half-copy {
+  min-width: 0 !important;
+  text-align: center !important;
+}
+
+.gamecast-live-kicker,
+.gamecast-player-label {
+  font-size: .62rem !important;
+  line-height: 1.25 !important;
+  font-weight: 950 !important;
+  letter-spacing: .085em !important;
+  text-transform: uppercase !important;
+  overflow: visible !important;
+}
+
+.gamecast-live-title,
+.gamecast-half-title {
+  color: var(--text) !important;
+  font-size: .9rem !important;
+  line-height: 1.22 !important;
+  font-weight: 950 !important;
+  overflow: visible !important;
+}
+
+.gamecast-half-subtitle,
+.gamecast-player-stat {
+  color: var(--text-2) !important;
+  font-size: .72rem !important;
+  line-height: 1.22 !important;
+  font-weight: 725 !important;
+  overflow: visible !important;
+}
+
+.gamecast-live-state {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .65rem !important;
+  color: var(--text) !important;
+  font-size: .95rem !important;
+  line-height: 1.1 !important;
+  font-weight: 950 !important;
+}
+
+.gamecast-half-count {
+  flex: 0 0 auto !important;
+  color: var(--text-2) !important;
+  font-size: .72rem !important;
+  line-height: 1.15 !important;
+  font-weight: 950 !important;
+}
+
+.gamecast-live-matchup {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+  gap: .65rem !important;
+  align-items: stretch !important;
+  padding: .82rem .92rem .72rem !important;
+  background: color-mix(in srgb, var(--surface) 94%, #fff 2%) !important;
+}
+
+.gamecast-live-vs {
+  align-self: center !important;
+  color: var(--text-3) !important;
+  font-size: .72rem !important;
+  line-height: 1 !important;
+  font-weight: 950 !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+}
+
+.gamecast-player-card {
+  min-width: 0 !important;
+  min-height: 7.35rem !important;
+  padding: .82rem .55rem .72rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: .42rem !important;
+  text-align: center !important;
+  border-radius: 1.05rem !important;
+  background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--surface-2) 76%, #fff 9%), var(--surface-2) 72%) !important;
+  border: 1px solid color-mix(in srgb, var(--border) 78%, #fff 12%) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+
+.gamecast-player-photo {
+  width: 3.6rem !important;
+  height: 3.6rem !important;
+  border-radius: 999px !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: color-mix(in srgb, var(--surface) 86%, #fff 6%) !important;
+  border: 1px solid rgba(255,255,255,.24) !important;
+  box-shadow: 0 7px 16px rgba(0,0,0,.18) !important;
+}
+
+.gamecast-player-photo img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.gamecast-player-copy {
+  min-width: 0 !important;
+  width: 100% !important;
+  text-align: center !important;
+}
+
+.gamecast-player-label {
+  color: var(--text-3) !important;
+}
+
+.gamecast-player-name {
+  color: var(--text) !important;
+  font-size: .88rem !important;
+  line-height: 1.18 !important;
+  font-weight: 950 !important;
+  overflow: visible !important;
+}
+
+.gamecast-live-result-wrap {
+  padding: 0 .92rem .9rem !important;
+  background: color-mix(in srgb, var(--surface) 94%, #fff 2%) !important;
+}
+
+.gamecast-live-result {
+  border-radius: .95rem !important;
+  padding: .74rem .78rem !important;
+  background: color-mix(in srgb, var(--surface-2) 88%, #000 4%) !important;
+  border: 1px solid var(--border) !important;
+  text-align: center !important;
+}
+
+.gamecast-live-result-text {
+  color: var(--text) !important;
+  font-size: .88rem !important;
+  line-height: 1.32 !important;
+  font-weight: 825 !important;
+  overflow: visible !important;
+}
+
+.gamecast-plays-list {
+  display: grid !important;
+  gap: .55rem !important;
+}
+
+.gamecast-half-rows {
+  background: var(--surface) !important;
+}
+
+.gamecast-half-rows details summary {
+  padding-top: .8rem !important;
+  padding-bottom: .72rem !important;
+  text-align: center !important;
+}
+
+.gamecast-half-rows details summary > div {
+  align-items: center !important;
+}
+
+.gamecast-half-rows details summary .text-sm {
+  line-height: 1.28 !important;
+  overflow: visible !important;
+}
+
+@media (max-width: 420px) {
+  .gamecast-toggle-btn {
+    min-height: 2.38rem !important;
+    font-size: .78rem !important;
+    padding-top: .24rem !important;
+  }
+
+  .gamecast-live-head,
+  .gamecast-half-head {
+    min-height: 3.05rem !important;
+    padding-left: .78rem !important;
+    padding-right: .78rem !important;
+  }
+
+  .gamecast-live-matchup {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: .58rem !important;
+    padding-left: .78rem !important;
+    padding-right: .78rem !important;
+  }
+
+  .gamecast-live-vs {
+    display: none !important;
+  }
+
+  .gamecast-player-card {
+    min-height: 7.15rem !important;
+    padding-left: .44rem !important;
+    padding-right: .44rem !important;
+  }
+
+  .gamecast-player-photo {
+    width: 3.38rem !important;
+    height: 3.38rem !important;
+  }
+
+  .gamecast-player-name {
+    font-size: .82rem !important;
+  }
+
+  .gamecast-live-result-wrap {
+    padding-left: .78rem !important;
+    padding-right: .78rem !important;
+  }
+}
