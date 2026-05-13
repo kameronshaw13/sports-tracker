@@ -145,13 +145,13 @@ function MlbLiveGamecast({
 
   return (
     <div className="gamecast-shell">
-      <div className="gamecast-toggle">
+      <div className={`gamecast-toggle ${!isLive ? "is-final-game" : ""}`}>
         <GamecastTab label="Scoring" active={activeSubTab === "scoring"} onClick={() => setActiveSubTab("scoring")} />
-        <GamecastTab label="Live" active={activeSubTab === "live"} onClick={() => setActiveSubTab("live")} />
+        {isLive && <GamecastTab label="Live" active={activeSubTab === "live"} onClick={() => setActiveSubTab("live")} />}
         <GamecastTab label="Plays" active={activeSubTab === "plays"} onClick={() => setActiveSubTab("plays")} />
       </div>
 
-      {activeSubTab === "live" && (
+      {isLive && activeSubTab === "live" && (
         <>
           <LiveAtBatCard
             isLive={isLive}

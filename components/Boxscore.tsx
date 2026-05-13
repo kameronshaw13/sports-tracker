@@ -35,7 +35,7 @@ export default function Boxscore({
     { refreshInterval: isLive ? 15_000 : 0 },
   );
 
-  const [activeTeamIdx, setActiveTeamIdx] = useState(0);
+  const [activeView, setActiveView] = useState<number | "team">(0);
 
   if (isLoading) {
     return (
@@ -49,6 +49,7 @@ export default function Boxscore({
     return null;
   }
 
+  const activeTeamIdx = activeView === "team" ? 0 : activeView;
   const team = data.teams[activeTeamIdx];
 
   return (
@@ -94,54 +95,61 @@ export default function Boxscore({
       <div>
         {/* Team toggle */}
         <div className="boxscore-team-toggle">
-          {data.teams
-            .map((t: any, i: number) => (
-              <button
-                key={t.team.id}
-                onClick={() => setActiveTeamIdx(i)}
-                className={`boxscore-team-toggle-btn ${activeTeamIdx === i ? "is-active" : ""}`}
-              >
-                {t.team.logo && (
-                  <Image
-                    src={t.team.logo}
-                    alt=""
-                    width={20}
-                    height={20}
-                    className="object-contain logo-outline-dark"
-                    unoptimized
-                  />
-                )}
-                {t.team.abbr}
-              </button>
-            ))
-            .flatMap((btn: any, i: number) =>
-              i === 0
-                ? [
-                    btn,
-                    <div key="team-label" className="boxscore-team-toggle-mid">
-                      Team
-                    </div>,
-                  ]
-                : [btn],
-            )}
+          {data.teams.map((t: any, i: number) => (
+            <button
+              key={t.team.id}
+              onClick={() => setActiveView(i)}
+              className={`boxscore-team-toggle-btn ${activeView === i ? "is-active" : ""}`}
+            >
+              {t.team.logo && (
+                <Image
+                  src={t.team.logo}
+                  alt=""
+                  width={20}
+                  height={20}
+                  className="object-contain logo-outline-dark"
+                  unoptimized
+                />
+              )}
+              {t.team.abbr}
+            </button>
+          )).flatMap((btn: any, i: number) =>
+            i === 0
+              ? [
+                  btn,
+                  <button
+                    key="team-label"
+                    type="button"
+                    onClick={() => setActiveView("team")}
+                    className={`boxscore-team-toggle-btn boxscore-team-toggle-mid ${activeView === "team" ? "is-active" : ""}`}
+                  >
+                    Team
+                  </button>,
+                ]
+              : [btn],
+          )}
         </div>
 
-        <div className="space-y-3">
-          {team.groups.map((group: any, gi: number) => (
-            <StatGroup
-              key={gi}
-              group={group}
-              league={league}
-              groupIndex={gi}
-              teamKey={
-                team?.team?.abbr
-                  ? `${league}-${String(team.team.abbr).toLowerCase()}`
-                  : undefined
-              }
-              onPlayerClick={onPlayerClick}
-            />
-          ))}
-        </div>
+        {activeView === "team" ? (
+          <TeamStatsView teams={data.teams} league={league} />
+        ) : (
+          <div className="space-y-3">
+            {team.groups.map((group: any, gi: number) => (
+              <StatGroup
+                key={gi}
+                group={group}
+                league={league}
+                groupIndex={gi}
+                teamKey={
+                  team?.team?.abbr
+                    ? `${league}-${String(team.team.abbr).toLowerCase()}`
+                    : undefined
+                }
+                onPlayerClick={onPlayerClick}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -363,8 +371,41 @@ function pickColumnKeys(group: any, league: string): string[] {
     return allKeys;
   }
 
-  // MLB / NFL: 6-column cap (pre-v17 behavior preserved)
+  if (league === "mlb") {
+    return mlbColumnKeys(allKeys);
+  }
+
+  // NFL: 6-column cap (pre-v17 behavior preserved)
   return allKeys.slice(0, 6);
+}
+
+function mlbColumnKeys(allKeys: string[]): string[] {
+  const hasCombo = allKeys.some((k) => k === "H-AB" || k === "H_AB" || k === "H/AB");
+  if (hasCombo) {
+    const rest = allKeys.filter((k) => !["H-AB", "H_AB", "H/AB", "AB", "H", "HT"].includes(k));
+    return ["AB", "H", ...rest].slice(0, 7);
+  }
+  return allKeys.map((k) => (k === "HT" ? "H" : k)).slice(0, 7);
+}
+
+function getBoxscoreStat(row: any, key: string): string | number {
+  if (key === "AB") {
+    const combo = row.stats?.["H-AB"] ?? row.stats?.["H_AB"] ?? row.stats?.["H/AB"];
+    if (combo != null) {
+      const parts = String(combo).split(/[\/-]/).map((x) => x.trim());
+      if (parts.length >= 2) return parts[1] || "—";
+    }
+  }
+  if (key === "H") {
+    const direct = row.stats?.H ?? row.stats?.HT;
+    if (direct != null) return direct;
+    const combo = row.stats?.["H-AB"] ?? row.stats?.["H_AB"] ?? row.stats?.["H/AB"];
+    if (combo != null) {
+      const parts = String(combo).split(/[\/-]/).map((x) => x.trim());
+      return parts[0] || "—";
+    }
+  }
+  return row.stats?.[key] ?? "—";
 }
 
 // NHL group-type detection. ESPN labels groups inconsistently — could be
@@ -381,9 +422,79 @@ function looksLikeGoalies(group: any, keys: string[]): boolean {
 // in ESPN's NHL boxscore.
 function canonicalLabel(key: string): string {
   if (key === "S" || key === "SOG") return "SOG";
-  if (key === "HT" || key === "H") return "HT";
+  if (key === "HT" || key === "H") return "H";
   if (key === "H-AB" || key === "H_AB") return "H/AB";
   return key;
+}
+
+
+function TeamStatsView({ teams, league }: { teams: any[]; league: string }) {
+  const rows = collectTeamStatRows(teams, league);
+  if (!rows.length) {
+    return (
+      <div className="boxscore-team-stats-empty">
+        Team stats are not available for this game yet.
+      </div>
+    );
+  }
+  const left = teams?.[0]?.team;
+  const right = teams?.[1]?.team;
+  return (
+    <div className="boxscore-team-stats">
+      <div className="boxscore-team-stats-head">
+        <div>{left?.abbr || "Away"}</div>
+        <div>Team Stats</div>
+        <div>{right?.abbr || "Home"}</div>
+      </div>
+      {rows.map((row) => (
+        <div key={row.label} className="boxscore-team-stat-row">
+          <div className="tabular-nums">{row.left}</div>
+          <div>{row.label}</div>
+          <div className="tabular-nums">{row.right}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function collectTeamStatRows(teams: any[], league: string): { label: string; left: string | number; right: string | number }[] {
+  const labels = new Set<string>();
+  const totalsByTeam = teams.map((team) => {
+    const totals: Record<string, string | number> = {};
+    for (const group of team?.groups || []) {
+      if (!group?.totals || !Array.isArray(group?.keys)) continue;
+      group.keys.forEach((key: string, idx: number) => {
+        const label = canonicalLabel(key);
+        const value = group.totals?.[idx] ?? group.totals?.[key];
+        if (value == null || value === "") return;
+        if (label === "H/AB") {
+          const parts = String(value).split(/[\/-]/).map((x) => x.trim());
+          if (parts.length >= 2) {
+            totals.AB = parts[1] || "—";
+            totals.H = parts[0] || "—";
+            labels.add("AB");
+            labels.add("H");
+          }
+        } else {
+          totals[label] = value;
+          labels.add(label);
+        }
+      });
+    }
+    return totals;
+  });
+
+  const preferred = league === "mlb"
+    ? ["AB", "H", "R", "HR", "RBI", "BB", "K", "LOB", "ERA", "IP", "ER"]
+    : Array.from(labels);
+  const ordered = [...preferred, ...Array.from(labels).filter((label) => !preferred.includes(label))];
+  return ordered
+    .filter((label) => labels.has(label))
+    .map((label) => ({
+      label,
+      left: totalsByTeam[0]?.[label] ?? "—",
+      right: totalsByTeam[1]?.[label] ?? "—",
+    }));
 }
 
 function StatGroup({
@@ -423,7 +534,7 @@ function StatGroup({
                 className="boxscore-player-stat-head text-left px-3 py-2 font-medium sticky left-0 z-10"
                 style={{ background: "var(--surface)" }}
               >
-                {league === "mlb" ? "" : "Player"}
+                {league === "mlb" ? displayGroupName(league, group, groupIndex) : "Player"}
               </th>
               {columnKeys.map((k: string) => (
                 <th
@@ -494,7 +605,7 @@ function StatGroup({
                         className="text-right px-2 py-2 tabular-nums"
                         style={{ color: "var(--text-2)" }}
                       >
-                        {row.stats[k] ?? "—"}
+                        {getBoxscoreStat(row, k)}
                       </td>
                     ))}
                   </tr>

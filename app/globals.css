@@ -11926,3 +11926,207 @@ main.retro-page.view-leaguePage {
     font-size: .62rem !important;
   }
 }
+
+/* v141: boxscore team stats restore + cleaner GameTracker separators */
+.gamecast-toggle.is-final-game {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+/* Keep Live/Plays separators as one thin gray rule, no extra brown overlay line */
+.gamecast-pitcher-tag::after,
+.gamecast-half-rows details::after {
+  display: none !important;
+  content: none !important;
+}
+
+.gamecast-pitcher-tag,
+.gamecast-half-rows details,
+.gamecast-live-result {
+  border-color: rgba(220, 220, 220, .18) !important;
+  box-shadow: none !important;
+}
+
+.gamecast-pitcher-tag {
+  border-bottom: 1px solid rgba(220, 220, 220, .18) !important;
+}
+
+.gamecast-half-rows details {
+  border-top: 0 !important;
+  border-bottom: 1px solid rgba(220, 220, 220, .18) !important;
+}
+
+.gamecast-half-rows details + details,
+.gamecast-half-rows details + .px-4,
+.gamecast-half-rows details[open] summary {
+  border-top: 0 !important;
+  box-shadow: none !important;
+}
+
+.gamecast-live-result {
+  border-top: 1px solid rgba(220, 220, 220, .18) !important;
+}
+
+/* Top game header date/status: nudge back toward the true center */
+.game-score-center {
+  transform: translateX(-.9rem) !important;
+}
+
+.game-score-date {
+  text-align: center !important;
+}
+
+/* Box Score team toggle: make the Team middle option behave like the side tabs */
+.boxscore-team-toggle-mid {
+  cursor: pointer !important;
+  text-align: center !important;
+}
+
+/* Box Score team stats page */
+.boxscore-team-stats,
+.boxscore-team-stats-empty {
+  margin: .1rem 0 .25rem !important;
+  background: transparent !important;
+  border-top: 1px solid rgba(220, 220, 220, .18) !important;
+  border-bottom: 1px solid rgba(220, 220, 220, .18) !important;
+  color: var(--score-meta, rgba(255, 248, 236, 0.86)) !important;
+}
+
+.boxscore-team-stats-head,
+.boxscore-team-stat-row {
+  display: grid !important;
+  grid-template-columns: 4.2rem minmax(0, 1fr) 4.2rem !important;
+  align-items: center !important;
+  min-height: 2.34rem !important;
+  padding: .42rem .82rem .34rem !important;
+  column-gap: .5rem !important;
+  border-bottom: 1px solid rgba(220, 220, 220, .16) !important;
+}
+
+.boxscore-team-stats-head {
+  color: var(--text-3) !important;
+  font-size: .7rem !important;
+  line-height: 1.15 !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .045em !important;
+}
+
+.boxscore-team-stat-row {
+  color: var(--score-meta, rgba(255, 248, 236, 0.86)) !important;
+  font-size: .78rem !important;
+  line-height: 1.2 !important;
+  font-weight: 650 !important;
+}
+
+.boxscore-team-stat-row:last-child {
+  border-bottom: 0 !important;
+}
+
+.boxscore-team-stats-head > div,
+.boxscore-team-stat-row > div {
+  overflow: visible !important;
+  padding-top: .08rem !important;
+}
+
+.boxscore-team-stats-head > div:first-child,
+.boxscore-team-stat-row > div:first-child {
+  text-align: left !important;
+}
+
+.boxscore-team-stats-head > div:nth-child(2),
+.boxscore-team-stat-row > div:nth-child(2) {
+  text-align: center !important;
+}
+
+.boxscore-team-stats-head > div:last-child,
+.boxscore-team-stat-row > div:last-child {
+  text-align: right !important;
+}
+
+.boxscore-team-stats-empty {
+  padding: 1rem !important;
+  text-align: center !important;
+  font-size: .8rem !important;
+}
+
+/* Put Hitters/Pitchers directly in the stat header row and remove the old section banner */
+.boxscore-stat-group-title {
+  display: none !important;
+}
+
+.boxscore-player-stat-head {
+  color: var(--text-3) !important;
+  font-size: .72rem !important;
+  line-height: 1.18 !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .035em !important;
+  vertical-align: middle !important;
+}
+
+.boxscore-player-stat-head,
+.boxscore-player-stat-head th {
+  padding-top: .58rem !important;
+  padding-bottom: .42rem !important;
+}
+
+/* Match player names to the stat-number color so the rows read as one unit */
+.boxscore-player-name,
+.boxscore-player-name button,
+.boxscore-stat-scroll tbody td {
+  color: var(--score-meta, rgba(255, 248, 236, 0.86)) !important;
+}
+
+.boxscore-player-name span {
+  color: color-mix(in srgb, var(--score-meta, rgba(255, 248, 236, 0.86)) 70%, var(--text-3) 30%) !important;
+}
+
+/* Cleaner one-line row dividers */
+.boxscore-stat-scroll tbody tr {
+  border-top: 1px solid rgba(220, 220, 220, .16) !important;
+  box-shadow: none !important;
+}
+
+.boxscore-stat-scroll tbody tr + tr {
+  border-top: 1px solid rgba(220, 220, 220, .16) !important;
+}
+
+/* Line score logo/team alignment: a little bigger and slightly right */
+.boxscore-line-team {
+  gap: .36rem !important;
+  transform: translateX(.35rem) !important;
+}
+
+.boxscore-line-team img {
+  width: 1.28rem !important;
+  height: 1.28rem !important;
+  transform: translateY(-.04rem) !important;
+}
+
+.boxscore-line-team span {
+  font-size: .78rem !important;
+  line-height: 1 !important;
+  transform: translateY(.08rem) !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-center {
+    transform: translateX(-.75rem) !important;
+  }
+
+  .boxscore-team-stats-head,
+  .boxscore-team-stat-row {
+    grid-template-columns: 3.75rem minmax(0, 1fr) 3.75rem !important;
+    padding-left: .72rem !important;
+    padding-right: .72rem !important;
+  }
+
+  .boxscore-line-team {
+    transform: translateX(.3rem) !important;
+  }
+
+  .boxscore-line-team img {
+    width: 1.2rem !important;
+    height: 1.2rem !important;
+  }
+}
