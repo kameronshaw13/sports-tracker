@@ -12192,3 +12192,137 @@ main.retro-page.view-leaguePage {
   border-top: 1px solid rgba(220,220,220,.16) !important;
   box-shadow: none !important;
 }
+
+/* v143: team stats list polish + sticky game header cleanup */
+/* Keep the same sticky stack as the team pages: topbar, score hero, then tabs stay locked while content scrolls. */
+.game-detail-topbar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 120 !important;
+}
+
+.game-score-hero {
+  position: sticky !important;
+  top: 3.26rem !important;
+  z-index: 110 !important;
+}
+
+.game-detail-tabs {
+  position: sticky !important;
+  top: calc(3.26rem + 7.55rem) !important;
+  z-index: 109 !important;
+  background: color-mix(in srgb, var(--surface) 94%, #000 6%) !important;
+}
+
+/* Team Stats tab: make it a clean full-width stat list like the reference screenshot, not a card/box. */
+.boxscore-team-stats-flat,
+.boxscore-team-stats {
+  width: 100% !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  box-shadow: none !important;
+}
+
+.boxscore-team-stats-logo-head,
+.boxscore-team-stats-head {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 3.15rem 3.15rem !important;
+  min-height: 3.15rem !important;
+  padding: .5rem 1.25rem .42rem !important;
+  column-gap: .65rem !important;
+  align-items: center !important;
+  background: color-mix(in srgb, var(--surface) 96%, #fff 2%) !important;
+  border-top: 1px solid rgba(220,220,220,.13) !important;
+  border-bottom: 1px solid rgba(220,220,220,.13) !important;
+}
+
+.boxscore-team-stat-team {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 2rem !important;
+  color: var(--score-meta, rgba(255,248,236,.86)) !important;
+  font-size: .78rem !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+}
+
+.boxscore-team-stat-team img {
+  width: 1.55rem !important;
+  height: 1.55rem !important;
+  object-fit: contain !important;
+}
+
+.boxscore-team-stat-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 3.15rem 3.15rem !important;
+  min-height: 2.92rem !important;
+  padding: .52rem 1.25rem .44rem !important;
+  column-gap: .65rem !important;
+  align-items: center !important;
+  background: color-mix(in srgb, var(--surface) 96%, #fff 2%) !important;
+  border-bottom: 1px solid rgba(220,220,220,.13) !important;
+  color: var(--score-meta, rgba(255,248,236,.86)) !important;
+  font-size: .84rem !important;
+  line-height: 1.18 !important;
+  font-weight: 650 !important;
+}
+
+.boxscore-team-stat-row:last-child {
+  border-bottom: 0 !important;
+}
+
+.boxscore-team-stat-label {
+  justify-self: start !important;
+  text-align: left !important;
+  color: var(--text) !important;
+  font-weight: 780 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.boxscore-team-stat-value {
+  justify-self: center !important;
+  text-align: center !important;
+  color: var(--score-meta, rgba(255,248,236,.86)) !important;
+  font-size: .86rem !important;
+  font-weight: 720 !important;
+  line-height: 1 !important;
+  padding-top: .08rem !important;
+}
+
+.boxscore-team-stats-empty {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--score-meta, rgba(255,248,236,.86)) !important;
+}
+
+@media (max-width: 420px) {
+  .boxscore-team-stats-logo-head,
+  .boxscore-team-stats-head,
+  .boxscore-team-stat-row {
+    grid-template-columns: minmax(0, 1fr) 2.65rem 2.65rem !important;
+    padding-left: .92rem !important;
+    padding-right: .92rem !important;
+    column-gap: .45rem !important;
+  }
+
+  .boxscore-team-stat-row {
+    min-height: 2.82rem !important;
+    font-size: .82rem !important;
+  }
+
+  .boxscore-team-stat-value {
+    font-size: .84rem !important;
+  }
+
+  .boxscore-team-stat-team img {
+    width: 1.42rem !important;
+    height: 1.42rem !important;
+  }
+}

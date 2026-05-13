@@ -437,64 +437,159 @@ function TeamStatsView({ teams, league }: { teams: any[]; league: string }) {
       </div>
     );
   }
-  const left = teams?.[0]?.team;
-  const right = teams?.[1]?.team;
+  const away = teams?.[0]?.team;
+  const home = teams?.[1]?.team;
   return (
-    <div className="boxscore-team-stats">
-      <div className="boxscore-team-stats-head">
-        <div>{left?.abbr || "Away"}</div>
-        <div>Team Stats</div>
-        <div>{right?.abbr || "Home"}</div>
+    <div className="boxscore-team-stats boxscore-team-stats-flat">
+      <div className="boxscore-team-stats-head boxscore-team-stats-logo-head">
+        <div />
+        <div className="boxscore-team-stat-team">
+          {away?.logo ? (
+            <Image
+              src={away.logo}
+              alt={away?.abbr || "Away"}
+              width={24}
+              height={24}
+              className="object-contain logo-outline-dark"
+              unoptimized
+            />
+          ) : (
+            away?.abbr || "Away"
+          )}
+        </div>
+        <div className="boxscore-team-stat-team">
+          {home?.logo ? (
+            <Image
+              src={home.logo}
+              alt={home?.abbr || "Home"}
+              width={24}
+              height={24}
+              className="object-contain logo-outline-dark"
+              unoptimized
+            />
+          ) : (
+            home?.abbr || "Home"
+          )}
+        </div>
       </div>
       {rows.map((row) => (
-        <div key={row.label} className="boxscore-team-stat-row">
-          <div className="tabular-nums">{row.left}</div>
-          <div>{row.label}</div>
-          <div className="tabular-nums">{row.right}</div>
+        <div key={row.key} className="boxscore-team-stat-row">
+          <div className="boxscore-team-stat-label">{row.label}</div>
+          <div className="boxscore-team-stat-value tabular-nums">{row.away}</div>
+          <div className="boxscore-team-stat-value tabular-nums">{row.home}</div>
         </div>
       ))}
     </div>
   );
 }
 
-function collectTeamStatRows(teams: any[], league: string): { label: string; left: string | number; right: string | number }[] {
+type TeamStatRow = {
+  key: string;
+  label: string;
+  away: string | number;
+  home: string | number;
+};
+
+const TEAM_STAT_EXCLUDE = new Set(["IP", "#P", "P", "ER"]);
+
+const MLB_TEAM_STAT_ORDER = [
+  "AB",
+  "R",
+  "H",
+  "2B",
+  "3B",
+  "HR",
+  "RBI",
+  "TB",
+  "BB",
+  "HBP",
+  "K",
+  "SO",
+  "LOB",
+  "SB",
+  "CS",
+  "GIDP",
+  "AVG",
+  "OBP",
+  "SLG",
+  "OPS",
+  "E",
+];
+
+const TEAM_STAT_LABELS: Record<string, string> = {
+  AB: "At Bats",
+  R: "Runs",
+  H: "Hits",
+  "2B": "Doubles",
+  D: "Doubles",
+  "3B": "Triples",
+  T: "Triples",
+  HR: "Home Runs",
+  RBI: "RBIs",
+  TB: "Total Bases",
+  BB: "Walks",
+  HBP: "Hit by Pitch",
+  K: "Strikeouts",
+  SO: "Strikeouts",
+  LOB: "Left on Base",
+  SB: "Stolen Bases",
+  CS: "Caught Stealing",
+  GIDP: "Grounded Into DP",
+  AVG: "Batting Average",
+  OBP: "On-base %",
+  SLG: "Slugging %",
+  OPS: "OPS",
+  E: "Errors",
+};
+
+function normalizeTeamStatKey(key: string): string {
+  const raw = canonicalLabel(String(key || "")).trim();
+  if (raw === "H/AB" || raw === "H_AB" || raw === "H-AB") return "H/AB";
+  if (raw === "D") return "2B";
+  if (raw === "T") return "3B";
+  if (raw === "HT") return "H";
+  return raw;
+}
+
+function collectTeamStatRows(teams: any[], league: string): TeamStatRow[] {
   const labels = new Set<string>();
   const totalsByTeam = teams.map((team) => {
     const totals: Record<string, string | number> = {};
     for (const group of team?.groups || []) {
       if (!group?.totals || !Array.isArray(group?.keys)) continue;
       group.keys.forEach((key: string, idx: number) => {
-        const label = canonicalLabel(key);
+        const statKey = normalizeTeamStatKey(key);
         const value = group.totals?.[idx] ?? group.totals?.[key];
-        if (value == null || value === "") return;
-        if (label === "H/AB") {
+        if (value == null || value === "" || value === "—") return;
+        if (statKey === "H/AB") {
           const parts = String(value).split(/[\/-]/).map((x) => x.trim());
           if (parts.length >= 2) {
-            totals.AB = parts[1] || "—";
             totals.H = parts[0] || "—";
-            labels.add("AB");
+            totals.AB = parts[1] || "—";
             labels.add("H");
+            labels.add("AB");
           }
-        } else {
-          totals[label] = value;
-          labels.add(label);
+          return;
         }
+        if (TEAM_STAT_EXCLUDE.has(statKey)) return;
+        totals[statKey] = value;
+        labels.add(statKey);
       });
     }
     return totals;
   });
 
-  const preferred = league === "mlb"
-    ? ["AB", "H", "R", "HR", "RBI", "BB", "K", "LOB", "ERA", "IP", "ER"]
-    : Array.from(labels);
-  const ordered = [...preferred, ...Array.from(labels).filter((label) => !preferred.includes(label))];
-  return ordered
-    .filter((label) => labels.has(label))
-    .map((label) => ({
-      label,
-      left: totalsByTeam[0]?.[label] ?? "—",
-      right: totalsByTeam[1]?.[label] ?? "—",
-    }));
+  const preferred = league === "mlb" ? MLB_TEAM_STAT_ORDER : Array.from(labels);
+  const ordered = [...preferred, ...Array.from(labels).filter((label) => !preferred.includes(label))]
+    .filter((label, idx, arr) => arr.indexOf(label) === idx)
+    .filter((label) => labels.has(label) && !TEAM_STAT_EXCLUDE.has(label));
+
+  return ordered.map((key) => ({
+    key,
+    label: TEAM_STAT_LABELS[key] || key,
+    away: totalsByTeam[0]?.[key] ?? "—",
+    home: totalsByTeam[1]?.[key] ?? "—",
+  }));
 }
 
 function StatGroup({
