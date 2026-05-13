@@ -12130,3 +12130,65 @@ main.retro-page.view-leaguePage {
     height: 1.2rem !important;
   }
 }
+
+/* v142: final boxscore polish -- consistent table backgrounds, center date/status, clickable Team tab */
+/* Make the Team middle selector clickable again */
+.boxscore-team-toggle-mid {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Header date/status was too far right; pull the whole center cluster left on mobile */
+.game-score-center {
+  transform: translateX(-2.15rem) !important;
+}
+.game-score-date,
+.game-score-status {
+  text-align: center !important;
+}
+@media (max-width: 420px) {
+  .game-score-center {
+    transform: translateX(-2.35rem) !important;
+  }
+}
+
+/* Boxscore stat table: one clean background for header cells and one clean background for body cells */
+.boxscore-stat-scroll table {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+}
+
+.boxscore-stat-scroll thead tr,
+.boxscore-stat-scroll thead th,
+.boxscore-player-stat-head {
+  background: color-mix(in srgb, var(--surface-2) 86%, #000 8%) !important;
+}
+
+.boxscore-stat-scroll tbody tr,
+.boxscore-stat-scroll tbody td,
+.boxscore-player-name,
+.boxscore-player-name[style] {
+  background: var(--surface-3) !important;
+}
+
+.boxscore-stat-scroll tbody tr:nth-child(odd),
+.boxscore-stat-scroll tbody tr:nth-child(odd) td,
+.boxscore-stat-scroll tbody tr:nth-child(odd) .boxscore-player-name {
+  background: var(--surface-3) !important;
+}
+
+.boxscore-stat-scroll tbody tr:nth-child(even),
+.boxscore-stat-scroll tbody tr:nth-child(even) td,
+.boxscore-stat-scroll tbody tr:nth-child(even) .boxscore-player-name {
+  background: var(--surface-3) !important;
+}
+
+.boxscore-stat-scroll thead th {
+  border-bottom: 1px solid rgba(220,220,220,.16) !important;
+}
+
+.boxscore-stat-scroll tbody td,
+.boxscore-player-name {
+  border-top: 1px solid rgba(220,220,220,.16) !important;
+  box-shadow: none !important;
+}
