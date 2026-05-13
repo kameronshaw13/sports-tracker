@@ -103,9 +103,9 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
 
   if (leaguePage) {
     return (
-      <div className="-mx-4 sm:mx-0">
+      <div className="league-page-shell -mx-4 sm:mx-0">
         <LeagueHeader league={league} onBack={onBack} tab={tab} setTab={setTab} />
-        <div className="px-4 sm:px-0 pt-3">
+        <div className="league-page-content px-0 sm:px-0 pt-0">
           {tab === "scores" && (
             <>
               <CbsDateBar dayOffset={dayOffset} setDayOffset={setDayOffset} />
@@ -151,12 +151,11 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
 
 function LeagueHeader({ league, onBack, tab, setTab }: { league: League; onBack?: () => void; tab: LeagueTab; setTab: (tab: LeagueTab) => void }) {
   return (
-    <div className="overflow-hidden" style={{ background: leagueHeaderColor(league) }}>
+    <div className="league-page-header overflow-hidden" style={{ background: leagueHeaderColor(league) }}>
       <div className="px-4 pt-3 pb-4">
         <div className="relative flex items-center justify-center min-h-[36px]">
-          <button onClick={onBack} className="absolute left-0 flex items-center gap-1 text-base font-semibold">
+          <button onClick={onBack} className="league-page-back absolute left-0 flex items-center justify-center text-base font-semibold" aria-label="Back">
             <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15 18-6-6 6-6" /></svg>
-            More
           </button>
           <h1 className="text-lg font-black">{LEAGUE_LABELS[league]}</h1>
         </div>
@@ -404,6 +403,7 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
   const recordText = seriesTeamRecord(game, team) || team.record;
   const label = compact ? team.abbr : favoriteTeamLabel(team, league);
   const showScore = scoreShouldShow(game) && team.score !== undefined && team.score !== null && team.score !== "";
+  const oddsText = !showScore ? scoreOddsText(game, team) : null;
   const hasWinner = Boolean(game?.away?.winner || game?.home?.winner);
   const isWinner = Boolean(team?.winner);
   return (
@@ -415,8 +415,18 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
         {recordText && <span className={`text-[10px] tracking-tight score-card-meta ${isWinner ? "font-semibold" : "font-normal"}`} style={{ color: "var(--score-meta)" }}>{recordText}</span>}
       </div>
       {showScore && <span className={`score-card-number ${favorite ? "text-[18px]" : "text-[16.5px]"} score-team-name tracking-tight ${isWinner || !hasWinner ? "font-black opacity-100" : "font-medium opacity-60"}`} style={{ color: "var(--text)" }}>{team.score}</span>}
+      {!showScore && oddsText && <span className="score-card-odds">{oddsText}</span>}
     </div>
   );
+}
+
+function scoreOddsText(game: any, team: any) {
+  const odds = game?.odds;
+  if (!odds) return null;
+  const side = String(team?.homeAway || "").toLowerCase();
+  if (side === "away") return odds.overUnder || null;
+  if (side === "home") return odds.homeMoneyLine || odds.details || null;
+  return null;
 }
 
 function favoriteTeamLabel(team: any, league: League) {

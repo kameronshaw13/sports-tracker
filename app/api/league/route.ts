@@ -133,6 +133,45 @@ function deriveSeriesRecords(summary: string | null, away: any, home: any): { aw
   return {};
 }
 
+function formatAmericanOdds(value: any): string | null {
+  if (value == null || value === "") return null;
+  const raw = typeof value === "object" ? (value?.american || value?.displayValue || value?.value) : value;
+  const num = Number(String(raw).replace(/[^\d.-]/g, ""));
+  if (!Number.isFinite(num) || num === 0) return null;
+  return num > 0 ? `+${Math.round(num)}` : `${Math.round(num)}`;
+}
+
+function formatOverUnder(value: any): string | null {
+  if (value == null || value === "") return null;
+  const raw = typeof value === "object" ? (value?.displayValue || value?.value) : value;
+  const num = Number(String(raw).replace(/[^\d.-]/g, ""));
+  if (!Number.isFinite(num) || num <= 0) return null;
+  return `O/U ${Number.isInteger(num) ? num : num.toFixed(1).replace(/\.0$/, "")}`;
+}
+
+function extractOdds(comp: any) {
+  const odds = Array.isArray(comp?.odds) ? comp.odds[0] : comp?.odds;
+  if (!odds) return null;
+  const awayMoneyLine = formatAmericanOdds(
+    odds?.awayTeamOdds?.moneyLine ??
+    odds?.awayTeamOdds?.moneyline ??
+    odds?.awayTeamOdds?.current?.moneyLine ??
+    odds?.awayMoneyLine ??
+    odds?.awayMoneyline
+  );
+  const homeMoneyLine = formatAmericanOdds(
+    odds?.homeTeamOdds?.moneyLine ??
+    odds?.homeTeamOdds?.moneyline ??
+    odds?.homeTeamOdds?.current?.moneyLine ??
+    odds?.homeMoneyLine ??
+    odds?.homeMoneyline
+  );
+  const overUnder = formatOverUnder(odds?.overUnder ?? odds?.total ?? odds?.oU);
+  const details = typeof odds?.details === "string" ? odds.details : null;
+  if (!awayMoneyLine && !homeMoneyLine && !overUnder && !details) return null;
+  return { awayMoneyLine, homeMoneyLine, overUnder, details };
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const league = searchParams.get("league");
@@ -162,6 +201,7 @@ export async function GET(req: NextRequest) {
       const formatTeam = (c: any) =>
         c && {
           id: c.id,
+          homeAway: c.homeAway,
           name: c.team?.displayName,
           abbr: c.team?.abbreviation,
           logo: c.team?.logo || c.team?.logos?.[0]?.href || null,
@@ -208,6 +248,7 @@ export async function GET(req: NextRequest) {
         },
         home: formatTeam(home),
         away: formatTeam(away),
+        odds: extractOdds(comp),
         situation: normalizedSituation,
         isPlayoff,
         seriesSummary: seriesInfo.summary,

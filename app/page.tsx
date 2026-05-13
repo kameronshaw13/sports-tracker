@@ -87,6 +87,13 @@ export default function Home() {
     setView("more");
   }, []);
 
+  const openGame = useCallback((league: string, eventId: string, returnView: ViewId) => {
+    setTeamReturnView(returnView);
+    setReturnGame(null);
+    setShowReturnGame(false);
+    setSelectedGame({ league, eventId });
+  }, []);
+
   // Navigate to a team's page WITHOUT auto-adding to favorites. If the team
   // isn't in favorites, mark it `_transient` so the favorites-sync useEffect
   // above leaves it alone.
@@ -124,14 +131,14 @@ export default function Home() {
         setShowReturnGame(false);
       }
 
-      setTeamReturnView(sourceGame?.eventId ? "scores" : (view === "teamPage" ? "scores" : view));
+      setTeamReturnView(sourceGame?.eventId ? (view === "teamPage" ? teamReturnView : view) : (view === "teamPage" ? "scores" : view));
       setSelectedGame(null);
       setSelectedPlayer(null);
       setView("teamPage");
       setActiveTab("schedule");
       setManageOpen(false);
     },
-    [favorites, catalogData, view]
+    [favorites, catalogData, view, teamReturnView]
   );
 
   const renderActiveTeamPage = (showSelector: boolean) => (
@@ -154,6 +161,11 @@ export default function Home() {
             <div className="team-header-actions -mx-4 sm:mx-0">
               <button
                 onClick={() => {
+                  if (returnGame) {
+                    setShowReturnGame(true);
+                    setSelectedGame(null);
+                    return;
+                  }
                   setReturnGame(null);
                   setShowReturnGame(false);
                   setView(teamReturnView || "scores");
@@ -163,11 +175,6 @@ export default function Home() {
               >
                 <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15 18-6-6 6-6" /></svg>
               </button>
-              {returnGame && (
-                <button onClick={() => setShowReturnGame(true)} className="team-return-game-btn">
-                  Back to game
-                </button>
-              )}
             </div>
             <TeamHeader team={activeTeam} />
             <Tabs team={activeTeam} active={activeTab} onChange={setActiveTab} hasLive={hasLive} />
@@ -237,7 +244,7 @@ export default function Home() {
             onClose={() => {
               setShowReturnGame(false);
               setReturnGame(null);
-              setView("scores");
+              setView(teamReturnView || "scores");
             }}
             onTeamClick={handleTeamLogoClick}
             onPlayerClick={(p) => setSelectedPlayer(p)}
@@ -261,7 +268,7 @@ export default function Home() {
               setManageOpen(false);
             }}
             onPlayerClick={(p) => setSelectedPlayer(p)}
-            onOpenGame={(league, eventId) => setSelectedGame({ league, eventId })}
+            onOpenGame={(league, eventId) => openGame(league, eventId, "home")}
           />
         )}
 

@@ -12860,3 +12860,113 @@ main.retro-page.view-leaguePage {
     margin-top: -.5rem !important;
   }
 }
+
+/* v153: GameTracker final lift, safer app subpages, sticky standings, league page polish, and score-card odds */
+.game-score-situation {
+  left: calc(50% + .78rem) !important;
+  transform: translateX(-50%) !important;
+}
+
+.game-detail-content {
+  margin-top: calc(11.98rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+  padding-top: 0 !important;
+}
+
+.gamecast-shell {
+  margin-top: -.58rem !important;
+}
+
+.manage-teams-page {
+  min-height: 100vh;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 1.05rem);
+  background: var(--bg);
+}
+
+.standings-sticky-shell {
+  position: sticky;
+  top: 0;
+  z-index: 45;
+  background: var(--bg);
+  box-shadow: 0 1px 0 var(--border);
+}
+
+.standings-sticky-shell .standings-topbar {
+  background: var(--bg);
+}
+
+.league-page-shell {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.league-page-header {
+  margin-top: calc(-1 * env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  border-bottom: 1px solid color-mix(in srgb, #000 28%, transparent);
+}
+
+.league-page-header > div:first-child {
+  padding-top: calc(env(safe-area-inset-top, 0px) + .75rem);
+}
+
+.league-page-back {
+  width: 2.25rem;
+  height: 2.25rem;
+  color: currentColor;
+}
+
+.league-page-content {
+  background: var(--bg);
+}
+
+.league-page-content > div,
+.league-page-content section {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.team-transaction-row .team-feed-avatar span,
+.team-injury-row .team-feed-avatar span {
+  color: #fff !important;
+  font-size: 1rem !important;
+  line-height: 1 !important;
+  transform: translateY(.1rem) !important;
+}
+
+.gamecast-pitch-label {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1 !important;
+  transform: translateY(-.06rem);
+}
+
+.score-card-odds {
+  flex: 0 0 auto;
+  min-width: 3.8rem;
+  text-align: right;
+  color: var(--score-meta);
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .01em;
+  line-height: 1;
+  padding-top: .08rem;
+}
+
+@media (max-width: 420px) {
+  .game-score-situation {
+    left: calc(50% + .88rem) !important;
+  }
+
+  .game-detail-content {
+    margin-top: calc(11.88rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+    padding-top: 0 !important;
+  }
+
+  .gamecast-shell {
+    margin-top: -.64rem !important;
+  }
+
+  .manage-teams-page {
+    padding-top: calc(env(safe-area-inset-top, 0px) + .95rem);
+  }
+}
