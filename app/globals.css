@@ -12644,3 +12644,95 @@ main.retro-page.view-leaguePage {
     transform: translateX(-2.65rem) !important;
   }
 }
+
+/* v148: final sticky safe-area cover, content lift, and status/date centering */
+:root {
+  --game-detail-safe-gap: .95rem;
+  --game-detail-safe-cover: calc(env(safe-area-inset-top, 0px) + var(--game-detail-safe-gap));
+  --game-detail-header-bg: color-mix(in srgb, var(--bg) 76%, #3a2418 24%);
+}
+
+/* Keep the header below the phone camera/time area, but make the area above it fully opaque. */
+.game-detail-sticky-shell {
+  top: var(--game-detail-safe-cover) !important;
+  background: var(--game-detail-header-bg) !important;
+  z-index: 999 !important;
+  overflow: visible !important;
+}
+
+.game-detail-page::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 50%;
+  width: min(100vw, 480px);
+  height: var(--game-detail-safe-cover);
+  transform: translateX(-50%);
+  background: var(--game-detail-header-bg) !important;
+  opacity: 1 !important;
+  pointer-events: none;
+  z-index: 998;
+}
+
+.game-detail-sticky-shell::before {
+  height: var(--game-detail-safe-cover) !important;
+  background: var(--game-detail-header-bg) !important;
+  opacity: 1 !important;
+  z-index: 2 !important;
+}
+
+.game-detail-sticky-shell .game-detail-topbar,
+.game-detail-sticky-shell .game-score-hero,
+.game-detail-sticky-shell .game-detail-tabs {
+  position: relative !important;
+  z-index: 3 !important;
+}
+
+/* Pull the scrollable page content up so it begins directly under the locked header. */
+.game-detail-content {
+  margin-top: calc(13.96rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+  padding-top: .04rem !important;
+}
+
+/* Nudge date, final, and pregame time just a fraction back to the right. */
+.game-score-center {
+  transform: translateX(-4.62rem) !important;
+}
+.game-score-date {
+  transform: translateX(-.92rem) translateY(-.16rem) !important;
+}
+.game-score-status {
+  transform: translateX(.08rem) !important;
+}
+.game-score-status.is-pre {
+  transform: translateX(-2.12rem) !important;
+  min-width: 7.5rem !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 420px) {
+  .game-detail-page::before {
+    width: 100vw;
+  }
+
+  .game-detail-content {
+    margin-top: calc(13.88rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+    padding-top: .04rem !important;
+  }
+
+  .game-score-center {
+    transform: translateX(-4.76rem) !important;
+  }
+
+  .game-score-date {
+    transform: translateX(-.94rem) translateY(-.16rem) !important;
+  }
+
+  .game-score-status {
+    transform: translateX(.06rem) !important;
+  }
+
+  .game-score-status.is-pre {
+    transform: translateX(-2.38rem) !important;
+  }
+}
