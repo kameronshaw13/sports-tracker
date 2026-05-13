@@ -12822,3 +12822,41 @@ main.retro-page.view-leaguePage {
     margin-top: -.34rem !important;
   }
 }
+
+/* v152: live header balance and one more GameTracker content lift */
+.game-score-status.is-live {
+  transform: translateX(-.32rem) !important;
+}
+
+.game-score-situation {
+  left: calc(50% + .42rem) !important;
+  transform: translateX(-50%) !important;
+}
+
+.game-detail-content {
+  margin-top: calc(12.18rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+  padding-top: 0 !important;
+}
+
+.gamecast-shell {
+  margin-top: -.44rem !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-status.is-live {
+    transform: translateX(-.38rem) !important;
+  }
+
+  .game-score-situation {
+    left: calc(50% + .5rem) !important;
+  }
+
+  .game-detail-content {
+    margin-top: calc(12.08rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+    padding-top: 0 !important;
+  }
+
+  .gamecast-shell {
+    margin-top: -.5rem !important;
+  }
+}
