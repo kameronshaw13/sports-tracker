@@ -415,10 +415,12 @@ function AtBatSummaryRow({ atBat, forceOpen = false, mode = "default" }: { atBat
 
 function PitchSequence({ atBat, compact = false, horizontalScroll = false }: { atBat: MlbAtBat; compact?: boolean; horizontalScroll?: boolean }) {
   if (!atBat.pitches?.length) return null;
+  const pitchRows = atBat.pitches.map((pitch, idx) => ({ pitch, idx }));
+  const displayRows = horizontalScroll ? [...pitchRows].reverse() : pitchRows;
   return (
     <div className={["gamecast-pitch-strip-wrap", compact ? "is-compact" : "", horizontalScroll ? "is-horizontal-scroll" : ""].filter(Boolean).join(" ")}>
       <div className="gamecast-pitch-strip">
-        {atBat.pitches.map((pitch, idx) => {
+        {displayRows.map(({ pitch, idx }) => {
           const parsed = formatPitch(pitch);
           return (
             <div key={`${atBat.id}-${idx}`} className="gamecast-pitch-item">

@@ -17,14 +17,13 @@ type Props = {
 export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Props) {
   // v17 behavior preserved: live polling at 15s for parity with summary.
   const freshKey = useFreshKey();
-  const cacheBust = isLive ? `&_t=${freshKey}` : "";
   const { data, error, isLoading } = useSWR(
-    eventId ? `/api/boxscore?league=${league}&event=${eventId}${cacheBust}` : null,
+    eventId ? `/api/boxscore?league=${league}&event=${eventId}&_t=${freshKey}` : null,
     fetcher,
-    { refreshInterval: isLive ? 15_000 : 0, dedupingInterval: isLive ? 4_000 : 300_000, revalidateOnFocus: isLive }
+    { refreshInterval: isLive ? 15_000 : 0 }
   );
 
-  const [activeView, setActiveView] = useState<number | "team">(0);
+  const [activeTeamIdx, setActiveTeamIdx] = useState(0);
 
   if (isLoading) {
     return <div className="h-32 rounded-xl animate-pulse" style={{ background: "var(--surface)" }} />;
@@ -33,11 +32,10 @@ export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Pro
     return null;
   }
 
-  const activeTeamIdx = typeof activeView === "number" ? activeView : 0;
   const team = data.teams[activeTeamIdx];
 
   return (
-    <div className="space-y-4">
+    <div className="boxscore-root space-y-4">
       {/* Top performers */}
       {data.leaders && data.leaders.length > 0 && (
         <div>
@@ -56,36 +54,38 @@ export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Pro
 
       {league === "mlb" && data.lineScore && <MlbLineScore lineScore={data.lineScore} />}
 
+      {/* Boxscore */}
       <div>
-        <div className="boxscore-team-toggle">
-          {data.teams.flatMap((t: any, i: number) => [
-              <button
-                key={t.team.id}
-                onClick={() => setActiveView(i)}
-                className={activeView === i ? "is-active" : ""}
-              >
-                {t.team.logo && (
-                  <Image src={t.team.logo} alt="" width={20} height={20} className="object-contain logo-outline-dark" unoptimized />
-                )}
-                {t.team.abbr}
-              </button>,
-              i === 0 && data.teams.length > 1 ? (
-                <button key="team-stats" type="button" className={activeView === "team" ? "is-active" : ""} onClick={() => setActiveView("team")}>
-                  Team
-                </button>
-              ) : null,
-          ])}
+        <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>
+          Boxscore
+        </h3>
+
+        {/* Team toggle */}
+        <div className="boxscore-team-toggle flex gap-1 mb-3 p-1 rounded-xl" style={{ background: "var(--surface-2)" }}>
+          {data.teams.map((t: any, i: number) => (
+            <button
+              key={t.team.id}
+              onClick={() => setActiveTeamIdx(i)}
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
+              style={{
+                background: activeTeamIdx === i ? "var(--surface)" : "transparent",
+                color: activeTeamIdx === i ? "var(--text)" : "var(--text-2)",
+                border: activeTeamIdx === i ? "1px solid var(--border)" : "1px solid transparent",
+              }}
+            >
+              {t.team.logo && (
+                <Image src={t.team.logo} alt="" width={20} height={20} className="object-contain logo-outline-dark" unoptimized />
+              )}
+              {t.team.abbr}
+            </button>
+          ))}
         </div>
 
-        {activeView === "team" ? (
-          <TeamComparisonStats teams={data.teams} lineScore={data.lineScore} />
-        ) : (
-          <div className="space-y-3">
-            {team.groups.map((group: any, gi: number) => (
-              <StatGroup key={gi} group={group} league={league} teamKey={team?.team?.abbr ? `${league}-${String(team.team.abbr).toLowerCase()}` : undefined} onPlayerClick={onPlayerClick} />
-            ))}
-          </div>
-        )}
+        <div className="space-y-3">
+          {team.groups.map((group: any, gi: number) => (
+            <StatGroup key={gi} group={group} league={league} teamKey={team?.team?.abbr ? `${league}-${String(team.team.abbr).toLowerCase()}` : undefined} onPlayerClick={onPlayerClick} />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -94,21 +94,17 @@ export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Pro
 function MlbLineScore({ lineScore }: { lineScore: any }) {
   const teams = [...(lineScore?.teams || [])].sort((a: any, b: any) => a.homeAway === "away" ? -1 : b.homeAway === "away" ? 1 : 0);
   if (!teams.length) return null;
-  const innings = Math.max(9, Number(lineScore.innings || 0));
+  const innings = Number(lineScore.innings || 0);
   return (
     <div>
-      <div className="boxscore-line-table">
+      <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>
+        Line score
+      </h3>
+      <div className="boxscore-line-table rounded-xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
         <table className="w-full text-[10px] sm:text-xs table-fixed">
-          <colgroup>
-            <col className="boxscore-line-team-col" />
-            {Array.from({ length: innings }).map((_, i) => <col key={i} className="boxscore-line-inning-col" />)}
-            <col className="boxscore-line-total-col" />
-            <col className="boxscore-line-total-col" />
-            <col className="boxscore-line-total-col" />
-          </colgroup>
           <thead>
             <tr style={{ background: "var(--surface-2)", color: "var(--text-3)" }}>
-              <th className="text-left px-1.5 py-2 font-semibold" aria-label="Team"></th>
+              <th className="text-left px-1.5 py-2 font-semibold">Team</th>
               {Array.from({ length: innings }).map((_, i) => <th key={i} className="text-center px-1 py-2 font-semibold">{i + 1}</th>)}
               <th className="text-center px-1 py-2 font-black">R</th>
               <th className="text-center px-1 py-2 font-black">H</th>
@@ -118,12 +114,7 @@ function MlbLineScore({ lineScore }: { lineScore: any }) {
           <tbody>
             {teams.map((t: any) => (
               <tr key={t.id || t.abbr} style={{ borderTop: "1px solid var(--border)" }}>
-                <td className="px-1.5 py-2 font-bold">
-                  <span className="boxscore-line-team">
-                    {t.logo && <Image src={t.logo} alt="" width={18} height={18} className="object-contain logo-outline-dark" unoptimized />}
-                    {t.abbr}
-                  </span>
-                </td>
+                <td className="px-1.5 py-2 font-bold"><div className="boxscore-line-team">{t.logo && <Image src={t.logo} alt={t.abbr || ""} width={18} height={18} className="object-contain logo-outline-dark" unoptimized />}<span>{t.abbr}</span></div></td>
                 {Array.from({ length: innings }).map((_, i) => <td key={i} className="text-center px-1 py-2 tabular-nums">{t.innings?.[i] ?? "–"}</td>)}
                 <td className="text-center px-1 py-2 font-black tabular-nums">{t.runs ?? "–"}</td>
                 <td className="text-center px-1 py-2 font-black tabular-nums">{t.hits ?? "0"}</td>
@@ -168,108 +159,6 @@ function LeaderCard({ cat, teamLogo, teamAbbr, league, teamKey, onPlayerClick }:
       </div>
     </Wrapper>
   );
-}
-
-function TeamComparisonStats({ teams, lineScore }: { teams: any[]; lineScore: any }) {
-  if (!teams?.length) return null;
-  const rows = [
-    { label: "At Bats", keys: ["AB"] },
-    { label: "Runs", keys: ["R"], lineKey: "runs" },
-    { label: "Hits", keys: ["H"], lineKey: "hits" },
-    { label: "Doubles", keys: ["2B"] },
-    { label: "Triples", keys: ["3B"] },
-    { label: "Home Runs", keys: ["HR"] },
-    { label: "RBIs", keys: ["RBI"] },
-    { label: "Total Bases", keys: ["TB"] },
-    { label: "Walks", keys: ["BB"] },
-    { label: "Hit by Pitch", keys: ["HBP"] },
-    { label: "Strikeouts", keys: ["SO", "K"] },
-  ];
-
-  return (
-    <div className="boxscore-team-stats">
-      <div className="boxscore-team-stats-head">
-        <div />
-        {teams.map((teamBox: any) => (
-          <div key={teamBox.team.id || teamBox.team.abbr} className="boxscore-team-stats-logo">
-            {teamBox.team.logo && <Image src={teamBox.team.logo} alt={teamBox.team.abbr || ""} width={30} height={30} className="object-contain logo-outline-dark" unoptimized />}
-          </div>
-        ))}
-      </div>
-      {rows.map((row) => (
-        <div key={row.label} className="boxscore-team-stat-row">
-          <div>{row.label}</div>
-          {teams.map((teamBox: any) => (
-            <div key={teamBox.team.id || teamBox.team.abbr} className="tabular-nums">
-              {teamStatValue(teamBox, row.keys, row.lineKey, lineScore)}
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function teamStatValue(teamBox: any, keys: string[], lineKey: string | undefined, lineScore: any): string {
-  if (lineKey) {
-    const lineTeam = (lineScore?.teams || []).find((t: any) =>
-      String(t.id || "") === String(teamBox.team?.id || "") ||
-      String(t.abbr || "").toLowerCase() === String(teamBox.team?.abbr || teamBox.team?.abbreviation || "").toLowerCase()
-    );
-    const value = lineTeam?.[lineKey];
-    if (value != null && value !== "") return String(value);
-  }
-
-  const hitting = (teamBox.groups || []).find((group: any) => {
-    const name = String(group?.name || group?.displayName || "").toLowerCase();
-    return name.includes("bat") || name.includes("hit");
-  }) || teamBox.groups?.[0];
-
-  const totalFromGroup = groupTotalValue(hitting, keys);
-  if (totalFromGroup != null) return totalFromGroup;
-
-  const total = (hitting?.athletes || []).reduce((sum: number, player: any) => {
-    const stat = keys.flatMap((key) => statKeyVariants(key)).map((key) => player?.stats?.[key]).find((value) => value != null && value !== "" && value !== "—");
-    return sum + numericBoxStat(stat);
-  }, 0);
-  return String(total);
-}
-
-function groupTotalValue(group: any, keys: string[]): string | null {
-  if (!group) return null;
-  const labels: string[] = Array.isArray(group.keys) ? group.keys : [];
-  const totals = group.totals;
-  if (!Array.isArray(totals) || !labels.length) return null;
-  for (const key of keys.flatMap((k) => statKeyVariants(k))) {
-    const index = labels.findIndex((label) => canonicalStatKey(label) === canonicalStatKey(key));
-    const value = index >= 0 ? totals[index] : null;
-    if (value != null && value !== "" && value !== "—") return String(value);
-  }
-  return null;
-}
-
-function statKeyVariants(key: string): string[] {
-  const variants: Record<string, string[]> = {
-    "2B": ["2B", "Doubles", "Double"],
-    "3B": ["3B", "Triples", "Triple"],
-    TB: ["TB", "Total Bases", "TotalBases"],
-    HBP: ["HBP", "Hit By Pitch", "Hit by Pitch", "HitByPitch"],
-    SO: ["SO", "K", "Strikeouts", "Strike Outs"],
-    BB: ["BB", "Walks", "Base on Balls", "BaseOnBalls"],
-  };
-  return variants[key] || [key];
-}
-
-function canonicalStatKey(value: string): string {
-  return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-}
-
-function numericBoxStat(value: any): number {
-  if (typeof value === "number") return value;
-  const text = String(value || "");
-  if (!text || text === "—") return 0;
-  const n = Number(text.replace(/[^0-9.-]/g, ""));
-  return Number.isFinite(n) ? n : 0;
 }
 
 // v18: per-league column behavior.
@@ -327,11 +216,7 @@ function pickColumnKeys(group: any, league: string): string[] {
     return allKeys;
   }
 
-  if (league === "mlb") {
-    return allKeys.filter((key) => !/^H[-_/]?AB$/i.test(key)).slice(0, 6);
-  }
-
-  // NFL: 6-column cap (pre-v17 behavior preserved)
+  // MLB / NFL: 6-column cap (pre-v17 behavior preserved)
   return allKeys.slice(0, 6);
 }
 
@@ -349,28 +234,32 @@ function looksLikeGoalies(group: any, keys: string[]): boolean {
 // in ESPN's NHL boxscore.
 function canonicalLabel(key: string): string {
   if (key === "S" || key === "SOG") return "SOG";
-  if (key === "HT" || key === "H") return "H";
+  if (key === "HT" || key === "H") return "HT";
   return key;
 }
 
 function StatGroup({ group, league, teamKey, onPlayerClick }: { group: any; league: string; teamKey?: string; onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void }) {
-  const visible = group.athletes;
+  const [expanded, setExpanded] = useState(false);
+  const visible = expanded ? group.athletes : group.athletes.slice(0, 5);
 
   if (group.athletes.length === 0) return null;
 
   const columnKeys = pickColumnKeys(group, league);
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+    <div className="boxscore-stat-group rounded-xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+      <div className="boxscore-stat-group-title px-3 py-2 text-xs font-semibold uppercase tracking-wider" style={{ background: "var(--surface-2)", color: "var(--text-2)" }}>
+        {displayGroupName(league, group)}
+      </div>
       <div className="boxscore-stat-scroll overflow-x-auto">
         <table className="w-full text-xs">
-          <thead>
-            <tr className="boxscore-player-stat-head" style={{ color: "var(--text-3)" }}>
+          <thead className="boxscore-player-stat-head">
+            <tr style={{ color: "var(--text-3)" }}>
               <th
                 className="text-left px-3 py-2 font-medium sticky left-0 z-10"
-                style={{ background: "var(--surface-2)" }}
+                style={{ background: "var(--surface)" }}
               >
-                {displayGroupName(league, group)}
+                Player
               </th>
               {columnKeys.map((k: string) => (
                 <th key={k} className="text-right px-2 py-2 font-medium tabular-nums whitespace-nowrap" title={describeKey(league, k)}>
@@ -388,13 +277,13 @@ function StatGroup({ group, league, teamKey, onPlayerClick }: { group: any; leag
               ) : (
                 <tr key={row.id || idx} style={{ borderTop: "1px solid var(--border)" }}>
                   <td
-                    className="px-3 py-2 whitespace-nowrap sticky left-0"
+                    className="boxscore-player-name px-3 py-2 whitespace-nowrap sticky left-0"
                     style={{ background: "var(--surface)" }}
                   >
-                    <div className="boxscore-player-name">
-                      <button type="button" onClick={() => onPlayerClick?.({ id: row.id, name: row.name || row.shortName, league, teamKey })} disabled={!onPlayerClick || !row.id} className="font-medium text-left hover:opacity-80">{row.shortName || row.name}</button>
-                      {row.position && <span>{row.position}</span>}
-                    </div>
+                    <button type="button" onClick={() => onPlayerClick?.({ id: row.id, name: row.name || row.shortName, league, teamKey })} disabled={!onPlayerClick || !row.id} className="font-medium text-left hover:opacity-80">{row.shortName || row.name}</button>
+                    {row.position && (
+                      <span className="text-[10px] block" style={{ color: "var(--text-3)" }}>{row.position}</span>
+                    )}
                   </td>
                   {columnKeys.map((k: string) => (
                     <td key={k} className="text-right px-2 py-2 tabular-nums" style={{ color: "var(--text-2)" }}>
@@ -407,6 +296,15 @@ function StatGroup({ group, league, teamKey, onPlayerClick }: { group: any; leag
           </tbody>
         </table>
       </div>
+      {group.athletes.length > 5 && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full px-3 py-2 text-xs font-medium border-t"
+          style={{ borderColor: "var(--border)", color: "var(--text-2)" }}
+        >
+          {expanded ? "Show less" : `Show all ${group.athletes.length}`}
+        </button>
+      )}
     </div>
   );
 }
@@ -415,9 +313,8 @@ function displayGroupName(league: string, group: any): string {
   const raw = String(group?.name || "Stats");
   if (league === "mlb") {
     const lower = raw.toLowerCase();
-    const keys = Array.isArray(group?.keys) ? group.keys.join(" ").toLowerCase() : "";
-    if (lower.includes("bat") || lower.includes("hit") || /\bab\b/.test(keys)) return "Hitters";
-    if (lower.includes("pitch") || /\b(ip|era|pc-st)\b/.test(keys)) return "Pitchers";
+    if (lower.includes("bat") || lower.includes("hit")) return "Hitting";
+    if (lower.includes("pitch")) return "Pitching";
   }
   return raw;
 }

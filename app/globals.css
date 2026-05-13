@@ -11268,3 +11268,252 @@ main.retro-page.view-leaguePage {
     padding-top: .27rem !important;
   }
 }
+
+/* v138: safer sticky GameTracker header + Live pitch scroll + cleaner Box Score rows */
+.game-detail-page {
+  overflow-x: hidden !important;
+}
+
+.game-detail-topbar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 80 !important;
+}
+
+.game-score-hero {
+  position: sticky !important;
+  top: 3.26rem !important;
+  z-index: 70 !important;
+  overflow: visible !important;
+}
+
+.game-detail-tabs {
+  position: sticky !important;
+  top: calc(3.26rem + 7.7rem) !important;
+  z-index: 69 !important;
+  background: color-mix(in srgb, var(--surface) 94%, #000 6%) !important;
+}
+
+.game-score-record,
+.game-score-date {
+  transform: translateY(-.16rem) !important;
+}
+
+/* Cartoon baseball marker with side-facing stitches and no top clipping */
+.gamecast-pitcher-tag {
+  overflow: visible !important;
+}
+
+.gamecast-pitcher-ball {
+  position: relative !important;
+  width: 1.14rem !important;
+  height: 1.14rem !important;
+  border-radius: 999px !important;
+  background: #f7f2e8 !important;
+  border: 1px solid rgba(28, 22, 18, .46) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,.22) !important;
+  overflow: hidden !important;
+  transform: translateY(.02rem) rotate(0deg) !important;
+  flex: 0 0 auto !important;
+}
+
+.gamecast-pitcher-ball::before,
+.gamecast-pitcher-ball::after {
+  content: "" !important;
+  position: absolute !important;
+  top: .08rem !important;
+  width: .58rem !important;
+  height: .92rem !important;
+  border-radius: 999px !important;
+  border: 1.5px solid transparent !important;
+  pointer-events: none !important;
+}
+
+.gamecast-pitcher-ball::before {
+  left: -.31rem !important;
+  border-right-color: #ba2334 !important;
+}
+
+.gamecast-pitcher-ball::after {
+  right: -.31rem !important;
+  border-left-color: #ba2334 !important;
+}
+
+.gamecast-pitcher-tag span:last-child {
+  transform: translateY(.06rem) !important;
+}
+
+/* Live current at-bat: newest pitch stays on the left; strip scrolls only itself */
+.gamecast-live-card,
+.gamecast-live-result-wrap,
+.gamecast-live-result {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+.gamecast-pitch-strip-wrap.is-compact.is-horizontal-scroll {
+  display: block !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior-x: contain !important;
+  padding: .56rem .06rem .2rem 0 !important;
+}
+
+.gamecast-pitch-strip-wrap.is-compact.is-horizontal-scroll .gamecast-pitch-strip {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  min-width: max-content !important;
+  gap: .6rem !important;
+  padding-right: .9rem !important;
+}
+
+.gamecast-pitch-strip-wrap.is-compact.is-horizontal-scroll .gamecast-pitch-item {
+  flex: 0 0 auto !important;
+}
+
+.gamecast-pitch-ball {
+  font-size: .94rem !important;
+  line-height: 1 !important;
+  padding-top: .34rem !important;
+  color: #fff !important;
+  overflow: hidden !important;
+}
+
+.gamecast-pitch-label {
+  padding-top: .23rem !important;
+  transform: translateY(.12rem) !important;
+}
+
+/* Box Score: keep the modern content, but make stat tables flatter and full-width */
+.boxscore-root {
+  overflow-x: hidden !important;
+}
+
+.boxscore-line-table {
+  border-radius: .82rem !important;
+  overflow: hidden !important;
+}
+
+.boxscore-line-table thead th {
+  padding-top: .48rem !important;
+  padding-bottom: .22rem !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+}
+
+.boxscore-line-table tbody td {
+  padding-top: .5rem !important;
+  padding-bottom: .34rem !important;
+  vertical-align: middle !important;
+}
+
+.boxscore-line-team {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: .28rem !important;
+  transform: none !important;
+  line-height: 1 !important;
+  overflow: visible !important;
+}
+
+.boxscore-line-team img {
+  width: 1.08rem !important;
+  height: 1.08rem !important;
+  transform: translateY(-.08rem) !important;
+  flex: 0 0 auto !important;
+}
+
+.boxscore-line-team span {
+  display: inline-flex !important;
+  align-items: center !important;
+  line-height: 1 !important;
+  transform: translateY(.08rem) !important;
+}
+
+.boxscore-stat-group {
+  border-radius: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  box-shadow: none !important;
+  margin-left: -.25rem !important;
+  margin-right: -.25rem !important;
+}
+
+.boxscore-stat-group-title {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 64%, transparent) !important;
+}
+
+.boxscore-stat-scroll table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+}
+
+.boxscore-player-stat-head th {
+  padding-top: .52rem !important;
+  padding-bottom: .42rem !important;
+  line-height: 1.15 !important;
+}
+
+.boxscore-stat-scroll tbody tr {
+  border-top: 1px solid color-mix(in srgb, var(--border) 62%, transparent) !important;
+}
+
+.boxscore-stat-scroll tbody td {
+  padding-top: .48rem !important;
+  padding-bottom: .42rem !important;
+  line-height: 1.18 !important;
+  vertical-align: middle !important;
+}
+
+.boxscore-player-name,
+.boxscore-player-name button,
+.boxscore-player-name span {
+  line-height: 1.18 !important;
+  overflow: visible !important;
+}
+
+.boxscore-player-name button {
+  transform: translateY(-.02rem) !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-hero {
+    top: 3.18rem !important;
+  }
+
+  .game-detail-tabs {
+    top: calc(3.18rem + 7.7rem) !important;
+  }
+
+  .game-score-record,
+  .game-score-date {
+    transform: translateY(-.14rem) !important;
+  }
+
+  .gamecast-pitcher-ball {
+    width: 1.08rem !important;
+    height: 1.08rem !important;
+  }
+
+  .gamecast-pitch-ball {
+    font-size: .9rem !important;
+    padding-top: .33rem !important;
+  }
+
+  .boxscore-stat-group {
+    margin-left: -.2rem !important;
+    margin-right: -.2rem !important;
+  }
+
+  .boxscore-line-team img {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+}
