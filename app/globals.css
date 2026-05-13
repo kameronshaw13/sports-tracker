@@ -12765,3 +12765,39 @@ main.retro-page.view-leaguePage {
     padding-top: 0 !important;
   }
 }
+
+/* v150: new app icon pass plus tighter GameDetail pages and stronger Team Stats logo outline */
+.game-detail-content {
+  margin-top: calc(13.34rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+  padding-top: 0 !important;
+}
+
+.boxscore-team-stat-team img,
+.boxscore-team-stat-team img.logo-outline-dark,
+.boxscore-team-stat-team .logo-outline-dark,
+.boxscore-team-stats-logo-head img,
+.boxscore-team-stats-logo-head img.logo-outline-dark,
+.boxscore-team-stats-logo-head .logo-outline-dark,
+.boxscore-team-stats-logo img,
+.boxscore-team-stats-logo img.logo-outline-dark,
+.boxscore-team-stats-logo .logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(0 -1.15px 0 rgba(255,255,255,.96))
+    drop-shadow(1.15px 0 0 rgba(255,255,255,.96))
+    drop-shadow(0 1.15px 0 rgba(255,255,255,.96))
+    drop-shadow(-1.15px 0 0 rgba(255,255,255,.96))
+    drop-shadow(0 1.5px 2.2px rgba(0,0,0,.5)) !important;
+  filter:
+    drop-shadow(0 -1.15px 0 rgba(255,255,255,.96))
+    drop-shadow(1.15px 0 0 rgba(255,255,255,.96))
+    drop-shadow(0 1.15px 0 rgba(255,255,255,.96))
+    drop-shadow(-1.15px 0 0 rgba(255,255,255,.96))
+    drop-shadow(0 1.5px 2.2px rgba(0,0,0,.5)) !important;
+}
+
+@media (max-width: 420px) {
+  .game-detail-content {
+    margin-top: calc(13.26rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+    padding-top: 0 !important;
+  }
+}
