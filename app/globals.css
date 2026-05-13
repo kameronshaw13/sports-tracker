@@ -11678,3 +11678,251 @@ main.retro-page.view-leaguePage {
   line-height: 1.18 !important;
   overflow: visible !important;
 }
+
+/* v140: Boxscore cleanup after v139 — keep the modern flat layout, remove old headers/conflicts */
+.game-score-date {
+  justify-self: center !important;
+  text-align: center !important;
+  transform: translate(-0.28rem, -0.16rem) !important;
+}
+
+.boxscore-line-wrap {
+  margin-top: .2rem !important;
+  border-radius: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-top: 1px solid rgba(220,220,220,.12) !important;
+  border-bottom: 1px solid rgba(220,220,220,.12) !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  background: transparent !important;
+}
+
+.boxscore-line-table {
+  table-layout: auto !important;
+  min-width: 390px !important;
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  border: 0 !important;
+}
+
+.boxscore-line-table th:first-child,
+.boxscore-line-table td:first-child {
+  width: 3.75rem !important;
+  min-width: 3.75rem !important;
+  max-width: 3.75rem !important;
+  padding-left: .45rem !important;
+  padding-right: .18rem !important;
+}
+
+.boxscore-line-table th:not(:first-child),
+.boxscore-line-table td:not(:first-child) {
+  width: 1.45rem !important;
+  min-width: 1.36rem !important;
+  padding-left: .12rem !important;
+  padding-right: .12rem !important;
+  text-align: center !important;
+}
+
+.boxscore-line-table thead th {
+  padding-top: .52rem !important;
+  padding-bottom: .36rem !important;
+  transform: none !important;
+  line-height: 1.1 !important;
+}
+
+.boxscore-line-table thead th:not(:first-child) {
+  transform: translateY(.07rem) !important;
+}
+
+.boxscore-line-table tbody tr {
+  border-top: 1px solid rgba(220,220,220,.12) !important;
+}
+
+.boxscore-line-table tbody td {
+  padding-top: .42rem !important;
+  padding-bottom: .36rem !important;
+  line-height: 1.1 !important;
+}
+
+.boxscore-line-team {
+  width: 3.2rem !important;
+  min-width: 3.2rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: .24rem !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+}
+
+.boxscore-line-team img {
+  width: .95rem !important;
+  height: .95rem !important;
+  transform: translateY(-.03rem) !important;
+  flex: 0 0 auto !important;
+}
+
+.boxscore-line-team span {
+  font-size: .66rem !important;
+  line-height: 1 !important;
+  transform: translateY(.08rem) !important;
+  letter-spacing: .01em !important;
+}
+
+.boxscore-team-toggle {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) minmax(0,.82fr) minmax(0,1fr) !important;
+  align-items: center !important;
+  margin: .45rem .82rem .7rem !important;
+  padding: .18rem !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--surface-2) 82%, #000 10%) !important;
+  border: 1px solid rgba(220,220,220,.14) !important;
+}
+
+.boxscore-team-toggle-btn,
+.boxscore-team-toggle-mid {
+  height: 2rem !important;
+  min-height: 2rem !important;
+  border-radius: 999px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .3rem !important;
+  padding: .18rem .28rem 0 !important;
+  font-size: .76rem !important;
+  font-weight: 850 !important;
+  line-height: 1.05 !important;
+  color: var(--text-2) !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.boxscore-team-toggle-mid {
+  pointer-events: none !important;
+  text-transform: uppercase !important;
+  letter-spacing: .06em !important;
+  font-size: .68rem !important;
+  color: var(--text-3) !important;
+}
+
+.boxscore-team-toggle-btn.is-active {
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--surface) 74%, #000 18%) !important;
+}
+
+.boxscore-team-toggle-btn img {
+  width: 1.06rem !important;
+  height: 1.06rem !important;
+  transform: translateY(-.02rem) !important;
+}
+
+.boxscore-stat-group {
+  border-radius: 0 !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(220,220,220,.12) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  overflow: visible !important;
+}
+
+.boxscore-stat-group-title {
+  padding: .62rem .82rem .48rem !important;
+  background: transparent !important;
+  border-bottom: 1px solid rgba(220,220,220,.12) !important;
+  color: var(--text-2) !important;
+  font-size: .76rem !important;
+  font-weight: 900 !important;
+  line-height: 1.12 !important;
+  letter-spacing: .06em !important;
+}
+
+.boxscore-stat-scroll {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+}
+
+.boxscore-stat-scroll table {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  width: 100% !important;
+}
+
+.boxscore-stat-scroll thead tr,
+.boxscore-stat-scroll tbody tr {
+  border-top: 0 !important;
+}
+
+.boxscore-stat-scroll thead th {
+  padding-top: .44rem !important;
+  padding-bottom: .32rem !important;
+  line-height: 1.15 !important;
+  color: var(--text-3) !important;
+  border-top: 0 !important;
+  border-bottom: 1px solid rgba(220,220,220,.10) !important;
+  vertical-align: middle !important;
+}
+
+.boxscore-stat-scroll tbody td {
+  padding-top: .42rem !important;
+  padding-bottom: .36rem !important;
+  line-height: 1.16 !important;
+  border-top: 1px solid rgba(220,220,220,.11) !important;
+  vertical-align: middle !important;
+  color: var(--text-2) !important;
+  overflow: visible !important;
+}
+
+.boxscore-player-name {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  transform: none !important;
+}
+
+.boxscore-player-name button,
+.boxscore-player-name span {
+  line-height: 1.16 !important;
+  overflow: visible !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-date {
+    transform: translate(-0.34rem, -0.14rem) !important;
+  }
+
+  .boxscore-line-table {
+    min-width: 372px !important;
+  }
+
+  .boxscore-line-table th:first-child,
+  .boxscore-line-table td:first-child {
+    width: 3.55rem !important;
+    min-width: 3.55rem !important;
+    max-width: 3.55rem !important;
+  }
+
+  .boxscore-line-table th:not(:first-child),
+  .boxscore-line-table td:not(:first-child) {
+    min-width: 1.26rem !important;
+    width: 1.34rem !important;
+  }
+
+  .boxscore-line-team {
+    width: 3.05rem !important;
+    min-width: 3.05rem !important;
+    gap: .2rem !important;
+  }
+
+  .boxscore-line-team img {
+    width: .88rem !important;
+    height: .88rem !important;
+  }
+
+  .boxscore-line-team span {
+    font-size: .62rem !important;
+  }
+}

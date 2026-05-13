@@ -11,22 +11,39 @@ type Props = {
   league: string;
   eventId: string;
   isLive: boolean;
-  onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void;
+  onPlayerClick?: (player: {
+    id: string;
+    name: string;
+    league: string;
+    teamKey?: string;
+  }) => void;
 };
 
-export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Props) {
+export default function Boxscore({
+  league,
+  eventId,
+  isLive,
+  onPlayerClick,
+}: Props) {
   // v17 behavior preserved: live polling at 15s for parity with summary.
   const freshKey = useFreshKey();
   const { data, error, isLoading } = useSWR(
-    eventId ? `/api/boxscore?league=${league}&event=${eventId}&_t=${freshKey}` : null,
+    eventId
+      ? `/api/boxscore?league=${league}&event=${eventId}&_t=${freshKey}`
+      : null,
     fetcher,
-    { refreshInterval: isLive ? 15_000 : 0 }
+    { refreshInterval: isLive ? 15_000 : 0 },
   );
 
   const [activeTeamIdx, setActiveTeamIdx] = useState(0);
 
   if (isLoading) {
-    return <div className="h-32 rounded-xl animate-pulse" style={{ background: "var(--surface)" }} />;
+    return (
+      <div
+        className="h-32 rounded-xl animate-pulse"
+        style={{ background: "var(--surface)" }}
+      />
+    );
   }
   if (error || !data?.teams || data.teams.length === 0) {
     return null;
@@ -39,46 +56,90 @@ export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Pro
       {/* Top performers */}
       {data.leaders && data.leaders.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>
+          <h3
+            className="text-sm font-semibold uppercase tracking-wider mb-2"
+            style={{ color: "var(--text-2)" }}
+          >
             Top performers
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {data.leaders.flatMap((teamLeaders: any) =>
-              teamLeaders.categories.slice(0, 2).map((cat: any, i: number) => (
-                <LeaderCard key={`${teamLeaders.team.abbr}-${i}`} cat={cat} teamLogo={teamLeaders.team.logo} teamAbbr={teamLeaders.team.abbr} league={league} teamKey={teamLeaders.team.abbr ? `${league}-${String(teamLeaders.team.abbr).toLowerCase()}` : undefined} onPlayerClick={onPlayerClick} />
-              ))
+              teamLeaders.categories
+                .slice(0, 2)
+                .map((cat: any, i: number) => (
+                  <LeaderCard
+                    key={`${teamLeaders.team.abbr}-${i}`}
+                    cat={cat}
+                    teamLogo={teamLeaders.team.logo}
+                    teamAbbr={teamLeaders.team.abbr}
+                    league={league}
+                    teamKey={
+                      teamLeaders.team.abbr
+                        ? `${league}-${String(teamLeaders.team.abbr).toLowerCase()}`
+                        : undefined
+                    }
+                    onPlayerClick={onPlayerClick}
+                  />
+                )),
             )}
           </div>
         </div>
       )}
 
-      {league === "mlb" && data.lineScore && <MlbLineScore lineScore={data.lineScore} />}
+      {league === "mlb" && data.lineScore && (
+        <MlbLineScore lineScore={data.lineScore} />
+      )}
 
       {/* Boxscore */}
       <div>
-        <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>
-          Boxscore
-        </h3>
-
         {/* Team toggle */}
         <div className="boxscore-team-toggle">
-          {data.teams.map((t: any, i: number) => (
-            <button
-              key={t.team.id}
-              onClick={() => setActiveTeamIdx(i)}
-              className={`boxscore-team-toggle-btn ${activeTeamIdx === i ? "is-active" : ""}`}
-            >
-              {t.team.logo && (
-                <Image src={t.team.logo} alt="" width={20} height={20} className="object-contain logo-outline-dark" unoptimized />
-              )}
-              {t.team.abbr}
-            </button>
-          ))}
+          {data.teams
+            .map((t: any, i: number) => (
+              <button
+                key={t.team.id}
+                onClick={() => setActiveTeamIdx(i)}
+                className={`boxscore-team-toggle-btn ${activeTeamIdx === i ? "is-active" : ""}`}
+              >
+                {t.team.logo && (
+                  <Image
+                    src={t.team.logo}
+                    alt=""
+                    width={20}
+                    height={20}
+                    className="object-contain logo-outline-dark"
+                    unoptimized
+                  />
+                )}
+                {t.team.abbr}
+              </button>
+            ))
+            .flatMap((btn: any, i: number) =>
+              i === 0
+                ? [
+                    btn,
+                    <div key="team-label" className="boxscore-team-toggle-mid">
+                      Team
+                    </div>,
+                  ]
+                : [btn],
+            )}
         </div>
 
         <div className="space-y-3">
           {team.groups.map((group: any, gi: number) => (
-            <StatGroup key={gi} group={group} league={league} teamKey={team?.team?.abbr ? `${league}-${String(team.team.abbr).toLowerCase()}` : undefined} onPlayerClick={onPlayerClick} />
+            <StatGroup
+              key={gi}
+              group={group}
+              league={league}
+              groupIndex={gi}
+              teamKey={
+                team?.team?.abbr
+                  ? `${league}-${String(team.team.abbr).toLowerCase()}`
+                  : undefined
+              }
+              onPlayerClick={onPlayerClick}
+            />
           ))}
         </div>
       </div>
@@ -87,20 +148,25 @@ export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Pro
 }
 
 function MlbLineScore({ lineScore }: { lineScore: any }) {
-  const teams = [...(lineScore?.teams || [])].sort((a: any, b: any) => a.homeAway === "away" ? -1 : b.homeAway === "away" ? 1 : 0);
+  const teams = [...(lineScore?.teams || [])].sort((a: any, b: any) =>
+    a.homeAway === "away" ? -1 : b.homeAway === "away" ? 1 : 0,
+  );
   if (!teams.length) return null;
   const innings = Number(lineScore.innings || 0);
   return (
     <div>
-      <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>
-        Line score
-      </h3>
       <div className="boxscore-line-wrap">
-        <table className="boxscore-line-table w-full text-[10px] sm:text-xs table-fixed">
+        <table className="boxscore-line-table w-full text-[10px] sm:text-xs">
           <thead>
-            <tr style={{ background: "var(--surface-2)", color: "var(--text-3)" }}>
+            <tr
+              style={{ background: "var(--surface-2)", color: "var(--text-3)" }}
+            >
               <th className="text-left px-1.5 py-2 font-semibold">Team</th>
-              {Array.from({ length: innings }).map((_, i) => <th key={i} className="text-center px-1 py-2 font-semibold">{i + 1}</th>)}
+              {Array.from({ length: innings }).map((_, i) => (
+                <th key={i} className="text-center px-1 py-2 font-semibold">
+                  {i + 1}
+                </th>
+              ))}
               <th className="text-center px-1 py-2 font-black">R</th>
               <th className="text-center px-1 py-2 font-black">H</th>
               <th className="text-center px-1 py-2 font-black">E</th>
@@ -108,17 +174,39 @@ function MlbLineScore({ lineScore }: { lineScore: any }) {
           </thead>
           <tbody>
             {teams.map((t: any) => (
-              <tr key={t.id || t.abbr} style={{ borderTop: "1px solid var(--border)" }}>
+              <tr
+                key={t.id || t.abbr}
+                style={{ borderTop: "1px solid var(--border)" }}
+              >
                 <td className="px-1.5 py-2 font-bold">
                   <div className="boxscore-line-team">
-                    {t.logo && <Image src={t.logo} alt="" width={18} height={18} className="object-contain logo-outline-dark" unoptimized />}
+                    {t.logo && (
+                      <Image
+                        src={t.logo}
+                        alt=""
+                        width={18}
+                        height={18}
+                        className="object-contain logo-outline-dark"
+                        unoptimized
+                      />
+                    )}
                     <span>{t.abbr}</span>
                   </div>
                 </td>
-                {Array.from({ length: innings }).map((_, i) => <td key={i} className="text-center px-1 py-2 tabular-nums">{t.innings?.[i] ?? "–"}</td>)}
-                <td className="text-center px-1 py-2 font-black tabular-nums">{t.runs ?? "–"}</td>
-                <td className="text-center px-1 py-2 font-black tabular-nums">{t.hits ?? "0"}</td>
-                <td className="text-center px-1 py-2 font-black tabular-nums">{t.errors ?? "0"}</td>
+                {Array.from({ length: innings }).map((_, i) => (
+                  <td key={i} className="text-center px-1 py-2 tabular-nums">
+                    {t.innings?.[i] ?? "–"}
+                  </td>
+                ))}
+                <td className="text-center px-1 py-2 font-black tabular-nums">
+                  {t.runs ?? "–"}
+                </td>
+                <td className="text-center px-1 py-2 font-black tabular-nums">
+                  {t.hits ?? "0"}
+                </td>
+                <td className="text-center px-1 py-2 font-black tabular-nums">
+                  {t.errors ?? "0"}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -128,28 +216,76 @@ function MlbLineScore({ lineScore }: { lineScore: any }) {
   );
 }
 
-function LeaderCard({ cat, teamLogo, teamAbbr, league, teamKey, onPlayerClick }: any) {
+function LeaderCard({
+  cat,
+  teamLogo,
+  teamAbbr,
+  league,
+  teamKey,
+  onPlayerClick,
+}: any) {
   const clickable = !!onPlayerClick && !!cat?.leader?.id;
   const Wrapper: any = clickable ? "button" : "div";
   return (
     <Wrapper
       type={clickable ? "button" : undefined}
-      onClick={clickable ? () => onPlayerClick?.({ id: cat.leader.id, name: cat.leader.name, league, teamKey }) : undefined}
+      onClick={
+        clickable
+          ? () =>
+              onPlayerClick?.({
+                id: cat.leader.id,
+                name: cat.leader.name,
+                league,
+                teamKey,
+              })
+          : undefined
+      }
       className="rounded-xl p-3 flex items-center gap-3 text-left"
-      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--border)",
+      }}
     >
-      <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0" style={{ background: "var(--surface-2)" }}>
+      <div
+        className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0"
+        style={{ background: "var(--surface-2)" }}
+      >
         {cat.leader.headshot ? (
-          <Image src={cat.leader.headshot} alt={cat.leader.name} width={48} height={48} className="object-cover" />
+          <Image
+            src={cat.leader.headshot}
+            alt={cat.leader.name}
+            width={48}
+            height={48}
+            className="object-cover"
+          />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-xs font-semibold" style={{ color: "var(--text-3)" }}>
-            {(cat.leader.name || "").split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
+          <div
+            className="w-full h-full flex items-center justify-center text-xs font-semibold"
+            style={{ color: "var(--text-3)" }}
+          >
+            {(cat.leader.name || "")
+              .split(" ")
+              .map((n: string) => n[0])
+              .slice(0, 2)
+              .join("")}
           </div>
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-xs font-semibold uppercase tracking-wide flex items-center gap-1.5" style={{ color: "var(--text-3)" }}>
-          {teamLogo && <Image src={teamLogo} alt="" width={12} height={12} className="object-contain logo-outline-dark" unoptimized />}
+        <div
+          className="text-xs font-semibold uppercase tracking-wide flex items-center gap-1.5"
+          style={{ color: "var(--text-3)" }}
+        >
+          {teamLogo && (
+            <Image
+              src={teamLogo}
+              alt=""
+              width={12}
+              height={12}
+              className="object-contain logo-outline-dark"
+              unoptimized
+            />
+          )}
           {cat.shortName || cat.name}
         </div>
         <div className="text-sm font-semibold truncate">{cat.leader.name}</div>
@@ -177,7 +313,18 @@ function LeaderCard({ cat, teamLogo, teamAbbr, league, teamKey, onPlayerClick }:
 // - MLB / NFL: keep the 6-column cap. Their boxscores have many sparsely
 //   populated columns; showing them all just creates a wall of dashes.
 
-const NHL_SKATER_PREFERRED = ["G", "A", "SOG", "S", "TOI", "+/-", "PIM", "HT", "H", "BS"];
+const NHL_SKATER_PREFERRED = [
+  "G",
+  "A",
+  "SOG",
+  "S",
+  "TOI",
+  "+/-",
+  "PIM",
+  "HT",
+  "H",
+  "BS",
+];
 const NHL_GOALIE_PREFERRED = ["SA", "GA", "SV", "SV%", "TOI", "PIM"];
 
 // Pick which keys to show given the group and league. Preserves the "first
@@ -235,12 +382,29 @@ function looksLikeGoalies(group: any, keys: string[]): boolean {
 function canonicalLabel(key: string): string {
   if (key === "S" || key === "SOG") return "SOG";
   if (key === "HT" || key === "H") return "HT";
+  if (key === "H-AB" || key === "H_AB") return "H/AB";
   return key;
 }
 
-function StatGroup({ group, league, teamKey, onPlayerClick }: { group: any; league: string; teamKey?: string; onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void }) {
-  const [expanded, setExpanded] = useState(false);
-  const visible = expanded ? group.athletes : group.athletes.slice(0, 5);
+function StatGroup({
+  group,
+  league,
+  teamKey,
+  onPlayerClick,
+  groupIndex,
+}: {
+  group: any;
+  league: string;
+  teamKey?: string;
+  groupIndex?: number;
+  onPlayerClick?: (player: {
+    id: string;
+    name: string;
+    league: string;
+    teamKey?: string;
+  }) => void;
+}) {
+  const visible = group.athletes;
 
   if (group.athletes.length === 0) return null;
 
@@ -249,7 +413,7 @@ function StatGroup({ group, league, teamKey, onPlayerClick }: { group: any; leag
   return (
     <div className="boxscore-stat-group">
       <div className="boxscore-stat-group-title">
-        {displayGroupName(league, group)}
+        {displayGroupName(league, group, groupIndex)}
       </div>
       <div className="boxscore-stat-scroll overflow-x-auto">
         <table className="w-full text-xs">
@@ -259,62 +423,102 @@ function StatGroup({ group, league, teamKey, onPlayerClick }: { group: any; leag
                 className="boxscore-player-stat-head text-left px-3 py-2 font-medium sticky left-0 z-10"
                 style={{ background: "var(--surface)" }}
               >
-                Player
+                {league === "mlb" ? "" : "Player"}
               </th>
               {columnKeys.map((k: string) => (
-                <th key={k} className="text-right px-2 py-2 font-medium tabular-nums whitespace-nowrap" title={describeKey(league, k)}>
+                <th
+                  key={k}
+                  className="text-right px-2 py-2 font-medium tabular-nums whitespace-nowrap"
+                  title={describeKey(league, k)}
+                >
                   {canonicalLabel(k)}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {withBasketballSeparators(visible, league).map((row: any, idx: number) =>
-              row.__separator ? (
-                <tr key={`sep-${row.label}-${idx}`} style={{ borderTop: "1px solid var(--border)", background: "var(--surface-2)" }}>
-                  <td colSpan={columnKeys.length + 1} className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--text-2)" }}>{row.label}</td>
-                </tr>
-              ) : (
-                <tr key={row.id || idx} style={{ borderTop: "1px solid var(--border)" }}>
-                  <td
-                    className="boxscore-player-name px-3 py-2 whitespace-nowrap sticky left-0"
-                    style={{ background: "var(--surface)" }}
+            {withBasketballSeparators(visible, league).map(
+              (row: any, idx: number) =>
+                row.__separator ? (
+                  <tr
+                    key={`sep-${row.label}-${idx}`}
+                    style={{
+                      borderTop: "1px solid var(--border)",
+                      background: "var(--surface-2)",
+                    }}
                   >
-                    <button type="button" onClick={() => onPlayerClick?.({ id: row.id, name: row.name || row.shortName, league, teamKey })} disabled={!onPlayerClick || !row.id} className="font-medium text-left hover:opacity-80">{row.shortName || row.name}</button>
-                    {row.position && (
-                      <span className="text-[10px] block" style={{ color: "var(--text-3)" }}>{row.position}</span>
-                    )}
-                  </td>
-                  {columnKeys.map((k: string) => (
-                    <td key={k} className="text-right px-2 py-2 tabular-nums" style={{ color: "var(--text-2)" }}>
-                      {row.stats[k] ?? "—"}
+                    <td
+                      colSpan={columnKeys.length + 1}
+                      className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider"
+                      style={{ color: "var(--text-2)" }}
+                    >
+                      {row.label}
                     </td>
-                  ))}
-                </tr>
-              )
+                  </tr>
+                ) : (
+                  <tr
+                    key={row.id || idx}
+                    style={{ borderTop: "1px solid var(--border)" }}
+                  >
+                    <td
+                      className="boxscore-player-name px-3 py-2 whitespace-nowrap sticky left-0"
+                      style={{ background: "var(--surface)" }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onPlayerClick?.({
+                            id: row.id,
+                            name: row.name || row.shortName,
+                            league,
+                            teamKey,
+                          })
+                        }
+                        disabled={!onPlayerClick || !row.id}
+                        className="font-medium text-left hover:opacity-80"
+                      >
+                        {row.shortName || row.name}
+                      </button>
+                      {row.position && (
+                        <span
+                          className="text-[10px] block"
+                          style={{ color: "var(--text-3)" }}
+                        >
+                          {row.position}
+                        </span>
+                      )}
+                    </td>
+                    {columnKeys.map((k: string) => (
+                      <td
+                        key={k}
+                        className="text-right px-2 py-2 tabular-nums"
+                        style={{ color: "var(--text-2)" }}
+                      >
+                        {row.stats[k] ?? "—"}
+                      </td>
+                    ))}
+                  </tr>
+                ),
             )}
           </tbody>
         </table>
       </div>
-      {group.athletes.length > 5 && (
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="w-full px-3 py-2 text-xs font-medium border-t"
-          style={{ borderColor: "var(--border)", color: "var(--text-2)" }}
-        >
-          {expanded ? "Show less" : `Show all ${group.athletes.length}`}
-        </button>
-      )}
     </div>
   );
 }
 
-function displayGroupName(league: string, group: any): string {
+function displayGroupName(
+  league: string,
+  group: any,
+  groupIndex?: number,
+): string {
   const raw = String(group?.name || "Stats");
   if (league === "mlb") {
     const lower = raw.toLowerCase();
-    if (lower.includes("bat") || lower.includes("hit")) return "Hitting";
-    if (lower.includes("pitch")) return "Pitching";
+    if (lower.includes("bat") || lower.includes("hit")) return "Hitters";
+    if (lower.includes("pitch")) return "Pitchers";
+    if (groupIndex === 0) return "Hitters";
+    if (groupIndex === 1) return "Pitchers";
   }
   return raw;
 }
@@ -324,7 +528,12 @@ function withBasketballSeparators(players: any[], league: string): any[] {
   const starters = players.filter((p) => p.starter);
   const bench = players.filter((p) => !p.starter);
   if (!starters.length || !bench.length) return players;
-  return [{ __separator: true, label: "Starters" }, ...starters, { __separator: true, label: "Bench" }, ...bench];
+  return [
+    { __separator: true, label: "Starters" },
+    ...starters,
+    { __separator: true, label: "Bench" },
+    ...bench,
+  ];
 }
 
 // Hover/long-press tooltip text for short stat headers. ESPN's `descriptions`
