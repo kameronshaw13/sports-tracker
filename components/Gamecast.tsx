@@ -418,11 +418,11 @@ function PitchSequence({ atBat, compact = false, horizontalScroll = false }: { a
   return (
     <div className={["gamecast-pitch-strip-wrap", compact ? "is-compact" : "", horizontalScroll ? "is-horizontal-scroll" : ""].filter(Boolean).join(" ")}>
       <div className="gamecast-pitch-strip">
-        {(horizontalScroll ? [...atBat.pitches].map((pitch, originalIdx) => ({ pitch, originalIdx })).reverse() : atBat.pitches.map((pitch, originalIdx) => ({ pitch, originalIdx }))).map(({ pitch, originalIdx }, displayIdx) => {
+        {atBat.pitches.map((pitch, idx) => {
           const parsed = formatPitch(pitch);
           return (
-            <div key={`${atBat.id}-${originalIdx}-${displayIdx}`} className="gamecast-pitch-item">
-              <span className="gamecast-pitch-ball" style={{ background: parsed.bg, color: parsed.color, border: parsed.border }}>{originalIdx + 1}</span>
+            <div key={`${atBat.id}-${idx}`} className="gamecast-pitch-item">
+              <span className="gamecast-pitch-ball" style={{ background: parsed.bg, color: parsed.color, border: parsed.border }}>{idx + 1}</span>
               <span className="gamecast-pitch-label">{parsed.label}</span>
             </div>
           );
