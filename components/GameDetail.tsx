@@ -34,12 +34,14 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
 
   return (
     <div className="retro-page -mx-4 sm:mx-0 cbs-game-page game-detail-page">
-      <GameTopBar title={`${away?.abbr || ""} @ ${home?.abbr || ""}`} onClose={onClose} />
-      <ScoreboardHero league={league} home={home} away={away} status={status} situation={situation} eventId={eventId} gameDate={data?.date} onTeamClick={onTeamClick} />
-      <div className="game-detail-tabs" role="tablist">
-        <div className="flex overflow-x-auto no-scrollbar px-4 gap-7">
-          <TabBtn label="GameTracker" isActive={activeTab === "main"} onClick={() => setActiveTab("main")} />
-          <TabBtn label="Box Score" isActive={activeTab === "boxscore"} onClick={() => setActiveTab("boxscore")} />
+      <div className="game-detail-sticky-shell">
+        <GameTopBar title={`${away?.abbr || ""} @ ${home?.abbr || ""}`} onClose={onClose} />
+        <ScoreboardHero league={league} home={home} away={away} status={status} situation={situation} eventId={eventId} gameDate={data?.date} onTeamClick={onTeamClick} />
+        <div className="game-detail-tabs" role="tablist">
+          <div className="flex overflow-x-auto no-scrollbar px-4 gap-7">
+            <TabBtn label="GameTracker" isActive={activeTab === "main"} onClick={() => setActiveTab("main")} />
+            <TabBtn label="Box Score" isActive={activeTab === "boxscore"} onClick={() => setActiveTab("boxscore")} />
+          </div>
         </div>
       </div>
       <div className="game-detail-content">

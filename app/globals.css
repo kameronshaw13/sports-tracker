@@ -12326,3 +12326,93 @@ main.retro-page.view-leaguePage {
     height: 1.42rem !important;
   }
 }
+
+/* v144: offensive Team Stats + stronger sticky GameDetail header shell */
+.game-detail-sticky-shell {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 240 !important;
+  background: var(--background, #0f0f0f) !important;
+  box-shadow: 0 1px 0 rgba(232, 164, 58, .28) !important;
+}
+
+.game-detail-sticky-shell .game-detail-topbar,
+.game-detail-sticky-shell .game-score-hero,
+.game-detail-sticky-shell .game-detail-tabs {
+  position: relative !important;
+  top: auto !important;
+  z-index: auto !important;
+}
+
+.game-detail-content {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* The date/final cluster was still too far right; move the whole center stack left. */
+.game-score-center {
+  transform: translateX(-4.35rem) !important;
+}
+.game-score-date,
+.game-score-status {
+  text-align: center !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-center {
+    transform: translateX(-4.75rem) !important;
+  }
+}
+
+/* Team Stats: full-width list, offensive totals, cleaner alignment. */
+.boxscore-team-stats-flat,
+.boxscore-team-stats {
+  width: 100% !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.boxscore-team-stats-logo-head,
+.boxscore-team-stats-head,
+.boxscore-team-stat-row {
+  grid-template-columns: minmax(0, 1fr) 3.05rem 3.05rem !important;
+  padding-left: .62rem !important;
+  padding-right: .86rem !important;
+}
+
+.boxscore-team-stat-label {
+  transform: translate(-.18rem, .08rem) !important;
+  color: var(--text) !important;
+}
+
+.boxscore-team-stat-value {
+  padding-top: .15rem !important;
+  color: var(--score-meta, rgba(255,248,236,.86)) !important;
+}
+
+.boxscore-team-stat-team img {
+  width: 1.56rem !important;
+  height: 1.56rem !important;
+  object-fit: contain !important;
+  filter:
+    drop-shadow(0 0 1px rgba(255,255,255,.98))
+    drop-shadow(0 0 2px rgba(255,255,255,.82))
+    drop-shadow(0 0 3px rgba(0,0,0,.45)) !important;
+}
+
+@media (max-width: 420px) {
+  .boxscore-team-stats-logo-head,
+  .boxscore-team-stats-head,
+  .boxscore-team-stat-row {
+    grid-template-columns: minmax(0, 1fr) 2.8rem 2.8rem !important;
+    padding-left: .56rem !important;
+    padding-right: .72rem !important;
+  }
+
+  .boxscore-team-stat-label {
+    transform: translate(-.14rem, .08rem) !important;
+  }
+}

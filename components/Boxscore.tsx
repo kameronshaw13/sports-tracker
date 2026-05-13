@@ -490,7 +490,7 @@ type TeamStatRow = {
   home: string | number;
 };
 
-const TEAM_STAT_EXCLUDE = new Set(["IP", "#P", "P", "ER"]);
+const TEAM_STAT_EXCLUDE = new Set(["IP", "#P", "P", "ER", "PC", "PC-ST", "P-ST"]);
 
 const MLB_TEAM_STAT_ORDER = [
   "AB",
@@ -551,12 +551,32 @@ function normalizeTeamStatKey(key: string): string {
   return raw;
 }
 
+function isMlbOffensiveTeamStatGroup(group: any): boolean {
+  const name = String(group?.name || group?.displayName || "").toLowerCase();
+  const keys = Array.isArray(group?.keys) ? group.keys.map((k: string) => normalizeTeamStatKey(k)) : [];
+
+  // ESPN includes pitching totals in the boxscore groups; those are defensive
+  // totals for the opponent. Team Stats should show each team's own offense.
+  if (name.includes("pitch")) return false;
+  if (keys.includes("IP") || keys.includes("ER") || keys.includes("PC") || keys.includes("PC-ST")) return false;
+  return (
+    name.includes("bat") ||
+    name.includes("hit") ||
+    keys.includes("AB") ||
+    keys.includes("H/AB") ||
+    keys.includes("RBI") ||
+    keys.includes("HR") ||
+    keys.includes("AVG")
+  );
+}
+
 function collectTeamStatRows(teams: any[], league: string): TeamStatRow[] {
   const labels = new Set<string>();
   const totalsByTeam = teams.map((team) => {
     const totals: Record<string, string | number> = {};
     for (const group of team?.groups || []) {
       if (!group?.totals || !Array.isArray(group?.keys)) continue;
+      if (league === "mlb" && !isMlbOffensiveTeamStatGroup(group)) continue;
       group.keys.forEach((key: string, idx: number) => {
         const statKey = normalizeTeamStatKey(key);
         const value = group.totals?.[idx] ?? group.totals?.[key];
