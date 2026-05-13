@@ -77,7 +77,7 @@ function ScoreboardHero({ league, home, away, status, situation, eventId, gameDa
           <TeamBlock team={away} league={league} eventId={eventId} onClick={onTeamClick} align="left" showScore={showScore} isWinner={hasFinalWinner && awayScoreNum > homeScoreNum} isLoser={hasFinalWinner && awayScoreNum < homeScoreNum} />
           <div className="game-score-center">
             <div className="game-score-date">{formatGameDate(gameDate)}</div>
-            <div className={`game-score-status ${status?.state === "in" ? "is-live" : "is-final"}`}>{status?.detail || ""}</div>
+            <div className={`game-score-status ${status?.state === "in" ? "is-live" : status?.state === "pre" ? "is-pre" : "is-final"}`}>{status?.detail || ""}</div>
             {league === "mlb" && status?.state === "in" && hasBaseballSituation(situation) && <BaseballSituationBlock situation={situation} />}
             {status?.seriesGame && <div className="game-score-series">{status.seriesGame}</div>}
           </div>

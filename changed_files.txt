@@ -1,3 +1,2 @@
 app/globals.css
-README_GAMECAST_V145.txt
-changed_files.txt
+components/GameDetail.tsx

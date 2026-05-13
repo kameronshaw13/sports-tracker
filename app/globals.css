@@ -12504,3 +12504,68 @@ main.retro-page.view-leaguePage {
     transform: translateX(.32rem) !important;
   }
 }
+
+
+/* v146: safe-area sticky header, final/date alignment, pregame status shift, and Team Stats logo outline match */
+.game-detail-sticky-shell {
+  top: calc(env(safe-area-inset-top, 0px) + .95rem) !important;
+}
+
+.game-detail-content {
+  margin-top: calc(15.15rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+}
+
+.game-score-center {
+  transform: translateX(-4.55rem) !important;
+}
+.game-score-date {
+  transform: translateX(-.82rem) translateY(-.16rem) !important;
+}
+.game-score-status {
+  transform: translateX(.18rem) !important;
+}
+.game-score-status.is-pre {
+  transform: translateX(-.95rem) !important;
+}
+
+.boxscore-team-stat-team img.logo-outline-dark,
+.boxscore-team-stat-team .logo-outline-dark,
+.boxscore-team-stats-logo-head img.logo-outline-dark,
+.boxscore-team-stats-logo-head .logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(.42px 0 0 rgba(241,222,185,.68))
+    drop-shadow(-.42px 0 0 rgba(241,222,185,.68))
+    drop-shadow(0 .42px 0 rgba(241,222,185,.68))
+    drop-shadow(0 -.42px 0 rgba(241,222,185,.68)) !important;
+  filter:
+    drop-shadow(.42px 0 0 rgba(241,222,185,.68))
+    drop-shadow(-.42px 0 0 rgba(241,222,185,.68))
+    drop-shadow(0 .42px 0 rgba(241,222,185,.68))
+    drop-shadow(0 -.42px 0 rgba(241,222,185,.68)) !important;
+}
+
+@media (max-width: 420px) {
+  .game-detail-sticky-shell {
+    top: calc(env(safe-area-inset-top, 0px) + .95rem) !important;
+  }
+
+  .game-detail-content {
+    margin-top: calc(15.05rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+  }
+
+  .game-score-center {
+    transform: translateX(-4.70rem) !important;
+  }
+
+  .game-score-date {
+    transform: translateX(-.88rem) translateY(-.16rem) !important;
+  }
+
+  .game-score-status {
+    transform: translateX(.14rem) !important;
+  }
+
+  .game-score-status.is-pre {
+    transform: translateX(-1.15rem) !important;
+  }
+}
