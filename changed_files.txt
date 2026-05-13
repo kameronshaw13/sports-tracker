@@ -1,4 +1,6 @@
 app/globals.css
 components/Gamecast.tsx
-README_GAMECAST_V136.txt
+components/GameDetail.tsx
+components/Boxscore.tsx
+README_GAMECAST_V137.txt
 changed_files.txt
