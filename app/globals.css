@@ -12801,3 +12801,24 @@ main.retro-page.view-leaguePage {
     padding-top: 0 !important;
   }
 }
+
+/* v151: zoomed app icon export + stronger GameDetail content lift */
+.game-detail-content {
+  margin-top: calc(12.46rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+  padding-top: 0 !important;
+}
+
+.gamecast-shell {
+  margin-top: -.28rem !important;
+}
+
+@media (max-width: 420px) {
+  .game-detail-content {
+    margin-top: calc(12.38rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+    padding-top: 0 !important;
+  }
+
+  .gamecast-shell {
+    margin-top: -.34rem !important;
+  }
+}
