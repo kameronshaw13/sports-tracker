@@ -11107,3 +11107,164 @@ main.retro-page.view-leaguePage {
     padding-bottom: .48rem !important;
   }
 }
+
+/* v136: GameTracker live/plays fine tune */
+/* Plays: align pitcher marker text with at-bat rows, softer lowered text */
+.gamecast-pitcher-tag {
+  padding-left: 1.36rem !important;
+  padding-top: .74rem !important;
+  padding-bottom: .58rem !important;
+  min-height: 2.46rem !important;
+  gap: .56rem !important;
+}
+
+.gamecast-pitcher-ball {
+  width: 1.02rem !important;
+  height: 1.02rem !important;
+  transform: translateY(.08rem) !important;
+}
+
+.gamecast-pitcher-ball::before {
+  font-size: 1rem !important;
+  line-height: 1 !important;
+}
+
+.gamecast-pitcher-tag span:last-child {
+  padding-top: .16rem !important;
+  transform: translateY(.08rem) !important;
+}
+
+.gamecast-pitcher-tag::after {
+  left: 3rem !important;
+  right: .92rem !important;
+}
+
+.gamecast-half-rows details::after {
+  left: 3rem !important;
+  right: .92rem !important;
+  height: 1px !important;
+  transform: scaleY(.32) !important;
+  background: rgba(220, 220, 220, .20) !important;
+}
+
+.gamecast-half-rows details summary {
+  padding-top: .78rem !important;
+  padding-bottom: .7rem !important;
+}
+
+.gamecast-play-text,
+.gamecast-half-rows details summary .text-sm {
+  padding-top: .16rem !important;
+  transform: translateY(.08rem) !important;
+}
+
+.gamecast-half-end-score {
+  padding-top: .2rem !important;
+  line-height: 1.28 !important;
+}
+
+/* Live: no Current At-bat label, compact matchup, bigger names, yellow occupied bases */
+.gamecast-live-kicker { display: none !important; }
+
+.gamecast-live-head {
+  min-height: 2.5rem !important;
+  padding-top: .54rem !important;
+  padding-bottom: .42rem !important;
+}
+
+.gamecast-live-title {
+  font-size: .88rem !important;
+  line-height: 1.24 !important;
+  padding-top: .1rem !important;
+}
+
+.gamecast-live-state svg rect[fill="#f7c948"],
+.gamecast-live-state svg rect[fill="var(--base-occupied, #f7c948)"] {
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.28));
+}
+
+.gamecast-player-name {
+  font-size: .86rem !important;
+  line-height: 1.24 !important;
+  padding-top: .04rem !important;
+}
+
+.gamecast-player-label {
+  font-size: .6rem !important;
+  line-height: 1.15 !important;
+}
+
+.gamecast-player-stat {
+  font-size: .68rem !important;
+  line-height: 1.22 !important;
+}
+
+.gamecast-live-result {
+  overflow: visible !important;
+}
+
+.gamecast-live-result-text {
+  padding-top: .16rem !important;
+  transform: translateY(.04rem) !important;
+}
+
+/* Live current pitch strip: keep pitches left-aligned and allow horizontal scroll */
+.gamecast-pitch-strip-wrap.is-compact.is-horizontal-scroll {
+  width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: .5rem .05rem .1rem 0 !important;
+  margin-top: .06rem !important;
+}
+
+.gamecast-pitch-strip-wrap.is-compact.is-horizontal-scroll .gamecast-pitch-strip {
+  display: inline-flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: .58rem !important;
+  min-width: max-content !important;
+  padding-right: .8rem !important;
+}
+
+.gamecast-pitch-strip-wrap.is-compact.is-horizontal-scroll .gamecast-pitch-item {
+  flex: 0 0 auto !important;
+}
+
+/* All pitch balls: bigger lowered white numbers */
+.gamecast-pitch-ball {
+  width: 1.42rem !important;
+  height: 1.42rem !important;
+  font-size: .88rem !important;
+  line-height: 1 !important;
+  padding-top: .27rem !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #fff !important;
+}
+
+.gamecast-pitch-label {
+  padding-top: .2rem !important;
+  transform: translateY(.1rem) !important;
+}
+
+@media (max-width: 420px) {
+  .gamecast-pitcher-tag {
+    padding-left: 1.2rem !important;
+  }
+
+  .gamecast-pitcher-tag::after,
+  .gamecast-half-rows details::after {
+    left: 2.72rem !important;
+  }
+
+  .gamecast-player-name {
+    font-size: .84rem !important;
+  }
+
+  .gamecast-pitch-ball {
+    font-size: .86rem !important;
+    padding-top: .27rem !important;
+  }
+}

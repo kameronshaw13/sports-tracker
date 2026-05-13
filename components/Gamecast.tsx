@@ -168,12 +168,13 @@ function MlbLiveGamecast({
             period={currentHalf.period}
             pitcher={halfAtBats.find((ab) => ab.pitcher?.displayName || ab.pitcher?.name)?.pitcher?.displayName || halfAtBats.find((ab) => ab.pitcher?.displayName || ab.pitcher?.name)?.pitcher?.name || null}
             atBats={halfAtBats}
+            showEndRow={!isLive || (liveAtBat == null && currentHalf.period !== Number(espnSituation?.period || currentHalf.period))}
           />
         </>
       )}
 
       {activeSubTab === "scoring" && <ScoringPlaysView sections={scoringSections} home={home} away={away} />}
-      {activeSubTab === "plays" && <MlbPlaysView sections={sections} home={home} away={away} />}
+      {activeSubTab === "plays" && <MlbPlaysView sections={sections} home={home} away={away} isLive={isLive} currentHalf={currentHalf} />}
     </div>
   );
 }
@@ -204,7 +205,6 @@ function LiveAtBatCard({
   onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
 }) {
   const hasLiveAtBat = currentAtBat?.isComplete === false;
-  const title = hasLiveAtBat ? "Current At-bat" : currentAtBat ? "Last At-bat" : "Current At-bat";
   const batter = currentAtBat?.batter || (hasLiveAtBat ? situation?.batter : null) || null;
   const pitcher = currentAtBat?.pitcher || (hasLiveAtBat ? situation?.pitcher : null) || null;
   const count = hasLiveAtBat ? countText(situation) : null;
@@ -216,9 +216,6 @@ function LiveAtBatCard({
         <div className="gamecast-live-team">
           {battingTeam?.logo && <Image src={battingTeam.logo} alt={battingTeam.abbr} width={30} height={30} className="object-contain logo-outline-dark" unoptimized />}
           <div className="gamecast-live-team-copy">
-            <div className="gamecast-live-kicker" style={{ color: isLive ? "var(--danger)" : "var(--text-3)" }}>
-              {title}
-            </div>
             <div className="gamecast-live-title">
               {battingTeam?.abbr || "MLB"} batting
             </div>
@@ -236,9 +233,9 @@ function LiveAtBatCard({
       </div>
 
       <div className="gamecast-live-matchup">
-        <PlayerMiniCard label="Batter" person={batter} primaryStat={batterStatText(batter)} onClick={playerClickHandler(batter, onPlayerClick, "Batter")} />
+        <PlayerMiniCard label="Hitting" person={batter} primaryStat={batterStatText(batter)} onClick={playerClickHandler(batter, onPlayerClick, "Hitting")} />
         <div className="gamecast-live-vs">vs</div>
-        <PlayerMiniCard label="Pitcher" person={pitcher} primaryStat={pitcherStatText(pitcher)} onClick={playerClickHandler(pitcher, onPlayerClick, "Pitcher")} />
+        <PlayerMiniCard label="Pitching" person={pitcher} primaryStat={pitcherStatText(pitcher)} onClick={playerClickHandler(pitcher, onPlayerClick, "Pitching")} />
       </div>
 
       <div className="gamecast-live-result-wrap">
@@ -246,7 +243,7 @@ function LiveAtBatCard({
           <div className="gamecast-live-result-text">
             {currentAtBat?.result || (hasLiveAtBat ? situation?.lastPlay : null) || "Waiting for ESPN play update..."}
           </div>
-          {currentAtBat?.pitches?.length ? <PitchSequence atBat={currentAtBat} compact /> : null}
+          {currentAtBat?.pitches?.length ? <PitchSequence atBat={currentAtBat} compact horizontalScroll /> : null}
         </div>
       </div>
     </div>
@@ -271,6 +268,7 @@ function HalfInningCard({
   period,
   pitcher,
   atBats,
+  showEndRow = true,
 }: {
   team?: TeamMeta;
   pitcherTeam?: TeamMeta;
@@ -278,6 +276,7 @@ function HalfInningCard({
   period: number;
   pitcher?: string | null;
   atBats: MlbAtBat[];
+  showEndRow?: boolean;
 }) {
   const visible = atBats.length ? atBats : [];
   const lastScore = [...visible].reverse().find((ab) => typeof ab.awayScore === "number" || typeof ab.homeScore === "number");
@@ -311,31 +310,41 @@ function HalfInningCard({
         )}
       </div>
 
-      <div className="gamecast-half-end-row">
-        <div className="gamecast-half-end-copy">
-          <div className="gamecast-half-end-title">End - {half === "bottom" ? "Bottom" : "Top"} {ordinal(period)}</div>
+      {showEndRow && (
+        <div className="gamecast-half-end-row">
+          <div className="gamecast-half-end-copy">
+            <div className="gamecast-half-end-title">End - {half === "bottom" ? "Bottom" : "Top"} {ordinal(period)}</div>
+          </div>
+          <div className="gamecast-half-end-score tabular-nums">{lastScore?.awayScore ?? 0}</div>
+          <div className="gamecast-half-end-score tabular-nums">{lastScore?.homeScore ?? 0}</div>
         </div>
-        <div className="gamecast-half-end-score tabular-nums">{lastScore?.awayScore ?? 0}</div>
-        <div className="gamecast-half-end-score tabular-nums">{lastScore?.homeScore ?? 0}</div>
-      </div>
+      )}
     </div>
   );
 }
 
-function MlbPlaysView({ sections, home, away }: { sections: MlbSection[]; home?: TeamMeta; away?: TeamMeta }) {
+function MlbPlaysView({ sections, home, away, isLive = false, currentHalf }: { sections: MlbSection[]; home?: TeamMeta; away?: TeamMeta; isLive?: boolean; currentHalf?: { period: number; half: "top" | "bottom" | null } }) {
+  const lastSection = sections.length ? sections[sections.length - 1] : null;
   return (
     <div className="gamecast-plays-list">
-      {sections.map((section) => (
-        <HalfInningCard
-          key={`${section.period}-${section.half}`}
-          team={section.team}
-          pitcherTeam={section.half === "top" ? home : away}
-          half={section.half}
-          period={section.period}
-          pitcher={section.pitcher}
-          atBats={section.atBats}
-        />
-      ))}
+      {sections.map((section) => {
+        const isLastSection = lastSection === section;
+        const hasOpenAtBat = section.atBats.some((ab) => ab.isAtBat && ab.isComplete === false);
+        const isCurrentLiveHalf = !!isLive && currentHalf?.period === section.period && currentHalf?.half === section.half;
+        const showEndRow = !(isLastSection && hasOpenAtBat) && !isCurrentLiveHalf;
+        return (
+          <HalfInningCard
+            key={`${section.period}-${section.half}`}
+            team={section.team}
+            pitcherTeam={section.half === "top" ? home : away}
+            half={section.half}
+            period={section.period}
+            pitcher={section.pitcher}
+            atBats={section.atBats}
+            showEndRow={showEndRow}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -404,10 +413,10 @@ function AtBatSummaryRow({ atBat, forceOpen = false, mode = "default" }: { atBat
   );
 }
 
-function PitchSequence({ atBat, compact = false }: { atBat: MlbAtBat; compact?: boolean }) {
+function PitchSequence({ atBat, compact = false, horizontalScroll = false }: { atBat: MlbAtBat; compact?: boolean; horizontalScroll?: boolean }) {
   if (!atBat.pitches?.length) return null;
   return (
-    <div className={compact ? "gamecast-pitch-strip-wrap is-compact" : "gamecast-pitch-strip-wrap"}>
+    <div className={["gamecast-pitch-strip-wrap", compact ? "is-compact" : "", horizontalScroll ? "is-horizontal-scroll" : ""].filter(Boolean).join(" ")}>
       <div className="gamecast-pitch-strip">
         {atBat.pitches.map((pitch, idx) => {
           const parsed = formatPitch(pitch);
@@ -441,7 +450,7 @@ function StatusPill({ label, tone }: { label: string; tone: "live" | "scoring" }
 function formatPitch(raw: string) {
   const text = String(raw || "").replace(/^Pitch\s*\d+\s*:\s*/i, "").replace(/\s+/g, " ").trim();
   const lower = text.toLowerCase();
-  if (/ball in play|in play/.test(lower)) return { label: "In-play ball", bg: "#3b82f6", color: "#fff", border: "0" };
+  if (/ball in play|in play/.test(lower)) return { label: "In-play", bg: "#3b82f6", color: "#fff", border: "0" };
   if (/foul|foul tip|bunt foul/.test(lower)) return { label: "Foul", bg: "#64748b", color: "#fff", border: "0" };
   if (/swinging|missed bunt/.test(lower)) return { label: "Strike Swinging", bg: "#ef4444", color: "#fff", border: "0" };
   if (/called strike|strike looking|looking/.test(lower)) return { label: "Strike Looking", bg: "#ef4444", color: "#fff", border: "0" };
@@ -681,7 +690,7 @@ function countText(situation: any): string | null {
 }
 
 function BasesDiamond({ onFirst, onSecond, onThird }: { onFirst: boolean; onSecond: boolean; onThird: boolean }) {
-  const filled = "var(--text)";
+  const filled = "var(--base-occupied, #f7c948)";
   const empty = "var(--surface-2)";
   const stroke = "var(--text-3)";
   return (
