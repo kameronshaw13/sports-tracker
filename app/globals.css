@@ -12569,3 +12569,78 @@ main.retro-page.view-leaguePage {
     transform: translateX(-1.15rem) !important;
   }
 }
+
+/* v147: safe-area opacity, tighter content offset, and header center timing cleanup */
+.game-detail-sticky-shell {
+  top: calc(env(safe-area-inset-top, 0px) + .95rem) !important;
+  background: var(--background, #0f0f0f) !important;
+  isolation: isolate !important;
+}
+
+.game-detail-sticky-shell::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 50%;
+  width: min(100vw, 480px);
+  height: calc(env(safe-area-inset-top, 0px) + .98rem);
+  transform: translateX(-50%);
+  background: var(--background, #0f0f0f);
+  opacity: 1;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.game-detail-sticky-shell .game-detail-topbar,
+.game-detail-sticky-shell .game-score-hero,
+.game-detail-sticky-shell .game-detail-tabs {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.game-detail-content {
+  margin-top: calc(14.28rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+  padding-top: .12rem !important;
+}
+
+.game-score-center {
+  transform: translateX(-4.78rem) !important;
+}
+.game-score-date {
+  transform: translateX(-1.05rem) translateY(-.16rem) !important;
+}
+.game-score-status {
+  transform: translateX(-.05rem) !important;
+}
+.game-score-status.is-pre {
+  transform: translateX(-2.35rem) !important;
+  min-width: 7.5rem !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 420px) {
+  .game-detail-sticky-shell::before {
+    width: 100vw;
+  }
+
+  .game-detail-content {
+    margin-top: calc(14.18rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+    padding-top: .10rem !important;
+  }
+
+  .game-score-center {
+    transform: translateX(-4.92rem) !important;
+  }
+
+  .game-score-date {
+    transform: translateX(-1.08rem) translateY(-.16rem) !important;
+  }
+
+  .game-score-status {
+    transform: translateX(-.08rem) !important;
+  }
+
+  .game-score-status.is-pre {
+    transform: translateX(-2.65rem) !important;
+  }
+}

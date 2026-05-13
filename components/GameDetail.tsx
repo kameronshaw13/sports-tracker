@@ -77,7 +77,7 @@ function ScoreboardHero({ league, home, away, status, situation, eventId, gameDa
           <TeamBlock team={away} league={league} eventId={eventId} onClick={onTeamClick} align="left" showScore={showScore} isWinner={hasFinalWinner && awayScoreNum > homeScoreNum} isLoser={hasFinalWinner && awayScoreNum < homeScoreNum} />
           <div className="game-score-center">
             <div className="game-score-date">{formatGameDate(gameDate)}</div>
-            <div className={`game-score-status ${status?.state === "in" ? "is-live" : status?.state === "pre" ? "is-pre" : "is-final"}`}>{status?.detail || ""}</div>
+            <div className={`game-score-status ${status?.state === "in" ? "is-live" : status?.state === "pre" ? "is-pre" : "is-final"}`}>{formatGameStatus(status, gameDate)}</div>
             {league === "mlb" && status?.state === "in" && hasBaseballSituation(situation) && <BaseballSituationBlock situation={situation} />}
             {status?.seriesGame && <div className="game-score-series">{status.seriesGame}</div>}
           </div>
@@ -104,6 +104,26 @@ function TeamBlock({ team, league, eventId, onClick, align, showScore, isWinner,
 
 function TabBtn({ label, isActive, onClick }: { label: string; isActive: boolean; onClick: () => void }) {
   return <button type="button" role="tab" aria-selected={isActive} onClick={onClick} className="game-detail-tab relative whitespace-nowrap">{label}{isActive && <span className="game-detail-tab-line absolute left-0 right-0 bottom-0" />}</button>;
+}
+
+function formatGameStatus(status: any, gameDate?: string | null): string {
+  if (status?.state === "pre") {
+    const raw = gameDate || status?.type?.detail || status?.detail || status?.shortDetail || "";
+    const d = raw ? new Date(raw) : null;
+    if (d && !isNaN(d.getTime())) {
+      return d.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "America/Chicago",
+      });
+    }
+    return String(status?.detail || status?.shortDetail || "")
+      .replace(/^\s*\d{1,2}\/\d{1,2}\s*-\s*/i, "")
+      .replace(/\s*(EDT|EST|CDT|CST|MDT|MST|PDT|PST)$/i, "")
+      .trim();
+  }
+  return status?.detail || "";
 }
 
 function scoreShouldShow(status: any) {
