@@ -1,5 +1,3 @@
 app/globals.css
-components/Boxscore.tsx
-components/GameDetail.tsx
-README_GAMECAST_V144.txt
+README_GAMECAST_V145.txt
 changed_files.txt

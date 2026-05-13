@@ -12416,3 +12416,91 @@ main.retro-page.view-leaguePage {
     transform: translate(-.14rem, .08rem) !important;
   }
 }
+
+/* v145: final/date tune, true locked GameDetail header, and matching Team Stats logo outline */
+/* Lock the full game header stack to the viewport so only the content beneath scrolls. */
+.game-detail-sticky-shell {
+  position: fixed !important;
+  top: 0 !important;
+  left: 50% !important;
+  right: auto !important;
+  width: min(100vw, 480px) !important;
+  transform: translateX(-50%) !important;
+  z-index: 999 !important;
+  background: var(--background, #0f0f0f) !important;
+  box-shadow: 0 1px 0 rgba(232, 164, 58, .28) !important;
+  overflow: visible !important;
+}
+
+.game-detail-sticky-shell .game-detail-topbar,
+.game-detail-sticky-shell .game-score-hero,
+.game-detail-sticky-shell .game-detail-tabs {
+  position: relative !important;
+  top: auto !important;
+  z-index: auto !important;
+  transform: none !important;
+}
+
+.game-detail-content {
+  margin-top: 15.15rem !important;
+  padding-top: .42rem !important;
+}
+
+/* The Final label was too far left while the date still needed to move left a touch. */
+.game-score-center {
+  transform: translateX(-4.05rem) !important;
+}
+.game-score-date {
+  transform: translateX(-.55rem) translateY(-.16rem) !important;
+  text-align: center !important;
+}
+.game-score-status {
+  transform: translateX(.28rem) !important;
+  text-align: center !important;
+}
+
+/* Team Stats logos should use the same white outline style as the rest of the boxscore logos. */
+.boxscore-team-stat-team img.logo-outline-dark,
+.boxscore-team-stat-team .logo-outline-dark,
+.boxscore-team-stats-logo-head img {
+  -webkit-filter:
+    drop-shadow(1px 0 0 rgba(255,255,255,.98))
+    drop-shadow(-1px 0 0 rgba(255,255,255,.98))
+    drop-shadow(0 1px 0 rgba(255,255,255,.98))
+    drop-shadow(0 -1px 0 rgba(255,255,255,.98))
+    drop-shadow(.8px .8px 0 rgba(255,255,255,.92))
+    drop-shadow(-.8px .8px 0 rgba(255,255,255,.92))
+    drop-shadow(.8px -.8px 0 rgba(255,255,255,.92))
+    drop-shadow(-.8px -.8px 0 rgba(255,255,255,.92)) !important;
+  filter:
+    drop-shadow(1px 0 0 rgba(255,255,255,.98))
+    drop-shadow(-1px 0 0 rgba(255,255,255,.98))
+    drop-shadow(0 1px 0 rgba(255,255,255,.98))
+    drop-shadow(0 -1px 0 rgba(255,255,255,.98))
+    drop-shadow(.8px .8px 0 rgba(255,255,255,.92))
+    drop-shadow(-.8px .8px 0 rgba(255,255,255,.92))
+    drop-shadow(.8px -.8px 0 rgba(255,255,255,.92))
+    drop-shadow(-.8px -.8px 0 rgba(255,255,255,.92)) !important;
+}
+
+@media (max-width: 420px) {
+  .game-detail-sticky-shell {
+    width: 100vw !important;
+  }
+
+  .game-detail-content {
+    margin-top: 15.05rem !important;
+  }
+
+  .game-score-center {
+    transform: translateX(-4.28rem) !important;
+  }
+
+  .game-score-date {
+    transform: translateX(-.62rem) translateY(-.16rem) !important;
+  }
+
+  .game-score-status {
+    transform: translateX(.32rem) !important;
+  }
+}
