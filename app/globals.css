@@ -11517,3 +11517,164 @@ main.retro-page.view-leaguePage {
     height: 1rem !important;
   }
 }
+
+/* v139: restore the latest flat Boxscore styling so older boxed styles do not poke through */
+.boxscore-line-wrap {
+  width: 100% !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  background: var(--surface) !important;
+  border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent) !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  box-shadow: none !important;
+}
+
+.boxscore-line-table {
+  border-radius: 0 !important;
+  overflow: visible !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.boxscore-line-table thead th {
+  padding-top: .62rem !important;
+  padding-bottom: .46rem !important;
+  line-height: 1.18 !important;
+  vertical-align: middle !important;
+}
+
+.boxscore-line-table thead th:not(:first-child) {
+  transform: translateY(.08rem) !important;
+}
+
+.boxscore-line-table tbody td {
+  padding-top: .48rem !important;
+  padding-bottom: .44rem !important;
+  vertical-align: middle !important;
+}
+
+.boxscore-line-team {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: .32rem !important;
+  transform: translateY(.02rem) !important;
+  line-height: 1.16 !important;
+  overflow: visible !important;
+}
+
+.boxscore-line-team img {
+  width: 1.05rem !important;
+  height: 1.05rem !important;
+  transform: translateY(-.04rem) !important;
+  flex: 0 0 auto !important;
+}
+
+.boxscore-line-team span {
+  display: inline-block !important;
+  transform: translateY(.09rem) !important;
+  line-height: 1.08 !important;
+}
+
+.boxscore-team-toggle {
+  margin: .5rem .78rem .62rem !important;
+  padding: .18rem !important;
+  gap: .16rem !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  background: color-mix(in srgb, var(--surface-2) 78%, #000 12%) !important;
+  border: 1px solid color-mix(in srgb, var(--border) 86%, #fff 8%) !important;
+  border-radius: 999px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.045) !important;
+}
+
+.boxscore-team-toggle-btn {
+  min-height: 2rem !important;
+  height: 2rem !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .32rem !important;
+  padding: .18rem .3rem 0 !important;
+  color: var(--text-2) !important;
+  font-size: .78rem !important;
+  line-height: 1.08 !important;
+  font-weight: 850 !important;
+}
+
+.boxscore-team-toggle-btn.is-active {
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--surface) 72%, #000 20%) !important;
+}
+
+.boxscore-team-toggle-btn img {
+  width: 1.12rem !important;
+  height: 1.12rem !important;
+  transform: translateY(-.01rem) !important;
+}
+
+.boxscore-stat-group {
+  width: 100% !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  background: var(--surface) !important;
+  border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent) !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  box-shadow: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.boxscore-stat-group-title {
+  padding: .58rem .85rem .46rem !important;
+  font-size: .68rem !important;
+  font-weight: 850 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .075em !important;
+  background: color-mix(in srgb, var(--surface-2) 78%, #000 10%) !important;
+  color: var(--text-2) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 62%, transparent) !important;
+}
+
+.boxscore-stat-scroll table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+}
+
+.boxscore-stat-scroll thead tr,
+.boxscore-stat-scroll tbody tr {
+  border-top: 1px solid rgba(220,220,220,.13) !important;
+}
+
+.boxscore-player-stat-head,
+.boxscore-stat-scroll thead th,
+.boxscore-stat-scroll tbody td {
+  line-height: 1.2 !important;
+  vertical-align: middle !important;
+  overflow: visible !important;
+}
+
+.boxscore-stat-scroll tbody td {
+  padding-top: .42rem !important;
+  padding-bottom: .38rem !important;
+}
+
+.boxscore-player-name {
+  line-height: 1.2 !important;
+  transform: translateY(-.04rem) !important;
+}
+
+.boxscore-player-name button,
+.boxscore-player-name span {
+  line-height: 1.18 !important;
+  overflow: visible !important;
+}

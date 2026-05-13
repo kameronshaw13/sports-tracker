@@ -35,7 +35,7 @@ export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Pro
   const team = data.teams[activeTeamIdx];
 
   return (
-    <div className="boxscore-root space-y-4">
+    <div className="space-y-4">
       {/* Top performers */}
       {data.leaders && data.leaders.length > 0 && (
         <div>
@@ -61,17 +61,12 @@ export default function Boxscore({ league, eventId, isLive, onPlayerClick }: Pro
         </h3>
 
         {/* Team toggle */}
-        <div className="boxscore-team-toggle flex gap-1 mb-3 p-1 rounded-xl" style={{ background: "var(--surface-2)" }}>
+        <div className="boxscore-team-toggle">
           {data.teams.map((t: any, i: number) => (
             <button
               key={t.team.id}
               onClick={() => setActiveTeamIdx(i)}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-              style={{
-                background: activeTeamIdx === i ? "var(--surface)" : "transparent",
-                color: activeTeamIdx === i ? "var(--text)" : "var(--text-2)",
-                border: activeTeamIdx === i ? "1px solid var(--border)" : "1px solid transparent",
-              }}
+              className={`boxscore-team-toggle-btn ${activeTeamIdx === i ? "is-active" : ""}`}
             >
               {t.team.logo && (
                 <Image src={t.team.logo} alt="" width={20} height={20} className="object-contain logo-outline-dark" unoptimized />
@@ -100,8 +95,8 @@ function MlbLineScore({ lineScore }: { lineScore: any }) {
       <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>
         Line score
       </h3>
-      <div className="boxscore-line-table rounded-xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-        <table className="w-full text-[10px] sm:text-xs table-fixed">
+      <div className="boxscore-line-wrap">
+        <table className="boxscore-line-table w-full text-[10px] sm:text-xs table-fixed">
           <thead>
             <tr style={{ background: "var(--surface-2)", color: "var(--text-3)" }}>
               <th className="text-left px-1.5 py-2 font-semibold">Team</th>
@@ -114,7 +109,12 @@ function MlbLineScore({ lineScore }: { lineScore: any }) {
           <tbody>
             {teams.map((t: any) => (
               <tr key={t.id || t.abbr} style={{ borderTop: "1px solid var(--border)" }}>
-                <td className="px-1.5 py-2 font-bold"><div className="boxscore-line-team">{t.logo && <Image src={t.logo} alt={t.abbr || ""} width={18} height={18} className="object-contain logo-outline-dark" unoptimized />}<span>{t.abbr}</span></div></td>
+                <td className="px-1.5 py-2 font-bold">
+                  <div className="boxscore-line-team">
+                    {t.logo && <Image src={t.logo} alt="" width={18} height={18} className="object-contain logo-outline-dark" unoptimized />}
+                    <span>{t.abbr}</span>
+                  </div>
+                </td>
                 {Array.from({ length: innings }).map((_, i) => <td key={i} className="text-center px-1 py-2 tabular-nums">{t.innings?.[i] ?? "–"}</td>)}
                 <td className="text-center px-1 py-2 font-black tabular-nums">{t.runs ?? "–"}</td>
                 <td className="text-center px-1 py-2 font-black tabular-nums">{t.hits ?? "0"}</td>
@@ -247,16 +247,16 @@ function StatGroup({ group, league, teamKey, onPlayerClick }: { group: any; leag
   const columnKeys = pickColumnKeys(group, league);
 
   return (
-    <div className="boxscore-stat-group rounded-xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-      <div className="boxscore-stat-group-title px-3 py-2 text-xs font-semibold uppercase tracking-wider" style={{ background: "var(--surface-2)", color: "var(--text-2)" }}>
+    <div className="boxscore-stat-group">
+      <div className="boxscore-stat-group-title">
         {displayGroupName(league, group)}
       </div>
       <div className="boxscore-stat-scroll overflow-x-auto">
         <table className="w-full text-xs">
-          <thead className="boxscore-player-stat-head">
+          <thead>
             <tr style={{ color: "var(--text-3)" }}>
               <th
-                className="text-left px-3 py-2 font-medium sticky left-0 z-10"
+                className="boxscore-player-stat-head text-left px-3 py-2 font-medium sticky left-0 z-10"
                 style={{ background: "var(--surface)" }}
               >
                 Player
