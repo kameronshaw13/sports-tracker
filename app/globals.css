@@ -12736,3 +12736,32 @@ main.retro-page.view-leaguePage {
     transform: translateX(-2.38rem) !important;
   }
 }
+
+/* v149: final GameDetail content lift and Team Stats logo outline match */
+.game-detail-content {
+  margin-top: calc(13.62rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+  padding-top: 0 !important;
+}
+
+.boxscore-team-stat-team img,
+.boxscore-team-stat-team .logo-outline-dark,
+.boxscore-team-stats-logo-head img,
+.boxscore-team-stats-logo-head .logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(0.55px 0 0 rgba(255,255,255,.9))
+    drop-shadow(-0.55px 0 0 rgba(255,255,255,.9))
+    drop-shadow(0 0.55px 0 rgba(255,255,255,.9))
+    drop-shadow(0 -0.55px 0 rgba(255,255,255,.9)) !important;
+  filter:
+    drop-shadow(0.55px 0 0 rgba(255,255,255,.9))
+    drop-shadow(-0.55px 0 0 rgba(255,255,255,.9))
+    drop-shadow(0 0.55px 0 rgba(255,255,255,.9))
+    drop-shadow(0 -0.55px 0 rgba(255,255,255,.9)) !important;
+}
+
+@media (max-width: 420px) {
+  .game-detail-content {
+    margin-top: calc(13.54rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+    padding-top: 0 !important;
+  }
+}
