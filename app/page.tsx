@@ -31,6 +31,15 @@ const ManageTeams = dynamic(() => import("@/components/ManageTeams"));
 const GameDetail = dynamic(() => import("@/components/GameDetail"));
 const PlayerDetail = dynamic(() => import("@/components/PlayerDetail"));
 
+function resetScrollTop() {
+  if (typeof window === "undefined") return;
+  window.scrollTo({ top: 0, behavior: "auto" });
+  window.requestAnimationFrame(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
+  });
+}
+
 export default function Home() {
   const [view, setView] = useState<ViewId>("scores");
   // activeTeam holds a full TeamConfig (not a key). This way we can view a
@@ -96,7 +105,7 @@ export default function Home() {
           : `${view}:${activeTeam?.key || ""}:${activeTab}:${manageOpen}:${leagueInitial}:${standingsInitial}`;
     if (lastScreenRef.current === screenKey) return;
     lastScreenRef.current = screenKey;
-    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
+    resetScrollTop();
   }, [view, activeTeam?.key, activeTab, manageOpen, leagueInitial, standingsInitial, selectedGame, selectedPlayer, showReturnGame, returnGame]);
 
   useEffect(() => {
@@ -192,11 +201,13 @@ export default function Home() {
                   if (returnGame) {
                     setShowReturnGame(true);
                     setSelectedGame(null);
+                    resetScrollTop();
                     return;
                   }
                   setReturnGame(null);
                   setShowReturnGame(false);
                   setView(teamReturnView || "scores");
+                  resetScrollTop();
                 }}
                 className="team-back-btn"
                 aria-label="Back"
@@ -269,7 +280,10 @@ export default function Home() {
         )}
 
         {selectedPlayer && (
-          <PlayerDetail player={selectedPlayer} onBack={() => setSelectedPlayer(null)} />
+          <PlayerDetail player={selectedPlayer} onBack={() => {
+            setSelectedPlayer(null);
+            resetScrollTop();
+          }} />
         )}
 
         {!selectedPlayer && !selectedGame && showReturnGame && returnGame && (

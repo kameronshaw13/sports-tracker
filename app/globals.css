@@ -13500,3 +13500,22 @@ main.view-more:has(.manage-teams-page) {
     --standings-fixed-head: 9.45rem;
   }
 }
+
+/* v160: stronger standings clearance and immediate game-return scroll reset support */
+.standings-page {
+  --standings-fixed-head: 14.35rem;
+}
+
+.standings-page:not(:has(.standings-mode-wrap)) {
+  --standings-fixed-head: 10.75rem;
+}
+
+@media (max-width: 420px) {
+  .standings-page {
+    --standings-fixed-head: 14.1rem;
+  }
+
+  .standings-page:not(:has(.standings-mode-wrap)) {
+    --standings-fixed-head: 10.55rem;
+  }
+}
