@@ -13758,3 +13758,74 @@ main.view-scores .pull-refresh-indicator {
     transform: translateY(.25rem) !important;
   }
 }
+
+/* v167: cleaner odds labels and stable GameTracker header centering */
+.score-card-odds {
+  color: color-mix(in srgb, var(--score-meta) 82%, #ffffff 18%) !important;
+  font-size: .62rem !important;
+  font-weight: 560 !important;
+}
+
+.game-score-team-away .game-score-record,
+.game-score-team-away .game-score-score {
+  right: 3.28rem !important;
+  width: 3.05rem !important;
+  min-width: 3.05rem !important;
+  text-align: center !important;
+  justify-content: center !important;
+}
+
+.game-score-team-home .game-score-record,
+.game-score-team-home .game-score-score {
+  left: 3.28rem !important;
+  width: 3.05rem !important;
+  min-width: 3.05rem !important;
+  text-align: center !important;
+  justify-content: center !important;
+}
+
+.game-score-status.is-final {
+  left: 50% !important;
+  width: 5.4rem !important;
+  transform: translateX(-50%) !important;
+  text-align: center !important;
+}
+
+.game-score-status.is-pre {
+  left: 50% !important;
+  width: 5.4rem !important;
+  transform: translateX(calc(-50% - .08rem)) !important;
+  text-align: center !important;
+}
+
+.game-score-series {
+  transform: translateX(calc(-50% + .38rem)) !important;
+}
+
+@media (max-width: 420px) {
+  .score-card-odds {
+    font-size: .6rem !important;
+  }
+
+  .game-score-team-away .game-score-record,
+  .game-score-team-away .game-score-score {
+    right: 3rem !important;
+    width: 3rem !important;
+    min-width: 3rem !important;
+  }
+
+  .game-score-team-home .game-score-record,
+  .game-score-team-home .game-score-score {
+    left: 3rem !important;
+    width: 3rem !important;
+    min-width: 3rem !important;
+  }
+
+  .game-score-status.is-pre {
+    transform: translateX(calc(-50% - .07rem)) !important;
+  }
+
+  .game-score-series {
+    transform: translateX(calc(-50% + .34rem)) !important;
+  }
+}

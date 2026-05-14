@@ -519,7 +519,7 @@ function scoreOddsText(game: any, team: any) {
   if (!odds) return null;
   const side = String(team?.homeAway || "").toLowerCase();
   if (side === "away") return odds.overUnder || null;
-  if (side === "home") return odds.homeMoneyLine || odds.details || null;
+  if (side === "home") return cleanMoneyLineText(odds.homeMoneyLine || odds.details, team?.abbr);
   return null;
 }
 
@@ -672,8 +672,8 @@ function completedOddsLine(game: any): string | null {
 
   const winner = hasScore && awayScore !== homeScore
     ? awayScore > homeScore
-      ? { team: game.away, odds: odds.awayMoneyLine }
-      : { team: game.home, odds: odds.homeMoneyLine }
+      ? { team: game.away, odds: odds.awayMoneyLine || moneyLineFromDetails(odds.details, game.away?.abbr) }
+      : { team: game.home, odds: odds.homeMoneyLine || moneyLineFromDetails(odds.details, game.home?.abbr) }
     : null;
 
   const parts: string[] = [];
@@ -681,13 +681,32 @@ function completedOddsLine(game: any): string | null {
     parts.push(`${favoriteTeamLabel(winner.team, game.league || "mlb")} (${winner.odds})`);
   }
 
-  const total = parseOverUnder(odds.overUnder);
+  const total = parseOverUnder(odds.overUnder || odds.details);
   if (hasScore && total != null) {
     const label = totalRuns > total ? "Over" : totalRuns < total ? "Under" : "Push";
     parts.push(`${label} ${formatTotal(total)}`);
   }
 
   return parts.length ? parts.join(", ") : null;
+}
+
+function cleanMoneyLineText(value: any, abbr?: string): string | null {
+  const fromDetails = moneyLineFromDetails(value, abbr);
+  if (fromDetails) return fromDetails;
+  const match = String(value || "").match(/[+-]\d{2,4}/);
+  return match ? match[0] : null;
+}
+
+function moneyLineFromDetails(value: any, abbr?: string): string | null {
+  const text = String(value || "");
+  const team = String(abbr || "").trim();
+  if (team) {
+    const escaped = team.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const teamMatch = text.match(new RegExp(`\\b${escaped}\\b\\s*([+-]\\d{2,4})`, "i"));
+    if (teamMatch) return teamMatch[1];
+  }
+  const first = text.match(/[+-]\d{2,4}/);
+  return first ? first[0] : null;
 }
 
 function parseOverUnder(value: any): number | null {
