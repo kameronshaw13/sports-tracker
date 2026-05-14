@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getMlbHeadshotUrl, getMlbTeamId } from "@/lib/espn";
+import { getMlbTeamId } from "@/lib/espn";
 import { parseTeamKey } from "@/lib/teams";
 
 export const revalidate = 1800;
@@ -191,7 +191,7 @@ async function getMlbTransactions(abbr: string): Promise<Transaction[]> {
         playerName: String(playerName),
         playerId,
         position: tx?.position || person?.primaryPosition?.abbreviation || null,
-        headshot: readEspnHeadshot(espnProfile, "mlb") || espnTx?.headshot || (playerId ? getMlbHeadshotUrl(playerId) : null),
+        headshot: readEspnHeadshot(espnProfile, "mlb") || espnTx?.headshot || null,
         text,
         type: String(type),
       };

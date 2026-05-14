@@ -13717,3 +13717,44 @@ main.view-scores .pull-refresh-indicator {
     font-size: .48rem !important;
   }
 }
+
+/* v166: muted pitcher-style odds/feed text and ESPN-only feed headshots */
+.score-card-odds {
+  min-width: 2.32rem !important;
+  color: var(--score-meta) !important;
+  font-size: .58rem !important;
+  font-weight: 500 !important;
+  line-height: 1.05 !important;
+  letter-spacing: -.005em !important;
+  text-transform: none !important;
+}
+
+.team-injury-row .team-feed-subtitle,
+.team-transaction-row .team-feed-subtitle {
+  color: var(--score-meta) !important;
+  font-size: .72rem !important;
+  font-weight: 500 !important;
+  letter-spacing: -.005em !important;
+  line-height: 1.22 !important;
+}
+
+.team-transaction-row .team-feed-avatar span {
+  color: #fff !important;
+  font-size: 1.08rem !important;
+  transform: translateY(.24rem) !important;
+}
+
+.team-feed-avatar-mlb span {
+  color: #fff !important;
+}
+
+@media (max-width: 420px) {
+  .score-card-odds {
+    min-width: 2.2rem !important;
+    font-size: .56rem !important;
+  }
+
+  .team-transaction-row .team-feed-avatar span {
+    transform: translateY(.25rem) !important;
+  }
+}

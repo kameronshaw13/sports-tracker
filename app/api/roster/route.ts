@@ -21,7 +21,7 @@
 //         athlete by name match.
 //      d. ESPN headshots are keyed by ESPN athlete ID. For 40-man players
 //         that ESPN doesn't have profile data for (rare but happens for
-//         September call-ups), we fall back to MLB's headshot CDN.
+//         September call-ups), the client falls back to initials.
 //
 // 2) NFL position groups are now FINE-GRAINED. Old v20.1 was just
 //    Offense / Defense / Special Teams which the user found too coarse.
@@ -57,7 +57,6 @@ import {
   getTeamRoster,
   getTeamPage,
   getMlbFortyManRoster,
-  getMlbHeadshotUrl,
   getMlbTeamId,
   getMlbSeasonPlayerStats,
   MlbRosterEntry,
@@ -451,7 +450,7 @@ function normalizeMlbPlayer(
   }
 
   const espnId = espnProfile?.id ? String(espnProfile.id) : null;
-  const headshot = readEspnHeadshot(espnProfile, "mlb", espnId) || getMlbHeadshotUrl(entry.mlbId);
+  const headshot = readEspnHeadshot(espnProfile, "mlb", espnId);
 
   // Build an ESPN-style "injury narrative" for the injured tab. We don't get
   // the rich detail (body part, expected return) from MLB statsapi's roster

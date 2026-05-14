@@ -646,6 +646,9 @@ function gameMatchesFavorites(game: any, favoriteKeys: Set<string>, league: Leag
 }
 
 function sublineForGame(league: League, game: any, density: ScoreDensity) {
+  if (game.status?.state === "post") {
+    return completedOddsLine(game) || game.status?.detail || "Final";
+  }
   if (league === "mlb") {
     const withInitial = density === "expanded";
     if (game.status?.state === "pre") return pitcherNameMatchup(game.pitchers || "TBD vs TBD", withInitial);
@@ -654,9 +657,48 @@ function sublineForGame(league: League, game: any, density: ScoreDensity) {
   if ((league === "nba" || league === "nhl" || league === "mlb") && game.isPlayoff) {
     return game.seriesGame || game.seriesSummary || "";
   }
-  if (game.status?.state === "post") return game.status?.detail || "Final";
   if (game.note) return game.note;
   return game.status?.type?.shortDetail || game.status?.detail || "";
+}
+
+function completedOddsLine(game: any): string | null {
+  const odds = game?.odds;
+  if (!odds) return null;
+
+  const awayScore = Number(game?.away?.score);
+  const homeScore = Number(game?.home?.score);
+  const totalRuns = awayScore + homeScore;
+  const hasScore = Number.isFinite(awayScore) && Number.isFinite(homeScore);
+
+  const winner = hasScore && awayScore !== homeScore
+    ? awayScore > homeScore
+      ? { team: game.away, odds: odds.awayMoneyLine }
+      : { team: game.home, odds: odds.homeMoneyLine }
+    : null;
+
+  const parts: string[] = [];
+  if (winner?.team && winner.odds) {
+    parts.push(`${favoriteTeamLabel(winner.team, game.league || "mlb")} (${winner.odds})`);
+  }
+
+  const total = parseOverUnder(odds.overUnder);
+  if (hasScore && total != null) {
+    const label = totalRuns > total ? "Over" : totalRuns < total ? "Under" : "Push";
+    parts.push(`${label} ${formatTotal(total)}`);
+  }
+
+  return parts.length ? parts.join(", ") : null;
+}
+
+function parseOverUnder(value: any): number | null {
+  const match = String(value || "").match(/\d+(?:\.\d+)?/);
+  if (!match) return null;
+  const total = Number(match[0]);
+  return Number.isFinite(total) ? total : null;
+}
+
+function formatTotal(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1).replace(/\.0$/, "");
 }
 
 function statusRank(game: any) {
