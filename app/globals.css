@@ -13373,3 +13373,74 @@ main.view-more:has(.manage-teams-page) {
     transform: translateX(-.52rem) !important;
   }
 }
+
+/* v157: tiny GameTracker status nudge plus flatter sticky standings page */
+.game-score-status.is-live {
+  transform: translateX(-.42rem) !important;
+}
+
+.game-score-status.is-final {
+  transform: translateX(.14rem) !important;
+}
+
+.standings-page .standings-sticky-shell {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 80 !important;
+  background: var(--bg) !important;
+  box-shadow: 0 1px 0 var(--border) !important;
+}
+
+.standings-page .standings-topbar {
+  background: var(--bg) !important;
+}
+
+.standings-page .standings-league-tabs {
+  margin-top: 0 !important;
+  background: var(--bg) !important;
+}
+
+.standings-page .standings-mode-wrap {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  background: var(--bg) !important;
+}
+
+.standings-page .standings-mode-grid {
+  padding: 0 .5rem;
+}
+
+.standings-page .standings-content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-top: .45rem !important;
+}
+
+.standings-page .standings-table-card {
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-radius: 0 !important;
+  background: var(--surface) !important;
+  box-shadow: none !important;
+}
+
+.standings-page .standings-table-title {
+  border-radius: 0 !important;
+}
+
+.standings-page .standings-mode-btn {
+  border-radius: .42rem !important;
+  line-height: 1.05 !important;
+  padding-top: .62rem !important;
+  padding-bottom: .5rem !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-status.is-live {
+    transform: translateX(-.48rem) !important;
+  }
+
+  .game-score-status.is-final {
+    transform: translateX(.12rem) !important;
+  }
+}
