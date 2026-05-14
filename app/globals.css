@@ -1561,6 +1561,35 @@ html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img {
   }
 }
 
+/* v179: final label a touch farther right, scores unchanged */
+.game-score-status.is-final {
+  left: calc(50% + .98rem) !important;
+  width: 5.4rem !important;
+  transform: translateX(-50%) !important;
+  text-align: center !important;
+}
+
+.game-score-score,
+.game-score-team-away .game-score-score,
+.game-score-team-home .game-score-score {
+  top: 4.46rem !important;
+  transform: translateY(-50%) !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-status.is-final {
+    left: calc(50% + .88rem) !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .game-score-score,
+  .game-score-team-away .game-score-score,
+  .game-score-team-home .game-score-score {
+    top: 4.46rem !important;
+    transform: translateY(-50%) !important;
+  }
+}
+
 /* v177: phone header status micro-tune, score numbers intentionally unchanged */
 .game-score-status.is-pre {
   left: calc(50% + 1.32rem) !important;
@@ -14324,14 +14353,14 @@ main.view-scores .pull-refresh-indicator {
     transform: translateY(-50%) !important;
   }
 }
-/* v178: actual final EOF override for phone/web status labels, scores unchanged */
+/* v178/v179: actual final EOF override for phone/web status labels, scores unchanged */
 .game-score-status.is-pre {
   left: calc(50% + 1.32rem) !important;
   transform: translateX(-50%) !important;
 }
 
 .game-score-status.is-final {
-  left: calc(50% + .78rem) !important;
+  left: calc(50% + .98rem) !important;
   width: 5.4rem !important;
   transform: translateX(-50%) !important;
   text-align: center !important;
@@ -14357,7 +14386,7 @@ main.view-scores .pull-refresh-indicator {
   }
 
   .game-score-status.is-final {
-    left: calc(50% + .7rem) !important;
+    left: calc(50% + .88rem) !important;
     transform: translateX(-50%) !important;
   }
 
