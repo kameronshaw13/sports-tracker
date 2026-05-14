@@ -146,7 +146,7 @@ function formatOverUnder(value: any): string | null {
   const raw = typeof value === "object" ? (value?.displayValue || value?.value) : value;
   const num = Number(String(raw).replace(/[^\d.-]/g, ""));
   if (!Number.isFinite(num) || num <= 0) return null;
-  return `O/U ${Number.isInteger(num) ? num : num.toFixed(1).replace(/\.0$/, "")}`;
+  return `o${Number.isInteger(num) ? num : num.toFixed(1).replace(/\.0$/, "")}`;
 }
 
 function extractOdds(comp: any) {

@@ -55,6 +55,7 @@ export default function Home() {
   const [activeTeam, setActiveTeam] = useState<TeamConfig | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("schedule");
   const [manageOpen, setManageOpen] = useState(false);
+  const [manageReturnView, setManageReturnView] = useState<ViewId>("more");
   const [leagueInitial, setLeagueInitial] = useState<string>("mlb");
   const [standingsInitial, setStandingsInitial] = useState<string>("mlb");
   const [returnGame, setReturnGame] = useState<{ league: string; eventId: string } | null>(null);
@@ -124,9 +125,10 @@ export default function Home() {
   }, [selectedGame, view]);
 
   const openManage = useCallback(() => {
+    setManageReturnView(view === "home" ? "home" : "more");
     setManageOpen(true);
     setView("more");
-  }, []);
+  }, [view]);
 
   const openGame = useCallback((league: string, eventId: string, returnView: ViewId) => {
     gameReturnScrollRef.current = typeof window !== "undefined" ? window.scrollY : 0;
@@ -342,7 +344,10 @@ export default function Home() {
         )}
 
         {!selectedPlayer && !selectedGame && !showReturnGame && view === "more" && manageOpen && (
-          <ManageTeams onClose={() => setManageOpen(false)} />
+          <ManageTeams onClose={() => {
+            setManageOpen(false);
+            setView(manageReturnView);
+          }} />
         )}
 
         {!selectedPlayer && !selectedGame && !showReturnGame && view === "more" && !manageOpen && (

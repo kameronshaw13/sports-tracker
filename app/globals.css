@@ -13676,3 +13676,44 @@ main.view-scores .pull-refresh-indicator {
     min-height: 3.08rem !important;
   }
 }
+
+/* v165: league header/standings polish and compact score odds */
+.league-page-back {
+  transform: translateY(-.16rem) !important;
+}
+
+.league-standings-page .standings-table-card {
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-radius: 0 !important;
+  background: var(--surface) !important;
+  box-shadow: none !important;
+}
+
+.league-standings-page .standings-table-title {
+  border-radius: 0 !important;
+}
+
+.league-standings-page .standings-table-card + .standings-table-card,
+.league-standings-page .space-y-3 > .standings-table-card,
+.league-standings-page .space-y-4 > .standings-table-card {
+  margin-top: 0 !important;
+}
+
+.score-card-odds {
+  min-width: 2.05rem !important;
+  font-size: .5rem !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+}
+
+@media (max-width: 420px) {
+  .league-page-back {
+    transform: translateY(-.18rem) !important;
+  }
+
+  .score-card-odds {
+    min-width: 1.95rem !important;
+    font-size: .48rem !important;
+  }
+}
