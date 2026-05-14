@@ -35,16 +35,22 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
       window.history.scrollRestoration = "manual";
     }
 
-    const snapTop = () => window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    const snapTop = () => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
     snapTop();
     let frameTwo = 0;
     const frameOne = window.requestAnimationFrame(() => {
       snapTop();
       frameTwo = window.requestAnimationFrame(snapTop);
     });
+    const timeout = window.setTimeout(snapTop, 80);
 
     return () => {
       window.cancelAnimationFrame(frameOne);
+      window.clearTimeout(timeout);
       if (frameTwo) window.cancelAnimationFrame(frameTwo);
     };
   }, [league, eventId, initialTab]);

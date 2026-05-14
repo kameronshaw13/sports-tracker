@@ -13589,3 +13589,31 @@ main.view-leaguePage {
     --league-fixed-head: calc(10.62rem + env(safe-area-inset-top, 0px));
   }
 }
+
+/* v163: tiny standings breathing room and smoother first paint/datebar behavior */
+.standings-page {
+  --standings-fixed-head: 17.05rem;
+}
+
+.standings-page:not(:has(.standings-mode-wrap)) {
+  --standings-fixed-head: 13.05rem;
+}
+
+main:has(.game-detail-page) {
+  padding-top: 0 !important;
+}
+
+.retro-datebar {
+  scroll-behavior: auto !important;
+  overscroll-behavior-x: contain;
+}
+
+@media (max-width: 420px) {
+  .standings-page {
+    --standings-fixed-head: 16.8rem;
+  }
+
+  .standings-page:not(:has(.standings-mode-wrap)) {
+    --standings-fixed-head: 12.85rem;
+  }
+}

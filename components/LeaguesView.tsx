@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
@@ -207,9 +207,8 @@ function CbsDateBar({ dayOffset, setDayOffset }: { dayOffset: number; setDayOffs
   const selectedRef = useRef<HTMLButtonElement | null>(null);
   const days = useMemo(() => Array.from({ length: 15 }, (_, i) => i - 7).map((offset) => ({ offset, label: dateBarLabel(offset) })), []);
 
-  useEffect(() => {
-    const id = window.setTimeout(() => selectedRef.current?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" }), 50);
-    return () => window.clearTimeout(id);
+  useLayoutEffect(() => {
+    selectedRef.current?.scrollIntoView({ behavior: "auto", inline: "center", block: "nearest" });
   }, [dayOffset]);
 
   return (

@@ -33,11 +33,17 @@ const PlayerDetail = dynamic(() => import("@/components/PlayerDetail"));
 
 function resetScrollTop() {
   if (typeof window === "undefined") return;
-  window.scrollTo({ top: 0, behavior: "auto" });
+  const snapTop = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
+  snapTop();
   window.requestAnimationFrame(() => {
-    window.scrollTo({ top: 0, behavior: "auto" });
-    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
+    snapTop();
+    window.requestAnimationFrame(snapTop);
   });
+  window.setTimeout(snapTop, 80);
 }
 
 export default function Home() {
@@ -249,7 +255,8 @@ export default function Home() {
     </>
   );
 
-  const usesFullTopHeader = !selectedPlayer && !selectedGame && !showReturnGame && (view === "home" || view === "scores" || view === "standings" || view === "more" || view === "teamPage" || view === "leaguePage");
+  const gameDetailOpen = !selectedPlayer && Boolean(selectedGame || showReturnGame);
+  const usesFullTopHeader = gameDetailOpen || (!selectedPlayer && !selectedGame && !showReturnGame && (view === "home" || view === "scores" || view === "standings" || view === "more" || view === "teamPage" || view === "leaguePage"));
   const pullRefreshDisabled = Boolean(
     selectedPlayer ||
     selectedGame ||
