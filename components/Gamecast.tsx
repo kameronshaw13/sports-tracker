@@ -537,14 +537,14 @@ function GenericTabbedPlays({ data, error, isLoading, emptyText }: { data: any; 
         <GamecastTab label="Scoring" active={tab === "scoring"} onClick={() => setTab("scoring")} />
         <GamecastTab label="Plays" active={tab === "plays"} onClick={() => setTab("plays")} />
       </div>
-      {tab === "live" && <GenericPlayList plays={recent} home={data?.home} away={data?.away} />}
+      {tab === "live" && <GenericPlayList plays={recent} home={data?.home} away={data?.away} emphasizeScoring />}
       {tab === "scoring" && (scoring.length ? <GenericPeriodGroups sections={groupByPeriod(scoring)} home={data?.home} away={data?.away} /> : <UnavailableCard text="No scoring plays yet." />)}
       {tab === "plays" && (
         <div className="space-y-3">
           {byPeriod.map((section) => (
             <div key={section.period}>
               <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>{periodLabel(section.period)}</div>
-              <GenericPlayList plays={section.plays} home={data?.home} away={data?.away} />
+              <GenericPlayList plays={section.plays} home={data?.home} away={data?.away} emphasizeScoring />
             </div>
           ))}
         </div>
@@ -576,7 +576,7 @@ function GenericPeriodGroups({ sections, home, away }: { sections: { period: num
   );
 }
 
-function GenericPlayList({ plays, home, away }: { plays: any[]; home?: TeamMeta; away?: TeamMeta }) {
+function GenericPlayList({ plays, home, away, emphasizeScoring = false }: { plays: any[]; home?: TeamMeta; away?: TeamMeta; emphasizeScoring?: boolean }) {
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
       {plays.map((p: any) => {
@@ -586,7 +586,7 @@ function GenericPlayList({ plays, home, away }: { plays: any[]; home?: TeamMeta;
             <div className="flex items-start gap-2">
               {team?.logo ? <Image src={team.logo} alt={team.abbr} width={22} height={22} className="mt-0.5 object-contain flex-shrink-0 logo-outline-dark" unoptimized /> : team ? <span className="mt-1 w-2 h-2 rounded-full flex-shrink-0" style={{ background: team.color || "var(--text-3)" }} /> : null}
               <div className="min-w-0">
-                <div className="text-sm font-semibold">{p.text}</div>
+                <div className={`text-sm font-semibold gamecast-generic-play-text ${emphasizeScoring && p.scoringPlay ? "is-scoring-play" : ""}`}>{p.text}</div>
                 <div className="text-xs mt-1" style={{ color: "var(--text-3)" }}>{[p.clock, periodLabel(p.period), team?.abbr].filter(Boolean).join(" · ")}</div>
               </div>
             </div>

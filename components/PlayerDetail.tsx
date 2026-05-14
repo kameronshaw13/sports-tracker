@@ -283,8 +283,8 @@ function GameLogTable({ rows, league, position }: { rows: any[]; league: string;
   const statLabels = gameLogColumns(rows, league, position);
   const isPitcher = league === "mlb" && isMlbPitcherPosition(position || "");
   const gridTemplateColumns = isPitcher
-    ? `2.72rem 3.48rem repeat(7, 1.68rem)`
-    : `2.72rem 3.48rem 2.48rem repeat(5, 1.74rem)`;
+    ? `2.72rem 3.82rem repeat(7, 1.78rem)`
+    : `2.72rem 3.82rem 2.62rem repeat(5, 1.84rem)`;
   return (
     <div className={`player-game-log-list ${isPitcher ? "is-pitcher-log" : "is-hitter-log"}`}>
       <div className="player-game-log-header" style={{ gridTemplateColumns }}>

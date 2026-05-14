@@ -59,7 +59,7 @@
 .player-detail-body {
   position: relative;
   z-index: 1;
-  padding-top: calc(12.55rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
+  padding-top: calc(13.08rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
 }
 
 .player-detail-season-heading {
@@ -96,6 +96,11 @@
   object-fit: cover !important;
 }
 
+.gamecast-player-photo {
+  width: 3.12rem !important;
+  height: 3.12rem !important;
+}
+
 .player-game-log-list {
   overflow-x: hidden !important;
   overscroll-behavior-x: auto;
@@ -130,7 +135,14 @@
 
 .player-game-log-header,
 .player-game-log-row {
-  column-gap: .24rem !important;
+  column-gap: .28rem !important;
+}
+
+.gamecast-play-text.is-scoring-play,
+.gamecast-generic-play-text.is-scoring-play {
+  color: color-mix(in srgb, var(--text) 94%, #ffffff 6%) !important;
+  font-weight: 950 !important;
+  text-shadow: 0 0 8px rgba(255, 248, 236, .16) !important;
 }
 
 .player-game-log-header span,
@@ -162,6 +174,6 @@
   }
 
   .player-detail-body {
-    padding-top: calc(12.14rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
+    padding-top: calc(12.66rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
   }
 }
