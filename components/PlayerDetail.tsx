@@ -164,57 +164,59 @@ export default function PlayerDetail({ player, onBack }: Props) {
 
   return (
     <div className="-mx-4 sm:mx-0 player-detail-page">
-      <div className="player-detail-topbar">
-        <BackButton onBack={onBack} />
-        <div className="player-detail-top-title">
-          <span>{displayName}</span>
-          {position && <em>{position}</em>}
-        </div>
-        <div className="player-detail-top-spacer" />
-      </div>
-
-      <section className="player-detail-hero">
-        <div className="player-detail-hero-main">
-          <div className="player-detail-headshot">
-            {headshot ? (
-              <Image
-                src={headshot}
-                alt={displayName}
-                width={104}
-                height={104}
-                className="object-cover"
-                unoptimized
-                onError={() => setHeadshotIndex((i) => i + 1)}
-              />
-            ) : (
-              <span>{initials(displayName)}</span>
-            )}
+      <div className="player-detail-sticky-shell">
+        <div className="player-detail-topbar">
+          <BackButton onBack={onBack} />
+          <div className="player-detail-top-title">
+            <span>{displayName}</span>
+            {position && <em>{position}</em>}
           </div>
-          <div className="player-detail-title-block">
-            <h2>{displayName}</h2>
-            <div>
-              {[jersey ? `#${jersey}` : null, position].filter(Boolean).join(" ") || profile.team || player.league.toUpperCase()}
+          <div className="player-detail-top-spacer" />
+        </div>
+
+        <section className="player-detail-hero">
+          <div className="player-detail-hero-main">
+            <div className="player-detail-headshot">
+              {headshot ? (
+                <Image
+                  src={headshot}
+                  alt={displayName}
+                  width={104}
+                  height={104}
+                  className="object-cover"
+                  unoptimized
+                  onError={() => setHeadshotIndex((i) => i + 1)}
+                />
+              ) : (
+                <span>{initials(displayName)}</span>
+              )}
             </div>
-            {profile.bio && <p>{profile.bio}</p>}
-          </div>
-        </div>
-        {primaryGroup.length > 0 && (
-          <div className="player-detail-feature-stats">
-            {primaryGroup.map((s) => (
-              <div key={s.label}>
-                <strong>{s.value}</strong>
-                <span>{s.label}</span>
+            <div className="player-detail-title-block">
+              <h2>{displayName}</h2>
+              <div>
+                {[jersey ? `#${jersey}` : null, position].filter(Boolean).join(" ") || profile.team || player.league.toUpperCase()}
               </div>
-            ))}
+              {profile.bio && <p>{profile.bio}</p>}
+            </div>
           </div>
-        )}
-      </section>
+          {primaryGroup.length > 0 && (
+            <div className="player-detail-feature-stats">
+              {primaryGroup.map((s) => (
+                <div key={s.label}>
+                  <strong>{s.value}</strong>
+                  <span>{s.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
 
-      <div className="player-detail-tabs" role="tablist">
-        <div>
-          <TabButton label="Bio" active={tab === "bio"} onClick={() => setTab("bio")} />
-          <TabButton label="Stats" active={tab === "stats"} onClick={() => setTab("stats")} />
-          <TabButton label="Game Log" active={tab === "gamelog"} onClick={() => setTab("gamelog")} />
+        <div className="player-detail-tabs" role="tablist">
+          <div>
+            <TabButton label="Bio" active={tab === "bio"} onClick={() => setTab("bio")} />
+            <TabButton label="Stats" active={tab === "stats"} onClick={() => setTab("stats")} />
+            <TabButton label="Game Log" active={tab === "gamelog"} onClick={() => setTab("gamelog")} />
+          </div>
         </div>
       </div>
 
@@ -286,7 +288,6 @@ function BioPanel({ profile, league }: { profile: Profile; league: string }) {
     ["Height", fields.height],
     ["Weight", fields.weight],
     ["Born", fields.born],
-    ["School", fields.school || "—"],
     ["Experience", fields.experience],
     ["Bats", fields.bats],
     ["Throws", fields.throws],
@@ -338,14 +339,43 @@ function gameLogValue(row: any, label: string) {
 function buildHeaderStats(league: string, position: string, groups: { name: string; stats: { label: string; value: string }[] }[]) {
   const all = groups.flatMap((g) => g.stats);
   const byLabel = new Map(all.map((s) => [s.label.toUpperCase(), s]));
-  if (league === "mlb" && !/^(P|SP|RP|CP|CL)$/.test(position.toUpperCase())) {
+  if (league === "mlb" && isMlbPitcherPosition(position)) {
+    const wins = byLabel.get("W")?.value;
+    const losses = byLabel.get("L")?.value;
+    const wl = wins != null || losses != null ? { label: "W-L", value: `${wins || "0"}-${losses || "0"}` } : null;
+    return [wl, byLabel.get("ERA"), byLabel.get("K") || byLabel.get("SO")].filter(Boolean) as { label: string; value: string }[];
+  }
+  if (league === "mlb") {
     return ["AVG", "HR", "RBI"].map((label) => byLabel.get(label)).filter(Boolean) as { label: string; value: string }[];
   }
   return all.slice(0, 3);
 }
 function formatStatsForDisplay(stats: { label: string; value: string }[], league: string, position: string) {
-  if (league !== "mlb" || /^(P|SP|RP|CP|CL)$/.test(position.toUpperCase())) return stats;
+  if (league !== "mlb") return stats;
   const byLabel = new Map(stats.map((s) => [s.label.toUpperCase(), s.value]));
+  if (isMlbPitcherPosition(position)) {
+    const wins = byLabel.get("W");
+    const losses = byLabel.get("L");
+    const record = wins != null || losses != null ? `${wins || "0"}-${losses || "0"}` : null;
+    const order: [string, string, string[]][] = [
+      ["G", "Games Pitched", ["G"]],
+      ["GS", "Games Started", ["GS"]],
+      ["ERA", "ERA", ["ERA"]],
+      ["WHIP", "WHIP", ["WHIP"]],
+      ["K", "Strikeouts", ["K", "SO"]],
+      ["BB", "Walks", ["BB"]],
+      ["IP", "Innings Pitched", ["IP"]],
+      ["W-L", "Record", []],
+      ["SV", "Saves", ["SV"]],
+      ["BS", "Blown Saves", ["BS"]],
+    ];
+    return order
+      .map(([, label, keys]) => {
+        const value = label === "Record" ? record : keys.map((k) => byLabel.get(k)).find(Boolean);
+        return value ? { label, value } : null;
+      })
+      .filter(Boolean) as { label: string; value: string }[];
+  }
   const order: [string, string, string[]][] = [
     ["G", "Games Played", ["G"]],
     ["AVG", "Average", ["AVG"]],
@@ -367,4 +397,7 @@ function formatStatsForDisplay(stats: { label: string; value: string }[], league
       return value ? { label, value } : null;
     })
     .filter(Boolean) as { label: string; value: string }[];
+}
+function isMlbPitcherPosition(position: string) {
+  return /^(P|SP|RP|CP|CL)$/.test(String(position || "").toUpperCase());
 }

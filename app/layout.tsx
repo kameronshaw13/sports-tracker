@@ -1,4 +1,5 @@
 import "./globals.css";
+import "./player-overrides.css";
 import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {

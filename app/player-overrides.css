@@ -1,0 +1,110 @@
+/* Player page final overrides loaded after globals.css. */
+.player-detail-sticky-shell {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 120 !important;
+  background: var(--surface) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.player-detail-sticky-shell .player-detail-topbar,
+.player-detail-sticky-shell .player-detail-hero,
+.player-detail-sticky-shell .player-detail-tabs {
+  position: static !important;
+  top: auto !important;
+}
+
+.player-detail-topbar {
+  min-height: calc(2.72rem + env(safe-area-inset-top, 0px)) !important;
+  padding: calc(.12rem + env(safe-area-inset-top, 0px)) .82rem .12rem !important;
+  border-bottom: 0 !important;
+}
+
+.player-detail-topbar button {
+  transform: translateY(-.02rem) !important;
+}
+
+.player-detail-hero-main {
+  padding-top: .68rem !important;
+  padding-bottom: .56rem !important;
+}
+
+.player-detail-feature-stats {
+  padding-top: .04rem !important;
+  padding-bottom: .84rem !important;
+}
+
+.player-detail-tabs {
+  border-top: 1px solid var(--border) !important;
+}
+
+.player-detail-tabs button {
+  min-height: 2.68rem !important;
+  padding-top: .34rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.player-detail-tabs button.is-active::after {
+  bottom: 0 !important;
+}
+
+.player-detail-body {
+  position: relative;
+  z-index: 1;
+}
+
+.player-detail-season-heading {
+  padding-top: 1rem !important;
+  padding-bottom: .78rem !important;
+}
+
+.player-detail-stat-item,
+.player-detail-bio-list div,
+.player-game-log-row,
+.player-game-log-header {
+  align-items: center !important;
+}
+
+.player-detail-stat-item {
+  padding-top: .22rem !important;
+}
+
+.player-detail-bio-list div {
+  padding-top: .24rem !important;
+}
+
+.player-game-log-header {
+  position: sticky !important;
+  top: calc(13.3rem + env(safe-area-inset-top, 0px)) !important;
+  padding-top: .24rem !important;
+}
+
+.player-game-log-row {
+  padding-top: .24rem !important;
+}
+
+.gamecast-player-photo img {
+  object-fit: cover !important;
+}
+
+@media (max-width: 420px) {
+  .player-detail-topbar {
+    min-height: calc(2.58rem + env(safe-area-inset-top, 0px)) !important;
+    padding-top: calc(.08rem + env(safe-area-inset-top, 0px)) !important;
+  }
+
+  .player-detail-hero-main {
+    padding-top: .56rem !important;
+    padding-bottom: .5rem !important;
+  }
+
+  .player-detail-feature-stats {
+    padding-bottom: .76rem !important;
+  }
+
+  .player-game-log-header {
+    top: calc(12.7rem + env(safe-area-inset-top, 0px)) !important;
+  }
+}

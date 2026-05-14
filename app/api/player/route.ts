@@ -140,10 +140,13 @@ function pickPositionRow(league: string, position: string | undefined, map: Flat
   if (league === "mlb") {
     const isPitcher = PITCHER_POS.has(pos) || hasAny(map, ["pitching.ERA", "pitching.WHIP", "ERA", "WHIP"]);
     return isPitcher
-      ? buildStatRow([
+        ? buildStatRow([
+          ["G", flatGet(map, ["pitching.gamesPlayed", "gamesPlayed"])],
+          ["GS", flatGet(map, ["pitching.gamesStarted", "gamesStarted"])],
           ["W", flatGet(map, ["pitching.wins", "wins"])],
           ["L", flatGet(map, ["pitching.losses", "losses"])],
           ["SV", flatGet(map, ["pitching.saves", "saves"])],
+          ["BS", flatGet(map, ["pitching.blownSaves", "blownSaves"])],
           ["IP", flatGet(map, ["pitching.innings", "innings"])],
           ["H", flatGet(map, ["pitching.hits", "hits"])],
           ["ER", flatGet(map, ["pitching.earnedRuns", "earnedRuns"])],
@@ -308,6 +311,7 @@ function mlbSeasonMap(data: any): { positionHint?: string; stats: FlatMap } {
       setNumeric(map, "pitching.wins", stat.wins);
       setNumeric(map, "pitching.losses", stat.losses);
       setNumeric(map, "pitching.saves", stat.saves);
+      setNumeric(map, "pitching.blownSaves", stat.blownSaves);
       setNumeric(map, "pitching.holds", stat.holds);
       setNumeric(map, "pitching.innings", stat.inningsPitched);
       setNumeric(map, "pitching.hits", stat.hits);

@@ -205,8 +205,8 @@ function LiveAtBatCard({
   onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
 }) {
   const hasLiveAtBat = currentAtBat?.isComplete === false;
-  const batter = currentAtBat?.batter || (hasLiveAtBat ? situation?.batter : null) || null;
-  const pitcher = currentAtBat?.pitcher || (hasLiveAtBat ? situation?.pitcher : null) || null;
+  const batter = mergeLivePerson(hasLiveAtBat ? situation?.batter : null, currentAtBat?.batter);
+  const pitcher = mergeLivePerson(hasLiveAtBat ? situation?.pitcher : null, currentAtBat?.pitcher);
   const count = hasLiveAtBat ? countText(situation) : null;
   const outs = hasLiveAtBat && typeof situation?.outs === "number" ? situation.outs : null;
 
@@ -475,6 +475,18 @@ function playerClickHandler(person: Person | null | undefined, onPlayerClick: ((
   const name = person?.displayName || person?.name || person?.shortName || fallbackName;
   if (!id || !onPlayerClick) return undefined;
   return () => onPlayerClick({ id: String(id), name, league: "mlb" });
+}
+
+function mergeLivePerson(primary?: Person | null, fallback?: Person | null) {
+  if (!primary && !fallback) return null;
+  if (!primary) return fallback || null;
+  if (!fallback) return primary;
+  return {
+    ...fallback,
+    ...primary,
+    stats: Object.keys(primary.stats || {}).length ? primary.stats : fallback.stats,
+    headshot: primary.headshot || fallback.headshot,
+  };
 }
 
 function espnHeadshot(person?: Person | null) {
