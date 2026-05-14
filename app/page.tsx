@@ -46,8 +46,11 @@ export default function Home() {
   const [showReturnGame, setShowReturnGame] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; league: string; teamKey?: string } | null>(null);
   const [selectedGame, setSelectedGame] = useState<{ league: string; eventId: string } | null>(null);
+  const [selectedGameTab, setSelectedGameTab] = useState<"main" | "boxscore">("main");
   const [teamReturnView, setTeamReturnView] = useState<ViewId>("scores");
   const lastScreenRef = useRef("");
+  const gameReturnScrollRef = useRef(0);
+  const pendingGameRestoreRef = useRef<number | null>(null);
 
   const { favorites } = useFavoriteTeams();
 
@@ -96,13 +99,24 @@ export default function Home() {
     window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
   }, [view, activeTeam?.key, activeTab, manageOpen, leagueInitial, standingsInitial, selectedGame, selectedPlayer, showReturnGame, returnGame]);
 
+  useEffect(() => {
+    if (selectedGame || pendingGameRestoreRef.current == null) return;
+    const y = pendingGameRestoreRef.current;
+    pendingGameRestoreRef.current = null;
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "auto" }));
+    });
+  }, [selectedGame, view]);
+
   const openManage = useCallback(() => {
     setManageOpen(true);
     setView("more");
   }, []);
 
   const openGame = useCallback((league: string, eventId: string, returnView: ViewId) => {
+    gameReturnScrollRef.current = typeof window !== "undefined" ? window.scrollY : 0;
     setTeamReturnView(returnView);
+    setSelectedGameTab("main");
     setReturnGame(null);
     setShowReturnGame(false);
     setSelectedGame({ league, eventId });
@@ -241,9 +255,16 @@ export default function Home() {
           <GameDetail
             league={selectedGame.league}
             eventId={selectedGame.eventId}
-            onClose={() => setSelectedGame(null)}
+            initialTab={selectedGameTab}
+            onClose={() => {
+              pendingGameRestoreRef.current = gameReturnScrollRef.current;
+              setSelectedGame(null);
+            }}
             onTeamClick={handleTeamLogoClick}
-            onPlayerClick={(p) => setSelectedPlayer(p)}
+            onPlayerClick={(p, returnTab = "main") => {
+              setSelectedGameTab(returnTab);
+              setSelectedPlayer(p);
+            }}
           />
         )}
 
@@ -255,13 +276,17 @@ export default function Home() {
           <GameDetail
             league={returnGame.league}
             eventId={returnGame.eventId}
+            initialTab={selectedGameTab}
             onClose={() => {
               setShowReturnGame(false);
               setReturnGame(null);
               setView(teamReturnView || "scores");
             }}
             onTeamClick={handleTeamLogoClick}
-            onPlayerClick={(p) => setSelectedPlayer(p)}
+            onPlayerClick={(p, returnTab = "main") => {
+              setSelectedGameTab(returnTab);
+              setSelectedPlayer(p);
+            }}
           />
         )}
 
@@ -310,7 +335,7 @@ export default function Home() {
 
         {!selectedPlayer && !selectedGame && !showReturnGame && view === "teamPage" && renderActiveTeamPage(false)}
 
-        {!selectedPlayer && !selectedGame && !showReturnGame && view === "scores" && <LeaguesView onTeamLogoClick={handleTeamLogoClick} onPlayerClick={(p) => setSelectedPlayer(p)} onStandingsClick={(league) => { setStandingsInitial(league); setView("standings"); }} />}
+        {!selectedPlayer && !selectedGame && !showReturnGame && view === "scores" && <LeaguesView onTeamLogoClick={handleTeamLogoClick} onPlayerClick={(p, returnTab = "main") => { setSelectedGameTab(returnTab); setSelectedPlayer(p); }} onGameContext={(game, returnTab, scrollY) => { gameReturnScrollRef.current = scrollY; setSelectedGameTab(returnTab); setSelectedGame(game); }} onStandingsClick={(league) => { setStandingsInitial(league); setView("standings"); }} />}
 
         {!selectedPlayer && !selectedGame && !showReturnGame && view === "leaguePage" && (
           <LeaguesView
@@ -318,7 +343,8 @@ export default function Home() {
             leaguePage
             onBack={() => setView("more")}
             onTeamLogoClick={handleTeamLogoClick}
-            onPlayerClick={(p) => setSelectedPlayer(p)}
+            onPlayerClick={(p, returnTab = "main") => { setSelectedGameTab(returnTab); setSelectedPlayer(p); }}
+            onGameContext={(game, returnTab, scrollY) => { gameReturnScrollRef.current = scrollY; setSelectedGameTab(returnTab); setSelectedGame(game); }}
           />
         )}
 

@@ -14,15 +14,16 @@ type Props = {
   eventId: string;
   onClose?: () => void;
   onTeamClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
-  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string }, returnTab?: TabId) => void;
+  initialTab?: TabId;
 };
 
 type TabId = "main" | "boxscore";
 
-export default function GameDetail({ league, eventId, onClose, onTeamClick, onPlayerClick }: Props) {
+export default function GameDetail({ league, eventId, onClose, onTeamClick, onPlayerClick, initialTab = "main" }: Props) {
   const freshKey = useFreshKey();
   const { data, error, isLoading } = useSWR(`/api/summary?league=${league}&event=${eventId}&_t=${freshKey}`, fetcher, { refreshInterval: 15_000 });
-  const [activeTab, setActiveTab] = useState<TabId>("main");
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
 
   if (isLoading) return <div className="space-y-3"><div className="h-12 animate-pulse" style={{ background: "var(--surface)" }} /><div className="h-44 animate-pulse" style={{ background: "var(--surface)" }} /></div>;
   if (error || !data) return <div className="space-y-3"><GameTopBar title="Game" onClose={onClose} /><div className="p-6 text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>Couldn't load this game.</div></div>;
@@ -45,9 +46,9 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
         </div>
       </div>
       <div className="game-detail-content">
-        {activeTab === "main" && !isNonPlayed && <Gamecast league={league} eventId={eventId} isLive={isLive} situation={situation} onPlayerClick={onPlayerClick} />}
+        {activeTab === "main" && !isNonPlayed && <Gamecast league={league} eventId={eventId} isLive={isLive} situation={situation} onPlayerClick={onPlayerClick ? (p) => onPlayerClick(p, "main") : undefined} />}
         {activeTab === "main" && isNonPlayed && <div className="m-4 p-6 text-center text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>This game was {nonPlayedLabel(statusName).toLowerCase()}.</div>}
-        {activeTab === "boxscore" && <Boxscore league={league} eventId={eventId} isLive={isLive} onPlayerClick={onPlayerClick} />}
+        {activeTab === "boxscore" && <Boxscore league={league} eventId={eventId} isLive={isLive} onPlayerClick={onPlayerClick ? (p) => onPlayerClick(p, "boxscore") : undefined} />}
       </div>
     </div>
   );

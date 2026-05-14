@@ -44,7 +44,8 @@ const LEAGUE_LOGOS: Record<League, string> = {
 
 type Props = {
   onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
-  onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string }, returnTab?: "main" | "boxscore") => void;
+  onGameContext?: (game: { league: string; eventId: string }, returnTab: "main" | "boxscore", scrollY: number) => void;
   initialLeague?: string;
   leaguePage?: boolean;
   onBack?: () => void;
@@ -55,7 +56,7 @@ type LeagueTab = "scores" | "stats" | "standings";
 type LeagueLeader = { id: string; name: string; displayValue: string; team?: string; rank: number };
 type LeagueLeaderCategory = { name: string; displayName: string; leaders: LeagueLeader[] };
 
-export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLeague = "mlb", leaguePage = false, onBack, onStandingsClick }: Props) {
+export default function LeaguesView({ onTeamLogoClick, onPlayerClick, onGameContext, initialLeague = "mlb", leaguePage = false, onBack, onStandingsClick }: Props) {
   const safeInitial = VALID_LEAGUES.includes(initialLeague as League) ? (initialLeague as League) : "mlb";
   const [dayOffset, setDayOffset] = useState(0);
   const [league] = useState<League>(safeInitial);
@@ -64,6 +65,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
   const [scrolled, setScrolled] = useState(false);
   const scoresHeaderRef = useRef<HTMLDivElement | null>(null);
   const returnScrollRef = useRef(0);
+  const pendingRestoreRef = useRef<number | null>(null);
   const [scoresHeaderHeight, setScoresHeaderHeight] = useState(128);
   const { settings } = useAppSettings();
   const { favorites } = useFavoriteTeams();
@@ -76,9 +78,18 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
   };
 
   const closeEvent = () => {
+    pendingRestoreRef.current = returnScrollRef.current;
     setSelectedEvent(null);
-    window.requestAnimationFrame(() => window.scrollTo({ top: returnScrollRef.current, behavior: "auto" }));
   };
+
+  useEffect(() => {
+    if (selectedEvent || pendingRestoreRef.current == null) return;
+    const y = pendingRestoreRef.current;
+    pendingRestoreRef.current = null;
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "auto" }));
+    });
+  }, [selectedEvent, date, settings.density]);
 
   useEffect(() => {
     if (leaguePage) return;
@@ -110,7 +121,10 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
         eventId={selectedEvent.eventId}
         onClose={closeEvent}
         onTeamClick={onTeamLogoClick}
-        onPlayerClick={onPlayerClick}
+        onPlayerClick={(player, returnTab = "main") => {
+          onGameContext?.(selectedEvent, returnTab, returnScrollRef.current);
+          onPlayerClick?.(player, returnTab);
+        }}
       />
     );
   }

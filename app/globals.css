@@ -13481,3 +13481,22 @@ main.view-more:has(.manage-teams-page) {
     --standings-fixed-head: 8.75rem;
   }
 }
+
+/* v159: standings fixed-header clearance */
+.standings-page {
+  --standings-fixed-head: 13.15rem;
+}
+
+.standings-page:not(:has(.standings-mode-wrap)) {
+  --standings-fixed-head: 9.65rem;
+}
+
+@media (max-width: 420px) {
+  .standings-page {
+    --standings-fixed-head: 12.95rem;
+  }
+
+  .standings-page:not(:has(.standings-mode-wrap)) {
+    --standings-fixed-head: 9.45rem;
+  }
+}
