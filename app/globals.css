@@ -1965,6 +1965,443 @@ html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img {
   }
 }
 
+/* v182 EOF winner: final label farther right after older status overrides */
+.game-score-status.is-final {
+  left: calc(50% + 1.32rem) !important;
+  width: 5.4rem !important;
+  transform: translateX(-50%) !important;
+  text-align: center !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-status.is-final {
+    left: calc(50% + 1.16rem) !important;
+  }
+}
+
+/* v182: player detail ESPN-style compact layout + final label nudge */
+.game-score-status.is-final {
+  left: calc(50% + 1.32rem) !important;
+  width: 5.4rem !important;
+  transform: translateX(-50%) !important;
+  text-align: center !important;
+}
+
+.player-detail-page {
+  min-height: 100vh;
+  background: var(--bg) !important;
+  color: var(--text);
+  padding-bottom: calc(5.4rem + env(safe-area-inset-bottom, 0px));
+}
+
+.player-detail-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-columns: 3.75rem minmax(0, 1fr) 3.75rem;
+  align-items: end;
+  min-height: calc(5.05rem + env(safe-area-inset-top, 0px));
+  padding: calc(.5rem + env(safe-area-inset-top, 0px)) 1rem .82rem;
+  background: var(--surface) !important;
+  border-bottom: 1px solid var(--border);
+}
+
+.player-detail-top-title,
+.player-detail-top-spacer {
+  display: none !important;
+}
+
+.player-detail-topbar button {
+  align-self: end;
+  justify-self: start;
+  width: 2.8rem;
+  height: 2.8rem;
+}
+
+.player-detail-topbar button svg {
+  width: 2.15rem;
+  height: 2.15rem;
+}
+
+.player-detail-hero {
+  background: var(--surface) !important;
+  border-bottom: 1px solid var(--border);
+}
+
+.player-detail-hero-main {
+  display: grid;
+  grid-template-columns: 5.45rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  padding: 1.45rem 1.15rem 1.05rem;
+}
+
+.player-detail-headshot {
+  width: 5.15rem;
+  height: 5.15rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface-2) 92%, #fff 3%);
+  border: 1px solid color-mix(in srgb, var(--text-3) 44%, var(--border) 56%);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+}
+
+.player-detail-headshot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-detail-headshot span {
+  transform: translateY(.14rem);
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 950;
+}
+
+.player-detail-title-block h2 {
+  margin: 0;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(1.38rem, 5vw, 1.8rem);
+  line-height: 1.05;
+  letter-spacing: 0;
+  font-weight: 950;
+}
+
+.player-detail-title-block div {
+  margin-top: .34rem;
+  color: var(--text-2);
+  font-size: .88rem;
+  line-height: 1.15;
+  font-weight: 900;
+}
+
+.player-detail-title-block p {
+  display: none;
+}
+
+.player-detail-feature-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  row-gap: .62rem;
+  padding: .34rem 1rem 1.35rem;
+  border-top: 0;
+}
+
+.player-detail-feature-stats::before {
+  content: "2026 season";
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-3);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: .9rem;
+  font-weight: 900;
+}
+
+.player-detail-feature-stats div {
+  padding: .12rem .42rem 0;
+  text-align: center;
+  border-right: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+}
+
+.player-detail-feature-stats div:last-child {
+  border-right: 0;
+}
+
+.player-detail-feature-stats strong {
+  display: block;
+  color: var(--text);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 1.28rem;
+  line-height: 1;
+  font-weight: 950;
+  font-variant-numeric: tabular-nums;
+}
+
+.player-detail-feature-stats span {
+  display: block;
+  margin-top: .42rem;
+  color: var(--text-2);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: .72rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.player-detail-tabs {
+  position: sticky;
+  top: calc(5.05rem + env(safe-area-inset-top, 0px));
+  z-index: 90;
+  background: var(--surface) !important;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.player-detail-tabs > div {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  padding: 0 1rem;
+}
+
+.player-detail-tabs button {
+  position: relative;
+  min-height: 3.06rem;
+  padding: .2rem .2rem 0;
+  color: var(--text-2);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: .94rem;
+  line-height: 1;
+  font-weight: 850;
+  text-align: center;
+}
+
+.player-detail-tabs button.is-active {
+  color: var(--text);
+  font-weight: 950;
+}
+
+.player-detail-tabs button.is-active::after {
+  content: "";
+  position: absolute;
+  left: .35rem;
+  right: .35rem;
+  bottom: 0;
+  height: .18rem;
+  background: var(--accent);
+}
+
+.player-detail-body {
+  padding: 0 !important;
+  background: var(--bg);
+}
+
+.player-detail-season-select {
+  margin: 1rem 1rem .8rem;
+  min-height: 2.9rem;
+  display: flex;
+  align-items: center;
+  padding: .18rem 1rem 0;
+  border: 1px solid color-mix(in srgb, var(--text-3) 36%, var(--border) 64%);
+  border-radius: .45rem;
+  color: var(--text);
+  background: var(--surface);
+  font-size: 1rem;
+  font-weight: 850;
+}
+
+.player-detail-season-tabs {
+  display: flex;
+  gap: 2.4rem;
+  align-items: center;
+  min-height: 3.1rem;
+  padding: .15rem 1.85rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: .95rem;
+  font-weight: 850;
+}
+
+.player-detail-season-tabs strong {
+  position: relative;
+  color: var(--text);
+  font-weight: 950;
+}
+
+.player-detail-season-tabs strong::after {
+  content: "";
+  position: absolute;
+  left: -1rem;
+  right: -1rem;
+  bottom: -1.05rem;
+  height: .18rem;
+  background: var(--accent);
+}
+
+.player-detail-stat-section {
+  background: var(--surface) !important;
+  border-bottom: 1px solid var(--border);
+}
+
+.player-detail-stat-section h3 {
+  margin: 0;
+  padding: .82rem 1rem .68rem;
+  background: color-mix(in srgb, var(--surface-2) 82%, #000 10%) !important;
+  color: var(--text-2);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: .78rem;
+  line-height: 1;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.player-detail-stat-grid {
+  display: block !important;
+}
+
+.player-detail-stat-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(4rem, auto);
+  align-items: center;
+  min-height: 3rem;
+  padding: .1rem 1rem 0;
+  border-top: 1px solid var(--border);
+  border-right: 0 !important;
+}
+
+.player-detail-stat-item span {
+  color: var(--text-2);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: .86rem;
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.player-detail-stat-item strong {
+  justify-self: end;
+  color: var(--text);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: .94rem;
+  line-height: 1;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+}
+
+.player-game-log-list {
+  display: block !important;
+  background: var(--surface);
+}
+
+.player-game-log-header,
+.player-game-log-row {
+  display: grid;
+  align-items: center;
+}
+
+.player-game-log-header {
+  position: sticky;
+  top: calc(8.11rem + env(safe-area-inset-top, 0px));
+  z-index: 70;
+  min-height: 2.62rem;
+  padding: .14rem .58rem 0;
+  background: color-mix(in srgb, var(--surface-2) 84%, #000 8%);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: .72rem;
+  line-height: 1;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.player-game-log-row {
+  min-height: 3.22rem;
+  padding: .1rem .58rem 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: .9rem;
+  line-height: 1;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+}
+
+.player-game-log-header span,
+.player-game-log-row span,
+.player-game-log-row strong {
+  min-width: 0;
+  text-align: center;
+}
+
+.player-game-log-header span:nth-child(-n+2),
+.player-game-log-row span:first-child,
+.player-game-log-row strong {
+  text-align: left;
+}
+
+.player-game-log-row strong {
+  color: var(--text);
+  font-weight: 900;
+}
+
+.player-detail-bio-list {
+  display: block;
+  background: var(--surface);
+}
+
+.player-detail-bio-list div {
+  display: grid;
+  grid-template-columns: minmax(0, 7rem) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  min-height: 3rem;
+  padding: .1rem 1rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.player-detail-bio-list span {
+  color: var(--text-2);
+  font-size: .82rem;
+  font-weight: 850;
+}
+
+.player-detail-bio-list strong {
+  color: var(--text);
+  font-size: .86rem;
+  line-height: 1.2;
+  font-weight: 850;
+}
+
+.player-detail-empty {
+  margin: 1rem;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: .45rem;
+  color: var(--text-2);
+  font-size: .86rem;
+  font-weight: 850;
+}
+
+@media (max-width: 420px) {
+  .game-score-status.is-final {
+    left: calc(50% + 1.16rem) !important;
+  }
+
+  .player-detail-hero-main {
+    grid-template-columns: 5.2rem minmax(0, 1fr);
+    padding: 1.3rem 1rem .98rem;
+  }
+
+  .player-detail-headshot {
+    width: 4.9rem;
+    height: 4.9rem;
+  }
+
+  .player-detail-title-block h2 {
+    font-size: 1.34rem;
+  }
+
+  .player-detail-tabs button {
+    font-size: .9rem;
+  }
+
+  .player-game-log-header {
+    font-size: .68rem;
+    padding-left: .48rem;
+    padding-right: .48rem;
+  }
+
+  .player-game-log-row {
+    font-size: .86rem;
+    padding-left: .48rem;
+    padding-right: .48rem;
+  }
+}
+
 /* v179: final label a touch farther right, scores unchanged */
 .game-score-status.is-final {
   left: calc(50% + .98rem) !important;
@@ -14757,14 +15194,14 @@ main.view-scores .pull-refresh-indicator {
     transform: translateY(-50%) !important;
   }
 }
-/* v178/v179/v181: actual final EOF override for phone/web status labels, scores unchanged */
+/* v178/v179/v181/v182: actual final EOF override for phone/web status labels, scores unchanged */
 .game-score-status.is-pre {
   left: calc(50% + 1.32rem) !important;
   transform: translateX(-50%) !important;
 }
 
 .game-score-status.is-final {
-  left: calc(50% + 1.12rem) !important;
+  left: calc(50% + 1.32rem) !important;
   width: 5.4rem !important;
   transform: translateX(-50%) !important;
   text-align: center !important;
@@ -14804,7 +15241,7 @@ main.view-scores .pull-refresh-indicator {
   }
 
   .game-score-status.is-final {
-    left: calc(50% + 1rem) !important;
+    left: calc(50% + 1.16rem) !important;
     transform: translateX(-50%) !important;
   }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import type { Section } from "@/lib/playerColumns";
 import { SECTIONS_BY_LEAGUE } from "@/lib/playerColumns";
@@ -23,7 +23,7 @@ type PlayerRow = {
 };
 type PlayerRef = { id: string; name: string; league: string; teamKey?: string };
 type Props = { player: PlayerRef; onBack: () => void };
-type Tab = "stats" | "gamelog";
+type Tab = "bio" | "news" | "stats" | "gamelog";
 
 type Profile = {
   name?: string;
@@ -126,14 +126,19 @@ export default function PlayerDetail({ player, onBack }: Props) {
     () => findTeamPlayer(teamPlayersData?.players || [], player),
     [teamPlayersData?.players, player]
   );
+  const profile: Profile = profileData?.profile || {};
+  const displayName = teamPlayer?.name || profile.name || player.name;
+  const position = teamPlayer?.position || profile.position;
+  const headshotCandidates = useMemo(
+    () => Array.from(new Set([espnHeadshot(player.league, player.id), teamPlayer?.headshot, profile.headshot].filter(Boolean))) as string[],
+    [player.league, player.id, teamPlayer?.headshot, profile.headshot]
+  );
+  const [headshotIndex, setHeadshotIndex] = useState(0);
+  useEffect(() => setHeadshotIndex(0), [player.id, headshotCandidates.join("|")]);
+  const headshot = headshotCandidates[headshotIndex] || null;
 
   if (isLoading) return <Loading onBack={onBack} />;
   if (error || profileData?.error) return <ErrorState onBack={onBack} />;
-
-  const profile: Profile = profileData?.profile || {};
-  const displayName = teamPlayer?.name || profile.name || player.name;
-  const headshot = espnHeadshot(player.league, player.id) || teamPlayer?.headshot || profile.headshot;
-  const position = teamPlayer?.position || profile.position;
 
   // First choice: use the exact same /api/players stat row that powers the
   // team Stats tab. This keeps player cards consistent with the team page.
@@ -161,7 +166,15 @@ export default function PlayerDetail({ player, onBack }: Props) {
         <div className="player-detail-hero-main">
           <div className="player-detail-headshot">
             {headshot ? (
-              <Image src={headshot} alt={displayName} width={104} height={104} className="object-cover" unoptimized />
+              <Image
+                src={headshot}
+                alt={displayName}
+                width={104}
+                height={104}
+                className="object-cover"
+                unoptimized
+                onError={() => setHeadshotIndex((i) => i + 1)}
+              />
             ) : (
               <span>{initials(displayName)}</span>
             )}
@@ -188,14 +201,18 @@ export default function PlayerDetail({ player, onBack }: Props) {
 
       <div className="player-detail-tabs" role="tablist">
         <div>
+          <TabButton label="Bio" active={tab === "bio"} onClick={() => setTab("bio")} />
+          <TabButton label="News" active={tab === "news"} onClick={() => setTab("news")} />
           <TabButton label="Stats" active={tab === "stats"} onClick={() => setTab("stats")} />
           <TabButton label="Game Log" active={tab === "gamelog"} onClick={() => setTab("gamelog")} />
         </div>
       </div>
 
       <div className="player-detail-body">
+        {tab === "bio" && <BioPanel profile={profile} league={player.league} />}
+        {tab === "news" && <Empty text="No player news available yet." />}
         {tab === "stats" && (statGroups.length ? <StatsRowTable groups={statGroups} /> : <Empty text="No current-season stats available yet." />)}
-        {tab === "gamelog" && (gameLog.length ? <GameLogTable rows={gameLog} /> : <Empty text="No current-season game log available yet." />)}
+        {tab === "gamelog" && (gameLog.length ? <GameLogTable rows={gameLog} league={player.league} position={position || ""} /> : <Empty text="No current-season game log available yet." />)}
       </div>
     </div>
   );
@@ -216,6 +233,8 @@ function TabButton({ label, active, onClick }: { label: string; active: boolean;
 function StatsRowTable({ groups }: { groups: { name: string; stats: { label: string; value: string }[] }[] }) {
   return (
     <div className="player-detail-stat-sections">
+      <div className="player-detail-season-select">{new Date().getFullYear()}</div>
+      <div className="player-detail-season-tabs"><span>Pre</span><strong>Regular</strong></div>
       {groups.map((group) => (
         <section key={group.name} className="player-detail-stat-section">
           <h3>{group.name}</h3>
@@ -232,34 +251,74 @@ function StatsRowTable({ groups }: { groups: { name: string; stats: { label: str
     </div>
   );
 }
-function GameLogTable({ rows }: { rows: any[] }) {
-  const statLabels = Array.from(new Set(rows.flatMap((r) => (r.stats || []).map((s: any) => s.label)))).slice(0, 6);
+function GameLogTable({ rows, league, position }: { rows: any[]; league: string; position?: string }) {
+  const statLabels = gameLogColumns(rows, league, position);
+  const gridTemplateColumns = `3.35rem 4.45rem repeat(${statLabels.length}, minmax(2.15rem, 1fr))`;
   return (
     <div className="player-game-log-list">
+      <div className="player-game-log-header" style={{ gridTemplateColumns }}>
+        <span>DATE</span>
+        <span>OPP</span>
+        {statLabels.map((l) => <span key={l}>{l}</span>)}
+      </div>
       {rows.map((r: any) => (
-        <div key={r.id} className="player-game-log-row">
-          <div className="player-game-log-meta">
-            <strong>{formatDate(r.date)}</strong>
-            <span>{r.opponent || "—"}</span>
-          </div>
-          <div className="player-game-log-stats">
-            {statLabels.map((l) => (
-              <div key={l}>
-                <span>{l}</span>
-                <strong>{(r.stats || []).find((s: any) => s.label === l)?.value ?? "—"}</strong>
-              </div>
-            ))}
-          </div>
+        <div key={r.id} className="player-game-log-row" style={{ gridTemplateColumns }}>
+          <span>{formatDate(r.date)}</span>
+          <strong>{r.opponent || "—"}</strong>
+          {statLabels.map((l) => <span key={l}>{gameLogValue(r, l)}</span>)}
         </div>
+      ))}
+    </div>
+  );
+}
+function BioPanel({ profile, league }: { profile: Profile; league: string }) {
+  const rows = [
+    ["Team", profile.team || "—"],
+    ["Position", profile.position || "—"],
+    ["League", league.toUpperCase()],
+    ["Bio", profile.bio || "—"],
+  ];
+  return (
+    <div className="player-detail-bio-list">
+      {rows.map(([label, value]) => (
+        <div key={label}><span>{label}</span><strong>{value}</strong></div>
       ))}
     </div>
   );
 }
 function Empty({ text }: { text: string }) { return <div className="player-detail-empty">{text}</div>; }
 function initials(name: string) { return String(name || "").split(" ").map((n) => n[0]).slice(0, 2).join(""); }
-function formatDate(date?: string) { if (!date) return "—"; const d = new Date(date); return Number.isNaN(d.getTime()) ? date : d.toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+function formatDate(date?: string) {
+  if (!date) return "—";
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return date;
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
 function espnHeadshot(league: string, id: string) {
   if (!id || !/^\d+$/.test(String(id))) return null;
   const path = league === "mlb" ? "mlb" : league;
   return `https://a.espncdn.com/i/headshots/${path}/players/full/${id}.png`;
+}
+function normalizedStatMap(row: any) {
+  const map = new Map<string, string>();
+  for (const stat of row?.stats || []) {
+    const label = String(stat?.label || "").toUpperCase();
+    map.set(label, String(stat?.value ?? "—"));
+  }
+  return map;
+}
+function gameLogColumns(rows: any[], league: string, position?: string) {
+  const pos = String(position || "").toUpperCase();
+  const isMlbPitcher = league === "mlb" && /^(P|SP|RP|CP|CL)$/.test(pos);
+  if (league === "mlb") return isMlbPitcher ? ["IP", "H", "R", "ER", "BB", "K"] : ["H/AB", "R", "HR", "RBI", "SB", "BB"];
+  return Array.from(new Set(rows.flatMap((r) => (r.stats || []).map((s: any) => String(s.label || "").toUpperCase())))).slice(0, 5);
+}
+function gameLogValue(row: any, label: string) {
+  const map = normalizedStatMap(row);
+  if (label === "H/AB") {
+    const h = map.get("H") || "—";
+    const ab = map.get("AB") || "—";
+    return h !== "—" || ab !== "—" ? `${h}/${ab}` : "—";
+  }
+  return map.get(label) || "—";
 }
