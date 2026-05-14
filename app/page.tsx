@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import TopNav, { ViewId } from "@/components/TopNav";
 import TeamSelector from "@/components/TeamSelector";
@@ -47,6 +47,7 @@ export default function Home() {
   const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; league: string; teamKey?: string } | null>(null);
   const [selectedGame, setSelectedGame] = useState<{ league: string; eventId: string } | null>(null);
   const [teamReturnView, setTeamReturnView] = useState<ViewId>("scores");
+  const lastScreenRef = useRef("");
 
   const { favorites } = useFavoriteTeams();
 
@@ -81,6 +82,19 @@ export default function Home() {
     { refreshInterval: 15_000, revalidateOnFocus: true, revalidateOnReconnect: true }
   );
   const hasLive = scheduleData?.events?.some((e: any) => e.status?.state === "in") || false;
+
+  useEffect(() => {
+    const screenKey = selectedPlayer
+      ? `player:${selectedPlayer.id}`
+      : selectedGame
+        ? `game:${selectedGame.league}:${selectedGame.eventId}`
+        : showReturnGame && returnGame
+          ? `return-game:${returnGame.league}:${returnGame.eventId}`
+          : `${view}:${activeTeam?.key || ""}:${activeTab}:${manageOpen}:${leagueInitial}:${standingsInitial}`;
+    if (lastScreenRef.current === screenKey) return;
+    lastScreenRef.current = screenKey;
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
+  }, [view, activeTeam?.key, activeTab, manageOpen, leagueInitial, standingsInitial, selectedGame, selectedPlayer, showReturnGame, returnGame]);
 
   const openManage = useCallback(() => {
     setManageOpen(true);

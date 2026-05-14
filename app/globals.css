@@ -13444,3 +13444,40 @@ main.view-more:has(.manage-teams-page) {
     transform: translateX(.12rem) !important;
   }
 }
+
+/* v158: fixed main standings header and fresh-page scroll behavior support */
+.standings-page {
+  --standings-fixed-head: 12.3rem;
+  padding-top: var(--standings-fixed-head) !important;
+  overflow: visible !important;
+}
+
+.standings-page:not(:has(.standings-mode-wrap)) {
+  --standings-fixed-head: 8.95rem;
+}
+
+.standings-page .standings-sticky-shell {
+  position: fixed !important;
+  top: 0 !important;
+  left: 50% !important;
+  width: min(100vw, 48rem) !important;
+  transform: translateX(-50%) !important;
+  z-index: 100 !important;
+  background: var(--bg) !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.035) !important;
+}
+
+.standings-page .standings-content {
+  padding-top: 0 !important;
+}
+
+@media (max-width: 420px) {
+  .standings-page {
+    --standings-fixed-head: 12.05rem;
+  }
+
+  .standings-page:not(:has(.standings-mode-wrap)) {
+    --standings-fixed-head: 8.75rem;
+  }
+}

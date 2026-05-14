@@ -63,10 +63,22 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
   const [selectedEvent, setSelectedEvent] = useState<{ league: string; eventId: string } | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const scoresHeaderRef = useRef<HTMLDivElement | null>(null);
+  const returnScrollRef = useRef(0);
   const [scoresHeaderHeight, setScoresHeaderHeight] = useState(128);
   const { settings } = useAppSettings();
   const { favorites } = useFavoriteTeams();
   const date = formatDate(dayOffset);
+
+  const openEvent = (next: { league: string; eventId: string }) => {
+    returnScrollRef.current = typeof window !== "undefined" ? window.scrollY : 0;
+    setSelectedEvent(next);
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
+  };
+
+  const closeEvent = () => {
+    setSelectedEvent(null);
+    window.requestAnimationFrame(() => window.scrollTo({ top: returnScrollRef.current, behavior: "auto" }));
+  };
 
   useEffect(() => {
     if (leaguePage) return;
@@ -96,7 +108,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
       <GameDetail
         league={selectedEvent.league}
         eventId={selectedEvent.eventId}
-        onClose={() => setSelectedEvent(null)}
+        onClose={closeEvent}
         onTeamClick={onTeamLogoClick}
         onPlayerClick={onPlayerClick}
       />
@@ -112,7 +124,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
             <>
               <CbsDateBar dayOffset={dayOffset} setDayOffset={setDayOffset} />
               <div className="mt-3">
-                <LeagueDaySection league={league} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league, eventId })} onStandingsClick={onStandingsClick} stickyTop={0} hideHeader />
+                <LeagueDaySection league={league} date={date} density={settings.density} onGameClick={(eventId) => openEvent({ league, eventId })} onStandingsClick={onStandingsClick} stickyTop={0} hideHeader />
               </div>
             </>
           )}
@@ -142,9 +154,9 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
       </div>
 
       <div>
-        <FavoritesScores date={date} favoriteKeys={favoriteKeys} stickyTop={leagueStickyTop} onGameClick={(league, eventId) => setSelectedEvent({ league, eventId })} />
+        <FavoritesScores date={date} favoriteKeys={favoriteKeys} stickyTop={leagueStickyTop} onGameClick={(league, eventId) => openEvent({ league, eventId })} />
         {leagues.map((lg) => (
-          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={leagueStickyTop} />
+          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => openEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={leagueStickyTop} />
         ))}
       </div>
     </div>
