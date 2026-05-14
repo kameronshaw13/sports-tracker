@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGameSummary, getMlbFortyManRoster, getMlbHeadshotUrl } from "@/lib/espn";
+import { getGameSummary, getMlbFortyManRoster, getTeamRoster } from "@/lib/espn";
 import { ensureHash } from "@/lib/teams";
 
 export const revalidate = 10;
@@ -138,7 +138,42 @@ function normalizeNameKey(name: string | null | undefined): string {
     .trim();
 }
 
-type RosterPersonLite = { mlbId: number; name: string; headshot: string };
+type RosterPersonLite = { mlbId?: number; espnId?: string; name: string; headshot?: string };
+
+function parseEspnAthletes(data: any): any[] {
+  const top = data?.athletes || data?.team?.athletes;
+  if (!Array.isArray(top)) return [];
+  if (top.length > 0 && Array.isArray(top[0]?.items)) return top.flatMap((group: any) => group?.items || []);
+  return top;
+}
+
+function readEspnAthleteName(athlete: any): string {
+  return athlete?.fullName || athlete?.displayName || athlete?.name || athlete?.shortName || "";
+}
+
+function readEspnHeadshot(athlete: any): string | undefined {
+  const id = athlete?.id ? String(athlete.id) : "";
+  return (
+    athlete?.headshot?.href ||
+    (typeof athlete?.headshot === "string" ? athlete.headshot : undefined) ||
+    (id ? `https://a.espncdn.com/i/headshots/mlb/players/full/${id}.png` : undefined)
+  );
+}
+
+function addRosterLookupPerson(map: Map<string, RosterPersonLite>, item: RosterPersonLite) {
+  const fullKey = normalizeNameKey(item.name);
+  if (!fullKey) return;
+  const existing = map.get(fullKey);
+  const merged = { ...existing, ...item, mlbId: item.mlbId ?? existing?.mlbId, espnId: item.espnId ?? existing?.espnId };
+  const keys = new Set<string>([fullKey]);
+  const parts = fullKey.split(" ").filter(Boolean);
+  if (parts.length >= 2) {
+    keys.add(`${parts[0]} ${parts[parts.length - 1]}`);
+    keys.add(`${parts[0][0]} ${parts[parts.length - 1]}`);
+  }
+  if (parts.length) keys.add(parts[parts.length - 1]);
+  for (const key of keys) map.set(key, merged);
+}
 
 async function buildMlbRosterLookup(home?: TeamMeta | null, away?: TeamMeta | null): Promise<Map<string, RosterPersonLite>> {
   const map = new Map<string, RosterPersonLite>();
@@ -146,19 +181,27 @@ async function buildMlbRosterLookup(home?: TeamMeta | null, away?: TeamMeta | nu
   await Promise.all(
     abbrs.map(async (abbr) => {
       try {
-        const roster = await getMlbFortyManRoster(abbr);
-        for (const p of roster || []) {
-          if (!p?.mlbId || !p?.name) continue;
-          const item = { mlbId: Number(p.mlbId), name: p.name, headshot: getMlbHeadshotUrl(p.mlbId) };
-          const fullKey = normalizeNameKey(p.name);
-          if (fullKey) map.set(fullKey, item);
-          const parts = fullKey.split(" ").filter(Boolean);
-          if (parts.length >= 2) {
-            map.set(`${parts[0]} ${parts[parts.length - 1]}`, item);
-            // Useful for ESPN short names like "J. Latz" when they appear.
-            map.set(`${parts[0][0]} ${parts[parts.length - 1]}`, item);
+        const [roster, espnRoster] = await Promise.allSettled([
+          getMlbFortyManRoster(abbr),
+          getTeamRoster("mlb", abbr.toLowerCase()),
+        ]);
+        if (roster.status === "fulfilled") {
+          for (const p of roster.value || []) {
+            if (!p?.mlbId || !p?.name) continue;
+            addRosterLookupPerson(map, { mlbId: Number(p.mlbId), name: p.name });
           }
-          if (parts.length) map.set(parts[parts.length - 1], item);
+        }
+        if (espnRoster.status === "fulfilled") {
+          for (const athlete of parseEspnAthletes(espnRoster.value)) {
+            const id = athlete?.id ? String(athlete.id) : "";
+            const name = readEspnAthleteName(athlete);
+            if (!id || !name) continue;
+            addRosterLookupPerson(map, {
+              espnId: id,
+              name,
+              headshot: readEspnHeadshot(athlete),
+            });
+          }
         }
       } catch {
         // Headshots are a nice-to-have; never let roster enrichment break plays.
@@ -186,11 +229,12 @@ function enrichPersonFromRoster(person: MlbPerson | null, rosterLookup: Map<stri
   if (!match) return person;
   return {
     ...person,
+    id: match.espnId || person.id,
     name: person.name || match.name,
     displayName: person.displayName || match.name,
     shortName: person.shortName || match.name,
-    mlbId: match.mlbId,
-    headshot: match.headshot,
+    mlbId: match.mlbId ? Number(match.mlbId) : person.mlbId,
+    headshot: match.headshot || person.headshot,
   };
 }
 

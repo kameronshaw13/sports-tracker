@@ -1,7 +1,13 @@
 /* Player page final overrides loaded after globals.css. */
 .player-detail-sticky-shell {
-  position: sticky !important;
+  position: fixed !important;
   top: 0 !important;
+  left: 50% !important;
+  right: auto !important;
+  width: 100% !important;
+  max-width: 48rem !important;
+  margin: 0 !important;
+  transform: translateX(-50%) !important;
   z-index: 120 !important;
   background: var(--surface) !important;
   border-bottom: 1px solid var(--border) !important;
@@ -53,6 +59,7 @@
 .player-detail-body {
   position: relative;
   z-index: 1;
+  padding-top: calc(12.55rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
 }
 
 .player-detail-season-heading {
@@ -123,7 +130,7 @@
 
 .player-game-log-header,
 .player-game-log-row {
-  column-gap: .16rem !important;
+  column-gap: .24rem !important;
 }
 
 .player-game-log-header span,
@@ -152,5 +159,9 @@
 
   .player-detail-feature-stats {
     padding-bottom: .76rem !important;
+  }
+
+  .player-detail-body {
+    padding-top: calc(12.14rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
   }
 }

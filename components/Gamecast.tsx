@@ -471,7 +471,7 @@ function isHiddenMinorEvent(text: string) {
 }
 
 function playerClickHandler(person: Person | null | undefined, onPlayerClick: ((player: { id: string; name: string; league: string }) => void) | undefined, fallbackName: string) {
-  const id = person?.mlbId || person?.id;
+  const id = person?.id || person?.mlbId;
   const name = person?.displayName || person?.name || person?.shortName || fallbackName;
   if (!id || !onPlayerClick) return undefined;
   return () => onPlayerClick({ id: String(id), name, league: "mlb" });
@@ -493,6 +493,7 @@ function espnHeadshot(person?: Person | null) {
   const rawId = person?.id ? String(person.id) : "";
   if (rawId && /^\d+$/.test(rawId)) return `https://a.espncdn.com/i/headshots/mlb/players/full/${rawId}.png`;
   const existing = person?.headshot ? String(person.headshot) : "";
+  if (/mlbstatic\.com|mlb-photos/i.test(existing)) return null;
   return existing || null;
 }
 
