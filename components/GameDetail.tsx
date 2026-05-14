@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
 import Boxscore from "./Boxscore";
@@ -24,6 +24,30 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
   const freshKey = useFreshKey();
   const { data, error, isLoading } = useSWR(`/api/summary?league=${league}&event=${eventId}&_t=${freshKey}`, fetcher, { refreshInterval: 15_000 });
   const [activeTab, setActiveTab] = useState<TabId>(initialTab);
+
+  useLayoutEffect(() => {
+    setActiveTab(initialTab);
+  }, [eventId, initialTab]);
+
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+
+    const snapTop = () => window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    snapTop();
+    let frameTwo = 0;
+    const frameOne = window.requestAnimationFrame(() => {
+      snapTop();
+      frameTwo = window.requestAnimationFrame(snapTop);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameOne);
+      if (frameTwo) window.cancelAnimationFrame(frameTwo);
+    };
+  }, [league, eventId, initialTab]);
 
   if (isLoading) return <div className="space-y-3"><div className="h-12 animate-pulse" style={{ background: "var(--surface)" }} /><div className="h-44 animate-pulse" style={{ background: "var(--surface)" }} /></div>;
   if (error || !data) return <div className="space-y-3"><GameTopBar title="Game" onClose={onClose} /><div className="p-6 text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>Couldn't load this game.</div></div>;

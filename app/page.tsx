@@ -250,10 +250,19 @@ export default function Home() {
   );
 
   const usesFullTopHeader = !selectedPlayer && !selectedGame && !showReturnGame && (view === "home" || view === "scores" || view === "standings" || view === "more" || view === "teamPage" || view === "leaguePage");
+  const pullRefreshDisabled = Boolean(
+    selectedPlayer ||
+    selectedGame ||
+    showReturnGame ||
+    manageOpen ||
+    view === "teamPage" ||
+    view === "leaguePage" ||
+    view === "standings"
+  );
 
   return (
     <main className={`retro-page view-${view} min-h-screen pb-28 px-4 sm:px-6 ${usesFullTopHeader ? "pt-0" : "app-safe-top"}`}>
-      <PullToRefresh disabled={!selectedPlayer && !selectedGame && !showReturnGame && (view === "teamPage" || view === "leaguePage")}>
+      <PullToRefresh disabled={pullRefreshDisabled}>
       <div className="max-w-3xl mx-auto">
         {!selectedPlayer && !showReturnGame && !selectedGame && view === "home" && (
           <div className="home-topbar">

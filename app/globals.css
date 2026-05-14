@@ -13519,3 +13519,73 @@ main.view-more:has(.manage-teams-page) {
     --standings-fixed-head: 10.55rem;
   }
 }
+
+/* v161: lock detail/league headers and add real clearance below fixed standings */
+main.view-standings,
+main.view-leaguePage {
+  overscroll-behavior-y: none;
+}
+
+.standings-page {
+  --standings-fixed-head: 16.9rem;
+  padding-top: var(--standings-fixed-head) !important;
+}
+
+.standings-page:not(:has(.standings-mode-wrap)) {
+  --standings-fixed-head: 12.9rem;
+}
+
+.standings-page .standings-content {
+  padding-top: .85rem !important;
+}
+
+.league-page-shell {
+  --league-fixed-head: calc(10.85rem + env(safe-area-inset-top, 0px));
+  padding-top: var(--league-fixed-head) !important;
+  overscroll-behavior-y: none;
+}
+
+.league-page-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 50% !important;
+  width: min(100vw, 48rem) !important;
+  transform: translateX(-50%) translateZ(0) !important;
+  z-index: 100 !important;
+  margin-top: 0 !important;
+}
+
+.league-page-content {
+  padding-top: .35rem !important;
+}
+
+.league-page-content:has(.retro-datebar) {
+  padding-top: 2.9rem !important;
+}
+
+.league-page-content .retro-datebar {
+  position: fixed !important;
+  top: var(--league-fixed-head) !important;
+  left: 50% !important;
+  width: min(100vw, 48rem) !important;
+  transform: translateX(-50%) !important;
+  z-index: 99 !important;
+  margin-top: 0 !important;
+  background: var(--bg) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 42%, var(--border) 58%) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.05) !important;
+}
+
+@media (max-width: 420px) {
+  .standings-page {
+    --standings-fixed-head: 16.65rem;
+  }
+
+  .standings-page:not(:has(.standings-mode-wrap)) {
+    --standings-fixed-head: 12.7rem;
+  }
+
+  .league-page-shell {
+    --league-fixed-head: calc(10.62rem + env(safe-area-inset-top, 0px));
+  }
+}
