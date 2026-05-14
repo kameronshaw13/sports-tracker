@@ -1561,22 +1561,22 @@ html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img {
   }
 }
 
-/* v176: final end-of-file mobile/web status label override, scores unchanged */
+/* v177: phone header status micro-tune, score numbers intentionally unchanged */
 .game-score-status.is-pre {
-  left: calc(50% + 1.24rem) !important;
+  left: calc(50% + 1.32rem) !important;
   transform: translateX(-50%) !important;
 }
 
 .game-score-status.is-final {
-  left: calc(50% + .34rem) !important;
+  left: calc(50% + .78rem) !important;
   width: 5.4rem !important;
   transform: translateX(-50%) !important;
   text-align: center !important;
 }
 
 .game-score-series {
-  left: calc(50% + 1.12rem) !important;
-  margin-left: .88rem !important;
+  left: calc(50% + .9rem) !important;
+  margin-left: .6rem !important;
   transform: translateX(-50%) !important;
 }
 
@@ -1589,18 +1589,69 @@ html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img {
 
 @media (max-width: 420px) {
   .game-score-status.is-pre {
-    left: calc(50% + 1.14rem) !important;
+    left: calc(50% + 1.2rem) !important;
     transform: translateX(-50%) !important;
   }
 
   .game-score-status.is-final {
-    left: calc(50% + .3rem) !important;
+    left: calc(50% + .7rem) !important;
     transform: translateX(-50%) !important;
   }
 
   .game-score-series {
-    left: calc(50% + 1.02rem) !important;
-    margin-left: .78rem !important;
+    left: calc(50% + .82rem) !important;
+    margin-left: .52rem !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .game-score-score,
+  .game-score-team-away .game-score-score,
+  .game-score-team-home .game-score-score {
+    top: 4.46rem !important;
+    transform: translateY(-50%) !important;
+  }
+}
+
+/* v176/v177: final end-of-file mobile/web status label override, scores unchanged */
+.game-score-status.is-pre {
+  left: calc(50% + 1.32rem) !important;
+  transform: translateX(-50%) !important;
+}
+
+.game-score-status.is-final {
+  left: calc(50% + .78rem) !important;
+  width: 5.4rem !important;
+  transform: translateX(-50%) !important;
+  text-align: center !important;
+}
+
+.game-score-series {
+  left: calc(50% + .9rem) !important;
+  margin-left: .6rem !important;
+  transform: translateX(-50%) !important;
+}
+
+.game-score-score,
+.game-score-team-away .game-score-score,
+.game-score-team-home .game-score-score {
+  top: 4.46rem !important;
+  transform: translateY(-50%) !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-status.is-pre {
+    left: calc(50% + 1.2rem) !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .game-score-status.is-final {
+    left: calc(50% + .7rem) !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .game-score-series {
+    left: calc(50% + .82rem) !important;
+    margin-left: .52rem !important;
     transform: translateX(-50%) !important;
   }
 
@@ -14263,6 +14314,56 @@ main.view-scores .pull-refresh-indicator {
   .game-score-series {
     left: calc(50% + 1.02rem) !important;
     margin-left: .78rem !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .game-score-score,
+  .game-score-team-away .game-score-score,
+  .game-score-team-home .game-score-score {
+    top: 4.46rem !important;
+    transform: translateY(-50%) !important;
+  }
+}
+/* v178: actual final EOF override for phone/web status labels, scores unchanged */
+.game-score-status.is-pre {
+  left: calc(50% + 1.32rem) !important;
+  transform: translateX(-50%) !important;
+}
+
+.game-score-status.is-final {
+  left: calc(50% + .78rem) !important;
+  width: 5.4rem !important;
+  transform: translateX(-50%) !important;
+  text-align: center !important;
+}
+
+.game-score-series {
+  left: calc(50% + .9rem) !important;
+  margin-left: .6rem !important;
+  transform: translateX(-50%) !important;
+}
+
+.game-score-score,
+.game-score-team-away .game-score-score,
+.game-score-team-home .game-score-score {
+  top: 4.46rem !important;
+  transform: translateY(-50%) !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-status.is-pre {
+    left: calc(50% + 1.2rem) !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .game-score-status.is-final {
+    left: calc(50% + .7rem) !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .game-score-series {
+    left: calc(50% + .82rem) !important;
+    margin-left: .52rem !important;
     transform: translateX(-50%) !important;
   }
 

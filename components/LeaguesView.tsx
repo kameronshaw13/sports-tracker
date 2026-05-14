@@ -654,7 +654,10 @@ function gameMatchesFavorites(game: any, favoriteKeys: Set<string>, league: Leag
 
 function sublineForGame(league: League, game: any, density: ScoreDensity) {
   if (game.status?.state === "post") {
-    return completedOddsLine(game, league) || "";
+    const oddsLine = completedOddsLine(game, league);
+    if (oddsLine) return oddsLine;
+    if (league === "mlb" && game.pitchers) return pitcherNameMatchup(game.pitchers, density === "expanded");
+    return "";
   }
   if (league === "mlb") {
     const withInitial = density === "expanded";
