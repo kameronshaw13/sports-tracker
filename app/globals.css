@@ -13885,3 +13885,49 @@ main.view-scores .pull-refresh-indicator {
     transform: translateX(calc(-50% + .52rem)) !important;
   }
 }
+
+/* v169: deploy-safe repeat of odds/status polish with the final tiny nudges */
+.score-card-odds {
+  color: var(--score-meta) !important;
+  font-size: .6rem !important;
+  font-weight: 500 !important;
+  line-height: 1.28 !important;
+  letter-spacing: -.005em !important;
+  opacity: 1 !important;
+  transform: translateY(.07rem) !important;
+}
+
+.game-score-score {
+  transform: translateY(-.02rem) !important;
+}
+
+.game-score-team-home .game-score-score {
+  transform: translateY(-.02rem) !important;
+}
+
+.game-score-status.is-pre {
+  left: 50% !important;
+  width: 5.4rem !important;
+  transform: translateX(calc(-50% + .035rem)) !important;
+  text-align: center !important;
+}
+
+.game-score-series {
+  transform: translateX(calc(-50% + .66rem)) !important;
+}
+
+@media (max-width: 420px) {
+  .score-card-odds {
+    font-size: .58rem !important;
+    line-height: 1.28 !important;
+    transform: translateY(.075rem) !important;
+  }
+
+  .game-score-status.is-pre {
+    transform: translateX(calc(-50% + .025rem)) !important;
+  }
+
+  .game-score-series {
+    transform: translateX(calc(-50% + .6rem)) !important;
+  }
+}
