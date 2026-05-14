@@ -13963,3 +13963,37 @@ main.view-scores .pull-refresh-indicator {
     transform: translateX(calc(-50% + .76rem)) !important;
   }
 }
+
+/* v171: restore true absolute centering for scores and move only pregame/series labels right */
+.game-score-score,
+.game-score-team-away .game-score-score,
+.game-score-team-home .game-score-score {
+  transform: translateY(-50%) !important;
+}
+
+.game-score-status.is-pre {
+  left: 50% !important;
+  width: 5.4rem !important;
+  transform: translateX(calc(-50% + .56rem)) !important;
+  text-align: center !important;
+}
+
+.game-score-series {
+  transform: translateX(calc(-50% + 1.08rem)) !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-score,
+  .game-score-team-away .game-score-score,
+  .game-score-team-home .game-score-score {
+    transform: translateY(-50%) !important;
+  }
+
+  .game-score-status.is-pre {
+    transform: translateX(calc(-50% + .48rem)) !important;
+  }
+
+  .game-score-series {
+    transform: translateX(calc(-50% + .98rem)) !important;
+  }
+}

@@ -672,8 +672,8 @@ function completedOddsLine(game: any): string | null {
 
   const winner = hasScore && awayScore !== homeScore
     ? awayScore > homeScore
-      ? { team: game.away, odds: odds.awayMoneyLine || moneyLineFromDetails(odds.details, game.away?.abbr) }
-      : { team: game.home, odds: odds.homeMoneyLine || moneyLineFromDetails(odds.details, game.home?.abbr) }
+      ? { team: game.away, odds: odds.awayMoneyLine || moneyLineForTeam(odds.details, game.away) }
+      : { team: game.home, odds: odds.homeMoneyLine || moneyLineForTeam(odds.details, game.home) }
     : null;
 
   const parts: string[] = [];
@@ -695,6 +695,20 @@ function cleanMoneyLineText(value: any, abbr?: string): string | null {
   if (fromDetails) return fromDetails;
   const match = String(value || "").match(/[+-]\d{2,4}/);
   return match ? match[0] : null;
+}
+
+function moneyLineForTeam(value: any, team: any): string | null {
+  const candidates = [
+    team?.abbr,
+    team?.short,
+    team?.name,
+    team?.displayName,
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    const match = moneyLineFromDetails(value, candidate);
+    if (match) return match;
+  }
+  return null;
 }
 
 function moneyLineFromDetails(value: any, abbr?: string): string | null {
