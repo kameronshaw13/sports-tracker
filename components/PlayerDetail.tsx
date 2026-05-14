@@ -141,8 +141,13 @@ export default function PlayerDetail({ player, onBack }: Props) {
   const position = teamPlayer?.position || profile.position;
   const jersey = teamPlayer?.jersey || profile.jersey;
   const headshotCandidates = useMemo(
-    () => Array.from(new Set([espnHeadshot(player.league, player.id), teamPlayer?.headshot, profile.headshot].filter(Boolean))) as string[],
-    [player.league, player.id, teamPlayer?.headshot, profile.headshot]
+    () => Array.from(new Set([
+      espnHeadshot(player.league, teamPlayer?.id || ""),
+      espnHeadshot(player.league, player.id),
+      teamPlayer?.headshot,
+      profile.headshot,
+    ].filter(isUsableHeadshot))) as string[],
+    [player.league, teamPlayer?.id, player.id, teamPlayer?.headshot, profile.headshot]
   );
   const [headshotIndex, setHeadshotIndex] = useState(0);
   useEffect(() => setHeadshotIndex(0), [player.id, headshotCandidates.join("|")]);
@@ -264,9 +269,12 @@ function StatsRowTable({ groups, league, position }: { groups: { name: string; s
 }
 function GameLogTable({ rows, league, position }: { rows: any[]; league: string; position?: string }) {
   const statLabels = gameLogColumns(rows, league, position);
-  const gridTemplateColumns = `3rem 3.85rem repeat(${statLabels.length}, minmax(1.8rem, 1fr))`;
+  const isPitcher = league === "mlb" && isMlbPitcherPosition(position || "");
+  const gridTemplateColumns = isPitcher
+    ? `3rem 3.55rem repeat(${statLabels.length}, 2.15rem)`
+    : `3rem 3.45rem repeat(${statLabels.length}, minmax(1.58rem, 1fr))`;
   return (
-    <div className="player-game-log-list">
+    <div className={`player-game-log-list ${isPitcher ? "is-pitcher-log" : "is-hitter-log"}`}>
       <div className="player-game-log-header" style={{ gridTemplateColumns }}>
         <span>DATE</span>
         <span>OPP</span>
@@ -313,6 +321,10 @@ function espnHeadshot(league: string, id: string) {
   const path = league === "mlb" ? "mlb" : league;
   return `https://a.espncdn.com/i/headshots/${path}/players/full/${id}.png`;
 }
+function isUsableHeadshot(value: string | null | undefined): value is string {
+  if (!value) return false;
+  return !/mlbstatic\.com|mlb-photos/i.test(String(value));
+}
 function normalizedStatMap(row: any) {
   const map = new Map<string, string>();
   for (const stat of row?.stats || []) {
@@ -324,7 +336,7 @@ function normalizedStatMap(row: any) {
 function gameLogColumns(rows: any[], league: string, position?: string) {
   const pos = String(position || "").toUpperCase();
   const isMlbPitcher = league === "mlb" && /^(P|SP|RP|CP|CL)$/.test(pos);
-  if (league === "mlb") return isMlbPitcher ? ["IP", "H", "R", "ER", "BB", "K"] : ["H/AB", "R", "HR", "RBI", "SB", "BB"];
+  if (league === "mlb") return isMlbPitcher ? ["W", "L", "SV", "IP", "H", "ER", "K"] : ["H/AB", "R", "HR", "RBI", "K", "BB"];
   return Array.from(new Set(rows.flatMap((r) => (r.stats || []).map((s: any) => String(s.label || "").toUpperCase())))).slice(0, 5);
 }
 function gameLogValue(row: any, label: string) {
@@ -334,6 +346,7 @@ function gameLogValue(row: any, label: string) {
     const ab = map.get("AB") || "—";
     return h !== "—" || ab !== "—" ? `${h}/${ab}` : "—";
   }
+  if (label === "K") return map.get("K") || map.get("SO") || "—";
   return map.get(label) || "—";
 }
 function buildHeaderStats(league: string, position: string, groups: { name: string; stats: { label: string; value: string }[] }[]) {

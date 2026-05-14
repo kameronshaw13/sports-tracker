@@ -362,6 +362,9 @@ function flattenMlbGameLog(data: any, position?: string | null): GameLogRow[] {
       const stat = s.stat || {};
       const cells: StatCell[] = isPitchingGroup
         ? [
+            { label: "W",   value: String(stat.wins ?? "—") },
+            { label: "L",   value: String(stat.losses ?? "—") },
+            { label: "SV",  value: String(stat.saves ?? "—") },
             { label: "IP",  value: String(stat.inningsPitched ?? "—") },
             { label: "H",   value: String(stat.hits ?? "—") },
             { label: "R",   value: String(stat.runs ?? "—") },

@@ -15,9 +15,9 @@
 }
 
 .player-detail-topbar {
-  min-height: calc(2.72rem + env(safe-area-inset-top, 0px)) !important;
-  padding: calc(.12rem + env(safe-area-inset-top, 0px)) .82rem .12rem !important;
-  border-bottom: 0 !important;
+  min-height: calc(2.32rem + env(safe-area-inset-top, 0px)) !important;
+  padding: calc(.02rem + env(safe-area-inset-top, 0px)) .82rem .1rem !important;
+  border-bottom: 1px solid var(--border) !important;
 }
 
 .player-detail-topbar button {
@@ -89,10 +89,42 @@
   object-fit: cover !important;
 }
 
+.player-game-log-list {
+  overflow-x: auto !important;
+  overscroll-behavior-x: contain;
+}
+
+.player-game-log-list.is-pitcher-log .player-game-log-header,
+.player-game-log-list.is-pitcher-log .player-game-log-row {
+  min-width: 21.55rem;
+}
+
+.player-game-log-header span:first-child,
+.player-game-log-row > span:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: inherit;
+}
+
+.player-game-log-header span:nth-child(2),
+.player-game-log-row > strong {
+  position: sticky;
+  left: 3rem;
+  z-index: 3;
+  background: inherit;
+  box-shadow: 1px 0 0 var(--border);
+}
+
+.player-game-log-header span:nth-child(n+3),
+.player-game-log-row > span:nth-child(n+3) {
+  text-align: center !important;
+}
+
 @media (max-width: 420px) {
   .player-detail-topbar {
-    min-height: calc(2.58rem + env(safe-area-inset-top, 0px)) !important;
-    padding-top: calc(.08rem + env(safe-area-inset-top, 0px)) !important;
+    min-height: calc(2.24rem + env(safe-area-inset-top, 0px)) !important;
+    padding-top: env(safe-area-inset-top, 0px) !important;
   }
 
   .player-detail-hero-main {
