@@ -1561,6 +1561,17 @@ html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img {
   }
 }
 
+/* v174: series label is in normal flow on some league headers, so use margin too */
+.game-score-series {
+  margin-left: 1.15rem !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-series {
+    margin-left: 1.05rem !important;
+  }
+}
+
 .home-topbar-title,
 .home-section-title,
 .home-team-name {
@@ -13995,5 +14006,80 @@ main.view-scores .pull-refresh-indicator {
 
   .game-score-series {
     transform: translateX(calc(-50% + .98rem)) !important;
+  }
+}
+
+/* v172: verified GameTracker header alignment from localhost */
+.game-score-score,
+.game-score-team-away .game-score-score,
+.game-score-team-home .game-score-score {
+  top: 4.46rem !important;
+  transform: translateY(-50%) !important;
+}
+
+.game-score-status.is-pre {
+  left: 50% !important;
+  width: 5.4rem !important;
+  transform: translateX(calc(-50% + .92rem)) !important;
+  text-align: center !important;
+}
+
+.game-score-series {
+  transform: translateX(calc(-50% + 1.28rem)) !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-score,
+  .game-score-team-away .game-score-score,
+  .game-score-team-home .game-score-score {
+    top: 4.46rem !important;
+    transform: translateY(-50%) !important;
+  }
+
+  .game-score-status.is-pre {
+    transform: translateX(calc(-50% + .82rem)) !important;
+  }
+
+  .game-score-series {
+    transform: translateX(calc(-50% + 1.18rem)) !important;
+  }
+}
+
+/* v173: force pregame time/series right with left positioning, leave final/live alone */
+.game-score-status.is-pre {
+  left: calc(50% + 1.15rem) !important;
+  width: 5.4rem !important;
+  transform: translateX(-50%) !important;
+  text-align: center !important;
+}
+
+.game-score-series {
+  left: calc(50% + 1.35rem) !important;
+  transform: translateX(-50%) !important;
+}
+
+.game-score-score,
+.game-score-team-away .game-score-score,
+.game-score-team-home .game-score-score {
+  top: 4.46rem !important;
+  transform: translateY(-50%) !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-status.is-pre {
+    left: calc(50% + 1.05rem) !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .game-score-series {
+    left: calc(50% + 1.22rem) !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .game-score-score,
+  .game-score-team-away .game-score-score,
+  .game-score-team-home .game-score-score {
+    top: 4.46rem !important;
+    transform: translateY(-50%) !important;
   }
 }
