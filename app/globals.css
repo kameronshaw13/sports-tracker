@@ -13335,3 +13335,41 @@ main.view-more:has(.manage-teams-page) {
     font-size: .54rem;
   }
 }
+
+/* v156: single-focus GameTracker header/content correction */
+.game-detail-content {
+  margin-top: calc(11.54rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+  padding-top: 0 !important;
+}
+
+.gamecast-shell {
+  margin-top: -.9rem !important;
+}
+
+.game-score-situation {
+  left: calc(50% + 1.1rem) !important;
+  transform: translateX(-50%) !important;
+}
+
+.game-score-status.is-live {
+  transform: translateX(-.46rem) !important;
+}
+
+@media (max-width: 420px) {
+  .game-detail-content {
+    margin-top: calc(11.44rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+    padding-top: 0 !important;
+  }
+
+  .gamecast-shell {
+    margin-top: -.96rem !important;
+  }
+
+  .game-score-situation {
+    left: calc(50% + 1.2rem) !important;
+  }
+
+  .game-score-status.is-live {
+    transform: translateX(-.52rem) !important;
+  }
+}
