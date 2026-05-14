@@ -281,6 +281,24 @@ export async function getTeamLeaders(league: string, teamId: string) {
   }
 }
 
+export async function getLeagueLeaders(league: string) {
+  const candidates = [
+    `${SITE_WEB_API}/${path(league)}/statistics/leaders`,
+    `${SITE_API}/${path(league)}/statistics/leaders`,
+    `${SITE_WEB_API}/${path(league)}/leaders`,
+    `${SITE_API}/${path(league)}/leaders`,
+  ];
+  let lastError: any = null;
+  for (const url of candidates) {
+    try {
+      return await fetchJson(url, 600);
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError || new Error("League leaders unavailable");
+}
+
 export async function getGameSummary(league: string, eventId: string) {
   const url = `${SITE_WEB_API}/${path(league)}/summary?event=${eventId}`;
   return fetchJson(url, 0);

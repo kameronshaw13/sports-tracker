@@ -52,6 +52,8 @@ type Props = {
 };
 
 type LeagueTab = "scores" | "stats" | "standings";
+type LeagueLeader = { id: string; name: string; displayValue: string; team?: string; rank: number };
+type LeagueLeaderCategory = { name: string; displayName: string; leaders: LeagueLeader[] };
 
 export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLeague = "mlb", leaguePage = false, onBack, onStandingsClick }: Props) {
   const safeInitial = VALID_LEAGUES.includes(initialLeague as League) ? (initialLeague as League) : "mlb";
@@ -110,12 +112,12 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, initialLea
             <>
               <CbsDateBar dayOffset={dayOffset} setDayOffset={setDayOffset} />
               <div className="mt-3">
-                <LeagueDaySection league={league} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league, eventId })} onStandingsClick={onStandingsClick} stickyTop={0} />
+                <LeagueDaySection league={league} date={date} density={settings.density} onGameClick={(eventId) => setSelectedEvent({ league, eventId })} onStandingsClick={onStandingsClick} stickyTop={0} hideHeader />
               </div>
             </>
           )}
           {tab === "standings" && <Standings league={league} showHeader={false} pageMode={league === "cfb" ? "conference" : "division"} showFilterControls={league === "cfb"} />}
-          {tab === "stats" && <LeagueStatsPlaceholder league={league} />}
+          {tab === "stats" && <LeagueStats league={league} />}
         </div>
       </div>
     );
@@ -163,7 +165,7 @@ function LeagueHeader({ league, onBack, tab, setTab }: { league: League; onBack?
           <Image src={LEAGUE_LOGOS[league]} alt={LEAGUE_LABELS[league]} width={68} height={68} className="object-contain logo-outline-dark" unoptimized />
         </div>
       </div>
-      <div className="flex gap-7 overflow-x-auto px-4" style={{ background: "color-mix(in srgb, black 8%, transparent)" }}>
+      <div className="league-page-tabs flex gap-7 overflow-x-auto px-4">
         {(["scores", "stats", "standings"] as const).map((id) => (
           <button key={id} onClick={() => setTab(id)} className="py-3 relative text-base font-black whitespace-nowrap" style={{ color: tab === id ? "#fff" : "rgba(255,255,255,0.72)" }}>
             {id === "scores" ? "Scores" : id === "stats" ? "Stats" : "Standings"}
@@ -229,7 +231,7 @@ function FavoritesScores({ date, favoriteKeys, stickyTop, onGameClick }: { date:
   );
 }
 
-function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick, stickyTop = 124 }: { league: League; date: string; density: ScoreDensity; onGameClick: (eventId: string) => void; onStandingsClick?: (league: League) => void; stickyTop?: number | string }) {
+function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick, stickyTop = 124, hideHeader = false }: { league: League; date: string; density: ScoreDensity; onGameClick: (eventId: string) => void; onStandingsClick?: (league: League) => void; stickyTop?: number | string; hideHeader?: boolean }) {
   const freshKey = useFreshKey();
   const [collapsed, setCollapsed] = useState(false);
   const { data, error, isLoading } = useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, {
@@ -247,15 +249,17 @@ function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick
   return (
     <>
     <section className={`mt-3 ${hasOddCompactGrid ? "" : "border-b"}`} style={{ borderColor: "var(--border)" }}>
-      <SectionHeader
-        title={LEAGUE_LABELS[league]}
-        logo={LEAGUE_LOGOS[league]}
-        sticky
-        collapsed={collapsed}
-        onToggle={() => setCollapsed((v) => !v)}
-        onStandingsClick={onStandingsClick ? () => onStandingsClick(league) : undefined}
-        stickyTop={stickyTop}
-      />
+      {!hideHeader && (
+        <SectionHeader
+          title={LEAGUE_LABELS[league]}
+          logo={LEAGUE_LOGOS[league]}
+          sticky
+          collapsed={collapsed}
+          onToggle={() => setCollapsed((v) => !v)}
+          onStandingsClick={onStandingsClick ? () => onStandingsClick(league) : undefined}
+          stickyTop={stickyTop}
+        />
+      )}
       {!collapsed && (isLoading ? (
         <div className={compactGrid ? "grid grid-cols-2" : "grid grid-cols-1"}>
           {[0, 1, 2, 3].map((i) => <div key={i} className="h-[112px] animate-pulse border-t" style={{ background: "var(--surface)", borderColor: "var(--border)" }} />)}
@@ -366,8 +370,11 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
         style={{ borderColor: "var(--border)" }}
       >
         <div className="favorite-score-content pr-1">
-          <div className="favorite-score-meta score-game-meta mb-1.5 flex items-center gap-2 text-[9.5px] font-black uppercase tracking-[.06em] cbs-blue-label">
-            <span className="truncate">{gameTimeLabel(game)}</span>
+          <div className="favorite-score-meta score-game-meta mb-1.5 flex items-start justify-between gap-2 text-[9.5px] font-black uppercase tracking-[.06em] cbs-blue-label">
+            <div className="min-w-0">
+              <span className="truncate block">{gameTimeLabel(game)}</span>
+              <ScoreCardOddsHeader game={game} />
+            </div>
             {league === "mlb" && isLive && game.situation && <BasesDiamondMini situation={game.situation} />}
           </div>
           <TeamLine team={game.away} league={league} compact={false} favorite game={game} showLogo />
@@ -384,9 +391,12 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
       className="retro-score-card min-h-[136px] p-3.5 text-left border-t sm:odd:border-r active:scale-[0.99]"
       style={{ borderColor: "var(--border)" }}
     >
-      <div className="flex items-center justify-between gap-2 mb-1.5">
+      <div className="flex items-start justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="score-game-meta text-[9.5px] font-black uppercase tracking-[.06em] truncate" style={{ color: "var(--accent)" }}>{gameTimeLabel(game)}</div>
+          <div className="score-game-meta text-[9.5px] font-black uppercase tracking-[.06em] min-w-0" style={{ color: "var(--accent)" }}>
+            <span className="block truncate">{gameTimeLabel(game)}</span>
+            <ScoreCardOddsHeader game={game} />
+          </div>
           {league === "mlb" && isLive && game.situation && <BasesDiamondMini situation={game.situation} />}
         </div>
       </div>
@@ -403,7 +413,6 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
   const recordText = seriesTeamRecord(game, team) || team.record;
   const label = compact ? team.abbr : favoriteTeamLabel(team, league);
   const showScore = scoreShouldShow(game) && team.score !== undefined && team.score !== null && team.score !== "";
-  const oddsText = !showScore ? scoreOddsText(game, team) : null;
   const hasWinner = Boolean(game?.away?.winner || game?.home?.winner);
   const isWinner = Boolean(team?.winner);
   return (
@@ -415,18 +424,21 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
         {recordText && <span className={`text-[10px] tracking-tight score-card-meta ${isWinner ? "font-semibold" : "font-normal"}`} style={{ color: "var(--score-meta)" }}>{recordText}</span>}
       </div>
       {showScore && <span className={`score-card-number ${favorite ? "text-[18px]" : "text-[16.5px]"} score-team-name tracking-tight ${isWinner || !hasWinner ? "font-black opacity-100" : "font-medium opacity-60"}`} style={{ color: "var(--text)" }}>{team.score}</span>}
-      {!showScore && oddsText && <span className="score-card-odds">{oddsText}</span>}
     </div>
   );
 }
 
-function scoreOddsText(game: any, team: any) {
+function ScoreCardOddsHeader({ game }: { game: any }) {
   const odds = game?.odds;
-  if (!odds) return null;
-  const side = String(team?.homeAway || "").toLowerCase();
-  if (side === "away") return odds.overUnder || null;
-  if (side === "home") return odds.homeMoneyLine || odds.details || null;
-  return null;
+  if (!odds?.awayMoneyLine && !odds?.homeMoneyLine && !odds?.overUnder) return null;
+  const total = odds.overUnder ? String(odds.overUnder).replace(/^O\/U\s*/i, "Total ") : "";
+  return (
+    <div className="score-card-odds-line">
+      {odds.awayMoneyLine && <span>{game?.away?.abbr} {odds.awayMoneyLine}</span>}
+      {total && <span>{total}</span>}
+      {odds.homeMoneyLine && <span>{game?.home?.abbr} {odds.homeMoneyLine}</span>}
+    </div>
+  );
 }
 
 function favoriteTeamLabel(team: any, league: League) {
@@ -474,11 +486,48 @@ function BasesDiamondMini({ situation }: { situation: any }) {
   );
 }
 
-function LeagueStatsPlaceholder({ league }: { league: League }) {
+function LeagueStats({ league }: { league: League }) {
+  const { data, isLoading } = useSWR<{ categories: LeagueLeaderCategory[] }>(`/api/league-leaders?league=${league}`, fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 300_000,
+  });
+  const categories = data?.categories || [];
+  if (isLoading) {
+    return (
+      <div className="league-leaders-grid">
+        {[0, 1, 2].map((i) => <div key={i} className="league-leader-card h-44 animate-pulse" />)}
+      </div>
+    );
+  }
+  if (!categories.length) {
+    return (
+      <div className="league-leader-empty">
+        League leaders are not available yet.
+      </div>
+    );
+  }
   return (
-    <div className="rounded-none sm:rounded-2xl p-7 text-center" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-      <h2 className="text-xl font-black mb-2">{LEAGUE_FULL_LABELS[league]} Stats</h2>
-      <p className="text-sm font-semibold" style={{ color: "var(--text-2)" }}>Team and player stat leaders will live here in the next phase.</p>
+    <div className="league-leaders-page">
+      <div className="league-leaders-title">{LEAGUE_FULL_LABELS[league]} Leaders</div>
+      <div className="league-leaders-grid">
+        {categories.map((category) => (
+          <section key={category.name} className="league-leader-card">
+            <h2>{category.displayName}</h2>
+            <div className="league-leader-list">
+              {category.leaders.slice(0, 5).map((leader) => (
+                <div key={`${category.name}-${leader.id}-${leader.rank}`} className="league-leader-row">
+                  <div className="league-leader-rank">{leader.rank}</div>
+                  <div className="league-leader-name">
+                    <span>{leader.name}</span>
+                    {leader.team && <em>{leader.team}</em>}
+                  </div>
+                  <div className="league-leader-value">{leader.displayValue}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
     </div>
   );
 }

@@ -9,6 +9,7 @@ import RetroTeamLogo from "./RetroTeamLogo";
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 type StandingsMode = "division" | "conference" | "wildcard";
+type StandingsControl = { id: string; label: string; mode: StandingsMode; conference?: string };
 type Props = {
   league: League | string;
   teamKey?: string;
@@ -305,7 +306,7 @@ function StandingsTable({ title, rows, league, teamAbbr, markers = {}, gbMode = 
 
 export default function Standings({ league, teamKey, compact = false, pageMode = "division", conferenceFilter, subdivision, showHeader = true, showFilterControls = false, teamView = false, onTeamClick }: Props) {
   const [selectedCollegeSection, setSelectedCollegeSection] = useState<string>("auto");
-  const [teamStandingsView, setTeamStandingsView] = useState<"division" | "secondary">("division");
+  const [teamStandingsView, setTeamStandingsView] = useState<string>("auto");
   const qs = new URLSearchParams({ league: String(league) });
   if (subdivision) qs.set("subdivision", subdivision);
   const { data, isLoading } = useSWR(`/api/standings?${qs.toString()}`, fetcher, { revalidateOnFocus: false, refreshInterval: 300_000 });
@@ -314,6 +315,7 @@ export default function Standings({ league, teamKey, compact = false, pageMode =
   const allRows = useMemo(() => flattenRows(sections), [sections]);
   const config = CONFIGS[String(league)];
   const filteredConferences = config?.conferences.filter((conf) => !conferenceFilter || conf.name === conferenceFilter) || [];
+  const teamControls = useMemo(() => controlsForTeamLeague(String(league)), [league]);
 
   const collegeLabels = useMemo(() => {
     if (!isCollege(league)) return [];
@@ -327,6 +329,13 @@ export default function Standings({ league, teamKey, compact = false, pageMode =
       if (match?.label) setSelectedCollegeSection(match.label);
     }
   }, [league, sections, selectedCollegeSection, teamAbbr]);
+
+  useEffect(() => {
+    if (!teamView || !teamControls.length) return;
+    if (teamStandingsView === "auto" || !teamControls.some((control) => control.id === teamStandingsView)) {
+      setTeamStandingsView(defaultTeamStandingsView(String(league), teamAbbr, config));
+    }
+  }, [teamView, teamControls, teamStandingsView, league, teamAbbr, config]);
 
   if (isLoading) return <div className="standings-loading h-40 rounded-xl animate-pulse" />;
   if (!sections.length) return <div className="standings-empty p-5 rounded-xl text-sm">Standings are not available yet.</div>;
@@ -354,39 +363,18 @@ export default function Standings({ league, teamKey, compact = false, pageMode =
   }
 
   if (teamView && teamAbbr) {
-    const teamConf = conferenceForTeam(config, teamAbbr);
-    const teamDivision = divisionForTeam(config, teamAbbr);
-    const secondaryLabel = league === "nba" ? "Conference" : "Wild Card";
-    const controls = [
-      { id: "division" as const, label: teamDivision?.name || "Division" },
-      { id: "secondary" as const, label: secondaryLabel },
-    ];
+    const activeControl = teamControls.find((control) => control.id === teamStandingsView) || teamControls[0];
 
     return (
       <section className="team-standings-panel space-y-3">
         <div className="team-standings-toggle">
-          {controls.map((control) => (
+          {teamControls.map((control) => (
             <button key={control.id} type="button" className={teamStandingsView === control.id ? "is-active" : ""} onClick={() => setTeamStandingsView(control.id)}>
               {control.label}
             </button>
           ))}
         </div>
-        {teamStandingsView === "division" && teamDivision && (
-          <StandingsTable title={teamDivision.name} rows={rowsForDivision(allRows, teamDivision, league)} league={league} teamAbbr={teamAbbr} onTeamClick={onTeamClick} />
-        )}
-        {teamStandingsView === "secondary" && teamConf && league === "nba" && (
-          <StandingsTable title={teamConf.name} rows={rowsForConference(allRows, teamConf, league)} league={league} teamAbbr={teamAbbr} markers={{ 6: "dash", 10: "solid" }} onTeamClick={onTeamClick} />
-        )}
-        {teamStandingsView === "secondary" && teamConf && league !== "nba" && league === "nhl" && (
-          <StandingsTable title="Wild Card" rows={rowsForConference(allRows, teamConf, league).filter((row) => {
-            const topThree = new Set(teamConf.divisions.flatMap((division) => rowsForDivision(allRows, division, league).slice(0, 3).map((r) => clean(r.abbr))));
-            return !topThree.has(clean(row.abbr));
-          })} league={league} teamAbbr={teamAbbr} markers={{ 2: "solid" }} onTeamClick={onTeamClick} />
-        )}
-        {teamStandingsView === "secondary" && teamConf && league !== "nba" && league !== "nhl" && (
-          <StandingsTable title="Wild Card" rows={withWildCardGb(wildCardRows(allRows, teamConf, league), config.wildCardCount || 3)} league={league} teamAbbr={teamAbbr} markers={{ [config.wildCardCount || 3]: "solid" }} gbMode="preserve" onTeamClick={onTeamClick} />
-        )}
-        {teamStandingsView === "division" && !teamDivision && <div className="standings-empty p-5 rounded-xl text-sm">Division standings are not available yet.</div>}
+        {activeControl ? renderControlledStandings(activeControl, config, allRows, league, teamAbbr, onTeamClick) : <div className="standings-empty p-5 rounded-xl text-sm">Standings are not available yet.</div>}
       </section>
     );
   }
@@ -447,6 +435,87 @@ export default function Standings({ league, teamKey, compact = false, pageMode =
       })}
     </section>
   );
+}
+
+function controlsForTeamLeague(league: string): StandingsControl[] {
+  if (league === "mlb") return [
+    { id: "american", label: "American", mode: "division", conference: "American League" },
+    { id: "national", label: "National", mode: "division", conference: "National League" },
+    { id: "wildcard", label: "Wild Card", mode: "wildcard" },
+  ];
+  if (league === "nfl") return [
+    { id: "afc", label: "AFC", mode: "division", conference: "AFC" },
+    { id: "nfc", label: "NFC", mode: "division", conference: "NFC" },
+    { id: "conference", label: "Conference", mode: "wildcard" },
+  ];
+  if (league === "nhl") return [
+    { id: "east", label: "Eastern", mode: "division", conference: "Eastern Conference" },
+    { id: "west", label: "Western", mode: "division", conference: "Western Conference" },
+    { id: "conference", label: "Conference", mode: "wildcard" },
+  ];
+  if (league === "nba") return [
+    { id: "east", label: "Eastern", mode: "division", conference: "Eastern Conference" },
+    { id: "west", label: "Western", mode: "division", conference: "Western Conference" },
+    { id: "conference", label: "Conference", mode: "conference" },
+  ];
+  return [{ id: "division", label: "Division", mode: "division" }];
+}
+
+function defaultTeamStandingsView(league: string, teamAbbr: string | undefined, config?: LeagueConfig) {
+  const conf = conferenceForTeam(config, teamAbbr)?.name || "";
+  if (league === "mlb") return conf.includes("National") ? "national" : "american";
+  if (league === "nfl") return conf === "NFC" ? "nfc" : "afc";
+  if (league === "nhl" || league === "nba") return conf.includes("Western") ? "west" : "east";
+  return controlsForTeamLeague(league)[0]?.id || "division";
+}
+
+function renderControlledStandings(control: StandingsControl, config: LeagueConfig | undefined, allRows: TeamRow[], league: League | string, teamAbbr?: string, onTeamClick?: (league: string, abbr: string) => void) {
+  if (!config) return null;
+  const conferences = config.conferences.filter((conf) => !control.conference || conf.name === control.conference);
+  if (control.mode === "division") {
+    return conferences.map((conf) => (
+      <div key={conf.name} className="space-y-3">
+        {conferences.length > 1 && <StandingsGroupTitle>{conf.name}</StandingsGroupTitle>}
+        {conf.divisions.map((division) => <StandingsTable key={division.name} title={division.name} rows={rowsForDivision(allRows, division, league)} league={league} teamAbbr={teamAbbr} onTeamClick={onTeamClick} />)}
+      </div>
+    ));
+  }
+  if (control.mode === "conference") {
+    return conferences.map((conf) => {
+      const markers: Record<number, "dash" | "solid"> = {};
+      if (league === "nba") { markers[6] = "dash"; markers[10] = "solid"; }
+      return <StandingsTable key={conf.name} title={conf.name} rows={rowsForConference(allRows, conf, league)} league={league} teamAbbr={teamAbbr} markers={markers} onTeamClick={onTeamClick} />;
+    });
+  }
+  return conferences.map((conf) => {
+    if (league === "nba") {
+      return <StandingsTable key={conf.name} title={conf.name} rows={rowsForConference(allRows, conf, league)} league={league} teamAbbr={teamAbbr} markers={{ 6: "dash", 10: "solid" }} onTeamClick={onTeamClick} />;
+    }
+    if (league === "nhl") {
+      const topThree: TeamRow[] = conf.divisions.flatMap((division) => rowsForDivision(allRows, division, league).slice(0, 3).map((row) => ({ ...row, divisionLabel: division.name })));
+      const topThreeKeys = new Set(topThree.map((row) => clean(row.abbr)));
+      const nhlWildCardRows = rowsForConference(allRows, conf, league).filter((row) => !topThreeKeys.has(clean(row.abbr)));
+      return (
+        <div key={conf.name} className="space-y-3">
+          <StandingsGroupTitle>{conf.name}</StandingsGroupTitle>
+          {conf.divisions.map((division) => (
+            <StandingsTable key={`${conf.name}-${division.name}-leaders`} title={`${division.name} Leaders`} rows={rowsForDivision(allRows, division, league).slice(0, 3)} league={league} teamAbbr={teamAbbr} onTeamClick={onTeamClick} />
+          ))}
+          <StandingsTable title="Wild Card" rows={nhlWildCardRows} league={league} teamAbbr={teamAbbr} markers={{ 2: "solid" }} onTeamClick={onTeamClick} />
+        </div>
+      );
+    }
+    const leaders = sortRows(divisionLeaders(allRows, conf, league), league).map((row) => ({ ...row, gb: "-" }));
+    const cutoff = config.wildCardCount || 3;
+    const wc = withWildCardGb(wildCardRows(allRows, conf, league), cutoff);
+    return (
+      <div key={conf.name} className="space-y-3">
+        <StandingsGroupTitle>{conf.name}</StandingsGroupTitle>
+        <StandingsTable title="Division Leaders" rows={leaders} league={league} teamAbbr={teamAbbr} gbMode="preserve" onTeamClick={onTeamClick} />
+        <StandingsTable title="Wild Card" rows={wc} league={league} teamAbbr={teamAbbr} markers={{ [cutoff]: "solid" }} gbMode="preserve" onTeamClick={onTeamClick} />
+      </div>
+    );
+  });
 }
 
 function StandingsGroupTitle({ children }: { children: ReactNode }) {
