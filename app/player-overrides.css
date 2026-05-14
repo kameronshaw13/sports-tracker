@@ -15,8 +15,8 @@
 }
 
 .player-detail-topbar {
-  min-height: calc(2.32rem + env(safe-area-inset-top, 0px)) !important;
-  padding: calc(.02rem + env(safe-area-inset-top, 0px)) .82rem .1rem !important;
+  min-height: calc(2.18rem + max(0px, calc(env(safe-area-inset-top, 0px) - .72rem))) !important;
+  padding: max(.08rem, calc(env(safe-area-inset-top, 0px) - .72rem)) .82rem .1rem !important;
   border-bottom: 1px solid var(--border) !important;
 }
 
@@ -76,8 +76,8 @@
 }
 
 .player-game-log-header {
-  position: sticky !important;
-  top: calc(13.3rem + env(safe-area-inset-top, 0px)) !important;
+  position: static !important;
+  top: auto !important;
   padding-top: .24rem !important;
 }
 
@@ -90,30 +90,30 @@
 }
 
 .player-game-log-list {
-  overflow-x: auto !important;
-  overscroll-behavior-x: contain;
+  overflow-x: hidden !important;
+  overscroll-behavior-x: auto;
 }
 
 .player-game-log-list.is-pitcher-log .player-game-log-header,
 .player-game-log-list.is-pitcher-log .player-game-log-row {
-  min-width: 21.55rem;
+  min-width: 0 !important;
 }
 
 .player-game-log-header span:first-child,
 .player-game-log-row > span:first-child {
-  position: sticky;
-  left: 0;
-  z-index: 3;
-  background: inherit;
+  position: static !important;
+  left: auto !important;
+  z-index: auto !important;
+  background: transparent !important;
 }
 
 .player-game-log-header span:nth-child(2),
 .player-game-log-row > strong {
-  position: sticky;
-  left: 3rem;
-  z-index: 3;
-  background: inherit;
-  box-shadow: 1px 0 0 var(--border);
+  position: static !important;
+  left: auto !important;
+  z-index: auto !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .player-game-log-header span:nth-child(n+3),
@@ -121,10 +121,28 @@
   text-align: center !important;
 }
 
+.player-game-log-header,
+.player-game-log-row {
+  column-gap: 0 !important;
+}
+
+.player-game-log-header span,
+.player-game-log-row span,
+.player-game-log-row strong {
+  justify-self: stretch !important;
+  text-align: center !important;
+}
+
+.player-game-log-header span:nth-child(-n+2),
+.player-game-log-row span:first-child,
+.player-game-log-row strong {
+  text-align: left !important;
+}
+
 @media (max-width: 420px) {
   .player-detail-topbar {
-    min-height: calc(2.24rem + env(safe-area-inset-top, 0px)) !important;
-    padding-top: env(safe-area-inset-top, 0px) !important;
+    min-height: calc(2.08rem + max(0px, calc(env(safe-area-inset-top, 0px) - .82rem))) !important;
+    padding-top: max(.04rem, calc(env(safe-area-inset-top, 0px) - .82rem)) !important;
   }
 
   .player-detail-hero-main {
@@ -134,9 +152,5 @@
 
   .player-detail-feature-stats {
     padding-bottom: .76rem !important;
-  }
-
-  .player-game-log-header {
-    top: calc(12.7rem + env(safe-area-inset-top, 0px)) !important;
   }
 }

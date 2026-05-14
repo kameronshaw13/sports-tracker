@@ -15,6 +15,7 @@ type PlayerRow = {
   name: string;
   jersey?: string;
   position?: string;
+  positionAbbr?: string;
   primaryPosition?: string;
   pitchingRole?: "SP" | "RP";
   headshot?: string;
@@ -131,23 +132,29 @@ export default function PlayerDetail({ player, onBack }: Props) {
   const playerUrl = `/api/player?league=${player.league}&id=${player.id}${player.teamKey ? `&team=${player.teamKey}` : ""}&name=${encodeURIComponent(player.name || "")}`;
   const { data: profileData, error, isLoading } = useSWR(playerUrl, fetcher);
   const { data: teamPlayersData } = useSWR(player.teamKey ? `/api/players?team=${player.teamKey}` : null, fetcher);
+  const { data: rosterData } = useSWR(player.teamKey ? `/api/roster?team=${player.teamKey}` : null, fetcher);
 
   const teamPlayer = useMemo(
     () => findTeamPlayer(teamPlayersData?.players || [], player),
     [teamPlayersData?.players, player]
   );
+  const rosterPlayer = useMemo(
+    () => findTeamPlayer([...(rosterData?.active || []), ...(rosterData?.injured || []), ...(rosterData?.players || [])], player),
+    [rosterData?.active, rosterData?.injured, rosterData?.players, player]
+  );
   const profile: Profile = profileData?.profile || {};
-  const displayName = teamPlayer?.name || profile.name || player.name;
-  const position = teamPlayer?.position || profile.position;
-  const jersey = teamPlayer?.jersey || profile.jersey;
+  const displayName = rosterPlayer?.name || teamPlayer?.name || profile.name || player.name;
+  const position = rosterPlayer?.positionAbbr || rosterPlayer?.position || teamPlayer?.position || profile.position;
+  const jersey = rosterPlayer?.jersey || teamPlayer?.jersey || profile.jersey;
   const headshotCandidates = useMemo(
     () => Array.from(new Set([
+      rosterPlayer?.headshot,
       espnHeadshot(player.league, teamPlayer?.id || ""),
       espnHeadshot(player.league, player.id),
       teamPlayer?.headshot,
       profile.headshot,
     ].filter(isUsableHeadshot))) as string[],
-    [player.league, teamPlayer?.id, player.id, teamPlayer?.headshot, profile.headshot]
+    [player.league, rosterPlayer?.headshot, teamPlayer?.id, player.id, teamPlayer?.headshot, profile.headshot]
   );
   const [headshotIndex, setHeadshotIndex] = useState(0);
   useEffect(() => setHeadshotIndex(0), [player.id, headshotCandidates.join("|")]);
@@ -271,8 +278,8 @@ function GameLogTable({ rows, league, position }: { rows: any[]; league: string;
   const statLabels = gameLogColumns(rows, league, position);
   const isPitcher = league === "mlb" && isMlbPitcherPosition(position || "");
   const gridTemplateColumns = isPitcher
-    ? `3rem 3.55rem repeat(${statLabels.length}, 2.15rem)`
-    : `3rem 3.45rem repeat(${statLabels.length}, minmax(1.58rem, 1fr))`;
+    ? `2.72rem 3rem 1.55rem 1.55rem 1.85rem 2rem repeat(3, minmax(0, 1fr))`
+    : `2.72rem 3rem 2.65rem repeat(5, minmax(0, 1fr))`;
   return (
     <div className={`player-game-log-list ${isPitcher ? "is-pitcher-log" : "is-hitter-log"}`}>
       <div className="player-game-log-header" style={{ gridTemplateColumns }}>
