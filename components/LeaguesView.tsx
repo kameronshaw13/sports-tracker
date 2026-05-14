@@ -55,12 +55,15 @@ type Props = {
 type LeagueTab = "scores" | "stats" | "standings";
 type LeagueLeader = { id: string; name: string; displayValue: string; team?: string; rank: number };
 type LeagueLeaderCategory = { name: string; displayName: string; leaders: LeagueLeader[] };
+type StandingsMode = "division" | "conference" | "wildcard";
+type StandingsControl = { id: string; label: string; mode: StandingsMode; conference?: string };
 
 export default function LeaguesView({ onTeamLogoClick, onPlayerClick, onGameContext, initialLeague = "mlb", leaguePage = false, onBack, onStandingsClick }: Props) {
   const safeInitial = VALID_LEAGUES.includes(initialLeague as League) ? (initialLeague as League) : "mlb";
   const [dayOffset, setDayOffset] = useState(0);
   const [league] = useState<League>(safeInitial);
   const [tab, setTab] = useState<LeagueTab>("scores");
+  const [standingsView, setStandingsView] = useState<string>(defaultStandingsViewForLeague(safeInitial));
   const [selectedEvent, setSelectedEvent] = useState<{ league: string; eventId: string } | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const scoresHeaderRef = useRef<HTMLDivElement | null>(null);
@@ -70,6 +73,8 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, onGameCont
   const { settings } = useAppSettings();
   const { favorites } = useFavoriteTeams();
   const date = formatDate(dayOffset);
+  const standingsControls = useMemo(() => controlsForLeague(league), [league]);
+  const activeStandingsControl = standingsControls.find((control) => control.id === standingsView) || standingsControls[0];
 
   const openEvent = (next: { league: string; eventId: string }) => {
     returnScrollRef.current = typeof window !== "undefined" ? window.scrollY : 0;
@@ -142,7 +147,29 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, onGameCont
               </div>
             </>
           )}
-          {tab === "standings" && <Standings league={league} showHeader={false} pageMode={league === "cfb" ? "conference" : "division"} showFilterControls={league === "cfb"} />}
+          {tab === "standings" && (
+            <div className="league-standings-page">
+              {standingsControls.length > 0 && (
+                <div className="standings-mode-wrap league-standings-mode-wrap px-2 py-3">
+                  <div className={`standings-mode-grid grid gap-2 ${standingsControls.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+                    {standingsControls.map((control) => (
+                      <button key={control.id} type="button" onClick={() => setStandingsView(control.id)} className={`standings-mode-btn py-2 text-xs font-black ${standingsView === control.id ? "is-active" : ""}`}>
+                        {control.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <Standings
+                league={league}
+                showHeader={false}
+                pageMode={league === "cbb" || league === "cfb" ? "conference" : activeStandingsControl?.mode || "division"}
+                conferenceFilter={activeStandingsControl?.conference}
+                showFilterControls={league === "cbb" || league === "cfb"}
+                onTeamClick={onTeamLogoClick}
+              />
+            </div>
+          )}
           {tab === "stats" && <LeagueStats league={league} />}
         </div>
       </div>
@@ -230,6 +257,42 @@ function CbsDateBar({ dayOffset, setDayOffset }: { dayOffset: number; setDayOffs
       })}
     </div>
   );
+}
+
+function controlsForLeague(league: League): StandingsControl[] {
+  if (league === "cfb" || league === "cbb") return [];
+  if (league === "mlb") return [
+    { id: "american", label: "American", mode: "division", conference: "American League" },
+    { id: "national", label: "National", mode: "division", conference: "National League" },
+    { id: "wildcard", label: "Wild Card", mode: "wildcard" },
+  ];
+  if (league === "nfl") return [
+    { id: "afc", label: "AFC", mode: "division", conference: "AFC" },
+    { id: "nfc", label: "NFC", mode: "division", conference: "NFC" },
+    { id: "conference", label: "Conference", mode: "wildcard" },
+  ];
+  if (league === "nhl") return [
+    { id: "east", label: "Eastern", mode: "division", conference: "Eastern Conference" },
+    { id: "west", label: "Western", mode: "division", conference: "Western Conference" },
+    { id: "conference", label: "Conference", mode: "wildcard" },
+  ];
+  if (league === "nba") return [
+    { id: "east", label: "Eastern", mode: "division", conference: "Eastern Conference" },
+    { id: "west", label: "Western", mode: "division", conference: "Western Conference" },
+    { id: "conference", label: "Conference", mode: "conference" },
+  ];
+  return [
+    { id: "division", label: "Division", mode: "division" },
+    { id: "conference", label: "Conference", mode: "conference" },
+    { id: "wildcard", label: "Wild Card", mode: "wildcard" },
+  ];
+}
+
+function defaultStandingsViewForLeague(league: League) {
+  if (league === "mlb") return "american";
+  if (league === "nfl") return "afc";
+  if (league === "nhl" || league === "nba") return "east";
+  return "division";
 }
 
 function FavoritesScores({ date, favoriteKeys, stickyTop, onGameClick }: { date: string; favoriteKeys: Set<string>; stickyTop: number | string; onGameClick: (league: League, eventId: string) => void }) {

@@ -13617,3 +13617,62 @@ main:has(.game-detail-page) {
     --standings-fixed-head: 12.85rem;
   }
 }
+
+/* v164: visible Scores refresh pill, taller league date rail, and league standings pills */
+main.view-scores .pull-refresh-indicator {
+  top: calc(max(env(safe-area-inset-top), 0px) + 1.45rem) !important;
+  z-index: 1200 !important;
+}
+
+.pull-refresh-indicator {
+  z-index: 1200 !important;
+}
+
+.league-page-content:has(.retro-datebar) {
+  padding-top: 3.25rem !important;
+}
+
+.league-page-content .retro-datebar {
+  min-height: 3.18rem !important;
+  padding-top: .38rem !important;
+  padding-bottom: .36rem !important;
+  align-items: center !important;
+}
+
+.league-page-content .retro-datebar button {
+  min-height: 2.24rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding-top: .48rem !important;
+  padding-bottom: .38rem !important;
+}
+
+.league-page-content .retro-datebar button > div {
+  line-height: 1.05 !important;
+  transform: translateY(.03rem);
+}
+
+.league-standings-page {
+  padding-top: .45rem;
+}
+
+.league-standings-mode-wrap {
+  padding-left: .5rem !important;
+  padding-right: .5rem !important;
+  background: var(--bg) !important;
+}
+
+@media (max-width: 420px) {
+  main.view-scores .pull-refresh-indicator {
+    top: calc(max(env(safe-area-inset-top), 0px) + 1.35rem) !important;
+  }
+
+  .league-page-content:has(.retro-datebar) {
+    padding-top: 3.16rem !important;
+  }
+
+  .league-page-content .retro-datebar {
+    min-height: 3.08rem !important;
+  }
+}
