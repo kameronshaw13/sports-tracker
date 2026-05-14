@@ -305,6 +305,9 @@ function FavoritesScores({ date, favoriteKeys, stickyTop, onGameClick }: { date:
       .map((g: any) => ({ ...g, league, favoriteSide: favoriteSideForGame(g, favoriteKeys, league) }))
       .filter((g: any) => Boolean(g.favoriteSide));
   });
+  useEffect(() => {
+    persistPregameOdds(games);
+  }, [games]);
 
   if (!games.length) return null;
   return (
@@ -330,6 +333,10 @@ function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick
   });
 
   const events = [...(data?.events || [])].sort((a: any, b: any) => statusRank(a) - statusRank(b) || new Date(a.date).getTime() - new Date(b.date).getTime());
+  useEffect(() => {
+    persistPregameOdds(events.map((game: any) => ({ ...game, league })));
+  }, [events, league]);
+
   if (!isLoading && (!events.length || error)) return null;
   const compactGrid = density === "compact";
   const hasOddCompactGrid = compactGrid && events.length % 2 === 1;
@@ -647,7 +654,7 @@ function gameMatchesFavorites(game: any, favoriteKeys: Set<string>, league: Leag
 
 function sublineForGame(league: League, game: any, density: ScoreDensity) {
   if (game.status?.state === "post") {
-    return completedOddsLine(game) || "";
+    return completedOddsLine(game, league) || "";
   }
   if (league === "mlb") {
     const withInitial = density === "expanded";
@@ -661,8 +668,8 @@ function sublineForGame(league: League, game: any, density: ScoreDensity) {
   return game.status?.type?.shortDetail || game.status?.detail || "";
 }
 
-function completedOddsLine(game: any): string | null {
-  const odds = game?.odds;
+function completedOddsLine(game: any, league: League): string | null {
+  const odds = game?.odds || getCachedPregameOdds(league, game?.id);
   if (!odds) return null;
 
   const awayScore = Number(game?.away?.score);
@@ -678,7 +685,7 @@ function completedOddsLine(game: any): string | null {
 
   const parts: string[] = [];
   if (winner?.team && winner.odds) {
-    parts.push(`${favoriteTeamLabel(winner.team, game.league || "mlb")} (${winner.odds})`);
+    parts.push(`${favoriteTeamLabel(winner.team, league)} (${winner.odds})`);
   }
 
   const total = parseOverUnder(odds.overUnder || odds.details);
@@ -688,6 +695,32 @@ function completedOddsLine(game: any): string | null {
   }
 
   return parts.length ? parts.join(", ") : null;
+}
+
+function persistPregameOdds(games: any[]) {
+  if (typeof window === "undefined") return;
+  for (const game of games || []) {
+    if (!game?.id || !game?.league || !game?.odds) continue;
+    const state = String(game?.status?.state || "");
+    if (state === "post") continue;
+    try {
+      window.localStorage.setItem(pregameOddsKey(game.league, game.id), JSON.stringify(game.odds));
+    } catch {}
+  }
+}
+
+function getCachedPregameOdds(league: League, eventId: any) {
+  if (typeof window === "undefined" || !eventId) return null;
+  try {
+    const raw = window.localStorage.getItem(pregameOddsKey(league, eventId));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function pregameOddsKey(league: string, eventId: any) {
+  return `sportsTrackerPregameOdds:${league}:${eventId}`;
 }
 
 function cleanMoneyLineText(value: any, abbr?: string): string | null {
