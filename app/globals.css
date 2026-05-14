@@ -13829,3 +13829,59 @@ main.view-scores .pull-refresh-indicator {
     transform: translateX(calc(-50% + .34rem)) !important;
   }
 }
+
+/* v168: final odds typography and GameTracker status/score alignment */
+.score-team-row {
+  overflow: visible !important;
+}
+
+.score-card-odds {
+  color: var(--score-meta) !important;
+  font-size: .6rem !important;
+  font-weight: 500 !important;
+  line-height: 1.22 !important;
+  letter-spacing: -.005em !important;
+  opacity: 1 !important;
+  transform: translateY(.045rem) !important;
+}
+
+.game-score-score {
+  transform: translateY(.02rem) !important;
+}
+
+.game-score-team-home .game-score-score {
+  transform: translateY(.02rem) !important;
+}
+
+.game-score-status.is-pre {
+  left: 50% !important;
+  width: 5.4rem !important;
+  transform: translateX(calc(-50% - .015rem)) !important;
+  text-align: center !important;
+}
+
+.game-score-status.is-final {
+  left: 50% !important;
+  width: 5.4rem !important;
+  transform: translateX(-50%) !important;
+  text-align: center !important;
+}
+
+.game-score-series {
+  transform: translateX(calc(-50% + .58rem)) !important;
+}
+
+@media (max-width: 420px) {
+  .score-card-odds {
+    font-size: .58rem !important;
+    transform: translateY(.05rem) !important;
+  }
+
+  .game-score-status.is-pre {
+    transform: translateX(calc(-50% - .01rem)) !important;
+  }
+
+  .game-score-series {
+    transform: translateX(calc(-50% + .52rem)) !important;
+  }
+}

@@ -647,7 +647,7 @@ function gameMatchesFavorites(game: any, favoriteKeys: Set<string>, league: Leag
 
 function sublineForGame(league: League, game: any, density: ScoreDensity) {
   if (game.status?.state === "post") {
-    return completedOddsLine(game) || game.status?.detail || "Final";
+    return completedOddsLine(game) || "";
   }
   if (league === "mlb") {
     const withInitial = density === "expanded";
