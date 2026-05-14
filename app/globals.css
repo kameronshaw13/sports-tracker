@@ -1561,6 +1561,410 @@ html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img {
   }
 }
 
+/* v181: final EOF score-card odds/status overrides */
+.game-score-status.is-final {
+  left: calc(50% + 1.12rem) !important;
+  width: 5.4rem !important;
+  transform: translateX(-50%) !important;
+  text-align: center !important;
+}
+
+.score-team-row {
+  overflow: visible !important;
+}
+
+.score-card-odds {
+  min-width: 2.44rem !important;
+  color: var(--score-meta) !important;
+  font-size: .64rem !important;
+  font-weight: 500 !important;
+  line-height: 1.35 !important;
+  transform: translateY(-.035rem) !important;
+  opacity: 1 !important;
+}
+
+.game-score-score,
+.game-score-team-away .game-score-score,
+.game-score-team-home .game-score-score {
+  top: 4.46rem !important;
+  transform: translateY(-50%) !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-status.is-final {
+    left: calc(50% + 1rem) !important;
+  }
+
+  .score-card-odds {
+    min-width: 2.34rem !important;
+    font-size: .62rem !important;
+    transform: translateY(-.03rem) !important;
+  }
+
+  .game-score-score,
+  .game-score-team-away .game-score-score,
+  .game-score-team-home .game-score-score {
+    top: 4.46rem !important;
+    transform: translateY(-50%) !important;
+  }
+}
+
+/* v180: final label, score-card odds, and redesigned player detail pages */
+.game-score-status.is-final {
+  left: calc(50% + 1.12rem) !important;
+  width: 5.4rem !important;
+  transform: translateX(-50%) !important;
+  text-align: center !important;
+}
+
+.score-team-row {
+  overflow: visible !important;
+}
+
+.score-card-odds {
+  min-width: 2.44rem !important;
+  color: var(--score-meta) !important;
+  font-size: .64rem !important;
+  font-weight: 500 !important;
+  line-height: 1.35 !important;
+  transform: translateY(-.035rem) !important;
+  opacity: 1 !important;
+}
+
+.player-detail-page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.player-detail-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr) 3.25rem;
+  align-items: center;
+  min-height: calc(3.72rem + env(safe-area-inset-top, 0px));
+  padding: calc(.35rem + env(safe-area-inset-top, 0px)) .75rem .35rem;
+  background: var(--bg);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 38%, var(--border) 62%);
+}
+
+.player-detail-top-title {
+  min-width: 0;
+  text-align: center;
+  line-height: 1.04;
+}
+
+.player-detail-top-title span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-retro), Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 950;
+}
+
+.player-detail-top-title em {
+  display: block;
+  margin-top: .16rem;
+  color: var(--score-meta);
+  font-style: normal;
+  font-size: .66rem;
+  font-weight: 800;
+}
+
+.player-detail-top-spacer {
+  width: 3.25rem;
+}
+
+.player-detail-hero {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 82%, #6f3619 18%), var(--surface));
+  border-bottom: 1px solid var(--border);
+}
+
+.player-detail-hero-main {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: .95rem;
+  align-items: center;
+  padding: 1rem 1rem .9rem;
+}
+
+.player-detail-headshot {
+  width: 6.25rem;
+  height: 6.25rem;
+  overflow: hidden;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--surface-2) 88%, #fff 4%);
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--border) 58%);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+}
+
+.player-detail-headshot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-detail-headshot span {
+  transform: translateY(.12rem);
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 950;
+}
+
+.player-detail-title-block {
+  min-width: 0;
+}
+
+.player-detail-title-block h2 {
+  margin: 0;
+  font-family: var(--font-retro), Georgia, serif;
+  font-size: clamp(1.6rem, 7vw, 2.45rem);
+  line-height: 1.02;
+  font-weight: 950;
+}
+
+.player-detail-title-block div {
+  margin-top: .35rem;
+  color: var(--score-meta);
+  font-size: .82rem;
+  font-weight: 850;
+  line-height: 1.15;
+}
+
+.player-detail-title-block p {
+  margin-top: .35rem;
+  color: var(--text-3);
+  font-size: .7rem;
+  line-height: 1.25;
+  font-weight: 650;
+}
+
+.player-detail-feature-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--border);
+}
+
+.player-detail-feature-stats div {
+  min-width: 0;
+  padding: .78rem .45rem .7rem;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+
+.player-detail-feature-stats div:last-child {
+  border-right: 0;
+}
+
+.player-detail-feature-stats strong {
+  display: block;
+  font-size: 1.55rem;
+  line-height: 1;
+  font-weight: 950;
+  font-variant-numeric: tabular-nums;
+}
+
+.player-detail-feature-stats span {
+  display: block;
+  margin-top: .22rem;
+  color: var(--score-meta);
+  font-size: .66rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.player-detail-tabs {
+  position: sticky;
+  top: calc(3.72rem + env(safe-area-inset-top, 0px));
+  z-index: 80;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.player-detail-tabs > div {
+  display: flex;
+  gap: 1.6rem;
+  padding: 0 1rem;
+}
+
+.player-detail-tabs button {
+  position: relative;
+  min-height: 2.85rem;
+  padding-top: .22rem;
+  color: var(--text-2);
+  font-family: var(--font-retro), Georgia, serif;
+  font-size: .98rem;
+  font-weight: 900;
+}
+
+.player-detail-tabs button.is-active {
+  color: var(--text);
+}
+
+.player-detail-tabs button.is-active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: .18rem;
+  background: var(--accent);
+}
+
+.player-detail-body {
+  padding: .72rem 0 0;
+}
+
+.player-detail-stat-sections,
+.player-game-log-list {
+  display: grid;
+  gap: 0;
+}
+
+.player-detail-stat-section {
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.player-detail-stat-section h3 {
+  margin: 0;
+  padding: .72rem 1rem .55rem;
+  background: color-mix(in srgb, var(--surface-2) 88%, #000 8%);
+  color: var(--score-meta);
+  font-family: var(--font-retro), Georgia, serif;
+  font-size: .9rem;
+  font-weight: 950;
+}
+
+.player-detail-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.player-detail-stat-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  min-height: 2.55rem;
+  padding: .18rem 1rem 0;
+  border-top: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+}
+
+.player-detail-stat-item:nth-child(odd) {
+  border-right: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+}
+
+.player-detail-stat-item span {
+  color: var(--text-2);
+  font-size: .72rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.player-detail-stat-item strong {
+  font-size: .9rem;
+  font-weight: 950;
+  font-variant-numeric: tabular-nums;
+}
+
+.player-game-log-row {
+  display: grid;
+  grid-template-columns: 4.55rem minmax(0, 1fr);
+  gap: .55rem;
+  align-items: stretch;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.player-game-log-meta {
+  padding: .62rem .4rem .52rem 1rem;
+  border-right: 1px solid var(--border);
+}
+
+.player-game-log-meta strong,
+.player-game-log-meta span {
+  display: block;
+  line-height: 1.05;
+}
+
+.player-game-log-meta strong {
+  font-size: .76rem;
+  font-weight: 950;
+}
+
+.player-game-log-meta span {
+  margin-top: .26rem;
+  color: var(--score-meta);
+  font-size: .68rem;
+  font-weight: 800;
+}
+
+.player-game-log-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.player-game-log-stats div {
+  min-width: 0;
+  padding: .52rem .22rem .44rem;
+  text-align: center;
+  border-right: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+}
+
+.player-game-log-stats div:nth-child(3n) {
+  border-right: 0;
+}
+
+.player-game-log-stats span {
+  display: block;
+  color: var(--text-3);
+  font-size: .58rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.player-game-log-stats strong {
+  display: block;
+  margin-top: .22rem;
+  font-size: .82rem;
+  font-weight: 950;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.player-detail-empty {
+  margin: .75rem 1rem;
+  padding: .9rem 1rem;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: .8rem;
+  font-weight: 750;
+}
+
+@media (max-width: 420px) {
+  .game-score-status.is-final {
+    left: calc(50% + 1rem) !important;
+  }
+
+  .score-card-odds {
+    min-width: 2.34rem !important;
+    font-size: .62rem !important;
+    transform: translateY(-.03rem) !important;
+  }
+}
+
 /* v179: final label a touch farther right, scores unchanged */
 .game-score-status.is-final {
   left: calc(50% + .98rem) !important;
@@ -14353,14 +14757,14 @@ main.view-scores .pull-refresh-indicator {
     transform: translateY(-50%) !important;
   }
 }
-/* v178/v179: actual final EOF override for phone/web status labels, scores unchanged */
+/* v178/v179/v181: actual final EOF override for phone/web status labels, scores unchanged */
 .game-score-status.is-pre {
   left: calc(50% + 1.32rem) !important;
   transform: translateX(-50%) !important;
 }
 
 .game-score-status.is-final {
-  left: calc(50% + .98rem) !important;
+  left: calc(50% + 1.12rem) !important;
   width: 5.4rem !important;
   transform: translateX(-50%) !important;
   text-align: center !important;
@@ -14379,6 +14783,20 @@ main.view-scores .pull-refresh-indicator {
   transform: translateY(-50%) !important;
 }
 
+.score-team-row {
+  overflow: visible !important;
+}
+
+.score-card-odds {
+  min-width: 2.44rem !important;
+  color: var(--score-meta) !important;
+  font-size: .64rem !important;
+  font-weight: 500 !important;
+  line-height: 1.35 !important;
+  transform: translateY(-.035rem) !important;
+  opacity: 1 !important;
+}
+
 @media (max-width: 420px) {
   .game-score-status.is-pre {
     left: calc(50% + 1.2rem) !important;
@@ -14386,7 +14804,7 @@ main.view-scores .pull-refresh-indicator {
   }
 
   .game-score-status.is-final {
-    left: calc(50% + .88rem) !important;
+    left: calc(50% + 1rem) !important;
     transform: translateX(-50%) !important;
   }
 
@@ -14401,5 +14819,11 @@ main.view-scores .pull-refresh-indicator {
   .game-score-team-home .game-score-score {
     top: 4.46rem !important;
     transform: translateY(-50%) !important;
+  }
+
+  .score-card-odds {
+    min-width: 2.34rem !important;
+    font-size: .62rem !important;
+    transform: translateY(-.03rem) !important;
   }
 }

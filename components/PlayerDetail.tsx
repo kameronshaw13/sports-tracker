@@ -132,7 +132,7 @@ export default function PlayerDetail({ player, onBack }: Props) {
 
   const profile: Profile = profileData?.profile || {};
   const displayName = teamPlayer?.name || profile.name || player.name;
-  const headshot = teamPlayer?.headshot || profile.headshot;
+  const headshot = espnHeadshot(player.league, player.id) || teamPlayer?.headshot || profile.headshot;
   const position = teamPlayer?.position || profile.position;
 
   // First choice: use the exact same /api/players stat row that powers the
@@ -147,49 +147,53 @@ export default function PlayerDetail({ player, onBack }: Props) {
   const primaryGroup = statGroups[0]?.stats?.slice(0, 3) || [];
 
   return (
-    <div className="-mx-4 sm:mx-0 cbs-player-page">
-      <div className="cbs-player-topbar">
+    <div className="-mx-4 sm:mx-0 player-detail-page">
+      <div className="player-detail-topbar">
         <BackButton onBack={onBack} />
-        <h1 className="text-lg font-black truncate">{displayName}</h1>
-        <div className="w-10" />
+        <div className="player-detail-top-title">
+          <span>{displayName}</span>
+          {position && <em>{position}</em>}
+        </div>
+        <div className="player-detail-top-spacer" />
       </div>
 
-      <section className="cbs-player-hero">
-        <div className="flex items-center gap-4 px-5 pt-5">
-          <div className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
+      <section className="player-detail-hero">
+        <div className="player-detail-hero-main">
+          <div className="player-detail-headshot">
             {headshot ? (
-              <Image src={headshot} alt={displayName} width={96} height={96} className="object-cover" unoptimized />
+              <Image src={headshot} alt={displayName} width={104} height={104} className="object-cover" unoptimized />
             ) : (
-              <span className="text-2xl font-black" style={{ color: "var(--text-3)" }}>{initials(displayName)}</span>
+              <span>{initials(displayName)}</span>
             )}
           </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-3xl font-black leading-tight">{displayName}</h2>
-            <div className="text-base font-black mt-1" style={{ color: "var(--text-2)" }}>
+          <div className="player-detail-title-block">
+            <h2>{displayName}</h2>
+            <div>
               {[profile.team, position].filter(Boolean).join(" · ") || player.league.toUpperCase()}
             </div>
+            {profile.bio && <p>{profile.bio}</p>}
           </div>
         </div>
         {primaryGroup.length > 0 && (
-          <div className="grid grid-cols-3 mt-6 border-t" style={{ borderColor: "var(--border)" }}>
+          <div className="player-detail-feature-stats">
             {primaryGroup.map((s) => (
-              <div key={s.label} className="py-4 text-center border-r last:border-r-0" style={{ borderColor: "var(--border)" }}>
-                <div className="text-3xl font-black tabular-nums leading-none">{s.value}</div>
-                <div className="text-sm font-black mt-1" style={{ color: "var(--text-2)" }}>{s.label}</div>
+              <div key={s.label}>
+                <strong>{s.value}</strong>
+                <span>{s.label}</span>
               </div>
             ))}
           </div>
         )}
       </section>
 
-      <div className="cbs-tabs" role="tablist">
-        <div className="flex gap-8 px-4">
+      <div className="player-detail-tabs" role="tablist">
+        <div>
           <TabButton label="Stats" active={tab === "stats"} onClick={() => setTab("stats")} />
           <TabButton label="Game Log" active={tab === "gamelog"} onClick={() => setTab("gamelog")} />
         </div>
       </div>
 
-      <div className="pt-4 px-4 sm:px-0">
+      <div className="player-detail-body">
         {tab === "stats" && (statGroups.length ? <StatsRowTable groups={statGroups} /> : <Empty text="No current-season stats available yet." />)}
         {tab === "gamelog" && (gameLog.length ? <GameLogTable rows={gameLog} /> : <Empty text="No current-season game log available yet." />)}
       </div>
@@ -207,35 +211,55 @@ function BackButton({ onBack }: { onBack: () => void }) {
   return <button onClick={onBack} className="h-10 w-10 flex items-center justify-center" style={{ color: "var(--text)" }} aria-label="Back"><svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15 18-6-6 6-6" /></svg></button>;
 }
 function TabButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
-  return <button onClick={onClick} className="relative py-4 text-base font-black" style={{ color: active ? "var(--text)" : "var(--text-2)" }}>{label}{active && <span className="absolute left-0 right-0 bottom-0 h-1" style={{ background: "var(--accent)" }} />}</button>;
+  return <button onClick={onClick} className={active ? "is-active" : ""}>{label}</button>;
 }
 function StatsRowTable({ groups }: { groups: { name: string; stats: { label: string; value: string }[] }[] }) {
   return (
-    <div className="space-y-3">
+    <div className="player-detail-stat-sections">
       {groups.map((group) => (
-        <div key={group.name} className="rounded-xl overflow-x-auto" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-          <div className="px-3 py-2 text-xs font-bold uppercase tracking-wider" style={{ background: "var(--surface-2)", color: "var(--text-2)" }}>{group.name}</div>
-          <table className="w-full min-w-[680px] text-xs">
-            <thead>
-              <tr style={{ background: "var(--surface-2)", color: "var(--text-3)" }}>
-                {group.stats.map((s) => <th key={s.label} className="px-3 py-2 text-right whitespace-nowrap">{s.label}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              <tr style={{ borderTop: "1px solid var(--border)" }}>
-                {group.stats.map((s) => <td key={s.label} className="px-3 py-3 text-right font-black tabular-nums whitespace-nowrap">{s.value}</td>)}
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <section key={group.name} className="player-detail-stat-section">
+          <h3>{group.name}</h3>
+          <div className="player-detail-stat-grid">
+            {group.stats.map((s) => (
+              <div key={s.label} className="player-detail-stat-item">
+                <span>{s.label}</span>
+                <strong>{s.value}</strong>
+              </div>
+            ))}
+          </div>
+        </section>
       ))}
     </div>
   );
 }
 function GameLogTable({ rows }: { rows: any[] }) {
-  const statLabels = Array.from(new Set(rows.flatMap((r) => (r.stats || []).map((s: any) => s.label)))).slice(0, 10);
-  return <div className="rounded-xl overflow-x-auto" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}><table className="w-full text-xs min-w-[760px]"><thead><tr style={{ background: "var(--surface-2)", color: "var(--text-3)" }}><th className="text-left px-3 py-2">Date</th><th className="text-left px-3 py-2">Opp</th>{statLabels.map((l) => <th key={l} className="text-right px-2 py-2 whitespace-nowrap">{l}</th>)}</tr></thead><tbody>{rows.map((r: any) => <tr key={r.id} style={{ borderTop: "1px solid var(--border)" }}><td className="px-3 py-2 whitespace-nowrap">{formatDate(r.date)}</td><td className="px-3 py-2 whitespace-nowrap">{r.opponent || "—"}</td>{statLabels.map((l) => <td key={l} className="text-right px-2 py-2 tabular-nums whitespace-nowrap">{(r.stats || []).find((s: any) => s.label === l)?.value ?? "—"}</td>)}</tr>)}</tbody></table></div>;
+  const statLabels = Array.from(new Set(rows.flatMap((r) => (r.stats || []).map((s: any) => s.label)))).slice(0, 6);
+  return (
+    <div className="player-game-log-list">
+      {rows.map((r: any) => (
+        <div key={r.id} className="player-game-log-row">
+          <div className="player-game-log-meta">
+            <strong>{formatDate(r.date)}</strong>
+            <span>{r.opponent || "—"}</span>
+          </div>
+          <div className="player-game-log-stats">
+            {statLabels.map((l) => (
+              <div key={l}>
+                <span>{l}</span>
+                <strong>{(r.stats || []).find((s: any) => s.label === l)?.value ?? "—"}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
-function Empty({ text }: { text: string }) { return <div className="p-5 rounded-xl text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>{text}</div>; }
+function Empty({ text }: { text: string }) { return <div className="player-detail-empty">{text}</div>; }
 function initials(name: string) { return String(name || "").split(" ").map((n) => n[0]).slice(0, 2).join(""); }
 function formatDate(date?: string) { if (!date) return "—"; const d = new Date(date); return Number.isNaN(d.getTime()) ? date : d.toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+function espnHeadshot(league: string, id: string) {
+  if (!id || !/^\d+$/.test(String(id))) return null;
+  const path = league === "mlb" ? "mlb" : league;
+  return `https://a.espncdn.com/i/headshots/${path}/players/full/${id}.png`;
+}

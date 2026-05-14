@@ -115,20 +115,22 @@ function normalizeTextName(value: any): string {
 function deriveSeriesRecords(summary: string | null, away: any, home: any): { away?: string; home?: string } {
   if (!summary) return {};
   const txt = String(summary);
-  const tied = txt.match(/tied[^0-9]*(\d+)\s*-\s*(\d+)/i) || txt.match(/series\s+tied/i);
+  const tied = txt.match(/tied[^0-9]*(\d+)\s*-\s*(\d+)/i) || txt.match(/series\s+tied[^0-9]*(\d+)?\s*-?\s*(\d+)?/i);
   if (tied) {
-    const rec = tied[1] != null ? `${tied[1]}-${tied[2]}` : "0-0";
+    const rec = tied[1] != null && tied[2] != null ? `${tied[1]}-${tied[2]}` : "0-0";
     return { away: rec, home: rec };
   }
-  const lead = txt.match(/(.+?)\s+lead[s]?\s+(?:series\s+)?(\d+)\s*-\s*(\d+)/i);
+  const lead = txt.match(/(.+?)\s+lead[s]?\s+(?:the\s+)?(?:series\s+)?(\d+)\s*-\s*(\d+)/i);
   if (lead) {
     const leader = normalizeTextName(lead[1]);
     const rec = `${lead[2]}-${lead[3]}`;
     const other = `${lead[3]}-${lead[2]}`;
     const awayName = normalizeTextName(`${away?.team?.displayName || ""} ${away?.team?.shortDisplayName || ""} ${away?.team?.abbreviation || ""}`);
     const homeName = normalizeTextName(`${home?.team?.displayName || ""} ${home?.team?.shortDisplayName || ""} ${home?.team?.abbreviation || ""}`);
-    if (awayName.includes(leader) || leader.includes(normalizeTextName(away?.team?.shortDisplayName))) return { away: rec, home: other };
-    if (homeName.includes(leader) || leader.includes(normalizeTextName(home?.team?.shortDisplayName))) return { away: other, home: rec };
+    const awayShort = normalizeTextName(away?.team?.shortDisplayName || away?.team?.name || away?.team?.abbreviation);
+    const homeShort = normalizeTextName(home?.team?.shortDisplayName || home?.team?.name || home?.team?.abbreviation);
+    if (awayName.includes(leader) || leader.includes(awayShort) || (awayShort && leader.endsWith(awayShort))) return { away: rec, home: other };
+    if (homeName.includes(leader) || leader.includes(homeShort) || (homeShort && leader.endsWith(homeShort))) return { away: other, home: rec };
   }
   return {};
 }
@@ -197,11 +199,21 @@ export async function GET(req: NextRequest) {
       // checked the array path which is why logos disappeared on the league
       // view game cards. Fall through both.
       const seriesInfo = extractSeriesInfo(ev, comp);
-      const isPlayoff = ev?.season?.type === 3 || comp?.season?.type === 3 || !!seriesInfo.summary || !!seriesInfo.seriesGame;
+      const hasPlayoffSeries = ["nba", "nhl", "mlb"].includes(league);
+      const isPlayoff = ev?.season?.type === 3 || comp?.season?.type === 3 || (hasPlayoffSeries && (!!seriesInfo.summary || !!seriesInfo.seriesGame));
       const derivedSeries = deriveSeriesRecords(seriesInfo.summary, away, home);
 
-      const formatTeam = (c: any) =>
-        c && {
+      const formatTeam = (c: any) => {
+        if (!c) return null;
+        const seriesRecord = isPlayoff
+          ? (
+              seriesInfo.recordById.get(String(c.team?.id || c.id || "")) ||
+              (c.homeAway === "away" ? derivedSeries.away : derivedSeries.home) ||
+              pickSeriesRecord(c) ||
+              "0-0"
+            )
+          : null;
+        return {
           id: c.id,
           homeAway: c.homeAway,
           name: c.team?.displayName,
@@ -209,9 +221,10 @@ export async function GET(req: NextRequest) {
           logo: c.team?.logo || c.team?.logos?.[0]?.href || null,
           score: c.score,
           record: pickRecord(c),
-          seriesRecord: pickSeriesRecord(c) || seriesInfo.recordById.get(String(c.team?.id || c.id || "")) || (isPlayoff ? (c.homeAway === "away" ? derivedSeries.away : derivedSeries.home) || "0-0" : null),
+          seriesRecord,
           winner: c.winner,
         };
+      };
 
       // Pass through situation block for live games. Used by LeaguesView to
       // render bases/count/outs (MLB) and down/distance (NFL) inline with the
