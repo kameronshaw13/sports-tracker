@@ -299,6 +299,14 @@ export async function getLeagueLeaders(league: string) {
   throw lastError || new Error("League leaders unavailable");
 }
 
+export async function getLeagueStatLeaders(league: string, category: string, sort: string, direction: "asc" | "desc" = "desc") {
+  const year = currentSeasonYear(league);
+  const encodedCategory = encodeURIComponent(category);
+  const encodedSort = encodeURIComponent(`${sort}:${direction}`);
+  const url = `${SITE_WEB_API}/${path(league)}/statistics/byathlete?region=us&lang=en&contentorigin=espn&isqualified=false&page=1&limit=5&category=${encodedCategory}&sort=${encodedSort}&season=${year}&seasontype=2`;
+  return fetchJson(url, 600);
+}
+
 export async function getGameSummary(league: string, eventId: string) {
   const url = `${SITE_WEB_API}/${path(league)}/summary?event=${eventId}`;
   return fetchJson(url, 0);

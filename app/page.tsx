@@ -214,7 +214,7 @@ export default function Home() {
 
   return (
     <main className={`retro-page view-${view} min-h-screen pb-28 px-4 sm:px-6 ${usesFullTopHeader ? "pt-0" : "app-safe-top"}`}>
-      <PullToRefresh disabled={!selectedPlayer && !selectedGame && !showReturnGame && view === "teamPage"}>
+      <PullToRefresh disabled={!selectedPlayer && !selectedGame && !showReturnGame && (view === "teamPage" || view === "leaguePage")}>
       <div className="max-w-3xl mx-auto">
         {!selectedPlayer && !showReturnGame && !selectedGame && view === "home" && (
           <div className="home-topbar">

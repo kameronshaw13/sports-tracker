@@ -169,7 +169,9 @@ function extractOdds(comp: any) {
   const overUnder = formatOverUnder(odds?.overUnder ?? odds?.total ?? odds?.oU);
   const details = typeof odds?.details === "string" ? odds.details : null;
   if (!awayMoneyLine && !homeMoneyLine && !overUnder && !details) return null;
-  return { awayMoneyLine, homeMoneyLine, overUnder, details };
+  const awaySpread = formatAmericanOdds(odds?.awayTeamOdds?.spreadOdds ?? odds?.awaySpreadOdds);
+  const homeSpread = formatAmericanOdds(odds?.homeTeamOdds?.spreadOdds ?? odds?.homeSpreadOdds);
+  return { awayMoneyLine, homeMoneyLine, overUnder, awaySpread, homeSpread, details };
 }
 
 export async function GET(req: NextRequest) {

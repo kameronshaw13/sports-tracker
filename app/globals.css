@@ -12971,6 +12971,123 @@ main.retro-page.view-leaguePage {
   }
 }
 
+/* v155: final GameTracker nudge, restore card odds, sticky league datebar, and team standings controls */
+.game-score-situation {
+  left: calc(50% + .96rem) !important;
+}
+
+.game-detail-content {
+  margin-top: calc(11.7rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+  padding-top: 0 !important;
+}
+
+.gamecast-shell {
+  margin-top: -.8rem !important;
+}
+
+.game-score-odds {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  margin-top: .2rem;
+  color: var(--score-meta);
+  font-size: .58rem;
+  font-weight: 900;
+  letter-spacing: .01em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.game-score-odds span:first-child {
+  transform: translateX(-.1rem);
+}
+
+.game-score-odds span:last-child {
+  transform: translateX(.1rem);
+}
+
+.score-card-odds {
+  min-width: 2.45rem !important;
+  font-size: .56rem !important;
+  font-weight: 900 !important;
+  opacity: .74 !important;
+}
+
+.score-card-odds-line {
+  display: none !important;
+}
+
+.league-page-header {
+  transform: translateZ(0);
+  will-change: transform;
+  overflow: hidden !important;
+}
+
+.league-page-content {
+  margin-top: 0 !important;
+}
+
+.league-page-content .retro-datebar {
+  position: sticky;
+  top: var(--league-sticky-offset, 9.65rem);
+  z-index: 42;
+  background: var(--bg);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 42%, var(--border) 58%);
+  box-shadow: 0 1px 0 rgba(255,255,255,.05);
+}
+
+.team-feed-avatar span {
+  transform: translateY(.14rem) !important;
+}
+
+.team-feed-avatar-mlb {
+  background: var(--surface-2) !important;
+}
+
+.team-feed-avatar .team-feed-img-mlb {
+  background: transparent !important;
+}
+
+.team-standings-mode-wrap {
+  background: transparent !important;
+}
+
+.team-standings-panel .standings-mode-btn {
+  line-height: 1.05 !important;
+  padding-top: .63rem !important;
+  padding-bottom: .5rem !important;
+}
+
+main.view-leaguePage .pull-refresh-indicator {
+  display: none !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-situation {
+    left: calc(50% + 1.05rem) !important;
+  }
+
+  .game-detail-content {
+    margin-top: calc(11.6rem + env(safe-area-inset-top, 0px) + .95rem) !important;
+    padding-top: 0 !important;
+  }
+
+  .gamecast-shell {
+    margin-top: -.86rem !important;
+  }
+
+  .game-score-odds {
+    gap: .42rem;
+    font-size: .53rem;
+  }
+
+  .league-page-content .retro-datebar {
+    top: var(--league-sticky-offset, 9.35rem);
+  }
+}
+
 /* v154: icon swap, tighter game detail body, league-page consistency, league leaders, and odds header polish */
 .game-score-situation {
   left: calc(50% + 1.02rem) !important;

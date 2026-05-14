@@ -151,6 +151,44 @@ function extractSeriesInfo(data: any, comp: any, home: any, away: any, league: s
   return { summary, seriesGame, homeSeriesRecord, awaySeriesRecord };
 }
 
+function formatAmericanOdds(value: any): string | null {
+  if (value == null || value === "") return null;
+  const raw = typeof value === "object" ? (value?.american || value?.displayValue || value?.value) : value;
+  const num = Number(String(raw).replace(/[^\d.-]/g, ""));
+  if (!Number.isFinite(num) || num === 0) return null;
+  return num > 0 ? `+${Math.round(num)}` : `${Math.round(num)}`;
+}
+
+function formatOverUnder(value: any): string | null {
+  if (value == null || value === "") return null;
+  const raw = typeof value === "object" ? (value?.displayValue || value?.value) : value;
+  const num = Number(String(raw).replace(/[^\d.-]/g, ""));
+  if (!Number.isFinite(num) || num <= 0) return null;
+  return Number.isInteger(num) ? String(num) : num.toFixed(1).replace(/\.0$/, "");
+}
+
+function extractOdds(comp: any) {
+  const odds = Array.isArray(comp?.odds) ? comp.odds[0] : comp?.odds;
+  if (!odds) return null;
+  const awayMoneyLine = formatAmericanOdds(
+    odds?.awayTeamOdds?.moneyLine ??
+    odds?.awayTeamOdds?.moneyline ??
+    odds?.awayTeamOdds?.current?.moneyLine ??
+    odds?.awayMoneyLine ??
+    odds?.awayMoneyline
+  );
+  const homeMoneyLine = formatAmericanOdds(
+    odds?.homeTeamOdds?.moneyLine ??
+    odds?.homeTeamOdds?.moneyline ??
+    odds?.homeTeamOdds?.current?.moneyLine ??
+    odds?.homeMoneyLine ??
+    odds?.homeMoneyline
+  );
+  const overUnder = formatOverUnder(odds?.overUnder ?? odds?.total ?? odds?.oU);
+  if (!awayMoneyLine && !homeMoneyLine && !overUnder) return null;
+  return { awayMoneyLine, homeMoneyLine, overUnder };
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const eventId = searchParams.get("event");
@@ -219,6 +257,7 @@ export async function GET(req: NextRequest) {
       away: formatTeam(away, "away"),
       plays,
       situation: data?.situation || null,
+      odds: extractOdds(comp),
       venue: comp?.venue?.fullName || null,
       broadcast: comp?.broadcasts?.[0]?.names?.[0] || null,
       date: header?.competitions?.[0]?.date,

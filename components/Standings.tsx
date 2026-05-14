@@ -367,12 +367,14 @@ export default function Standings({ league, teamKey, compact = false, pageMode =
 
     return (
       <section className="team-standings-panel space-y-3">
-        <div className="team-standings-toggle">
-          {teamControls.map((control) => (
-            <button key={control.id} type="button" className={teamStandingsView === control.id ? "is-active" : ""} onClick={() => setTeamStandingsView(control.id)}>
-              {control.label}
-            </button>
-          ))}
+        <div className="standings-mode-wrap team-standings-mode-wrap px-0 py-0">
+          <div className={`standings-mode-grid grid gap-2 ${teamControls.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+            {teamControls.map((control) => (
+              <button key={control.id} type="button" className={`standings-mode-btn py-2 text-xs font-black ${teamStandingsView === control.id ? "is-active" : ""}`} onClick={() => setTeamStandingsView(control.id)}>
+                {control.label}
+              </button>
+            ))}
+          </div>
         </div>
         {activeControl ? renderControlledStandings(activeControl, config, allRows, league, teamAbbr, onTeamClick) : <div className="standings-empty p-5 rounded-xl text-sm">Standings are not available yet.</div>}
       </section>

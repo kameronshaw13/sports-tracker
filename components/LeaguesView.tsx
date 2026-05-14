@@ -371,10 +371,7 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
       >
         <div className="favorite-score-content pr-1">
           <div className="favorite-score-meta score-game-meta mb-1.5 flex items-start justify-between gap-2 text-[9.5px] font-black uppercase tracking-[.06em] cbs-blue-label">
-            <div className="min-w-0">
-              <span className="truncate block">{gameTimeLabel(game)}</span>
-              <ScoreCardOddsHeader game={game} />
-            </div>
+            <span className="truncate block">{gameTimeLabel(game)}</span>
             {league === "mlb" && isLive && game.situation && <BasesDiamondMini situation={game.situation} />}
           </div>
           <TeamLine team={game.away} league={league} compact={false} favorite game={game} showLogo />
@@ -395,7 +392,6 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
         <div className="flex items-center gap-2 min-w-0">
           <div className="score-game-meta text-[9.5px] font-black uppercase tracking-[.06em] min-w-0" style={{ color: "var(--accent)" }}>
             <span className="block truncate">{gameTimeLabel(game)}</span>
-            <ScoreCardOddsHeader game={game} />
           </div>
           {league === "mlb" && isLive && game.situation && <BasesDiamondMini situation={game.situation} />}
         </div>
@@ -413,6 +409,7 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
   const recordText = seriesTeamRecord(game, team) || team.record;
   const label = compact ? team.abbr : favoriteTeamLabel(team, league);
   const showScore = scoreShouldShow(game) && team.score !== undefined && team.score !== null && team.score !== "";
+  const oddsText = !showScore ? scoreOddsText(game, team) : null;
   const hasWinner = Boolean(game?.away?.winner || game?.home?.winner);
   const isWinner = Boolean(team?.winner);
   return (
@@ -424,21 +421,18 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
         {recordText && <span className={`text-[10px] tracking-tight score-card-meta ${isWinner ? "font-semibold" : "font-normal"}`} style={{ color: "var(--score-meta)" }}>{recordText}</span>}
       </div>
       {showScore && <span className={`score-card-number ${favorite ? "text-[18px]" : "text-[16.5px]"} score-team-name tracking-tight ${isWinner || !hasWinner ? "font-black opacity-100" : "font-medium opacity-60"}`} style={{ color: "var(--text)" }}>{team.score}</span>}
+      {!showScore && oddsText && <span className="score-card-odds">{oddsText}</span>}
     </div>
   );
 }
 
-function ScoreCardOddsHeader({ game }: { game: any }) {
+function scoreOddsText(game: any, team: any) {
   const odds = game?.odds;
-  if (!odds?.awayMoneyLine && !odds?.homeMoneyLine && !odds?.overUnder) return null;
-  const total = odds.overUnder ? String(odds.overUnder).replace(/^O\/U\s*/i, "Total ") : "";
-  return (
-    <div className="score-card-odds-line">
-      {odds.awayMoneyLine && <span>{game?.away?.abbr} {odds.awayMoneyLine}</span>}
-      {total && <span>{total}</span>}
-      {odds.homeMoneyLine && <span>{game?.home?.abbr} {odds.homeMoneyLine}</span>}
-    </div>
-  );
+  if (!odds) return null;
+  const side = String(team?.homeAway || "").toLowerCase();
+  if (side === "away") return odds.overUnder || null;
+  if (side === "home") return odds.homeMoneyLine || odds.details || null;
+  return null;
 }
 
 function favoriteTeamLabel(team: any, league: League) {

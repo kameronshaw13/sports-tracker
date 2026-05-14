@@ -27,7 +27,7 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
   if (isLoading) return <div className="space-y-3"><div className="h-12 animate-pulse" style={{ background: "var(--surface)" }} /><div className="h-44 animate-pulse" style={{ background: "var(--surface)" }} /></div>;
   if (error || !data) return <div className="space-y-3"><GameTopBar title="Game" onClose={onClose} /><div className="p-6 text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>Couldn't load this game.</div></div>;
 
-  const { home, away, status, situation } = data;
+  const { home, away, status, situation, odds } = data;
   const isLive = status?.state === "in";
   const statusName = String(status?.statusName || "").toUpperCase();
   const isNonPlayed = /POSTPONED|CANCELED|CANCELLED|SUSPENDED/.test(statusName);
@@ -36,7 +36,7 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
     <div className="retro-page -mx-4 sm:mx-0 cbs-game-page game-detail-page">
       <div className="game-detail-sticky-shell">
         <GameTopBar title={`${away?.abbr || ""} @ ${home?.abbr || ""}`} onClose={onClose} />
-        <ScoreboardHero league={league} home={home} away={away} status={status} situation={situation} eventId={eventId} gameDate={data?.date} onTeamClick={onTeamClick} />
+        <ScoreboardHero league={league} home={home} away={away} status={status} situation={situation} odds={odds} eventId={eventId} gameDate={data?.date} onTeamClick={onTeamClick} />
         <div className="game-detail-tabs" role="tablist">
           <div className="flex overflow-x-auto no-scrollbar px-4 gap-7">
             <TabBtn label="GameTracker" isActive={activeTab === "main"} onClick={() => setActiveTab("main")} />
@@ -64,7 +64,7 @@ function GameTopBar({ title, onClose }: { title: string; onClose?: () => void })
   );
 }
 
-function ScoreboardHero({ league, home, away, status, situation, eventId, gameDate, onTeamClick }: any) {
+function ScoreboardHero({ league, home, away, status, situation, odds, eventId, gameDate, onTeamClick }: any) {
   const showScore = scoreShouldShow(status);
   const isFinal = status?.state === "post";
   const awayScoreNum = Number(away?.score);
@@ -78,12 +78,24 @@ function ScoreboardHero({ league, home, away, status, situation, eventId, gameDa
           <div className="game-score-center">
             <div className="game-score-date">{formatGameDate(gameDate)}</div>
             <div className={`game-score-status ${status?.state === "in" ? "is-live" : status?.state === "pre" ? "is-pre" : "is-final"}`}>{formatGameStatus(status, gameDate)}</div>
+            <GameOddsLine odds={odds} away={away} home={home} />
             {league === "mlb" && status?.state === "in" && hasBaseballSituation(situation) && <BaseballSituationBlock situation={situation} />}
             {status?.seriesGame && <div className="game-score-series">{status.seriesGame}</div>}
           </div>
           <TeamBlock team={home} league={league} eventId={eventId} onClick={onTeamClick} align="right" showScore={showScore} isWinner={hasFinalWinner && homeScoreNum > awayScoreNum} isLoser={hasFinalWinner && homeScoreNum < awayScoreNum} />
       </div>
     </section>
+  );
+}
+
+function GameOddsLine({ odds, away, home }: { odds: any; away: any; home: any }) {
+  if (!odds?.awayMoneyLine && !odds?.homeMoneyLine && !odds?.overUnder) return null;
+  return (
+    <div className="game-score-odds">
+      {odds.awayMoneyLine && <span>{away?.abbr} {odds.awayMoneyLine}</span>}
+      {odds.overUnder && <span>Total {odds.overUnder}</span>}
+      {odds.homeMoneyLine && <span>{home?.abbr} {odds.homeMoneyLine}</span>}
+    </div>
   );
 }
 
