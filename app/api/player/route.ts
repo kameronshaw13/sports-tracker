@@ -33,6 +33,29 @@ function corePath(league: string) { const p = PATHS[league]; return `${p.sport}/
 function pretty(name: string) {
   return String(name).replace(/Pct$/," %").replace(/([A-Z])/g," $1").replace(/^./,(c)=>c.toUpperCase()).trim();
 }
+function cleanDisplay(value: any): string | null {
+  if (value == null) return null;
+  if (typeof value === "object") {
+    const nested = value.displayValue ?? value.displayName ?? value.name ?? value.abbreviation ?? value.value;
+    return cleanDisplay(nested);
+  }
+  const text = String(value).trim();
+  return text && text !== "—" ? text : null;
+}
+function formatIsoDate(value: any): string | null {
+  const text = cleanDisplay(value);
+  if (!text) return null;
+  const d = new Date(text);
+  if (Number.isNaN(d.getTime())) return text;
+  return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+}
+function firstDisplay(...values: any[]) {
+  for (const value of values) {
+    const text = cleanDisplay(value);
+    if (text) return text;
+  }
+  return null;
+}
 function statValue(v: any) { return v?.displayValue ?? v?.value ?? (v ?? "—"); }
 function flatSet(map: FlatMap, key: string, v: any) {
   const val = statValue(v);
@@ -73,6 +96,44 @@ const DEF_POS = new Set(["DE", "DT", "NT", "DL", "LB", "ILB", "OLB", "MLB", "CB"
 const K_POS = new Set(["K", "PK", "P"]);
 const GOALIE_POS = new Set(["G"]);
 const PITCHER_POS = new Set(["P", "SP", "RP", "CP", "CL"]);
+const MLB_ABBR_BY_NAME: Record<string, string> = {
+  "Arizona Diamondbacks": "ARI",
+  "Atlanta Braves": "ATL",
+  "Baltimore Orioles": "BAL",
+  "Boston Red Sox": "BOS",
+  "Chicago Cubs": "CHC",
+  "Chicago White Sox": "CWS",
+  "Cincinnati Reds": "CIN",
+  "Cleveland Guardians": "CLE",
+  "Colorado Rockies": "COL",
+  "Detroit Tigers": "DET",
+  "Houston Astros": "HOU",
+  "Kansas City Royals": "KC",
+  "Los Angeles Angels": "LAA",
+  "Los Angeles Dodgers": "LAD",
+  "Miami Marlins": "MIA",
+  "Milwaukee Brewers": "MIL",
+  "Minnesota Twins": "MIN",
+  "New York Mets": "NYM",
+  "New York Yankees": "NYY",
+  "Athletics": "ATH",
+  "Oakland Athletics": "OAK",
+  "Philadelphia Phillies": "PHI",
+  "Pittsburgh Pirates": "PIT",
+  "San Diego Padres": "SD",
+  "San Francisco Giants": "SF",
+  "Seattle Mariners": "SEA",
+  "St. Louis Cardinals": "STL",
+  "Tampa Bay Rays": "TB",
+  "Texas Rangers": "TEX",
+  "Toronto Blue Jays": "TOR",
+  "Washington Nationals": "WSH",
+};
+function mlbOpponentAbbr(team: any) {
+  const raw = cleanDisplay(team?.abbreviation) || cleanDisplay(team?.teamCode) || cleanDisplay(team?.fileCode) || cleanDisplay(team?.name) || cleanDisplay(team?.displayName);
+  if (!raw) return "—";
+  return MLB_ABBR_BY_NAME[raw] || raw;
+}
 
 function pickPositionRow(league: string, position: string | undefined, map: FlatMap): StatCell[] {
   const pos = String(position || "").toUpperCase();
@@ -208,10 +269,12 @@ function flattenEspnGameLog(league: string, data: any): GameLogRow[] {
     const stats = Array.isArray(raw)
       ? raw.slice(0, 8).map((x: any) => ({ label: pretty(x.name || x.displayName || "Stat"), value: String(statValue(x)) }))
       : Object.entries(raw).slice(0, 8).map(([k, v]: any) => ({ label: pretty(k), value: String(v) }));
+    const opp = g.opponent?.abbreviation || g.opponent?.team?.abbreviation || g.team?.abbreviation || g.event?.shortName || "—";
+    const isAway = /^away$/i.test(String(g.homeAway || g.atVs || "")) || String(g.atVs || "").includes("@");
     return {
       id: g.id || g.eventId || g.event?.id || `${g.date || ""}-${g.opponent?.id || ""}`,
       date: g.date || g.event?.date || g.gameDate,
-      opponent: g.opponent?.abbreviation || g.opponent?.displayName || g.event?.shortName || "—",
+      opponent: `${isAway && opp !== "—" ? "@" : ""}${opp}`,
       stats,
     };
   }).filter((r: any) => r.date && r.stats.length).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -319,7 +382,7 @@ function flattenMlbGameLog(data: any, position?: string | null): GameLogRow[] {
       rows.push({
         id,
         date: s.date,
-        opponent: s.opponent?.abbreviation || s.opponent?.name || s.opponent?.displayName || "—",
+        opponent: `${s.isHome === false ? "@" : ""}${mlbOpponentAbbr(s.opponent)}`,
         stats: cells.filter((c) => c.value && c.value !== "—" && c.value !== "undefined"),
       });
     }
@@ -386,8 +449,18 @@ async function handleMlb(id: string, fallbackName: string) {
       name: person?.fullName || fallbackName || `Player ${resolvedId}`,
       team: person?.currentTeam?.name || null,
       position,
+      jersey: person?.primaryNumber || null,
       headshot: `https://img.mlbstatic.com/mlb-photos/image/upload/w_213,q_auto:best/v1/people/${resolvedId}/headshot/67/current`,
       bio: [person?.height, person?.weight ? `${person.weight} lbs` : null, person?.birthDate ? `Born ${person.birthDate}` : null].filter(Boolean).join(" · "),
+      bioFields: {
+        height: person?.height || null,
+        weight: person?.weight ? `${person.weight} lbs` : null,
+        born: formatIsoDate(person?.birthDate),
+        school: null,
+        experience: null,
+        bats: person?.batSide?.code || person?.batSide?.description || null,
+        throws: person?.pitchHand?.code || person?.pitchHand?.description || null,
+      },
     },
     stats: pickPositionRow("mlb", position || undefined, map),
     gameLog: flattenMlbGameLog(gameLogData, position),
@@ -407,14 +480,26 @@ async function handleEspn(league: string, id: string, fallbackName: string) {
   const headshot = athlete?.headshot?.href || athlete?.headshot || (/^\d+$/.test(id) ? `https://a.espncdn.com/i/headshots/${league}/players/full/${id}.png` : null);
   const position = athlete?.position?.abbreviation || athlete?.position?.displayName || null;
   const flat = flattenEspnStatMap(statsData);
+  const college = firstDisplay(athlete?.college?.name, athlete?.college?.displayName, athlete?.college, athlete?.school);
+  const experience = firstDisplay(athlete?.experience?.displayValue, athlete?.experience?.years ? `${athlete.experience.years} yrs` : null, athlete?.experience);
   return {
     profile: {
       id,
       name: athlete?.displayName || athlete?.fullName || athlete?.name || fallbackName || `Player ${id}`,
       team: athlete?.team?.displayName || athlete?.team?.name || null,
       position,
+      jersey: athlete?.jersey || athlete?.number || null,
       headshot,
       bio: [athlete?.height, athlete?.weight, athlete?.age ? `Age ${athlete.age}` : null].filter(Boolean).join(" · "),
+      bioFields: {
+        height: firstDisplay(athlete?.displayHeight, athlete?.height),
+        weight: firstDisplay(athlete?.displayWeight, athlete?.weight),
+        born: formatIsoDate(athlete?.dateOfBirth || athlete?.birthDate),
+        school: college || "—",
+        experience,
+        bats: firstDisplay(athlete?.bats?.abbreviation, athlete?.bats),
+        throws: firstDisplay(athlete?.throws?.abbreviation, athlete?.throws),
+      },
     },
     stats: pickPositionRow(league, position || undefined, flat),
     gameLog: flattenEspnGameLog(league, logData),

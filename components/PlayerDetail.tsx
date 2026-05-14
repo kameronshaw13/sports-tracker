@@ -23,14 +23,24 @@ type PlayerRow = {
 };
 type PlayerRef = { id: string; name: string; league: string; teamKey?: string };
 type Props = { player: PlayerRef; onBack: () => void };
-type Tab = "bio" | "news" | "stats" | "gamelog";
+type Tab = "bio" | "stats" | "gamelog";
 
 type Profile = {
   name?: string;
   team?: string | null;
   position?: string | null;
+  jersey?: string | number | null;
   headshot?: string | null;
   bio?: string | null;
+  bioFields?: {
+    height?: string | null;
+    weight?: string | null;
+    born?: string | null;
+    school?: string | null;
+    experience?: string | null;
+    bats?: string | null;
+    throws?: string | null;
+  };
 };
 
 function statKey(category: string, name: string): string {
@@ -129,6 +139,7 @@ export default function PlayerDetail({ player, onBack }: Props) {
   const profile: Profile = profileData?.profile || {};
   const displayName = teamPlayer?.name || profile.name || player.name;
   const position = teamPlayer?.position || profile.position;
+  const jersey = teamPlayer?.jersey || profile.jersey;
   const headshotCandidates = useMemo(
     () => Array.from(new Set([espnHeadshot(player.league, player.id), teamPlayer?.headshot, profile.headshot].filter(Boolean))) as string[],
     [player.league, player.id, teamPlayer?.headshot, profile.headshot]
@@ -149,7 +160,7 @@ export default function PlayerDetail({ player, onBack }: Props) {
   const statGroups = teamStatGroups.length ? teamStatGroups : fallbackStats;
   const gameLog = profileData?.gameLog || [];
 
-  const primaryGroup = statGroups[0]?.stats?.slice(0, 3) || [];
+  const primaryGroup = buildHeaderStats(player.league, position || "", statGroups);
 
   return (
     <div className="-mx-4 sm:mx-0 player-detail-page">
@@ -182,7 +193,7 @@ export default function PlayerDetail({ player, onBack }: Props) {
           <div className="player-detail-title-block">
             <h2>{displayName}</h2>
             <div>
-              {[profile.team, position].filter(Boolean).join(" · ") || player.league.toUpperCase()}
+              {[jersey ? `#${jersey}` : null, position].filter(Boolean).join(" ") || profile.team || player.league.toUpperCase()}
             </div>
             {profile.bio && <p>{profile.bio}</p>}
           </div>
@@ -202,7 +213,6 @@ export default function PlayerDetail({ player, onBack }: Props) {
       <div className="player-detail-tabs" role="tablist">
         <div>
           <TabButton label="Bio" active={tab === "bio"} onClick={() => setTab("bio")} />
-          <TabButton label="News" active={tab === "news"} onClick={() => setTab("news")} />
           <TabButton label="Stats" active={tab === "stats"} onClick={() => setTab("stats")} />
           <TabButton label="Game Log" active={tab === "gamelog"} onClick={() => setTab("gamelog")} />
         </div>
@@ -210,8 +220,7 @@ export default function PlayerDetail({ player, onBack }: Props) {
 
       <div className="player-detail-body">
         {tab === "bio" && <BioPanel profile={profile} league={player.league} />}
-        {tab === "news" && <Empty text="No player news available yet." />}
-        {tab === "stats" && (statGroups.length ? <StatsRowTable groups={statGroups} /> : <Empty text="No current-season stats available yet." />)}
+        {tab === "stats" && (statGroups.length ? <StatsRowTable groups={statGroups} league={player.league} position={position || ""} /> : <Empty text="No current-season stats available yet." />)}
         {tab === "gamelog" && (gameLog.length ? <GameLogTable rows={gameLog} league={player.league} position={position || ""} /> : <Empty text="No current-season game log available yet." />)}
       </div>
     </div>
@@ -230,14 +239,14 @@ function BackButton({ onBack }: { onBack: () => void }) {
 function TabButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return <button onClick={onClick} className={active ? "is-active" : ""}>{label}</button>;
 }
-function StatsRowTable({ groups }: { groups: { name: string; stats: { label: string; value: string }[] }[] }) {
+function StatsRowTable({ groups, league, position }: { groups: { name: string; stats: { label: string; value: string }[] }[]; league: string; position?: string }) {
+  const displayGroups = groups.map((group) => ({ ...group, stats: formatStatsForDisplay(group.stats, league, position || "") }));
   return (
     <div className="player-detail-stat-sections">
-      <div className="player-detail-season-select">{new Date().getFullYear()}</div>
-      <div className="player-detail-season-tabs"><span>Pre</span><strong>Regular</strong></div>
-      {groups.map((group) => (
+      <h3 className="player-detail-season-heading">{new Date().getFullYear()} Season Stats</h3>
+      {displayGroups.map((group) => (
         <section key={group.name} className="player-detail-stat-section">
-          <h3>{group.name}</h3>
+          {groups.length > 1 && <h4>{group.name}</h4>}
           <div className="player-detail-stat-grid">
             {group.stats.map((s) => (
               <div key={s.label} className="player-detail-stat-item">
@@ -253,7 +262,7 @@ function StatsRowTable({ groups }: { groups: { name: string; stats: { label: str
 }
 function GameLogTable({ rows, league, position }: { rows: any[]; league: string; position?: string }) {
   const statLabels = gameLogColumns(rows, league, position);
-  const gridTemplateColumns = `3.35rem 4.45rem repeat(${statLabels.length}, minmax(2.15rem, 1fr))`;
+  const gridTemplateColumns = `3rem 3.85rem repeat(${statLabels.length}, minmax(1.8rem, 1fr))`;
   return (
     <div className="player-game-log-list">
       <div className="player-game-log-header" style={{ gridTemplateColumns }}>
@@ -272,12 +281,16 @@ function GameLogTable({ rows, league, position }: { rows: any[]; league: string;
   );
 }
 function BioPanel({ profile, league }: { profile: Profile; league: string }) {
+  const fields = profile.bioFields || {};
   const rows = [
-    ["Team", profile.team || "—"],
-    ["Position", profile.position || "—"],
-    ["League", league.toUpperCase()],
-    ["Bio", profile.bio || "—"],
-  ];
+    ["Height", fields.height],
+    ["Weight", fields.weight],
+    ["Born", fields.born],
+    ["School", fields.school || "—"],
+    ["Experience", fields.experience],
+    ["Bats", fields.bats],
+    ["Throws", fields.throws],
+  ].filter(([, value]) => value != null && value !== "");
   return (
     <div className="player-detail-bio-list">
       {rows.map(([label, value]) => (
@@ -321,4 +334,37 @@ function gameLogValue(row: any, label: string) {
     return h !== "—" || ab !== "—" ? `${h}/${ab}` : "—";
   }
   return map.get(label) || "—";
+}
+function buildHeaderStats(league: string, position: string, groups: { name: string; stats: { label: string; value: string }[] }[]) {
+  const all = groups.flatMap((g) => g.stats);
+  const byLabel = new Map(all.map((s) => [s.label.toUpperCase(), s]));
+  if (league === "mlb" && !/^(P|SP|RP|CP|CL)$/.test(position.toUpperCase())) {
+    return ["AVG", "HR", "RBI"].map((label) => byLabel.get(label)).filter(Boolean) as { label: string; value: string }[];
+  }
+  return all.slice(0, 3);
+}
+function formatStatsForDisplay(stats: { label: string; value: string }[], league: string, position: string) {
+  if (league !== "mlb" || /^(P|SP|RP|CP|CL)$/.test(position.toUpperCase())) return stats;
+  const byLabel = new Map(stats.map((s) => [s.label.toUpperCase(), s.value]));
+  const order: [string, string, string[]][] = [
+    ["G", "Games Played", ["G"]],
+    ["AVG", "Average", ["AVG"]],
+    ["AB", "At Bats", ["AB"]],
+    ["R", "Runs Scored", ["R"]],
+    ["H", "Hits", ["H"]],
+    ["HR", "Home Runs", ["HR"]],
+    ["RBI", "RBIs", ["RBI", "RBIS"]],
+    ["OPS", "OPS", ["OPS"]],
+    ["OBP", "OBP", ["OBP"]],
+    ["SLG", "Slugging %", ["SLG"]],
+    ["SO", "Strikeouts", ["SO", "K"]],
+    ["BB", "Walks", ["BB"]],
+    ["SB", "Stolen Bases", ["SB"]],
+  ];
+  return order
+    .map(([, label, keys]) => {
+      const value = keys.map((k) => byLabel.get(k)).find(Boolean);
+      return value ? { label, value } : null;
+    })
+    .filter(Boolean) as { label: string; value: string }[];
 }
