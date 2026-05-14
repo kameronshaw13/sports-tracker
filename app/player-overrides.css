@@ -15,8 +15,8 @@
 }
 
 .player-detail-topbar {
-  min-height: calc(2.18rem + max(0px, calc(env(safe-area-inset-top, 0px) - .72rem))) !important;
-  padding: max(.08rem, calc(env(safe-area-inset-top, 0px) - .72rem)) .82rem .1rem !important;
+  min-height: calc(2.02rem + max(0px, calc(env(safe-area-inset-top, 0px) - .96rem))) !important;
+  padding: max(.04rem, calc(env(safe-area-inset-top, 0px) - .96rem)) .82rem .08rem !important;
   border-bottom: 1px solid var(--border) !important;
 }
 
@@ -123,7 +123,7 @@
 
 .player-game-log-header,
 .player-game-log-row {
-  column-gap: 0 !important;
+  column-gap: .16rem !important;
 }
 
 .player-game-log-header span,
@@ -141,8 +141,8 @@
 
 @media (max-width: 420px) {
   .player-detail-topbar {
-    min-height: calc(2.08rem + max(0px, calc(env(safe-area-inset-top, 0px) - .82rem))) !important;
-    padding-top: max(.04rem, calc(env(safe-area-inset-top, 0px) - .82rem)) !important;
+    min-height: calc(1.94rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
+    padding-top: max(.02rem, calc(env(safe-area-inset-top, 0px) - 1.04rem)) !important;
   }
 
   .player-detail-hero-main {

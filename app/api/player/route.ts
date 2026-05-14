@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { currentSeasonYear } from "@/lib/espn";
+import { currentSeasonYear, getTeamRoster } from "@/lib/espn";
+import { parseTeamKey } from "@/lib/teams";
 
 export const revalidate = 600;
 
@@ -41,6 +42,16 @@ function cleanDisplay(value: any): string | null {
   }
   const text = String(value).trim();
   return text && text !== "—" ? text : null;
+}
+function normalizeName(value: any): string {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[.'-]/g, "")
+    .replace(/\b(jr|sr|ii|iii|iv|v)\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 function formatIsoDate(value: any): string | null {
   const text = cleanDisplay(value);
@@ -133,6 +144,55 @@ function mlbOpponentAbbr(team: any) {
   const raw = cleanDisplay(team?.abbreviation) || cleanDisplay(team?.teamCode) || cleanDisplay(team?.fileCode) || cleanDisplay(team?.name) || cleanDisplay(team?.displayName);
   if (!raw) return "—";
   return MLB_ABBR_BY_NAME[raw] || raw;
+}
+
+function parseEspnAthletes(data: any): any[] {
+  const top = data?.athletes || data?.team?.athletes;
+  if (!Array.isArray(top)) return [];
+  if (top.length && Array.isArray(top[0]?.items)) return top.flatMap((group: any) => group?.items || []);
+  return top;
+}
+
+function espnAthleteName(athlete: any): string {
+  return athlete?.fullName || athlete?.displayName || athlete?.name || "";
+}
+
+function espnAthleteHeadshot(athlete: any): string | null {
+  const id = athlete?.id ? String(athlete.id) : "";
+  return (
+    athlete?.headshot?.href ||
+    (typeof athlete?.headshot === "string" ? athlete.headshot : null) ||
+    (id ? `https://a.espncdn.com/i/headshots/mlb/players/full/${id}.png` : null)
+  );
+}
+
+async function findEspnMlbAthlete(id: string, fallbackName: string, personName: string | null, teamKey?: string | null) {
+  const targetNames = [fallbackName, personName].map(normalizeName).filter(Boolean);
+  const nameMatches = (athlete: any) => {
+    const name = normalizeName(espnAthleteName(athlete));
+    return name && targetNames.some((target) => name === target || name.endsWith(target) || target.endsWith(name));
+  };
+
+  if (teamKey) {
+    const parsed = parseTeamKey(teamKey);
+    if (parsed?.league === "mlb") {
+      try {
+        const roster = await getTeamRoster("mlb", parsed.abbr);
+        const match = parseEspnAthletes(roster).find(nameMatches);
+        if (match) return match;
+      } catch {}
+    }
+  }
+
+  if (/^\d+$/.test(id)) {
+    try {
+      const data = await fetchJson(`${SITE_WEB_API}/baseball/mlb/athletes/${id}`);
+      const athlete = data?.athlete || data;
+      if (athlete && nameMatches(athlete)) return athlete;
+    } catch {}
+  }
+
+  return null;
 }
 
 function pickPositionRow(league: string, position: string | undefined, map: FlatMap): StatCell[] {
@@ -422,7 +482,7 @@ async function resolveMlbIdByName(name: string): Promise<string | null> {
   }
 }
 
-async function handleMlb(id: string, fallbackName: string) {
+async function handleMlb(id: string, fallbackName: string, teamKey?: string | null) {
   const season = currentSeasonYear("mlb");
 
   // First attempt: assume `id` is a real MLB statsapi person ID.
@@ -450,14 +510,18 @@ async function handleMlb(id: string, fallbackName: string) {
   const gameLogData = gameLogRes.status === "fulfilled" ? gameLogRes.value : null;
   const { stats: map, positionHint } = mlbSeasonMap(seasonData);
   const position = person?.primaryPosition?.abbreviation || person?.primaryPosition?.name || positionHint || null;
+  const espnAthlete = await findEspnMlbAthlete(id, fallbackName, person?.fullName || null, teamKey);
+  const espnId = espnAthlete?.id ? String(espnAthlete.id) : null;
+  const espnHeadshot = espnAthleteHeadshot(espnAthlete);
   return {
     profile: {
       id: resolvedId,
+      espnId,
       name: person?.fullName || fallbackName || `Player ${resolvedId}`,
       team: person?.currentTeam?.name || null,
       position,
       jersey: person?.primaryNumber || null,
-      headshot: `https://img.mlbstatic.com/mlb-photos/image/upload/w_213,q_auto:best/v1/people/${resolvedId}/headshot/67/current`,
+      headshot: espnHeadshot || `https://img.mlbstatic.com/mlb-photos/image/upload/w_213,q_auto:best/v1/people/${resolvedId}/headshot/67/current`,
       bio: [person?.height, person?.weight ? `${person.weight} lbs` : null, person?.birthDate ? `Born ${person.birthDate}` : null].filter(Boolean).join(" · "),
       bioFields: {
         height: person?.height || null,
@@ -518,9 +582,10 @@ export async function GET(req: NextRequest) {
   const league = searchParams.get("league") || "";
   const id = searchParams.get("id") || "";
   const fallbackName = searchParams.get("name") || "";
+  const teamKey = searchParams.get("team");
   if (!PATHS[league] || !id) return NextResponse.json({ error: "Missing league/id" }, { status: 400 });
   try {
-    const data = league === "mlb" ? await handleMlb(id, fallbackName) : await handleEspn(league, id, fallbackName);
+    const data = league === "mlb" ? await handleMlb(id, fallbackName, teamKey) : await handleEspn(league, id, fallbackName);
     return NextResponse.json({ league, id, ...data }, { headers: { "Cache-Control": "no-store" } });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Player fetch failed" }, { status: 500 });

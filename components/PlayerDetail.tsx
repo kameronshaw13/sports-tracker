@@ -27,6 +27,8 @@ type Props = { player: PlayerRef; onBack: () => void };
 type Tab = "bio" | "stats" | "gamelog";
 
 type Profile = {
+  id?: string | number | null;
+  espnId?: string | number | null;
   name?: string;
   team?: string | null;
   position?: string | null;
@@ -149,12 +151,15 @@ export default function PlayerDetail({ player, onBack }: Props) {
   const headshotCandidates = useMemo(
     () => Array.from(new Set([
       rosterPlayer?.headshot,
+      espnHeadshot(player.league, String(profile.espnId || "")),
+      espnHeadshot(player.league, String(profile.id || "")),
+      espnHeadshot(player.league, String(rosterPlayer?.id || "")),
       espnHeadshot(player.league, teamPlayer?.id || ""),
       espnHeadshot(player.league, player.id),
       teamPlayer?.headshot,
       profile.headshot,
     ].filter(isUsableHeadshot))) as string[],
-    [player.league, rosterPlayer?.headshot, teamPlayer?.id, player.id, teamPlayer?.headshot, profile.headshot]
+    [player.league, rosterPlayer?.headshot, rosterPlayer?.id, profile.espnId, profile.id, teamPlayer?.id, player.id, teamPlayer?.headshot, profile.headshot]
   );
   const [headshotIndex, setHeadshotIndex] = useState(0);
   useEffect(() => setHeadshotIndex(0), [player.id, headshotCandidates.join("|")]);
@@ -278,8 +283,8 @@ function GameLogTable({ rows, league, position }: { rows: any[]; league: string;
   const statLabels = gameLogColumns(rows, league, position);
   const isPitcher = league === "mlb" && isMlbPitcherPosition(position || "");
   const gridTemplateColumns = isPitcher
-    ? `2.72rem 3rem 1.55rem 1.55rem 1.85rem 2rem repeat(3, minmax(0, 1fr))`
-    : `2.72rem 3rem 2.65rem repeat(5, minmax(0, 1fr))`;
+    ? `2.72rem 3.22rem repeat(7, 1.56rem)`
+    : `2.72rem 3.22rem 2.28rem repeat(5, 1.62rem)`;
   return (
     <div className={`player-game-log-list ${isPitcher ? "is-pitcher-log" : "is-hitter-log"}`}>
       <div className="player-game-log-header" style={{ gridTemplateColumns }}>

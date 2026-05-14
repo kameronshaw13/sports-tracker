@@ -258,7 +258,7 @@ export default function Home() {
   );
 
   const gameDetailOpen = !selectedPlayer && Boolean(selectedGame || showReturnGame);
-  const usesFullTopHeader = gameDetailOpen || (!selectedPlayer && !selectedGame && !showReturnGame && (view === "home" || view === "scores" || view === "standings" || view === "more" || view === "teamPage" || view === "leaguePage"));
+  const usesFullTopHeader = Boolean(selectedPlayer) || gameDetailOpen || (!selectedPlayer && !selectedGame && !showReturnGame && (view === "home" || view === "scores" || view === "standings" || view === "more" || view === "teamPage" || view === "leaguePage"));
   const pullRefreshDisabled = Boolean(
     selectedPlayer ||
     selectedGame ||
