@@ -16465,3 +16465,64 @@ main.view-scores .pull-refresh-indicator {
     line-height: 1 !important;
   }
 }
+
+/* v207: align the GameTracker date row to the same visual top line as the team records.
+   The center/status row stays in the v206 position; only the top row's internal
+   alignment changes so the date is not sitting low inside a taller row box. */
+.game-score-hero .game-score-center {
+  --gt-center-row-gap: 1.08rem;
+  top: 1.58rem !important;
+  grid-template-rows: 1.1rem max-content max-content !important;
+}
+
+.game-score-hero .game-score-center-row-top {
+  min-height: 1.1rem !important;
+  height: 1.1rem !important;
+  align-items: start !important;
+  align-content: start !important;
+  justify-items: center !important;
+}
+
+.game-score-hero .game-score-date,
+.game-score-hero .game-score-record {
+  font-size: .62rem !important;
+  line-height: 1 !important;
+  font-weight: 850 !important;
+  letter-spacing: .005em !important;
+}
+
+.game-score-hero .game-score-date {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  height: 1em !important;
+  min-height: 1em !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.game-score-hero .game-score-series {
+  margin-top: .08rem !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-hero .game-score-center {
+    --gt-center-row-gap: 1rem;
+    top: 1.58rem !important;
+    grid-template-rows: 1.04rem max-content max-content !important;
+  }
+
+  .game-score-hero .game-score-center-row-top {
+    min-height: 1.04rem !important;
+    height: 1.04rem !important;
+    align-items: start !important;
+    align-content: start !important;
+  }
+
+  .game-score-hero .game-score-date,
+  .game-score-hero .game-score-record,
+  .game-score-hero .game-score-series {
+    font-size: .6rem !important;
+    line-height: 1 !important;
+  }
+}
