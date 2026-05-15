@@ -426,6 +426,29 @@ function normalizeResult(text: string, type?: string | null): string {
   return clean;
 }
 
+function embeddedAtBatResult(p: any): { text: string; type: string | null } | null {
+  const candidates = [
+    p?.atBatPlayResult?.text,
+    p?.atBatPlayResult?.description,
+    p?.atBatPlayResult?.play?.text,
+    p?.atBatPlayResult?.result?.description,
+    p?.result?.description,
+  ];
+  const type =
+    p?.atBatPlayResult?.type?.text ||
+    p?.atBatPlayResult?.type?.abbreviation ||
+    p?.type?.text ||
+    p?.type?.abbreviation ||
+    null;
+  for (const candidate of candidates) {
+    const text = String(candidate || "").replace(/\s+/g, " ").trim();
+    if (!text) continue;
+    if (isMinorBaseballEvent(text, type)) continue;
+    if (looksLikeAtBat(text, type)) return { text, type };
+  }
+  return null;
+}
+
 async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMeta | null) {
   const statsMap = buildMlbPlayerStats(summary);
   const rosterLookup = await buildMlbRosterLookup(home, away);
@@ -622,10 +645,11 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
     }
 
     const minor = isMinorBaseballEvent(base.text, base.type);
+    const embeddedFinal = atBatStem ? embeddedAtBatResult(p) : null;
     const isFinalAtBat = looksLikeAtBat(base.text, base.type) && !/^pitch\s*\d*\s*:/i.test(base.text);
     const isPitchRow = !minor && !isFinalAtBat && isPitchEvent(base.text, base.type);
 
-    if (atBatStem && (intro || isPitchRow || isFinalAtBat)) {
+    if (atBatStem && (intro || isPitchRow || isFinalAtBat || embeddedFinal)) {
       const group = getOrCreateGroup(`${base.period}-${base.halfInning || "x"}-${atBatStem}`, base, idx, sortKey);
       if (base.batter && !group.batter) group.batter = base.batter;
       if (base.pitcher && !group.pitcher) group.pitcher = base.pitcher;
@@ -641,17 +665,19 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
         continue;
       }
 
-      if (isFinalAtBat) {
+      if (isFinalAtBat || embeddedFinal) {
+        const resultText = isFinalAtBat ? base.text : embeddedFinal?.text || base.text;
+        const resultType = isFinalAtBat ? base.type : embeddedFinal?.type || base.type;
         const extracted = extractPitchTexts(p);
         pushUnique(group.pitches, extracted);
         group.resultPlay = p;
-        group.resultText = base.text;
-        group.resultType = base.type;
-        group.scoringPlay = !!p?.scoringPlay || isLikelyScoringText(base.text, base.type);
+        group.resultText = resultText;
+        group.resultType = resultType;
+        group.scoringPlay = !!p?.scoringPlay || isLikelyScoringText(resultText, resultType);
         group.awayScore = p?.awayScore;
         group.homeScore = p?.homeScore;
         group.clock = p?.clock?.displayValue || null;
-        if (!group.batter) group.batter = inferBatterFromText(base.text);
+        if (!group.batter) group.batter = inferBatterFromText(resultText);
         if (!group.pitcher) group.pitcher = pitcherByHalf.get(key) || null;
         if (group.pitcher) pitcherByHalf.set(key, group.pitcher);
         continue;
@@ -711,7 +737,21 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
     });
   }
 
-  const allRows = [...rows, ...minorRows].sort((a, b) => {
+  const trimmedRows = rows.filter((row) => {
+    if (row.isComplete !== false) return true;
+    const laterCompletedSameHalf = rows.some(
+      (other) =>
+        other !== row &&
+        other.isAtBat &&
+        other.isComplete !== false &&
+        other.period === row.period &&
+        other.halfInning === row.halfInning &&
+        (other.sequence || 0) > (row.sequence || 0)
+    );
+    return !laterCompletedSameHalf;
+  });
+
+  const allRows = [...trimmedRows, ...minorRows].sort((a, b) => {
     const ai = Number(a.id);
     const bi = Number(b.id);
     if (Number.isFinite(ai) && Number.isFinite(bi) && ai !== bi) return ai - bi;

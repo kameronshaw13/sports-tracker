@@ -1,7 +1,7 @@
 /* Player page final overrides loaded after globals.css. */
 .player-detail-sticky-shell {
   position: fixed !important;
-  top: 0 !important;
+  top: .16rem !important;
   left: 50% !important;
   right: auto !important;
   width: 100% !important;
@@ -68,7 +68,7 @@
 .player-detail-body {
   position: relative;
   z-index: 1;
-  padding-top: calc(17.14rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
+  padding-top: calc(17.3rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
 }
 
 .player-detail-season-heading {
@@ -162,7 +162,7 @@
 
 .gamecast-play-text.is-scoring-play,
 .gamecast-generic-play-text.is-scoring-play {
-  color: var(--score-meta, rgba(255, 248, 236, 0.92)) !important;
+  color: #fff !important;
   font-size: .74rem !important;
   line-height: 1.32 !important;
   font-weight: 850 !important;
@@ -209,26 +209,40 @@
 }
 
 .generic-gamecast-shell .gamecast-generic-play-text {
-  padding-top: .18rem !important;
+  display: flex !important;
+  align-items: center !important;
+  min-height: 1.74rem !important;
+  padding-top: .26rem !important;
+  padding-bottom: .12rem !important;
+  line-height: 1.28 !important;
 }
 
 .gamecast-half-rows details summary {
-  padding-top: .86rem !important;
-  padding-bottom: .7rem !important;
+  padding-top: .96rem !important;
+  padding-bottom: .78rem !important;
 }
 
 .gamecast-play-text,
 .gamecast-half-rows details summary .text-sm,
 .gamecast-scoring-text {
   color: var(--score-meta, rgba(255, 248, 236, 0.86)) !important;
-  padding-top: .18rem !important;
-  transform: translateY(.05rem) !important;
+  padding-top: .22rem !important;
+  transform: translateY(.08rem) !important;
 }
 
 .gamecast-play-text.is-scoring-play,
 .gamecast-generic-play-text.is-scoring-play {
-  color: var(--score-meta, rgba(255, 248, 236, 0.94)) !important;
+  color: #fff !important;
   font-weight: 900 !important;
+}
+
+.generic-gamecast-shell .rounded-2xl > div > .flex {
+  align-items: center !important;
+}
+
+.generic-gamecast-shell .rounded-2xl > div {
+  padding-top: .86rem !important;
+  padding-bottom: .72rem !important;
 }
 
 .boxscore-stat-scroll table,
@@ -237,7 +251,12 @@
 .boxscore-stat-scroll tbody td,
 .boxscore-player-name,
 .boxscore-player-name[style] {
-  background: var(--surface) !important;
+  background: color-mix(in srgb, var(--surface) 90%, #8a603a 10%) !important;
+}
+
+.boxscore-stat-group,
+.boxscore-stat-scroll {
+  background: color-mix(in srgb, var(--surface) 90%, #8a603a 10%) !important;
 }
 
 .boxscore-stat-scroll tbody tr {
@@ -257,6 +276,25 @@
 .boxscore-player-name span::after {
   display: none !important;
   content: none !important;
+}
+
+.boxscore-player-name button {
+  display: inline-flex !important;
+  align-items: baseline !important;
+  gap: .14rem !important;
+  text-decoration: none !important;
+}
+
+.boxscore-player-position {
+  display: inline-block !important;
+  margin-left: .32rem !important;
+  transform: translateY(-.02rem) !important;
+  line-height: 1 !important;
+}
+
+.boxscore-sub-marker {
+  color: var(--score-meta, rgba(255, 248, 236, .86)) !important;
+  opacity: .88 !important;
 }
 
 .player-game-log-header span,
@@ -288,6 +326,6 @@
   }
 
   .player-detail-body {
-    padding-top: calc(16.7rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
+    padding-top: calc(16.86rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
   }
 }

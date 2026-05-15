@@ -243,7 +243,7 @@ function LiveAtBatCard({
       <div className="gamecast-live-result-wrap">
         <div className="gamecast-live-result">
           <div className="gamecast-live-result-text">
-            {currentAtBat?.result || (hasLiveAtBat ? situation?.lastPlay : null) || "Waiting for ESPN play update..."}
+            {cleanResultText(currentAtBat?.result || (hasLiveAtBat ? situation?.lastPlay : null) || "Waiting for ESPN play update...")}
           </div>
           {currentAtBat?.pitches?.length ? <PitchSequence atBat={currentAtBat} compact horizontalScroll /> : null}
         </div>
@@ -398,7 +398,7 @@ function AtBatSummaryRow({ atBat, forceOpen = false, mode = "default", away, hom
     if (isHiddenMinorEvent(atBat.text)) return null;
     return (
       <div className="px-4 py-2 text-xs" style={{ color: "var(--text-3)", background: "var(--surface)" }}>
-        {atBat.text}
+        {cleanResultText(atBat.text)}
       </div>
     );
   }
@@ -470,12 +470,20 @@ function formatPitch(raw: string) {
 }
 
 function cleanResultText(text: string) {
-  return String(text || "Play").replace(/^Pitch\s*\d+\s*:\s*/i, "").replace(/\s+/g, " ").trim();
+  return String(text || "Play")
+    .replace(/^Pitch\s*\d+\s*:\s*/i, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\s+\./g, ".")
+    .replace(/\.$/, "");
 }
 
 function isHiddenMinorEvent(text: string) {
   const value = String(text || "").trim();
-  return /^(top|bottom|middle|end) of the \d+(st|nd|rd|th)? inning\.?$/i.test(value) || /^(middle|end) of the/i.test(value) || /\bpitches to\b/i.test(value);
+  return /^(top|bottom|middle|end) of the \d+(st|nd|rd|th)? inning\.?$/i.test(value) ||
+    /^(middle|end) of the/i.test(value) ||
+    /\bpitches to\b/i.test(value) ||
+    /\b(challeng|review|substitution|defensive replacement|pinch-runner|pinch runner|mound visit|injury delay|delay)\b/i.test(value);
 }
 
 function playerClickHandler(person: Person | null | undefined, onPlayerClick: ((player: { id: string; name: string; league: string }) => void) | undefined, fallbackName: string) {
@@ -546,7 +554,7 @@ function GenericTabbedPlays({ data, error, isLoading, emptyText }: { data: any; 
         <GamecastTab label="Plays" active={tab === "plays"} onClick={() => setTab("plays")} />
       </div>
       {tab === "live" && <GenericPlayList plays={recent} home={data?.home} away={data?.away} emphasizeScoring />}
-      {tab === "scoring" && (scoring.length ? <GenericPeriodGroups sections={groupByPeriod(scoring)} home={data?.home} away={data?.away} /> : <UnavailableCard text="No scoring plays yet." />)}
+      {tab === "scoring" && (scoring.length ? <GenericPeriodGroups sections={groupByPeriod(scoring)} home={data?.home} away={data?.away} emphasizeScoring /> : <UnavailableCard text="No scoring plays yet." />)}
       {tab === "plays" && (
         <div className="space-y-3">
           {byPeriod.map((section) => (
@@ -589,7 +597,7 @@ function GenericPlayList({ plays, home, away, emphasizeScoring = false }: { play
     <div className="rounded-2xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
       {plays.map((p: any) => {
         const team = p.homeAway === "home" ? home : p.homeAway === "away" ? away : null;
-        const playText = [p.clock, p.text].filter(Boolean).join(", ");
+        const playText = [p.clock, cleanResultText(p.text)].filter(Boolean).join(", ");
         const suffix = emphasizeScoring && p.scoringPlay ? scoreSuffix(p, away, home) : "";
         return (
           <div key={p.id} className="px-4 py-3 border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>

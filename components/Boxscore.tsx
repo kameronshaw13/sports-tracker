@@ -339,20 +339,29 @@ function pickColumnKeys(group: any, league: string): string[] {
   }
 
   if (league === "mlb") {
-    return mlbColumnKeys(allKeys);
+    return mlbColumnKeys(allKeys, group);
   }
 
   // NFL: 6-column cap (pre-v17 behavior preserved)
   return allKeys.slice(0, 6);
 }
 
-function mlbColumnKeys(allKeys: string[]): string[] {
+function mlbColumnKeys(allKeys: string[], group?: any): string[] {
+  const isPitching = isMlbPitchingGroup(group);
+  const usableKeys = isPitching ? allKeys.filter((k) => canonicalLabel(k) !== "HR") : allKeys;
   const hasCombo = allKeys.some((k) => k === "H-AB" || k === "H_AB" || k === "H/AB");
-  if (hasCombo) {
-    const rest = allKeys.filter((k) => !["H-AB", "H_AB", "H/AB", "AB", "H", "HT"].includes(k));
+  if (hasCombo && !isPitching) {
+    const rest = usableKeys.filter((k) => !["H-AB", "H_AB", "H/AB", "AB", "H", "HT"].includes(k));
     return ["AB", "H", ...rest].slice(0, 7);
   }
-  return allKeys.map((k) => (k === "HT" ? "H" : k)).slice(0, 7);
+  return usableKeys.map((k) => (k === "HT" ? "H" : k)).slice(0, 7);
+}
+
+function isMlbPitchingGroup(group: any): boolean {
+  const name = String(group?.name || group?.displayName || "").toLowerCase();
+  if (name.includes("pitch")) return true;
+  const keys: string[] = Array.isArray(group?.keys) ? group.keys : [];
+  return keys.includes("IP") && (keys.includes("ER") || keys.includes("ERA") || keys.includes("BB"));
 }
 
 function getBoxscoreStat(row: any, key: string): string | number {
@@ -598,6 +607,7 @@ function StatGroup({
   }) => void;
 }) {
   const visible = group.athletes;
+  const isMlbPitching = league === "mlb" && isMlbPitchingGroup(group);
 
   if (group.athletes.length === 0) return null;
 
@@ -670,11 +680,14 @@ function StatGroup({
                         disabled={!onPlayerClick || !row.id}
                         className="font-medium text-left hover:opacity-80"
                       >
+                        <span className={league === "mlb" && !isMlbPitching && isSubstituteRow(row) ? "boxscore-sub-marker" : ""}>
+                          {league === "mlb" && !isMlbPitching && isSubstituteRow(row) ? "↳ " : ""}
+                        </span>
                         {row.shortName || row.name}
                       </button>
                       {row.position && (
                         <span
-                          className="text-[10px] block"
+                          className="boxscore-player-position text-[10px]"
                           style={{ color: "var(--text-3)" }}
                         >
                           {row.position}
@@ -698,6 +711,11 @@ function StatGroup({
       </div>
     </div>
   );
+}
+
+function isSubstituteRow(row: any): boolean {
+  const position = String(row?.position || "").toUpperCase();
+  return row?.starter === false || position === "PH" || position === "PR";
 }
 
 function displayGroupName(
