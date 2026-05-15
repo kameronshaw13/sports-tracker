@@ -16709,3 +16709,203 @@ main.view-scores .pull-refresh-indicator {
     padding-top: .12rem !important;
   }
 }
+
+/* v210: true middle-axis alignment for GameTracker hero.
+   The logo, score, and Final/time/inning label now share one visual centerline.
+   Supplemental info such as odds, bases/count, and series/game labels live below
+   that axis so they no longer pull the Final/time label up or down. */
+.game-score-hero {
+  --gt-top-row-axis: 1.42rem;
+  --gt-middle-axis: 4.02rem;
+  --gt-bottom-row-axis: 5.96rem;
+  --gt-logo-size: 3.58rem;
+  --gt-logo-img-size: 3.36rem;
+  --gt-score-height: 2.55rem;
+  --gt-score-font: 2.24rem;
+  --gt-side-meta-inset: 3.04rem;
+  --gt-side-score-inset: 3.04rem;
+}
+
+.game-score-hero .game-score-center {
+  position: absolute !important;
+  inset: 0 auto auto 50% !important;
+  width: 7.3rem !important;
+  height: 100% !important;
+  transform: translateX(-50%) !important;
+  display: block !important;
+  z-index: 4 !important;
+  text-align: center !important;
+  pointer-events: none !important;
+}
+
+.game-score-hero .game-score-center-row-top,
+.game-score-hero .game-score-center-row-main,
+.game-score-hero .game-score-center-row-bottom {
+  position: absolute !important;
+  left: 50% !important;
+  width: max-content !important;
+  max-width: 7.3rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.game-score-hero .game-score-center-row-top {
+  top: var(--gt-top-row-axis) !important;
+}
+
+.game-score-hero .game-score-center-row-main {
+  top: var(--gt-middle-axis) !important;
+  min-height: var(--gt-score-height) !important;
+  height: var(--gt-score-height) !important;
+}
+
+.game-score-hero .game-score-center-row-bottom {
+  top: var(--gt-bottom-row-axis) !important;
+  gap: .22rem !important;
+  min-height: 0 !important;
+  height: auto !important;
+  transform: translate(-50%, 0) !important;
+}
+
+.game-score-hero .game-score-date,
+.game-score-hero .game-score-record {
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: .62rem !important;
+  line-height: 1 !important;
+  font-weight: 850 !important;
+  letter-spacing: .005em !important;
+  white-space: nowrap !important;
+}
+
+.game-score-hero .game-score-record {
+  position: absolute !important;
+  top: var(--gt-top-row-axis) !important;
+  transform: translateY(-50%) !important;
+}
+
+.game-score-hero .game-score-team-away .game-score-record {
+  right: var(--gt-side-meta-inset) !important;
+}
+
+.game-score-hero .game-score-team-home .game-score-record {
+  left: var(--gt-side-meta-inset) !important;
+}
+
+.game-score-hero .game-score-logo-wrap {
+  position: absolute !important;
+  top: var(--gt-middle-axis) !important;
+  width: var(--gt-logo-size) !important;
+  height: var(--gt-logo-size) !important;
+  transform: translateY(-50%) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.game-score-hero .game-score-logo,
+.game-score-hero .game-score-logo.logo-outline-dark {
+  width: var(--gt-logo-img-size) !important;
+  height: var(--gt-logo-img-size) !important;
+}
+
+.game-score-hero .game-score-score {
+  position: absolute !important;
+  top: var(--gt-middle-axis) !important;
+  height: var(--gt-score-height) !important;
+  min-width: 2.18rem !important;
+  transform: translateY(-50%) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: var(--gt-score-font) !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.game-score-hero .game-score-team-away .game-score-score {
+  right: var(--gt-side-score-inset) !important;
+}
+
+.game-score-hero .game-score-team-home .game-score-score {
+  left: var(--gt-side-score-inset) !important;
+}
+
+.game-score-hero .game-score-status,
+.game-score-hero .game-score-status.is-pre,
+.game-score-hero .game-score-status.is-live,
+.game-score-hero .game-score-status.is-final {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: var(--gt-score-height) !important;
+  height: var(--gt-score-height) !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.game-score-hero .game-score-odds,
+.game-score-hero .game-score-situation,
+.game-score-hero .game-score-series {
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  white-space: nowrap !important;
+}
+
+.game-score-hero .game-score-odds {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .9rem !important;
+  color: var(--text-2) !important;
+  font-size: .62rem !important;
+  line-height: 1 !important;
+  font-weight: 850 !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-hero {
+    --gt-top-row-axis: 1.42rem;
+    --gt-middle-axis: 3.96rem;
+    --gt-bottom-row-axis: 5.78rem;
+    --gt-logo-size: 3.34rem;
+    --gt-logo-img-size: 3.14rem;
+    --gt-score-height: 2.42rem;
+    --gt-score-font: 2.08rem;
+    --gt-side-meta-inset: 2.78rem;
+    --gt-side-score-inset: 2.78rem;
+  }
+
+  .game-score-hero .game-score-center {
+    width: 6.95rem !important;
+  }
+
+  .game-score-hero .game-score-center-row-top,
+  .game-score-hero .game-score-center-row-main,
+  .game-score-hero .game-score-center-row-bottom {
+    max-width: 6.95rem !important;
+  }
+
+  .game-score-hero .game-score-date,
+  .game-score-hero .game-score-record,
+  .game-score-hero .game-score-odds,
+  .game-score-hero .game-score-series {
+    font-size: .6rem !important;
+  }
+}

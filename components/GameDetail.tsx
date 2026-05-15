@@ -112,14 +112,12 @@ function ScoreboardHero({ league, home, away, status, situation, odds, eventId, 
             </div>
             <div className="game-score-center-row game-score-center-row-main">
               <div className={`game-score-status ${status?.state === "in" ? "is-live" : status?.state === "pre" ? "is-pre" : "is-final"}`}>{formatGameStatus(status, gameDate)}</div>
+            </div>
+            <div className="game-score-center-row game-score-center-row-bottom">
               <GameOddsLine odds={odds} away={away} home={home} />
               {league === "mlb" && status?.state === "in" && hasBaseballSituation(situation) && <BaseballSituationBlock situation={situation} />}
+              {status?.seriesGame && <div className="game-score-series">{status.seriesGame}</div>}
             </div>
-            {status?.seriesGame && (
-              <div className="game-score-center-row game-score-center-row-bottom">
-                <div className="game-score-series">{status.seriesGame}</div>
-              </div>
-            )}
           </div>
           <TeamBlock team={home} league={league} eventId={eventId} onClick={onTeamClick} align="right" showScore={showScore} isWinner={hasFinalWinner && homeScoreNum > awayScoreNum} isLoser={hasFinalWinner && homeScoreNum < awayScoreNum} />
       </div>
