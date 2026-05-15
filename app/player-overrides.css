@@ -27,11 +27,11 @@
 }
 
 .player-detail-topbar button {
-  width: 3.05rem !important;
-  height: 3.05rem !important;
-  min-height: 3.05rem !important;
+  width: 2.72rem !important;
+  height: 2.72rem !important;
+  min-height: 2.72rem !important;
   transform: translateY(-.02rem) !important;
-  margin-left: -.24rem !important;
+  margin-left: -.12rem !important;
 }
 
 .player-detail-hero-main {
@@ -68,7 +68,7 @@
 .player-detail-body {
   position: relative;
   z-index: 1;
-  padding-top: calc(14.82rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
+  padding-top: calc(15.72rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
 }
 
 .player-detail-season-heading {
@@ -154,7 +154,7 @@
 .gamecast-pitcher-tag span:last-child,
 .gamecast-pitch-label {
   color: var(--score-meta, rgba(255, 248, 236, 0.86)) !important;
-  font-size: .7rem !important;
+  font-size: .74rem !important;
   line-height: 1.32 !important;
   font-weight: 500 !important;
   text-shadow: none !important;
@@ -163,10 +163,32 @@
 .gamecast-play-text.is-scoring-play,
 .gamecast-generic-play-text.is-scoring-play {
   color: var(--text) !important;
-  font-size: .8rem !important;
+  font-size: .74rem !important;
   line-height: 1.32 !important;
-  font-weight: 675 !important;
+  font-weight: 850 !important;
   text-shadow: none !important;
+}
+
+.player-game-log-row > span:first-child,
+.player-game-log-row > strong {
+  align-self: stretch !important;
+  display: flex !important;
+  align-items: center !important;
+  background: color-mix(in srgb, var(--surface) 82%, #000 18%) !important;
+  margin-top: -.24rem !important;
+  margin-bottom: -.24rem !important;
+  padding-top: .24rem !important;
+  padding-bottom: .24rem !important;
+}
+
+.gamecast-scoring-score {
+  color: color-mix(in srgb, var(--score-meta, rgba(255, 248, 236, 0.86)) 70%, #8a8a8a 30%) !important;
+  font-weight: 650 !important;
+}
+
+.gamecast-scoring-score.is-scoring-team {
+  color: var(--text) !important;
+  font-weight: 950 !important;
 }
 
 .player-game-log-header span,
@@ -198,6 +220,6 @@
   }
 
   .player-detail-body {
-    padding-top: calc(14.38rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
+    padding-top: calc(15.28rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
   }
 }
