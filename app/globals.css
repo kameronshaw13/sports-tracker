@@ -16176,3 +16176,116 @@ main.view-scores .pull-refresh-indicator {
     font-size: .58rem !important;
   }
 }
+
+/* v204: keep v203 dynamic horizontal centering, restore the previous vertical slots.
+   The center rail remains anchored to the true middle, but each label gets its
+   own vertical lane again so date/status/diamond/series do not stack too high. */
+.game-score-hero .game-score-center {
+  position: absolute !important;
+  top: 1.58rem !important;
+  left: 50% !important;
+  width: clamp(6.8rem, 24vw, 8.8rem) !important;
+  height: 5rem !important;
+  display: block !important;
+  text-align: center !important;
+  transform: translateX(-50%) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 8 !important;
+  pointer-events: none !important;
+}
+
+.game-score-hero .game-score-date,
+.game-score-hero .game-score-status,
+.game-score-hero .game-score-status.is-pre,
+.game-score-hero .game-score-status.is-live,
+.game-score-hero .game-score-status.is-final,
+.game-score-hero .game-score-odds,
+.game-score-hero .game-score-situation,
+.game-score-hero .game-score-series {
+  position: absolute !important;
+  left: 50% !important;
+  right: auto !important;
+  width: max-content !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  margin: 0 !important;
+  transform: translateX(-50%) !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+.game-score-hero .game-score-date {
+  top: 0 !important;
+}
+
+/* Pregame times and final labels belong in the lower center slot. */
+.game-score-hero .game-score-status,
+.game-score-hero .game-score-status.is-pre,
+.game-score-hero .game-score-status.is-final {
+  top: 2.44rem !important;
+}
+
+/* Live inning text sits above the baseball diamond/count stack. */
+.game-score-hero .game-score-status.is-live {
+  top: 1.16rem !important;
+}
+
+.game-score-hero .game-score-odds {
+  top: 3.22rem !important;
+}
+
+.game-score-hero .game-score-situation {
+  top: 2.12rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .08rem !important;
+  padding-top: 0 !important;
+}
+
+.game-score-hero .game-score-series {
+  bottom: .2rem !important;
+  top: auto !important;
+}
+
+.game-score-hero .game-score-count {
+  transform: none !important;
+  margin-top: .04rem !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-hero .game-score-center {
+    top: 1.52rem !important;
+    width: clamp(6.25rem, 30vw, 7.8rem) !important;
+    height: 5rem !important;
+  }
+
+  .game-score-hero .game-score-date {
+    top: 0 !important;
+  }
+
+  .game-score-hero .game-score-status,
+  .game-score-hero .game-score-status.is-pre,
+  .game-score-hero .game-score-status.is-final {
+    top: 2.42rem !important;
+  }
+
+  .game-score-hero .game-score-status.is-live {
+    top: 1.08rem !important;
+  }
+
+  .game-score-hero .game-score-odds {
+    top: 3.16rem !important;
+  }
+
+  .game-score-hero .game-score-situation {
+    top: 2rem !important;
+  }
+
+  .game-score-hero .game-score-series {
+    bottom: .2rem !important;
+  }
+}
