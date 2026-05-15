@@ -16526,3 +16526,88 @@ main.view-scores .pull-refresh-indicator {
     line-height: 1 !important;
   }
 }
+
+/* v208: GameTracker top-row alignment + slightly larger logos + inward record/score columns.
+   Keep the v207 center-row model, but rebalance the grid instead of individually
+   nudging the Final/status line. Moving the center rail top up and increasing the
+   row gap by the same amount lifts only the date row while keeping Final/time in
+   the same visual spot. */
+.game-score-hero .game-score-center {
+  --gt-center-row-gap: 1.24rem;
+  top: 1.42rem !important;
+  grid-template-rows: 1.1rem max-content max-content !important;
+}
+
+.game-score-hero .game-score-center-row-top {
+  min-height: 1.1rem !important;
+  height: 1.1rem !important;
+  align-items: start !important;
+  align-content: start !important;
+}
+
+.game-score-hero .game-score-date,
+.game-score-hero .game-score-record {
+  font-size: .62rem !important;
+  line-height: 1 !important;
+  font-weight: 850 !important;
+  letter-spacing: .005em !important;
+}
+
+/* Make the team marks a touch larger without changing the overall hero style. */
+.game-score-hero .game-score-logo-wrap {
+  width: 3.58rem !important;
+  height: 3.58rem !important;
+}
+
+.game-score-hero .game-score-logo,
+.game-score-hero .game-score-logo.logo-outline-dark {
+  width: 3.36rem !important;
+  height: 3.36rem !important;
+}
+
+/* Pull the record/score columns slightly toward the true center axis. */
+.game-score-hero .game-score-team-away .game-score-record,
+.game-score-hero .game-score-team-away .game-score-score {
+  right: 3.04rem !important;
+}
+
+.game-score-hero .game-score-team-home .game-score-record,
+.game-score-hero .game-score-team-home .game-score-score {
+  left: 3.04rem !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-hero .game-score-center {
+    --gt-center-row-gap: 1.16rem;
+    top: 1.42rem !important;
+    grid-template-rows: 1.04rem max-content max-content !important;
+  }
+
+  .game-score-hero .game-score-center-row-top {
+    min-height: 1.04rem !important;
+    height: 1.04rem !important;
+    align-items: start !important;
+    align-content: start !important;
+  }
+
+  .game-score-hero .game-score-logo-wrap {
+    width: 3.34rem !important;
+    height: 3.34rem !important;
+  }
+
+  .game-score-hero .game-score-logo,
+  .game-score-hero .game-score-logo.logo-outline-dark {
+    width: 3.14rem !important;
+    height: 3.14rem !important;
+  }
+
+  .game-score-hero .game-score-team-away .game-score-record,
+  .game-score-hero .game-score-team-away .game-score-score {
+    right: 2.78rem !important;
+  }
+
+  .game-score-hero .game-score-team-home .game-score-record,
+  .game-score-hero .game-score-team-home .game-score-score {
+    left: 2.78rem !important;
+  }
+}
