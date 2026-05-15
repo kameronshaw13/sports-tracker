@@ -761,7 +761,8 @@ function StatGroup({
                     key={row.id || idx}
                     style={{ borderTop: "1px solid var(--border)" }}
                   >
-                    <td
+                    <th
+                      scope="row"
                       className={`boxscore-player-name px-3 py-2 whitespace-nowrap sticky left-0 ${
                         league === "mlb" && !isMlbPitching && isSubstituteRow(row) ? "is-substitute-row" : ""
                       }`}
@@ -780,17 +781,9 @@ function StatGroup({
                         disabled={!onPlayerClick || !row.id}
                         className="font-medium text-left hover:opacity-80"
                       >
-                        {row.shortName || row.name}
+                        {boxscorePlayerName(row, league)}
                       </button>
-                      {row.position && league !== "nhl" ? (
-                        <span
-                          className="boxscore-player-position text-[10px]"
-                          style={{ color: "var(--text-3)" }}
-                        >
-                          , {row.position}
-                        </span>
-                      ) : null}
-                    </td>
+                    </th>
                     {columnKeys.map((k: string) => (
                       <td
                         key={k}
@@ -813,6 +806,13 @@ function StatGroup({
 function isSubstituteRow(row: any): boolean {
   const position = String(row?.position || "").toUpperCase();
   return row?.starter === false || position === "PH" || position === "PR";
+}
+
+function boxscorePlayerName(row: any, league: string): string {
+  const name = String(row?.shortName || row?.name || "").trim();
+  const position = String(row?.position || "").trim();
+  if (!name || !position || league === "nhl") return name;
+  return `${name}, ${position}`;
 }
 
 function displayGroupName(
