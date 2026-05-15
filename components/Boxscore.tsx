@@ -54,39 +54,6 @@ export default function Boxscore({
 
   return (
     <div className="space-y-4">
-      {/* Top performers */}
-      {data.leaders && data.leaders.length > 0 && (
-        <div>
-          <h3
-            className="text-sm font-semibold uppercase tracking-wider mb-2"
-            style={{ color: "var(--text-2)" }}
-          >
-            Top performers
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {data.leaders.flatMap((teamLeaders: any) =>
-              teamLeaders.categories
-                .slice(0, 2)
-                .map((cat: any, i: number) => (
-                  <LeaderCard
-                    key={`${teamLeaders.team.abbr}-${i}`}
-                    cat={cat}
-                    teamLogo={teamLeaders.team.logo}
-                    teamAbbr={teamLeaders.team.abbr}
-                    league={league}
-                    teamKey={
-                      teamLeaders.team.abbr
-                        ? `${league}-${String(teamLeaders.team.abbr).toLowerCase()}`
-                        : undefined
-                    }
-                    onPlayerClick={onPlayerClick}
-                  />
-                )),
-            )}
-          </div>
-        </div>
-      )}
-
       {league === "mlb" && data.lineScore && (
         <MlbLineScore lineScore={data.lineScore} />
       )}

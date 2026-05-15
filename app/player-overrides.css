@@ -68,7 +68,7 @@
 .player-detail-body {
   position: relative;
   z-index: 1;
-  padding-top: calc(16.48rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
+  padding-top: calc(16.9rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
 }
 
 .player-detail-season-heading {
@@ -174,8 +174,8 @@
     linear-gradient(
       90deg,
       color-mix(in srgb, var(--surface) 82%, #000 18%) 0,
-      color-mix(in srgb, var(--surface) 82%, #000 18%) 7.98rem,
-      var(--surface) 7.98rem,
+      color-mix(in srgb, var(--surface) 82%, #000 18%) 8.18rem,
+      var(--surface) 8.18rem,
       var(--surface) 100%
     ) !important;
   border-bottom: 1px solid var(--border) !important;
@@ -199,8 +199,17 @@
 }
 
 .gamecast-scoring-score.is-scoring-team {
-  color: var(--text) !important;
+  color: #fff !important;
   font-weight: 950 !important;
+}
+
+.generic-gamecast-shell .gamecast-toggle-btn {
+  padding-top: .36rem !important;
+  line-height: 1.05 !important;
+}
+
+.generic-gamecast-shell .gamecast-generic-play-text {
+  padding-top: .08rem !important;
 }
 
 .player-game-log-header span,
@@ -232,6 +241,6 @@
   }
 
   .player-detail-body {
-    padding-top: calc(16.04rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
+    padding-top: calc(16.46rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
   }
 }

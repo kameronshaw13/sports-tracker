@@ -164,6 +164,8 @@ function MlbLiveGamecast({
           <HalfInningCard
             team={battingTeam}
             pitcherTeam={currentHalf.half === "top" ? home : away}
+            away={away}
+            home={home}
             half={currentHalf.half}
             period={currentHalf.period}
             pitcher={halfAtBats.find((ab) => ab.pitcher?.displayName || ab.pitcher?.name)?.pitcher?.displayName || halfAtBats.find((ab) => ab.pitcher?.displayName || ab.pitcher?.name)?.pitcher?.name || null}
@@ -264,6 +266,8 @@ function teamDisplayName(team?: TeamMeta): string {
 function HalfInningCard({
   team,
   pitcherTeam,
+  away,
+  home,
   half,
   period,
   pitcher,
@@ -272,6 +276,8 @@ function HalfInningCard({
 }: {
   team?: TeamMeta;
   pitcherTeam?: TeamMeta;
+  away?: TeamMeta;
+  home?: TeamMeta;
   half: "top" | "bottom" | null;
   period: number;
   pitcher?: string | null;
@@ -306,7 +312,7 @@ function HalfInningCard({
         {visible.length === 0 ? (
           <div className="p-4 text-sm" style={{ color: "var(--text-2)" }}>No at-bats yet this half inning.</div>
         ) : (
-          visible.map((ab) => <AtBatSummaryRow key={ab.id} atBat={ab} />)
+          visible.map((ab) => <AtBatSummaryRow key={ab.id} atBat={ab} away={away} home={home} />)
         )}
       </div>
 
@@ -337,6 +343,8 @@ function MlbPlaysView({ sections, home, away, isLive = false, currentHalf }: { s
             key={`${section.period}-${section.half}`}
             team={section.team}
             pitcherTeam={section.half === "top" ? home : away}
+            away={away}
+            home={home}
             half={section.half}
             period={section.period}
             pitcher={section.pitcher}
@@ -385,7 +393,7 @@ function ScoringAtBatRow({ atBat, team }: { atBat: MlbAtBat; team?: TeamMeta }) 
   );
 }
 
-function AtBatSummaryRow({ atBat, forceOpen = false, mode = "default" }: { atBat: MlbAtBat; forceOpen?: boolean; mode?: "default" | "scoring" }) {
+function AtBatSummaryRow({ atBat, forceOpen = false, mode = "default", away, home }: { atBat: MlbAtBat; forceOpen?: boolean; mode?: "default" | "scoring"; away?: TeamMeta; home?: TeamMeta }) {
   if (atBat.isMinor) {
     if (isHiddenMinorEvent(atBat.text)) return null;
     return (
@@ -402,7 +410,7 @@ function AtBatSummaryRow({ atBat, forceOpen = false, mode = "default" }: { atBat
       <summary className="px-4 py-3 cursor-pointer list-none hover:bg-[var(--surface-2)] transition-colors">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
-            <div className={`gamecast-play-text ${atBat.scoringPlay && mode !== "scoring" ? "is-scoring-play" : ""}`}>{cleanResultText(atBat.result)}</div>
+            <div className={`gamecast-play-text ${atBat.scoringPlay && mode !== "scoring" ? "is-scoring-play" : ""}`}>{cleanResultText(atBat.result)}{atBat.scoringPlay && mode !== "scoring" ? scoreSuffix(atBat, away, home) : ""}</div>
           </div>
           {pitchCount > 0 && <span className="gamecast-play-caret transition-transform group-open/gcab:rotate-180" style={{ color: "var(--text-3)" }}>⌄</span>}
         </div>
@@ -531,7 +539,7 @@ function GenericTabbedPlays({ data, error, isLoading, emptyText }: { data: any; 
   const byPeriod = groupByPeriod(plays);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 generic-gamecast-shell">
       <div className="grid grid-cols-3 gap-1 rounded-xl p-1" style={{ background: "var(--surface-2)" }}>
         <GamecastTab label="Live" active={tab === "live"} onClick={() => setTab("live")} />
         <GamecastTab label="Scoring" active={tab === "scoring"} onClick={() => setTab("scoring")} />
@@ -563,13 +571,13 @@ function groupByPeriod(plays: any[]) {
   return Array.from(map.entries()).sort((a, b) => a[0] - b[0]).map(([period, sectionPlays]) => ({ period, plays: sectionPlays }));
 }
 
-function GenericPeriodGroups({ sections, home, away }: { sections: { period: number; plays: any[] }[]; home?: TeamMeta; away?: TeamMeta }) {
+function GenericPeriodGroups({ sections, home, away, emphasizeScoring = false }: { sections: { period: number; plays: any[] }[]; home?: TeamMeta; away?: TeamMeta; emphasizeScoring?: boolean }) {
   return (
     <div className="space-y-3">
       {sections.map((section) => (
         <div key={section.period}>
           <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>{periodLabel(section.period)}</div>
-          <GenericPlayList plays={section.plays} home={home} away={away} />
+          <GenericPlayList plays={section.plays} home={home} away={away} emphasizeScoring={emphasizeScoring} />
         </div>
       ))}
     </div>
@@ -581,13 +589,14 @@ function GenericPlayList({ plays, home, away, emphasizeScoring = false }: { play
     <div className="rounded-2xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
       {plays.map((p: any) => {
         const team = p.homeAway === "home" ? home : p.homeAway === "away" ? away : null;
+        const playText = [p.clock, p.text].filter(Boolean).join(", ");
+        const suffix = emphasizeScoring && p.scoringPlay ? scoreSuffix(p, away, home) : "";
         return (
           <div key={p.id} className="px-4 py-3 border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
             <div className="flex items-start gap-2">
               {team?.logo ? <Image src={team.logo} alt={team.abbr} width={22} height={22} className="mt-0.5 object-contain flex-shrink-0 logo-outline-dark" unoptimized /> : team ? <span className="mt-1 w-2 h-2 rounded-full flex-shrink-0" style={{ background: team.color || "var(--text-3)" }} /> : null}
               <div className="min-w-0">
-                <div className={`text-sm font-semibold gamecast-generic-play-text ${emphasizeScoring && p.scoringPlay ? "is-scoring-play" : ""}`}>{p.text}</div>
-                <div className="text-xs mt-1" style={{ color: "var(--text-3)" }}>{[p.clock, periodLabel(p.period), team?.abbr].filter(Boolean).join(" · ")}</div>
+                <div className={`text-sm font-semibold gamecast-generic-play-text ${emphasizeScoring && p.scoringPlay ? "is-scoring-play" : ""}`}>{playText}{suffix}</div>
               </div>
             </div>
           </div>
@@ -595,6 +604,13 @@ function GenericPlayList({ plays, home, away, emphasizeScoring = false }: { play
       })}
     </div>
   );
+}
+
+function scoreSuffix(play: { awayScore?: number; homeScore?: number }, away?: TeamMeta, home?: TeamMeta) {
+  if (typeof play.awayScore !== "number" || typeof play.homeScore !== "number") return "";
+  const awayAbbr = away?.abbr || "AWAY";
+  const homeAbbr = home?.abbr || "HOME";
+  return `, ${awayAbbr} ${play.awayScore} - ${homeAbbr} ${play.homeScore}`;
 }
 
 function SportHeader({ title, subtitle }: { title: string; subtitle?: string }) {
