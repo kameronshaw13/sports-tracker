@@ -116,7 +116,7 @@ function buildLineScore(league: string, competitors: any[], extractTotal: (c: an
     ? 4
     : league === "nhl"
       ? 3
-      : Math.max(0, ...competitors.map((c: any) => Array.isArray(c?.linescores) ? c.linescores.length : 0));
+      : Math.max(9, ...competitors.map((c: any) => Array.isArray(c?.linescores) ? c.linescores.length : 0));
 
   if (!periodCount) return null;
 

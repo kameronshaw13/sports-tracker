@@ -611,7 +611,10 @@ function GenericPlayList({ plays, home, away, emphasizeScoring = false, scoreCol
     <div className="gamecast-generic-list overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
       {plays.map((p: any) => {
         const team = p.homeAway === "home" ? home : p.homeAway === "away" ? away : null;
-        const playText = [p.clock, cleanResultText(p.text)].filter(Boolean).join(", ");
+        const text = cleanResultText(p.text);
+        const isTransition = isPeriodTransitionText(text, p.type);
+        const showScoreForPlay = scoreColumns && emphasizeScoring && p.scoringPlay && !isTransition;
+        const playText = [showScoreForPlay ? null : p.clock, text].filter(Boolean).join(", ");
         const suffix = !scoreColumns && emphasizeScoring && p.scoringPlay ? scoreSuffix(p, away, home) : "";
         return (
           <div key={p.id} className="px-4 py-3 border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
@@ -621,9 +624,18 @@ function GenericPlayList({ plays, home, away, emphasizeScoring = false, scoreCol
                 <div className={`text-sm font-semibold gamecast-generic-play-text ${emphasizeScoring && p.scoringPlay ? "is-scoring-play" : ""}`}>{playText}{suffix}</div>
               </div>
               {scoreColumns && (
-                <div className="gamecast-generic-score-cols tabular-nums">
-                  <span>{typeof p.awayScore === "number" ? p.awayScore : "–"}</span>
-                  <span>{typeof p.homeScore === "number" ? p.homeScore : "–"}</span>
+                <div className={`gamecast-generic-score-cols tabular-nums ${showScoreForPlay ? "has-score" : "is-empty"}`}>
+                  {showScoreForPlay ? (
+                    <>
+                      <span>{typeof p.awayScore === "number" ? p.awayScore : "–"}</span>
+                      <span>{typeof p.homeScore === "number" ? p.homeScore : "–"}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span />
+                      <span />
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -827,6 +839,11 @@ function ordinal(n: number): string {
   if (n === 2) return "2nd";
   if (n === 3) return "3rd";
   return `${n}th`;
+}
+
+function isPeriodTransitionText(text?: string | null, type?: string | null): boolean {
+  const value = `${type || ""} ${text || ""}`.toLowerCase();
+  return /\b(start|end) of (?:the )?(?:1st|2nd|3rd|4th|\d+|first|second|third|fourth)?\s*(quarter|period|half)\b|\bend of (?:game|regulation|quarter|period)\b|\bhalftime\b|\bfinal\b/.test(value);
 }
 
 function periodLabel(period: number, league?: string): string {

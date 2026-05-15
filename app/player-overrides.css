@@ -520,6 +520,78 @@ body::-webkit-scrollbar,
   font-weight: 850;
 }
 
+/* v160: follow-up score centering, full line-score, sticky boxscore names */
+.game-score-hero .game-score-score,
+.game-score-hero .game-score-team-away .game-score-score,
+.game-score-hero .game-score-team-home .game-score-score {
+  transform: translateY(calc(-50% + .22rem)) !important;
+}
+
+.boxscore-stat-scroll {
+  position: relative !important;
+  isolation: isolate !important;
+}
+
+.boxscore-stat-group,
+.boxscore-stat-scroll,
+.boxscore-stat-scroll table,
+.boxscore-stat-scroll tbody,
+.boxscore-stat-scroll tbody tr,
+.boxscore-stat-scroll tbody td,
+.boxscore-stat-scroll tbody tr:nth-child(odd),
+.boxscore-stat-scroll tbody tr:nth-child(even),
+.boxscore-stat-scroll tbody tr:nth-child(odd) td,
+.boxscore-stat-scroll tbody tr:nth-child(even) td,
+.boxscore-player-name,
+.boxscore-player-name[style],
+.boxscore-stat-scroll tbody tr:nth-child(odd) .boxscore-player-name,
+.boxscore-stat-scroll tbody tr:nth-child(even) .boxscore-player-name {
+  background: var(--surface) !important;
+}
+
+.boxscore-stat-scroll tbody tr {
+  border-top: 1px solid rgba(220, 220, 220, .15) !important;
+}
+
+.boxscore-stat-scroll tbody tr + tr {
+  border-top: 1px solid rgba(220, 220, 220, .15) !important;
+}
+
+.boxscore-stat-scroll tbody td,
+.boxscore-player-name,
+.boxscore-player-name[style] {
+  border-top: 1px solid rgba(220, 220, 220, .15) !important;
+}
+
+.boxscore-stat-scroll thead th:first-child,
+.boxscore-stat-scroll tbody td:first-child,
+.boxscore-player-name {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 80 !important;
+  min-width: 10rem !important;
+  background: var(--surface) !important;
+  background-clip: padding-box !important;
+  box-shadow: 1px 0 0 rgba(220, 220, 220, .12) !important;
+}
+
+.boxscore-stat-scroll thead th:first-child {
+  z-index: 90 !important;
+  background: var(--surface-2) !important;
+}
+
+.boxscore-player-position {
+  margin-left: .1rem !important;
+}
+
+.gamecast-generic-score-cols.is-empty {
+  opacity: 0 !important;
+}
+
+.gamecast-generic-row.has-score-columns .gamecast-generic-play-text.is-scoring-play {
+  line-height: 1.18 !important;
+}
+
 .boxscore-sub-marker {
   color: var(--score-meta, rgba(255, 248, 236, .86)) !important;
   opacity: .88 !important;
