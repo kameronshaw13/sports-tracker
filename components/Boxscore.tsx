@@ -705,6 +705,7 @@ function StatGroup({
 }) {
   const visible = group.athletes;
   const isMlbPitching = league === "mlb" && isMlbPitchingGroup(group);
+  const groupTitle = displayGroupName(league, group, groupIndex);
 
   if (group.athletes.length === 0) return null;
 
@@ -713,7 +714,7 @@ function StatGroup({
   return (
     <div className="boxscore-stat-group">
       <div className="boxscore-stat-group-title">
-        {displayGroupName(league, group, groupIndex)}
+        {groupTitle}
       </div>
       <div className="boxscore-stat-scroll overflow-x-auto">
         <table className="w-full text-xs">
@@ -723,7 +724,7 @@ function StatGroup({
                 className="boxscore-player-stat-head text-left px-3 py-2 font-medium sticky left-0 z-10"
                 style={{ background: "var(--surface)" }}
               >
-                {displayGroupName(league, group, groupIndex)}
+                {groupTitle}
               </th>
               {columnKeys.map((k: string) => (
                 <th
@@ -761,7 +762,9 @@ function StatGroup({
                     style={{ borderTop: "1px solid var(--border)" }}
                   >
                     <td
-                      className="boxscore-player-name px-3 py-2 whitespace-nowrap sticky left-0"
+                      className={`boxscore-player-name px-3 py-2 whitespace-nowrap sticky left-0 ${
+                        league === "mlb" && !isMlbPitching && isSubstituteRow(row) ? "is-substitute-row" : ""
+                      }`}
                       style={{ background: "var(--surface)" }}
                     >
                       <button
@@ -777,17 +780,14 @@ function StatGroup({
                         disabled={!onPlayerClick || !row.id}
                         className="font-medium text-left hover:opacity-80"
                       >
-                        <span className={league === "mlb" && !isMlbPitching && isSubstituteRow(row) ? "boxscore-sub-marker" : ""}>
-                          {league === "mlb" && !isMlbPitching && isSubstituteRow(row) ? "↳ " : ""}
-                        </span>
                         {row.shortName || row.name}
                       </button>
-                      {row.position && (
+                      {row.position && league !== "nhl" && (
                         <span
                           className="boxscore-player-position text-[10px]"
                           style={{ color: "var(--text-3)" }}
                         >
-                          {row.position}
+                          , {row.position}
                         </span>
                       )}
                     </td>

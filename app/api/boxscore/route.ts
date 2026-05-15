@@ -112,17 +112,28 @@ function indexTeamStats(source: any): Record<string, string | number> {
 }
 
 function buildLineScore(league: string, competitors: any[], extractTotal: (c: any, names: string[], fallback?: string | number) => any) {
-  const periodCount = league === "nba" || league === "cbb"
+  const basePeriodCount = league === "nba" || league === "cbb"
     ? 4
     : league === "nhl"
       ? 3
-      : Math.max(9, ...competitors.map((c: any) => Array.isArray(c?.linescores) ? c.linescores.length : 0));
+      : 9;
+  const actualPeriodCount = Math.max(
+    0,
+    ...competitors.map((c: any) => Array.isArray(c?.linescores) ? c.linescores.length : 0),
+  );
+  const periodCount = Math.max(basePeriodCount, actualPeriodCount);
 
   if (!periodCount) return null;
 
+  const columns = Array.from({ length: periodCount }, (_, i) => {
+    if ((league === "nba" || league === "cbb") && i >= 4) return i === 4 ? "OT" : `${i - 3}OT`;
+    if (league === "nhl" && i >= 3) return i === 3 ? "OT" : `${i - 2}OT`;
+    return String(i + 1);
+  });
+
   return {
     league,
-    columns: Array.from({ length: periodCount }, (_, i) => String(i + 1)),
+    columns,
     totalLabel: league === "mlb" ? "R" : "T",
     showHitsErrors: league === "mlb",
     teams: competitors.map((c: any) => ({
