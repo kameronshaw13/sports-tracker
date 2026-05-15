@@ -16002,3 +16002,177 @@ main.view-scores .pull-refresh-indicator {
     transform: translateY(-.03rem) !important;
   }
 }
+
+/* v203: GameTracker center rail refactor
+   Purpose: make the date/status/inning/diamond/series stack center itself from
+   the true middle of the header instead of relying on fixed left nudges.
+   This is intentionally scoped to the GameTracker hero center column only. */
+.game-score-hero .game-score-layout {
+  position: relative !important;
+}
+
+.game-score-hero .game-score-center {
+  position: absolute !important;
+  top: 1.02rem !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: clamp(6.7rem, 24vw, 8.6rem) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  display: grid !important;
+  grid-auto-flow: row !important;
+  grid-auto-rows: max-content !important;
+  justify-items: center !important;
+  align-content: start !important;
+  gap: .18rem !important;
+  text-align: center !important;
+  transform: translateX(-50%) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 8 !important;
+  pointer-events: none !important;
+}
+
+.game-score-hero .game-score-center > *,
+.game-score-hero .game-score-date,
+.game-score-hero .game-score-status,
+.game-score-hero .game-score-status.is-pre,
+.game-score-hero .game-score-status.is-live,
+.game-score-hero .game-score-status.is-final,
+.game-score-hero .game-score-odds,
+.game-score-hero .game-score-situation,
+.game-score-hero .game-score-series {
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  text-align: center !important;
+  justify-self: center !important;
+  align-self: center !important;
+}
+
+.game-score-hero .game-score-date {
+  color: var(--text-2) !important;
+  font-size: .64rem !important;
+  line-height: 1.05 !important;
+  font-weight: 850 !important;
+  letter-spacing: .01em !important;
+  white-space: nowrap !important;
+}
+
+.game-score-hero .game-score-status,
+.game-score-hero .game-score-status.is-pre,
+.game-score-hero .game-score-status.is-live,
+.game-score-hero .game-score-status.is-final {
+  color: var(--text) !important;
+  font-size: .86rem !important;
+  line-height: 1.02 !important;
+  font-weight: 950 !important;
+  letter-spacing: .01em !important;
+  white-space: nowrap !important;
+}
+
+.game-score-hero .game-score-status.is-live {
+  color: color-mix(in srgb, var(--accent) 52%, #fff 48%) !important;
+}
+
+.game-score-hero .game-score-odds {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .4rem !important;
+  color: var(--score-meta) !important;
+  font-size: .55rem !important;
+  line-height: 1.05 !important;
+  font-weight: 850 !important;
+  letter-spacing: .01em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+}
+
+.game-score-hero .game-score-odds span,
+.game-score-hero .game-score-odds span:first-child,
+.game-score-hero .game-score-odds span:last-child {
+  transform: none !important;
+}
+
+.game-score-hero .game-score-situation {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .08rem !important;
+  padding-top: .04rem !important;
+}
+
+.game-score-hero .game-score-situation svg {
+  width: 2.15rem !important;
+  height: 1.65rem !important;
+  display: block !important;
+}
+
+.game-score-hero .game-score-count {
+  color: var(--text-2) !important;
+  font-size: .62rem !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+  transform: none !important;
+  white-space: nowrap !important;
+}
+
+.game-score-hero .game-score-series {
+  color: var(--text-2) !important;
+  font-size: .62rem !important;
+  line-height: 1.05 !important;
+  font-weight: 850 !important;
+  white-space: nowrap !important;
+}
+
+/* Give live baseball a little extra vertical room without moving the center axis. */
+.game-score-hero .game-score-status.is-live + .game-score-odds,
+.game-score-hero .game-score-status.is-live + .game-score-situation,
+.game-score-hero .game-score-status.is-live ~ .game-score-situation {
+  margin-top: .06rem !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-hero .game-score-center {
+    top: .98rem !important;
+    width: clamp(6.25rem, 30vw, 7.65rem) !important;
+    gap: .16rem !important;
+  }
+
+  .game-score-hero .game-score-date {
+    font-size: .6rem !important;
+  }
+
+  .game-score-hero .game-score-status,
+  .game-score-hero .game-score-status.is-pre,
+  .game-score-hero .game-score-status.is-live,
+  .game-score-hero .game-score-status.is-final {
+    font-size: .8rem !important;
+  }
+
+  .game-score-hero .game-score-odds {
+    gap: .3rem !important;
+    font-size: .5rem !important;
+  }
+
+  .game-score-hero .game-score-situation svg {
+    width: 2rem !important;
+    height: 1.52rem !important;
+  }
+
+  .game-score-hero .game-score-count,
+  .game-score-hero .game-score-series {
+    font-size: .58rem !important;
+  }
+}
