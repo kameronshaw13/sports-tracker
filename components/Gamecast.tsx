@@ -88,12 +88,12 @@ export default function Gamecast({ league, eventId, isLive, situation: summarySi
     return (
       <div className="space-y-3">
         {summarySituation ? <FieldPositionMini situation={summarySituation} /> : null}
-        <GenericTabbedPlays league={league} data={data} error={error} isLoading={isLoading} emptyText="No football plays yet." />
+        <GenericTabbedPlays league={league} data={data} error={error} isLoading={isLoading} isLive={isLive} emptyText="No football plays yet." />
       </div>
     );
   }
 
-  return <GenericTabbedPlays league={league} data={data} error={error} isLoading={isLoading} emptyText={league === "nhl" ? "No hockey plays yet." : "No plays yet."} />;
+  return <GenericTabbedPlays league={league} data={data} error={error} isLoading={isLoading} isLive={isLive} emptyText={league === "nhl" ? "No hockey plays yet." : "No plays yet."} />;
 }
 
 function isWaitingForBattedBallResult(ab: MlbAtBat) {
@@ -535,8 +535,8 @@ function PlayerMiniCard({ label, person, primaryStat, onClick }: { label: string
   );
 }
 
-function GenericTabbedPlays({ league, data, error, isLoading, emptyText }: { league: string; data: any; error: any; isLoading: boolean; emptyText: string }) {
-  const [tab, setTab] = useState<"live" | "scoring" | "plays">("live");
+function GenericTabbedPlays({ league, data, error, isLoading, isLive, emptyText }: { league: string; data: any; error: any; isLoading: boolean; isLive: boolean; emptyText: string }) {
+  const [tab, setTab] = useState<"live" | "scoring" | "plays">(isLive ? "live" : "scoring");
   const plays = data?.plays || [];
   const showScoreColumns = league === "nba" || league === "cbb" || league === "nhl";
   if (isLoading) return <LoadingStack />;
@@ -546,17 +546,23 @@ function GenericTabbedPlays({ league, data, error, isLoading, emptyText }: { lea
   const scoring = plays.filter((p: any) => p.scoringPlay);
   const recent = [...plays].slice(-8).reverse();
   const byPeriod = groupByPeriod(plays);
+  const activeTab = !isLive && tab === "live" ? "scoring" : tab;
 
   return (
     <div className="space-y-3 generic-gamecast-shell">
-      <div className="gamecast-toggle gamecast-generic-tabs grid grid-cols-3">
-        <GamecastTab label="Scoring" active={tab === "scoring"} onClick={() => setTab("scoring")} />
-        <GamecastTab label="Live" active={tab === "live"} onClick={() => setTab("live")} />
-        <GamecastTab label="Plays" active={tab === "plays"} onClick={() => setTab("plays")} />
+      <div className={`gamecast-toggle gamecast-generic-tabs grid ${isLive ? "has-live-tab grid-cols-3" : "has-no-live-tab grid-cols-2"}`}>
+        <GamecastTab label="Scoring" active={activeTab === "scoring"} onClick={() => setTab("scoring")} />
+        {isLive && <GamecastTab label="Live" active={activeTab === "live"} onClick={() => setTab("live")} />}
+        <GamecastTab label="Plays" active={activeTab === "plays"} onClick={() => setTab("plays")} />
       </div>
-      {tab === "live" && <GenericPlayList plays={recent} home={data?.home} away={data?.away} emphasizeScoring scoreColumns={showScoreColumns} />}
-      {tab === "scoring" && (scoring.length ? <GenericPeriodGroups league={league} sections={groupByPeriod(scoring)} home={data?.home} away={data?.away} emphasizeScoring scoreColumns={showScoreColumns} /> : <UnavailableCard text="No scoring plays yet." />)}
-      {tab === "plays" && (
+      {activeTab === "live" && isLive && (
+        <div>
+          {showScoreColumns && <GenericPeriodHeader label="Live" away={data?.away} home={data?.home} showScoreColumns={showScoreColumns} />}
+          <GenericPlayList plays={recent} home={data?.home} away={data?.away} emphasizeScoring scoreColumns={showScoreColumns} />
+        </div>
+      )}
+      {activeTab === "scoring" && (scoring.length ? <GenericPeriodGroups league={league} sections={groupByPeriod(scoring)} home={data?.home} away={data?.away} emphasizeScoring scoreColumns={showScoreColumns} /> : <UnavailableCard text="No scoring plays yet." />)}
+      {activeTab === "plays" && (
         <div className="space-y-2">
           {byPeriod.map((section) => (
             <div key={section.period} className="generic-gamecast-period">
@@ -616,7 +622,7 @@ function GenericPlayList({ plays, home, away, emphasizeScoring = false, scoreCol
         const isTransition = isPeriodTransitionText(text, p.type);
         const showScoreForPlay = scoreColumns && emphasizeScoring && p.scoringPlay && !isTransition;
         const changedSide = showScoreForPlay ? changedScoreSide(p, plays[idx - 1], plays[idx + 1]) : null;
-        const playText = [showScoreForPlay ? null : p.clock, text].filter(Boolean).join(", ");
+        const playText = [p.clock, text].filter(Boolean).join(", ");
         const suffix = !scoreColumns && emphasizeScoring && p.scoringPlay ? scoreSuffix(p, away, home) : "";
         return (
           <div key={p.id} className="px-4 py-3 border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>

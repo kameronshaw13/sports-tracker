@@ -782,14 +782,14 @@ function StatGroup({
                       >
                         {row.shortName || row.name}
                       </button>
-                      {row.position && league !== "nhl" && (
+                      {row.position && league !== "nhl" ? (
                         <span
                           className="boxscore-player-position text-[10px]"
                           style={{ color: "var(--text-3)" }}
                         >
                           , {row.position}
                         </span>
-                      )}
+                      ) : null}
                     </td>
                     {columnKeys.map((k: string) => (
                       <td
