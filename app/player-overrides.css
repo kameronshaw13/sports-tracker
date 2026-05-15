@@ -68,7 +68,7 @@
 .player-detail-body {
   position: relative;
   z-index: 1;
-  padding-top: calc(16.9rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
+  padding-top: calc(17.14rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
 }
 
 .player-detail-season-heading {
@@ -162,7 +162,7 @@
 
 .gamecast-play-text.is-scoring-play,
 .gamecast-generic-play-text.is-scoring-play {
-  color: #fff !important;
+  color: var(--score-meta, rgba(255, 248, 236, 0.92)) !important;
   font-size: .74rem !important;
   line-height: 1.32 !important;
   font-weight: 850 !important;
@@ -209,7 +209,54 @@
 }
 
 .generic-gamecast-shell .gamecast-generic-play-text {
-  padding-top: .08rem !important;
+  padding-top: .18rem !important;
+}
+
+.gamecast-half-rows details summary {
+  padding-top: .86rem !important;
+  padding-bottom: .7rem !important;
+}
+
+.gamecast-play-text,
+.gamecast-half-rows details summary .text-sm,
+.gamecast-scoring-text {
+  color: var(--score-meta, rgba(255, 248, 236, 0.86)) !important;
+  padding-top: .18rem !important;
+  transform: translateY(.05rem) !important;
+}
+
+.gamecast-play-text.is-scoring-play,
+.gamecast-generic-play-text.is-scoring-play {
+  color: var(--score-meta, rgba(255, 248, 236, 0.94)) !important;
+  font-weight: 900 !important;
+}
+
+.boxscore-stat-scroll table,
+.boxscore-stat-scroll tbody,
+.boxscore-stat-scroll tbody tr,
+.boxscore-stat-scroll tbody td,
+.boxscore-player-name,
+.boxscore-player-name[style] {
+  background: var(--surface) !important;
+}
+
+.boxscore-stat-scroll tbody tr {
+  border-top: 1px solid rgba(220, 220, 220, .15) !important;
+  box-shadow: none !important;
+}
+
+.boxscore-stat-scroll tbody td,
+.boxscore-player-name,
+.boxscore-player-name[style] {
+  border-top: 0 !important;
+  box-shadow: none !important;
+}
+
+.boxscore-player-name::after,
+.boxscore-player-name button::after,
+.boxscore-player-name span::after {
+  display: none !important;
+  content: none !important;
 }
 
 .player-game-log-header span,
@@ -241,6 +288,6 @@
   }
 
   .player-detail-body {
-    padding-top: calc(16.46rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
+    padding-top: calc(16.7rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
   }
 }
