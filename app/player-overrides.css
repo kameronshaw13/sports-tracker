@@ -896,3 +896,82 @@ body::-webkit-scrollbar,
 .game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {
   top: calc(var(--gt-bottom-row-axis) - .7rem) !important;
 }
+
+/* v166: box score tables use the same sticky-name sizing model as team player stats */
+.boxscore-stat-group.player-stats-table {
+  overflow: hidden !important;
+  background: color-mix(in srgb, var(--surface) 90%, #8a603a 10%) !important;
+}
+
+.boxscore-stat-group.player-stats-table .boxscore-stat-scroll.player-stats-scroll {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.boxscore-stat-group.player-stats-table .boxscore-stat-scroll.player-stats-scroll > table.boxscore-stat-table {
+  width: var(--player-stats-table-width) !important;
+  min-width: var(--player-stats-table-width) !important;
+  max-width: none !important;
+  table-layout: fixed !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.boxscore-stat-group.player-stats-table .boxscore-stat-table th,
+.boxscore-stat-group.player-stats-table .boxscore-stat-table td {
+  min-width: var(--boxscore-stat-column-width, 2.22rem) !important;
+  width: var(--boxscore-stat-column-width, 2.22rem) !important;
+  max-width: var(--boxscore-stat-column-width, 2.22rem) !important;
+  padding-left: .05rem !important;
+  padding-right: .08rem !important;
+  text-align: right !important;
+  vertical-align: middle !important;
+}
+
+.boxscore-stat-group.player-stats-table .boxscore-stat-table th:first-child,
+.boxscore-stat-group.player-stats-table .boxscore-stat-table td:first-child,
+.boxscore-stat-group.player-stats-table .boxscore-stat-table th.boxscore-player-name {
+  position: sticky !important;
+  position: -webkit-sticky !important;
+  left: 0 !important;
+  inset-inline-start: 0 !important;
+  z-index: 240 !important;
+  min-width: var(--player-name-column-width) !important;
+  width: var(--player-name-column-width) !important;
+  max-width: var(--player-name-column-width) !important;
+  padding-left: .72rem !important;
+  padding-right: .28rem !important;
+  text-align: left !important;
+  background: color-mix(in srgb, var(--surface) 90%, #8a603a 10%) !important;
+  background-clip: padding-box !important;
+  box-shadow: 1px 0 0 rgba(220, 220, 220, .12) !important;
+}
+
+.boxscore-stat-group.player-stats-table .boxscore-stat-table thead th:first-child {
+  z-index: 260 !important;
+  color: var(--text-3) !important;
+  background: color-mix(in srgb, var(--surface-2) 80%, #8a603a 20%) !important;
+}
+
+.boxscore-stat-group.player-stats-table .boxscore-stat-table thead th {
+  color: var(--text-3) !important;
+}
+
+.boxscore-stat-group.player-stats-table .boxscore-stat-table tbody th.boxscore-player-name button {
+  display: block !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: .74rem !important;
+}
+
+.boxscore-stat-group.player-stats-table .boxscore-stat-table th:not(:first-child),
+.boxscore-stat-group.player-stats-table .boxscore-stat-table td:not(:first-child) {
+  padding-left: .1rem !important;
+  padding-right: .1rem !important;
+}

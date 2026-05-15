@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import type { CSSProperties } from "react";
 import { useState } from "react";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
@@ -710,14 +711,26 @@ function StatGroup({
   if (group.athletes.length === 0) return null;
 
   const columnKeys = pickColumnKeys(group, league);
+  const longestName = withBasketballSeparators(visible, league).reduce((max: number, row: any) => {
+    if (row?.__separator) return max;
+    return Math.max(max, boxscorePlayerName(row, league).length);
+  }, groupTitle.length);
+  const nameColumnWidth = Math.min(10.2, Math.max(7.15, longestName * 0.42 + 1.2));
+  const statColumnWidth = league === "nhl" ? 2.12 : 2.22;
+  const tableWidth = nameColumnWidth + columnKeys.length * statColumnWidth + 0.45;
+  const tableStyle = {
+    "--player-name-column-width": `${nameColumnWidth.toFixed(2)}rem`,
+    "--boxscore-stat-column-width": `${statColumnWidth.toFixed(2)}rem`,
+    "--player-stats-table-width": `${tableWidth.toFixed(2)}rem`,
+  } as CSSProperties;
 
   return (
-    <div className="boxscore-stat-group">
+    <div className="boxscore-stat-group player-stats-table" style={tableStyle}>
       <div className="boxscore-stat-group-title">
         {groupTitle}
       </div>
-      <div className="boxscore-stat-scroll overflow-x-auto">
-        <table className="w-full text-xs">
+      <div className="boxscore-stat-scroll player-stats-scroll overflow-x-auto">
+        <table className="boxscore-stat-table text-xs">
           <thead>
             <tr style={{ color: "var(--text-3)" }}>
               <th
