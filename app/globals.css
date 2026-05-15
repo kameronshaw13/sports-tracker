@@ -16400,3 +16400,68 @@ main.view-scores .pull-refresh-indicator {
     row-gap: .14rem !important;
   }
 }
+
+/* v206: normalize GameTracker center row typography + larger structural row gap.
+   This keeps the v205 horizontal centering model, but makes the top center date row
+   use the same type rhythm as the team records and gives the middle/bottom rows
+   more breathing room through the grid gap instead of individual nudges. */
+.game-score-hero .game-score-center {
+  --gt-center-row-gap: 1.08rem;
+  grid-template-rows: 1.1rem max-content max-content !important;
+  align-content: start !important;
+}
+
+.game-score-hero .game-score-center-row-top {
+  min-height: 1.1rem !important;
+  height: 1.1rem !important;
+  align-items: end !important;
+  align-content: end !important;
+}
+
+.game-score-hero .game-score-center-row-main,
+.game-score-hero .game-score-center-row-bottom {
+  min-height: 0 !important;
+  align-items: center !important;
+  align-content: center !important;
+}
+
+.game-score-hero .game-score-date,
+.game-score-hero .game-score-record {
+  font-size: .62rem !important;
+  line-height: 1 !important;
+  font-weight: 850 !important;
+  letter-spacing: .005em !important;
+}
+
+.game-score-hero .game-score-date {
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  min-height: 1em !important;
+  padding: 0 !important;
+}
+
+.game-score-hero .game-score-series {
+  font-size: .62rem !important;
+  line-height: 1 !important;
+  font-weight: 850 !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-hero .game-score-center {
+    --gt-center-row-gap: 1rem;
+    grid-template-rows: 1.04rem max-content max-content !important;
+  }
+
+  .game-score-hero .game-score-center-row-top {
+    min-height: 1.04rem !important;
+    height: 1.04rem !important;
+  }
+
+  .game-score-hero .game-score-date,
+  .game-score-hero .game-score-record,
+  .game-score-hero .game-score-series {
+    font-size: .6rem !important;
+    line-height: 1 !important;
+  }
+}
