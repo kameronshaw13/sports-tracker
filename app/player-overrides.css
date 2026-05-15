@@ -212,7 +212,7 @@
   display: flex !important;
   align-items: center !important;
   min-height: 1.74rem !important;
-  padding-top: .12rem !important;
+  padding-top: .06rem !important;
   padding-bottom: .12rem !important;
   line-height: 1.28 !important;
 }
@@ -241,8 +241,12 @@
 }
 
 .generic-gamecast-shell .gamecast-generic-list > div {
-  padding-top: .76rem !important;
-  padding-bottom: .68rem !important;
+  padding-top: .68rem !important;
+  padding-bottom: .66rem !important;
+}
+
+.generic-gamecast-shell .generic-gamecast-period-label {
+  display: none !important;
 }
 
 .gamecast-generic-tabs {

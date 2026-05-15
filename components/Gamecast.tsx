@@ -556,10 +556,9 @@ function GenericTabbedPlays({ data, error, isLoading, emptyText }: { data: any; 
       {tab === "live" && <GenericPlayList plays={recent} home={data?.home} away={data?.away} emphasizeScoring />}
       {tab === "scoring" && (scoring.length ? <GenericPeriodGroups sections={groupByPeriod(scoring)} home={data?.home} away={data?.away} emphasizeScoring /> : <UnavailableCard text="No scoring plays yet." />)}
       {tab === "plays" && (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {byPeriod.map((section) => (
-            <div key={section.period}>
-              <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>{periodLabel(section.period)}</div>
+            <div key={section.period} className="generic-gamecast-period">
               <GenericPlayList plays={section.plays} home={data?.home} away={data?.away} emphasizeScoring />
             </div>
           ))}
@@ -584,7 +583,7 @@ function GenericPeriodGroups({ sections, home, away, emphasizeScoring = false }:
     <div className="space-y-3">
       {sections.map((section) => (
         <div key={section.period}>
-          <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "var(--text-2)" }}>{periodLabel(section.period)}</div>
+          <div className="generic-gamecast-period-label">{periodLabel(section.period)}</div>
           <GenericPlayList plays={section.plays} home={home} away={away} emphasizeScoring={emphasizeScoring} />
         </div>
       ))}

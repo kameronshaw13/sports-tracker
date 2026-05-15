@@ -109,7 +109,7 @@ function parseSeriesFromString(strings: string[], home: any, away: any) {
 // a "1-0" record after a divisional win is just confusing.
 const SERIES_LEAGUES = new Set(["mlb", "nba", "nhl"]);
 
-function isPostseasonGame(data: any, comp: any): boolean {
+function isPostseasonGame(data: any, comp: any, league: string): boolean {
   // ESPN encodes season type as 1=preseason, 2=regular season, 3=postseason.
   // It can land in several places depending on which endpoint shape ESPN
   // returns, so check all the usual spots.
@@ -134,6 +134,16 @@ function isPostseasonGame(data: any, comp: any): boolean {
   if (/playoff|championship|wild ?card|division series|conference|finals|nlds|alds|nlcs|alcs|world series|stanley|elimination/.test(seriesType)) {
     return true;
   }
+  // NBA/NHL summary payloads can omit a clean seasonType while still carrying
+  // playoff series language in notes/status/header strings. Treat those as
+  // postseason so the GameTracker header keeps the same series records shown
+  // on the scores cards.
+  if (league === "nba" || league === "nhl") {
+    const strings = Array.from(collectStrings({ dataSeries: data?.series, compSeries: comp?.series, notes: comp?.notes, header: data?.header, status: comp?.status }));
+    if (strings.some((s) => /\bgame\s+\d+\b|series\s+tied|leads\s+(?:the\s+)?series|wins\s+(?:the\s+)?series|won\s+(?:the\s+)?series/i.test(s))) {
+      return true;
+    }
+  }
   return false;
 }
 
@@ -141,7 +151,7 @@ function extractSeriesInfo(data: any, comp: any, home: any, away: any, league: s
   // Bail early if this league doesn't have playoff series, or if this game
   // isn't a postseason game. This is what stops MLB regular-season 3-game
   // sets from showing a "series record" under each team.
-  if (!SERIES_LEAGUES.has(league) || !isPostseasonGame(data, comp)) {
+  if (!SERIES_LEAGUES.has(league) || !isPostseasonGame(data, comp, league)) {
     return { summary: null, seriesGame: null, homeSeriesRecord: null, awaySeriesRecord: null };
   }
 
