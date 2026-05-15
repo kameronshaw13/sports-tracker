@@ -328,9 +328,196 @@
 
 .boxscore-player-position {
   display: inline-block !important;
-  margin-left: .32rem !important;
+  margin-left: .16rem !important;
   transform: translateY(-.02rem) !important;
   line-height: 1 !important;
+}
+
+/* v158: GameTracker score/boxscore/lineup polish */
+html,
+body,
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+.game-score-hero .game-score-score {
+  transform: translateY(calc(-50% + .1rem)) !important;
+}
+
+.boxscore-stat-scroll table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.boxscore-stat-group,
+.boxscore-stat-scroll,
+.boxscore-stat-scroll table,
+.boxscore-stat-scroll tbody,
+.boxscore-stat-scroll tbody tr,
+.boxscore-stat-scroll tbody td,
+.boxscore-stat-scroll tbody tr:nth-child(odd),
+.boxscore-stat-scroll tbody tr:nth-child(even),
+.boxscore-stat-scroll tbody tr:nth-child(odd) td,
+.boxscore-stat-scroll tbody tr:nth-child(even) td,
+.boxscore-player-name,
+.boxscore-player-name[style],
+.boxscore-stat-scroll tbody tr:nth-child(odd) .boxscore-player-name,
+.boxscore-stat-scroll tbody tr:nth-child(even) .boxscore-player-name {
+  background: color-mix(in srgb, var(--surface) 88%, #8a603a 12%) !important;
+}
+
+.boxscore-stat-scroll thead th:first-child,
+.boxscore-player-name {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 40 !important;
+  min-width: 10rem !important;
+  background: color-mix(in srgb, var(--surface) 88%, #8a603a 12%) !important;
+  background-clip: padding-box !important;
+}
+
+.boxscore-stat-scroll thead th:first-child {
+  z-index: 50 !important;
+  background: color-mix(in srgb, var(--surface-2) 82%, #8a603a 18%) !important;
+}
+
+.boxscore-player-name button {
+  gap: .08rem !important;
+}
+
+.game-lineup-shell {
+  background: color-mix(in srgb, var(--surface) 90%, #8a603a 10%);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.game-lineup-loading {
+  height: 8rem;
+  background: var(--surface);
+  opacity: .8;
+}
+
+.game-lineup-empty {
+  padding: 1.25rem;
+  color: var(--score-meta, rgba(255, 248, 236, .78));
+  font-size: .86rem;
+  text-align: center;
+}
+
+.game-lineup-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .28rem;
+  padding: .55rem .7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.game-lineup-toggle-btn {
+  min-height: 2.36rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--score-meta, rgba(255, 248, 236, .74));
+  font-family: var(--retro-font, inherit);
+  font-weight: 800;
+  background: transparent;
+}
+
+.game-lineup-toggle-btn.is-active {
+  color: var(--text);
+  background: color-mix(in srgb, var(--surface-2) 72%, #8a603a 28%);
+}
+
+.game-lineup-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.game-lineup-row {
+  display: grid;
+  grid-template-columns: 2.6rem 1fr;
+  align-items: center;
+  min-height: 3.15rem;
+  padding: .42rem .9rem;
+  border-bottom: 1px solid rgba(220, 220, 220, .14);
+}
+
+.game-lineup-order {
+  color: var(--score-meta, rgba(255, 248, 236, .7));
+  font-weight: 850;
+}
+
+.game-lineup-name {
+  color: var(--text);
+  font-weight: 850;
+  line-height: 1.08;
+}
+
+.game-lineup-meta {
+  margin-top: .08rem;
+  color: var(--score-meta, rgba(255, 248, 236, .68));
+  font-size: .74rem;
+  line-height: 1.1;
+}
+
+.generic-gamecast-shell .generic-gamecast-period-label {
+  display: block !important;
+  padding: .58rem .95rem .3rem;
+  color: var(--score-meta, rgba(255, 248, 236, .78)) !important;
+  font-family: var(--retro-font, inherit);
+  font-size: .92rem;
+  font-weight: 900;
+}
+
+.gamecast-score-columns-head {
+  display: grid;
+  grid-template-columns: 1fr 4.45rem;
+  align-items: center;
+  padding: .42rem 1rem .2rem;
+  border-bottom: 1px solid rgba(220, 220, 220, .12);
+}
+
+.gamecast-score-logo-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-items: center;
+  justify-items: center;
+  gap: .4rem;
+}
+
+.gamecast-generic-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: .5rem;
+}
+
+.gamecast-generic-row.has-score-columns {
+  grid-template-columns: auto minmax(0, 1fr) 4.45rem;
+}
+
+.gamecast-generic-score-cols {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-items: center;
+  justify-items: center;
+  gap: .4rem;
+  color: var(--score-meta, rgba(255, 248, 236, .78));
+  font-size: .9rem;
+  font-weight: 850;
 }
 
 .boxscore-sub-marker {

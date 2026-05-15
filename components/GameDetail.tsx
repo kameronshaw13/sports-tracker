@@ -6,6 +6,7 @@ import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
 import Boxscore from "./Boxscore";
 import Gamecast from "./Gamecast";
+import GameLineup from "./GameLineup";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -18,7 +19,7 @@ type Props = {
   initialTab?: TabId;
 };
 
-type TabId = "main" | "boxscore";
+type TabId = "main" | "lineup" | "boxscore";
 
 export default function GameDetail({ league, eventId, onClose, onTeamClick, onPlayerClick, initialTab = "main" }: Props) {
   const freshKey = useFreshKey();
@@ -60,6 +61,7 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
 
   const { home, away, status, situation, odds } = data;
   const isLive = status?.state === "in";
+  const isPregame = status?.state === "pre";
   const statusName = String(status?.statusName || "").toUpperCase();
   const isNonPlayed = /POSTPONED|CANCELED|CANCELLED|SUSPENDED/.test(statusName);
 
@@ -71,6 +73,7 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
         <div className="game-detail-tabs" role="tablist">
           <div className="flex overflow-x-auto no-scrollbar px-4 gap-7">
             <TabBtn label="GameTracker" isActive={activeTab === "main"} onClick={() => setActiveTab("main")} />
+            {isPregame && <TabBtn label="Lineup" isActive={activeTab === "lineup"} onClick={() => setActiveTab("lineup")} />}
             <TabBtn label="Box Score" isActive={activeTab === "boxscore"} onClick={() => setActiveTab("boxscore")} />
           </div>
         </div>
@@ -78,6 +81,7 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
       <div className="game-detail-content">
         {activeTab === "main" && !isNonPlayed && <Gamecast league={league} eventId={eventId} isLive={isLive} situation={situation} onPlayerClick={onPlayerClick ? (p) => onPlayerClick(p, "main") : undefined} />}
         {activeTab === "main" && isNonPlayed && <div className="m-4 p-6 text-center text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>This game was {nonPlayedLabel(statusName).toLowerCase()}.</div>}
+        {activeTab === "lineup" && isPregame && <GameLineup league={league} eventId={eventId} />}
         {activeTab === "boxscore" && <Boxscore league={league} eventId={eventId} isLive={isLive} onPlayerClick={onPlayerClick ? (p) => onPlayerClick(p, "boxscore") : undefined} />}
       </div>
     </div>

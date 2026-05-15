@@ -88,12 +88,12 @@ export default function Gamecast({ league, eventId, isLive, situation: summarySi
     return (
       <div className="space-y-3">
         {summarySituation ? <FieldPositionMini situation={summarySituation} /> : null}
-        <GenericTabbedPlays data={data} error={error} isLoading={isLoading} emptyText="No football plays yet." />
+        <GenericTabbedPlays league={league} data={data} error={error} isLoading={isLoading} emptyText="No football plays yet." />
       </div>
     );
   }
 
-  return <GenericTabbedPlays data={data} error={error} isLoading={isLoading} emptyText={league === "nhl" ? "No hockey plays yet." : "No plays yet."} />;
+  return <GenericTabbedPlays league={league} data={data} error={error} isLoading={isLoading} emptyText={league === "nhl" ? "No hockey plays yet." : "No plays yet."} />;
 }
 
 function isWaitingForBattedBallResult(ab: MlbAtBat) {
@@ -535,9 +535,10 @@ function PlayerMiniCard({ label, person, primaryStat, onClick }: { label: string
   );
 }
 
-function GenericTabbedPlays({ data, error, isLoading, emptyText }: { data: any; error: any; isLoading: boolean; emptyText: string }) {
+function GenericTabbedPlays({ league, data, error, isLoading, emptyText }: { league: string; data: any; error: any; isLoading: boolean; emptyText: string }) {
   const [tab, setTab] = useState<"live" | "scoring" | "plays">("live");
   const plays = data?.plays || [];
+  const showScoreColumns = league === "nba" || league === "cbb" || league === "nhl";
   if (isLoading) return <LoadingStack />;
   if (error || data?.error) return <UnavailableCard text="Play data is not available for this game yet." />;
   if (!plays.length) return <UnavailableCard text={emptyText} />;
@@ -553,13 +554,15 @@ function GenericTabbedPlays({ data, error, isLoading, emptyText }: { data: any; 
         <GamecastTab label="Scoring" active={tab === "scoring"} onClick={() => setTab("scoring")} />
         <GamecastTab label="Plays" active={tab === "plays"} onClick={() => setTab("plays")} />
       </div>
-      {tab === "live" && <GenericPlayList plays={recent} home={data?.home} away={data?.away} emphasizeScoring />}
-      {tab === "scoring" && (scoring.length ? <GenericPeriodGroups sections={groupByPeriod(scoring)} home={data?.home} away={data?.away} emphasizeScoring /> : <UnavailableCard text="No scoring plays yet." />)}
+      {showScoreColumns && <GenericScoreHeader away={data?.away} home={data?.home} />}
+      {tab === "live" && <GenericPlayList plays={recent} home={data?.home} away={data?.away} emphasizeScoring scoreColumns={showScoreColumns} />}
+      {tab === "scoring" && (scoring.length ? <GenericPeriodGroups league={league} sections={groupByPeriod(scoring)} home={data?.home} away={data?.away} emphasizeScoring scoreColumns={showScoreColumns} /> : <UnavailableCard text="No scoring plays yet." />)}
       {tab === "plays" && (
         <div className="space-y-2">
           {byPeriod.map((section) => (
             <div key={section.period} className="generic-gamecast-period">
-              <GenericPlayList plays={section.plays} home={data?.home} away={data?.away} emphasizeScoring />
+              <div className="generic-gamecast-period-label">{periodLabel(section.period, league)}</div>
+              <GenericPlayList plays={section.plays} home={data?.home} away={data?.away} emphasizeScoring scoreColumns={showScoreColumns} />
             </div>
           ))}
         </div>
@@ -578,33 +581,51 @@ function groupByPeriod(plays: any[]) {
   return Array.from(map.entries()).sort((a, b) => a[0] - b[0]).map(([period, sectionPlays]) => ({ period, plays: sectionPlays }));
 }
 
-function GenericPeriodGroups({ sections, home, away, emphasizeScoring = false }: { sections: { period: number; plays: any[] }[]; home?: TeamMeta; away?: TeamMeta; emphasizeScoring?: boolean }) {
+function GenericScoreHeader({ away, home }: { away?: TeamMeta; home?: TeamMeta }) {
+  return (
+    <div className="gamecast-score-columns-head">
+      <div />
+      <div className="gamecast-score-logo-row">
+        {away?.logo && <Image src={away.logo} alt={away.abbr} width={22} height={22} className="object-contain logo-outline-dark" unoptimized />}
+        {home?.logo && <Image src={home.logo} alt={home.abbr} width={22} height={22} className="object-contain logo-outline-dark" unoptimized />}
+      </div>
+    </div>
+  );
+}
+
+function GenericPeriodGroups({ league, sections, home, away, emphasizeScoring = false, scoreColumns = false }: { league: string; sections: { period: number; plays: any[] }[]; home?: TeamMeta; away?: TeamMeta; emphasizeScoring?: boolean; scoreColumns?: boolean }) {
   return (
     <div className="space-y-3">
       {sections.map((section) => (
         <div key={section.period}>
-          <div className="generic-gamecast-period-label">{periodLabel(section.period)}</div>
-          <GenericPlayList plays={section.plays} home={home} away={away} emphasizeScoring={emphasizeScoring} />
+          <div className="generic-gamecast-period-label">{periodLabel(section.period, league)}</div>
+          <GenericPlayList plays={section.plays} home={home} away={away} emphasizeScoring={emphasizeScoring} scoreColumns={scoreColumns} />
         </div>
       ))}
     </div>
   );
 }
 
-function GenericPlayList({ plays, home, away, emphasizeScoring = false }: { plays: any[]; home?: TeamMeta; away?: TeamMeta; emphasizeScoring?: boolean }) {
+function GenericPlayList({ plays, home, away, emphasizeScoring = false, scoreColumns = false }: { plays: any[]; home?: TeamMeta; away?: TeamMeta; emphasizeScoring?: boolean; scoreColumns?: boolean }) {
   return (
     <div className="gamecast-generic-list overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
       {plays.map((p: any) => {
         const team = p.homeAway === "home" ? home : p.homeAway === "away" ? away : null;
         const playText = [p.clock, cleanResultText(p.text)].filter(Boolean).join(", ");
-        const suffix = emphasizeScoring && p.scoringPlay ? scoreSuffix(p, away, home) : "";
+        const suffix = !scoreColumns && emphasizeScoring && p.scoringPlay ? scoreSuffix(p, away, home) : "";
         return (
           <div key={p.id} className="px-4 py-3 border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
-            <div className="flex items-start gap-2">
+            <div className={`gamecast-generic-row ${scoreColumns ? "has-score-columns" : ""}`}>
               {team?.logo ? <Image src={team.logo} alt={team.abbr} width={22} height={22} className="mt-0.5 object-contain flex-shrink-0 logo-outline-dark" unoptimized /> : team ? <span className="mt-1 w-2 h-2 rounded-full flex-shrink-0" style={{ background: team.color || "var(--text-3)" }} /> : null}
               <div className="min-w-0">
                 <div className={`text-sm font-semibold gamecast-generic-play-text ${emphasizeScoring && p.scoringPlay ? "is-scoring-play" : ""}`}>{playText}{suffix}</div>
               </div>
+              {scoreColumns && (
+                <div className="gamecast-generic-score-cols tabular-nums">
+                  <span>{typeof p.awayScore === "number" ? p.awayScore : "–"}</span>
+                  <span>{typeof p.homeScore === "number" ? p.homeScore : "–"}</span>
+                </div>
+              )}
             </div>
           </div>
         );
@@ -808,6 +829,9 @@ function ordinal(n: number): string {
   return `${n}th`;
 }
 
-function periodLabel(period: number): string {
-  return period ? `Period ${period}` : "Play";
+function periodLabel(period: number, league?: string): string {
+  if (!period) return "Play";
+  if (league === "nba" || league === "cbb") return `${ordinal(period)} Quarter`;
+  if (league === "nhl") return `Period ${period}`;
+  return `Period ${period}`;
 }

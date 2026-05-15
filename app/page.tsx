@@ -62,7 +62,7 @@ export default function Home() {
   const [showReturnGame, setShowReturnGame] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; league: string; teamKey?: string } | null>(null);
   const [selectedGame, setSelectedGame] = useState<{ league: string; eventId: string } | null>(null);
-  const [selectedGameTab, setSelectedGameTab] = useState<"main" | "boxscore">("main");
+  const [selectedGameTab, setSelectedGameTab] = useState<"main" | "lineup" | "boxscore">("main");
   const [teamReturnView, setTeamReturnView] = useState<ViewId>("scores");
   const lastScreenRef = useRef("");
   const gameReturnScrollRef = useRef(0);

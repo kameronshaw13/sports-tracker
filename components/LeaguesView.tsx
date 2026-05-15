@@ -44,8 +44,8 @@ const LEAGUE_LOGOS: Record<League, string> = {
 
 type Props = {
   onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
-  onPlayerClick?: (player: { id: string; name: string; league: string }, returnTab?: "main" | "boxscore") => void;
-  onGameContext?: (game: { league: string; eventId: string }, returnTab: "main" | "boxscore", scrollY: number) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string }, returnTab?: "main" | "lineup" | "boxscore") => void;
+  onGameContext?: (game: { league: string; eventId: string }, returnTab: "main" | "lineup" | "boxscore", scrollY: number) => void;
   initialLeague?: string;
   leaguePage?: boolean;
   onBack?: () => void;
