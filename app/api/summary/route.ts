@@ -39,9 +39,38 @@ function buildRecordString(wins: number, losses: number) {
   return `${wins}-${losses}`;
 }
 
+function validSeriesRecord(record: any): string | null {
+  const text = String(record || "").trim();
+  const m = text.match(/^(\d+)\s*[-–]\s*(\d+)$/);
+  if (!m) return null;
+  if (m[1] === "0" && m[2] === "0") return null;
+  return `${Number(m[1])}-${Number(m[2])}`;
+}
+
+function teamNameTokens(team: any): string[] {
+  return [
+    team?.team?.displayName,
+    team?.team?.shortDisplayName,
+    team?.team?.name,
+    team?.team?.abbreviation,
+    team?.displayName,
+    team?.shortDisplayName,
+    team?.name,
+    team?.abbreviation,
+  ].filter(Boolean).map((v: any) => String(v).toLowerCase());
+}
+
+function nameMatchesTeam(candidate: string, names: string[]) {
+  const clean = candidate.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+  return names.some((n) => {
+    const team = n.replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+    return !!team && (clean.includes(team) || team.includes(clean));
+  });
+}
+
 function parseSeriesFromString(strings: string[], home: any, away: any) {
-  const homeNames = [home?.team?.displayName, home?.team?.shortDisplayName, home?.team?.name, home?.team?.abbreviation].filter(Boolean).map((v: any) => String(v).toLowerCase());
-  const awayNames = [away?.team?.displayName, away?.team?.shortDisplayName, away?.team?.name, away?.team?.abbreviation].filter(Boolean).map((v: any) => String(v).toLowerCase());
+  const homeNames = teamNameTokens(home);
+  const awayNames = teamNameTokens(away);
 
   for (const raw of strings) {
     const s = raw.toLowerCase();
@@ -49,13 +78,15 @@ function parseSeriesFromString(strings: string[], home: any, away: any) {
     if (tied) {
       return { homeSeriesRecord: `${tied[1]}-${tied[2]}`, awaySeriesRecord: `${tied[2]}-${tied[1]}` };
     }
-    const leads = s.match(/(.+?)\s+leads\s+(?:the\s+)?series\s+(\d+)\s*[-–]\s*(\d+)/i) || s.match(/(.+?)\s+lead[s]?\s+(\d+)\s*[-–]\s*(\d+)/i);
+    const leads =
+      s.match(/(.+?)\s+(?:leads|lead|wins|win|won|takes|take)\s+(?:the\s+)?series\s+(\d+)\s*[-–]\s*(\d+)/i) ||
+      s.match(/(.+?)\s+(?:leads|lead|wins|win|won|takes|take)\s+(\d+)\s*[-–]\s*(\d+)/i);
     if (leads) {
       const leader = leads[1].trim();
       const w = Number(leads[2]);
       const l = Number(leads[3]);
-      const leaderIsHome = homeNames.some((n) => leader.includes(n));
-      const leaderIsAway = awayNames.some((n) => leader.includes(n));
+      const leaderIsHome = nameMatchesTeam(leader, homeNames);
+      const leaderIsAway = nameMatchesTeam(leader, awayNames);
       if (leaderIsHome || leaderIsAway) {
         return leaderIsHome
           ? { homeSeriesRecord: buildRecordString(w, l), awaySeriesRecord: buildRecordString(l, w) }
@@ -119,17 +150,23 @@ function extractSeriesInfo(data: any, comp: any, home: any, away: any, league: s
   let homeSeriesRecord: string | null = null;
   let awaySeriesRecord: string | null = null;
 
+  const parsedFromText = parseSeriesFromString(strings, home, away);
+  homeSeriesRecord = parsedFromText.homeSeriesRecord;
+  awaySeriesRecord = parsedFromText.awaySeriesRecord;
+
   const competitors = comp?.series?.competitors || data?.series?.competitors || [];
   if (Array.isArray(competitors) && competitors.length) {
+    const homeIds = [home?.id, home?.team?.id, home?.teamId].filter(Boolean).map(String);
+    const awayIds = [away?.id, away?.team?.id, away?.teamId].filter(Boolean).map(String);
     for (const c of competitors) {
       const id = String(c?.id || c?.competitor?.id || c?.team?.id || "");
       const wins = c?.wins ?? c?.competitor?.wins;
       const losses = c?.losses ?? c?.competitor?.losses;
       const summary = c?.summary || c?.record || c?.displayValue;
-      const record = summary || (wins != null && losses != null ? `${wins}-${losses}` : null);
+      const record = validSeriesRecord(summary || (wins != null && losses != null ? `${wins}-${losses}` : null));
       if (!record) continue;
-      if (id && id === String(home?.id)) homeSeriesRecord = String(record);
-      if (id && id === String(away?.id)) awaySeriesRecord = String(record);
+      if (id && homeIds.includes(id) && !homeSeriesRecord) homeSeriesRecord = String(record);
+      if (id && awayIds.includes(id) && !awaySeriesRecord) awaySeriesRecord = String(record);
     }
   }
 

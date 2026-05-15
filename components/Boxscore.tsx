@@ -54,8 +54,8 @@ export default function Boxscore({
 
   return (
     <div className="space-y-4">
-      {league === "mlb" && data.lineScore && (
-        <MlbLineScore lineScore={data.lineScore} />
+      {data.lineScore && (
+        <GameLineScore lineScore={data.lineScore} />
       )}
 
       {/* Boxscore */}
@@ -101,7 +101,7 @@ export default function Boxscore({
           <TeamStatsView teams={data.teams} league={league} />
         ) : (
           <div className="space-y-3">
-            {team.groups.map((group: any, gi: number) => (
+            {orderedGroups(team.groups, league).map((group: any, gi: number) => (
               <StatGroup
                 key={gi}
                 group={group}
@@ -122,12 +122,15 @@ export default function Boxscore({
   );
 }
 
-function MlbLineScore({ lineScore }: { lineScore: any }) {
+function GameLineScore({ lineScore }: { lineScore: any }) {
   const teams = [...(lineScore?.teams || [])].sort((a: any, b: any) =>
     a.homeAway === "away" ? -1 : b.homeAway === "away" ? 1 : 0,
   );
   if (!teams.length) return null;
-  const innings = Number(lineScore.innings || 0);
+  const columns = Array.isArray(lineScore.columns) && lineScore.columns.length
+    ? lineScore.columns
+    : Array.from({ length: Number(lineScore.innings || 0) }, (_, i) => String(i + 1));
+  const showHitsErrors = lineScore.showHitsErrors !== false && lineScore.league === "mlb";
   return (
     <div>
       <div className="boxscore-line-wrap">
@@ -137,14 +140,18 @@ function MlbLineScore({ lineScore }: { lineScore: any }) {
               style={{ background: "var(--surface-2)", color: "var(--text-3)" }}
             >
               <th className="text-left px-1.5 py-2 font-semibold">Team</th>
-              {Array.from({ length: innings }).map((_, i) => (
+              {columns.map((label: string, i: number) => (
                 <th key={i} className="text-center px-1 py-2 font-semibold">
-                  {i + 1}
+                  {label}
                 </th>
               ))}
-              <th className="text-center px-1 py-2 font-black">R</th>
-              <th className="text-center px-1 py-2 font-black">H</th>
-              <th className="text-center px-1 py-2 font-black">E</th>
+              <th className="text-center px-1 py-2 font-black">{lineScore.totalLabel || "T"}</th>
+              {showHitsErrors && (
+                <>
+                  <th className="text-center px-1 py-2 font-black">H</th>
+                  <th className="text-center px-1 py-2 font-black">E</th>
+                </>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -168,20 +175,24 @@ function MlbLineScore({ lineScore }: { lineScore: any }) {
                     <span>{t.abbr}</span>
                   </div>
                 </td>
-                {Array.from({ length: innings }).map((_, i) => (
+                {columns.map((_: string, i: number) => (
                   <td key={i} className="text-center px-1 py-2 tabular-nums">
                     {t.innings?.[i] ?? "–"}
                   </td>
                 ))}
                 <td className="text-center px-1 py-2 font-black tabular-nums">
-                  {t.runs ?? "–"}
+                  {t.total ?? t.runs ?? "–"}
                 </td>
-                <td className="text-center px-1 py-2 font-black tabular-nums">
-                  {t.hits ?? "0"}
-                </td>
-                <td className="text-center px-1 py-2 font-black tabular-nums">
-                  {t.errors ?? "0"}
-                </td>
+                {showHitsErrors && (
+                  <>
+                    <td className="text-center px-1 py-2 font-black tabular-nums">
+                      {t.hits ?? "0"}
+                    </td>
+                    <td className="text-center px-1 py-2 font-black tabular-nums">
+                      {t.errors ?? "0"}
+                    </td>
+                  </>
+                )}
               </tr>
             ))}
           </tbody>
@@ -291,16 +302,16 @@ function LeaderCard({
 const NHL_SKATER_PREFERRED = [
   "G",
   "A",
+  "+/-",
   "SOG",
   "S",
-  "TOI",
-  "+/-",
   "PIM",
+  "TOI",
   "HT",
   "H",
   "BS",
 ];
-const NHL_GOALIE_PREFERRED = ["SA", "GA", "SV", "SV%", "TOI", "PIM"];
+const NHL_GOALIE_PREFERRED = ["SA", "GA", "SV", "SV%", "TOI"];
 
 // Pick which keys to show given the group and league. Preserves the "first
 // match wins" ordering of the preferred list and dedupes (e.g. ESPN sometimes
@@ -321,13 +332,11 @@ function pickColumnKeys(group: any, league: string): string[] {
     // we don't end up with both.
     for (const key of preferred) {
       if (!allKeys.includes(key)) continue;
-      const label = canonicalLabel(key);
+      const label = nhlColumnConcept(key);
       if (seenLabels.has(label)) continue;
       out.push(key);
       seenLabels.add(label);
-      // Skater cap: 8 columns total (G, A, SOG, TOI, +/-, PIM, HT/H, BS)
-      // Goalie cap: 6 columns
-      if (out.length >= (isGoalies ? 6 : 8)) break;
+      if (out.length >= (isGoalies ? 5 : 8)) break;
     }
 
     return out;
@@ -401,6 +410,18 @@ function canonicalLabel(key: string): string {
   if (key === "HT" || key === "H") return "H";
   if (key === "H-AB" || key === "H_AB") return "H/AB";
   return key;
+}
+
+function nhlColumnConcept(key: string): string {
+  if (key === "S" || key === "SOG") return "SOG";
+  if (key === "HT" || key === "H") return "HIT";
+  if (key === "BS") return "BLK";
+  return key;
+}
+
+function statHeaderLabel(league: string, key: string): string {
+  if (league === "nhl") return nhlColumnConcept(key);
+  return canonicalLabel(key);
 }
 
 
@@ -547,6 +568,8 @@ function isMlbOffensiveTeamStatGroup(group: any): boolean {
 }
 
 function collectTeamStatRows(teams: any[], league: string): TeamStatRow[] {
+  if (league === "nhl") return collectNhlTeamStatRows(teams);
+
   const labels = new Set<string>();
   const totalsByTeam = teams.map((team) => {
     const totals: Record<string, string | number> = {};
@@ -588,6 +611,80 @@ function collectTeamStatRows(teams: any[], league: string): TeamStatRow[] {
   }));
 }
 
+const NHL_TEAM_STATS = [
+  { key: "shotsOnGoal", label: "Shots on Goal", aliases: ["shotsongoal", "sog", "shots"] },
+  { key: "penalties", label: "Penalties", aliases: ["penalties", "penaltyminutes", "pim"] },
+  { key: "powerPlayGoals", label: "Power Play Goals", aliases: ["powerplaygoals", "ppg"] },
+  { key: "faceoffWinPct", label: "Faceoff Win %", aliases: ["faceoffwinpercent", "faceoffwinpercentage", "faceoffpercentage", "faceoffpct", "fowpercent"] },
+  { key: "blockedShots", label: "Blocked Shots", aliases: ["blockedshots", "blocks", "blk", "bs"] },
+  { key: "hits", label: "Hits", aliases: ["hits", "hit", "ht", "h"] },
+];
+
+function readTeamIndexedStat(team: any, aliases: string[]): string | number | null {
+  const indexed = team?.teamStats || {};
+  for (const alias of aliases) {
+    const value = indexed[alias];
+    if (value != null && value !== "") return value;
+  }
+  return null;
+}
+
+function numericStat(value: any): number {
+  const n = Number(String(value ?? "").replace(/[^\d.-]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+}
+
+function sumGroupTotal(team: any, keys: string[]): number | null {
+  let total = 0;
+  let found = false;
+  const concepts = keys.map((key) => key.toUpperCase());
+  for (const group of team?.groups || []) {
+    if (!Array.isArray(group?.keys) || !group?.totals) continue;
+    group.keys.forEach((key: string, idx: number) => {
+      const upper = String(key || "").toUpperCase();
+      if (!concepts.includes(upper)) return;
+      const value = group.totals?.[idx] ?? group.totals?.[key];
+      if (value == null || value === "" || value === "—") return;
+      total += numericStat(value);
+      found = true;
+    });
+  }
+  return found ? total : null;
+}
+
+function faceoffPctFromGroups(team: any): string | null {
+  const won = sumGroupTotal(team, ["FOW"]);
+  const lost = sumGroupTotal(team, ["FOL"]);
+  if (won == null || lost == null || won + lost <= 0) return null;
+  return `${Math.round((won / (won + lost)) * 1000) / 10}%`;
+}
+
+function nhlTeamStatValue(team: any, aliases: string[], fallbackKeys: string[], isFaceoff = false) {
+  const direct = readTeamIndexedStat(team, aliases);
+  if (direct != null) return direct;
+  if (isFaceoff) return faceoffPctFromGroups(team) || "—";
+  const summed = sumGroupTotal(team, fallbackKeys);
+  return summed == null ? "—" : summed;
+}
+
+function collectNhlTeamStatRows(teams: any[]): TeamStatRow[] {
+  return NHL_TEAM_STATS.map((row) => {
+    const fallbackKeys =
+      row.key === "shotsOnGoal" ? ["SOG", "S"] :
+      row.key === "penalties" ? ["PIM"] :
+      row.key === "powerPlayGoals" ? ["PPG"] :
+      row.key === "blockedShots" ? ["BS"] :
+      row.key === "hits" ? ["HT", "H"] :
+      [];
+    return {
+      key: row.key,
+      label: row.label,
+      away: nhlTeamStatValue(teams[0], row.aliases, fallbackKeys, row.key === "faceoffWinPct"),
+      home: nhlTeamStatValue(teams[1], row.aliases, fallbackKeys, row.key === "faceoffWinPct"),
+    };
+  });
+}
+
 function StatGroup({
   group,
   league,
@@ -626,7 +723,7 @@ function StatGroup({
                 className="boxscore-player-stat-head text-left px-3 py-2 font-medium sticky left-0 z-10"
                 style={{ background: "var(--surface)" }}
               >
-                {league === "mlb" ? displayGroupName(league, group, groupIndex) : "Player"}
+                {displayGroupName(league, group, groupIndex)}
               </th>
               {columnKeys.map((k: string) => (
                 <th
@@ -634,7 +731,7 @@ function StatGroup({
                   className="text-right px-2 py-2 font-medium tabular-nums whitespace-nowrap"
                   title={describeKey(league, k)}
                 >
-                  {canonicalLabel(k)}
+                  {statHeaderLabel(league, k)}
                 </th>
               ))}
             </tr>
@@ -731,7 +828,67 @@ function displayGroupName(
     if (groupIndex === 0) return "Hitters";
     if (groupIndex === 1) return "Pitchers";
   }
+  if (league === "nhl") {
+    const keys: string[] = Array.isArray(group?.keys) ? group.keys : [];
+    if (looksLikeGoalies(group, keys)) return "Goalies";
+    if (looksLikeDefensemen(group)) return "Defensemen";
+    if (looksLikeForwards(group)) return "Forwards";
+  }
   return raw;
+}
+
+function orderedGroups(groups: any[], league: string): any[] {
+  if (league !== "nhl") return groups || [];
+  const expanded = (groups || []).flatMap((group) => splitNhlSkaterGroup(group));
+  return expanded.sort((a, b) => nhlGroupRank(a) - nhlGroupRank(b));
+}
+
+function nhlGroupRank(group: any): number {
+  const keys: string[] = Array.isArray(group?.keys) ? group.keys : [];
+  if (looksLikeGoalies(group, keys)) return 0;
+  if (looksLikeForwards(group)) return 1;
+  if (looksLikeDefensemen(group)) return 2;
+  return 3;
+}
+
+function looksLikeForwards(group: any): boolean {
+  const name = String(group?.name || group?.displayName || "").toLowerCase();
+  if (/forward|offense|skater/.test(name)) return !/defen/.test(name);
+  const positions = (group?.athletes || []).map((p: any) => String(p?.position || "").toUpperCase());
+  return positions.some((p: string) => ["C", "LW", "RW", "F"].includes(p));
+}
+
+function looksLikeDefensemen(group: any): boolean {
+  const name = String(group?.name || group?.displayName || "").toLowerCase();
+  if (/defen|defense|defence/.test(name)) return true;
+  const positions = (group?.athletes || []).map((p: any) => String(p?.position || "").toUpperCase());
+  return positions.length > 0 && positions.every((p: string) => p === "D" || p === "LD" || p === "RD");
+}
+
+function splitNhlSkaterGroup(group: any): any[] {
+  const keys: string[] = Array.isArray(group?.keys) ? group.keys : [];
+  if (looksLikeGoalies(group, keys) || !Array.isArray(group?.athletes)) return [group];
+
+  const forwards = group.athletes.filter((p: any) => {
+    const pos = String(p?.position || "").toUpperCase();
+    return ["C", "LW", "RW", "F"].includes(pos);
+  });
+  const defensemen = group.athletes.filter((p: any) => {
+    const pos = String(p?.position || "").toUpperCase();
+    return ["D", "LD", "RD"].includes(pos);
+  });
+  const other = group.athletes.filter((p: any) => {
+    const pos = String(p?.position || "").toUpperCase();
+    return !["C", "LW", "RW", "F", "D", "LD", "RD"].includes(pos);
+  });
+
+  if (!forwards.length || !defensemen.length) return [group];
+
+  return [
+    { ...group, name: "Forwards", athletes: forwards },
+    { ...group, name: "Defensemen", athletes: defensemen },
+    ...(other.length ? [{ ...group, name: "Skaters", athletes: other }] : []),
+  ];
 }
 
 function withBasketballSeparators(players: any[], league: string): any[] {

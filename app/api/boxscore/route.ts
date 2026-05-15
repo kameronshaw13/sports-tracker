@@ -68,6 +68,80 @@ function resolveMlbId(name: string | null | undefined, lookup: Map<string, numbe
   return null;
 }
 
+function readStatValue(stat: any): string | number | null {
+  const value = stat?.displayValue ?? stat?.value ?? stat?.summary ?? stat?.text;
+  if (value == null || value === "") return null;
+  return value;
+}
+
+function normalizeStatName(value: any): string {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[%]/g, " percent")
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+function statCandidateNames(stat: any): string[] {
+  return [
+    stat?.name,
+    stat?.displayName,
+    stat?.shortDisplayName,
+    stat?.abbreviation,
+    stat?.label,
+    stat?.description,
+  ].filter(Boolean).map(normalizeStatName);
+}
+
+function indexTeamStats(source: any): Record<string, string | number> {
+  const out: Record<string, string | number> = {};
+  const lists = [
+    source?.statistics,
+    source?.stats,
+    source?.team?.statistics,
+    source?.team?.stats,
+  ].flat().filter(Boolean);
+  if (!Array.isArray(lists)) return out;
+  for (const stat of lists) {
+    const value = readStatValue(stat);
+    if (value == null) continue;
+    for (const name of statCandidateNames(stat)) {
+      if (name) out[name] = value;
+    }
+  }
+  return out;
+}
+
+function buildLineScore(league: string, competitors: any[], extractTotal: (c: any, names: string[], fallback?: string | number) => any) {
+  const periodCount = league === "nba" || league === "cbb"
+    ? 4
+    : league === "nhl"
+      ? 3
+      : Math.max(0, ...competitors.map((c: any) => Array.isArray(c?.linescores) ? c.linescores.length : 0));
+
+  if (!periodCount) return null;
+
+  return {
+    league,
+    columns: Array.from({ length: periodCount }, (_, i) => String(i + 1)),
+    totalLabel: league === "mlb" ? "R" : "T",
+    showHitsErrors: league === "mlb",
+    teams: competitors.map((c: any) => ({
+      id: c.id,
+      homeAway: c.homeAway,
+      abbr: c.team?.abbreviation,
+      logo: c.team?.logos?.[0]?.href || c.team?.logo,
+      total: c.score ?? "0",
+      runs: c.score ?? "0",
+      hits: extractTotal(c, ["hits", "h"], "0"),
+      errors: extractTotal(c, ["errors", "error", "e"], "0"),
+      innings: Array.from({ length: periodCount }, (_, i) => {
+        const score = c.linescores?.[i]?.displayValue ?? c.linescores?.[i]?.value;
+        return score == null || score === "" ? "–" : score;
+      }),
+    })),
+  };
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const league = searchParams.get("league");
@@ -116,19 +190,28 @@ export async function GET(req: NextRequest) {
       return fallback;
     };
 
-    const lineScore = league === "mlb" ? {
-      innings: Math.max(0, ...competitors.map((c: any) => Array.isArray(c?.linescores) ? c.linescores.length : 0)),
-      teams: competitors.map((c: any) => ({
-        id: c.id,
-        homeAway: c.homeAway,
-        abbr: c.team?.abbreviation,
-        logo: c.team?.logos?.[0]?.href || c.team?.logo,
-        runs: c.score ?? "0",
-        hits: extractTotal(c, ["hits", "h"], "0"),
-        errors: extractTotal(c, ["errors", "error", "e"], "0"),
-        innings: (c.linescores || []).map((x: any) => x.displayValue ?? x.value ?? "0"),
-      })),
-    } : null;
+    const lineScore = ["mlb", "nba", "cbb", "nhl"].includes(league)
+      ? buildLineScore(league, competitors, extractTotal)
+      : null;
+
+    const teamStatSources = [
+      ...(Array.isArray(data?.boxscore?.teams) ? data.boxscore.teams : []),
+      ...(Array.isArray(data?.boxscore?.teamStats) ? data.boxscore.teamStats : []),
+      ...competitors,
+    ];
+    const teamStatsById = new Map<string, Record<string, string | number>>();
+    for (const source of teamStatSources) {
+      const ids = [
+        source?.id,
+        source?.team?.id,
+        source?.teamId,
+        source?.team?.uid,
+        source?.uid,
+      ].filter(Boolean).map(String);
+      const indexed = indexTeamStats(source);
+      if (!ids.length || !Object.keys(indexed).length) continue;
+      for (const id of ids) teamStatsById.set(id, indexed);
+    }
 
     const teams = (data?.boxscore?.players || []).map((teamBox: any) => {
       const teamInfo = teamBox.team;
@@ -167,6 +250,7 @@ export async function GET(req: NextRequest) {
           abbr: teamInfo?.abbreviation,
           logo: teamInfo?.logos?.[0]?.href || teamInfo?.logo,
         },
+        teamStats: teamStatsById.get(String(teamInfo?.id || "")) || {},
         groups,
       };
     });

@@ -548,7 +548,7 @@ function GenericTabbedPlays({ data, error, isLoading, emptyText }: { data: any; 
 
   return (
     <div className="space-y-3 generic-gamecast-shell">
-      <div className="grid grid-cols-3 gap-1 rounded-xl p-1" style={{ background: "var(--surface-2)" }}>
+      <div className="gamecast-generic-tabs grid grid-cols-3">
         <GamecastTab label="Live" active={tab === "live"} onClick={() => setTab("live")} />
         <GamecastTab label="Scoring" active={tab === "scoring"} onClick={() => setTab("scoring")} />
         <GamecastTab label="Plays" active={tab === "plays"} onClick={() => setTab("plays")} />
@@ -594,7 +594,7 @@ function GenericPeriodGroups({ sections, home, away, emphasizeScoring = false }:
 
 function GenericPlayList({ plays, home, away, emphasizeScoring = false }: { plays: any[]; home?: TeamMeta; away?: TeamMeta; emphasizeScoring?: boolean }) {
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+    <div className="gamecast-generic-list overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
       {plays.map((p: any) => {
         const team = p.homeAway === "home" ? home : p.homeAway === "away" ? away : null;
         const playText = [p.clock, cleanResultText(p.text)].filter(Boolean).join(", ");

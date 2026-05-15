@@ -204,7 +204,7 @@
 }
 
 .generic-gamecast-shell .gamecast-toggle-btn {
-  padding-top: .36rem !important;
+  padding-top: .28rem !important;
   line-height: 1.05 !important;
 }
 
@@ -212,22 +212,22 @@
   display: flex !important;
   align-items: center !important;
   min-height: 1.74rem !important;
-  padding-top: .26rem !important;
+  padding-top: .12rem !important;
   padding-bottom: .12rem !important;
   line-height: 1.28 !important;
 }
 
 .gamecast-half-rows details summary {
-  padding-top: .96rem !important;
-  padding-bottom: .78rem !important;
+  padding-top: .86rem !important;
+  padding-bottom: .74rem !important;
 }
 
 .gamecast-play-text,
 .gamecast-half-rows details summary .text-sm,
 .gamecast-scoring-text {
   color: var(--score-meta, rgba(255, 248, 236, 0.86)) !important;
-  padding-top: .22rem !important;
-  transform: translateY(.08rem) !important;
+  padding-top: .12rem !important;
+  transform: translateY(.02rem) !important;
 }
 
 .gamecast-play-text.is-scoring-play,
@@ -236,13 +236,38 @@
   font-weight: 900 !important;
 }
 
-.generic-gamecast-shell .rounded-2xl > div > .flex {
+.generic-gamecast-shell .gamecast-generic-list > div > .flex {
   align-items: center !important;
 }
 
-.generic-gamecast-shell .rounded-2xl > div {
-  padding-top: .86rem !important;
-  padding-bottom: .72rem !important;
+.generic-gamecast-shell .gamecast-generic-list > div {
+  padding-top: .76rem !important;
+  padding-bottom: .68rem !important;
+}
+
+.gamecast-generic-tabs {
+  background: transparent !important;
+  border-top: 1px solid var(--border) !important;
+  border-bottom: 1px solid var(--border) !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.gamecast-generic-tabs .gamecast-toggle-btn {
+  border-radius: 0 !important;
+  background: transparent !important;
+  min-height: 2.55rem !important;
+}
+
+.gamecast-generic-tabs .gamecast-toggle-btn.is-active {
+  background: transparent !important;
+}
+
+.gamecast-generic-list {
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-radius: 0 !important;
 }
 
 .boxscore-stat-scroll table,
@@ -283,6 +308,18 @@
   align-items: baseline !important;
   gap: .14rem !important;
   text-decoration: none !important;
+}
+
+.boxscore-stat-scroll thead th:first-child,
+.boxscore-player-name {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 12 !important;
+  min-width: 10rem !important;
+}
+
+.boxscore-stat-scroll thead th:first-child {
+  z-index: 18 !important;
 }
 
 .boxscore-player-position {

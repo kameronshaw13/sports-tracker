@@ -413,6 +413,11 @@ function isMinorBaseballEvent(text: string, type?: string | null): boolean {
   return /defensive replacement|pitching change|mound visit|injury delay|delay|challeng|substitution|pinch-runner|pinch runner|coach visit|umpire/.test(value);
 }
 
+function isChallengeReviewEvent(text: string, type?: string | null): boolean {
+  const value = `${type || ""} ${text || ""}`.toLowerCase();
+  return /\bchalleng|review|overturned|stands|confirmed/.test(value);
+}
+
 function looksLikeAtBat(text: string, type?: string | null): boolean {
   const value = `${type || ""} ${text}`.toLowerCase();
   if (isMinorBaseballEvent(text, type)) return false;
@@ -443,6 +448,7 @@ function embeddedAtBatResult(p: any): { text: string; type: string | null } | nu
   for (const candidate of candidates) {
     const text = String(candidate || "").replace(/\s+/g, " ").trim();
     if (!text) continue;
+    if (isChallengeReviewEvent(text, type)) continue;
     if (isMinorBaseballEvent(text, type)) continue;
     if (looksLikeAtBat(text, type)) return { text, type };
   }
@@ -648,6 +654,16 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
     const embeddedFinal = atBatStem ? embeddedAtBatResult(p) : null;
     const isFinalAtBat = looksLikeAtBat(base.text, base.type) && !/^pitch\s*\d*\s*:/i.test(base.text);
     const isPitchRow = !minor && !isFinalAtBat && isPitchEvent(base.text, base.type);
+
+    if (atBatStem && isChallengeReviewEvent(base.text, base.type)) {
+      const group = getOrCreateGroup(`${base.period}-${base.halfInning || "x"}-${atBatStem}`, base, idx, sortKey);
+      if (base.batter && !group.batter) group.batter = base.batter;
+      if (base.pitcher && !group.pitcher) group.pitcher = base.pitcher;
+      if (!group.teamId && base.teamId) group.teamId = base.teamId;
+      if (!group.homeAway && base.homeAway) group.homeAway = base.homeAway;
+      pushUnique(group.pitches, [pitchTextFromRow(base.text, base.type)]);
+      continue;
+    }
 
     if (atBatStem && (intro || isPitchRow || isFinalAtBat || embeddedFinal)) {
       const group = getOrCreateGroup(`${base.period}-${base.halfInning || "x"}-${atBatStem}`, base, idx, sortKey);
