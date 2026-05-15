@@ -16611,3 +16611,101 @@ main.view-scores .pull-refresh-indicator {
     left: 2.78rem !important;
   }
 }
+
+/* v209: align the GameTracker middle rail with the logo/score centerline.
+   This keeps the date/record row from v208, but makes the center column use
+   the same three-row rhythm as the team blocks: top metadata row, middle
+   visual row, bottom metadata row. The Final/time/inning label is centered
+   inside the same middle lane as the logos and scores instead of floating in
+   its own vertical slot. */
+.game-score-hero .game-score-team {
+  grid-template-rows: 1.1rem 5.15rem 1rem !important;
+  align-items: start !important;
+}
+
+.game-score-hero .game-score-team-main {
+  min-height: 5.15rem !important;
+  height: 5.15rem !important;
+  align-items: center !important;
+}
+
+.game-score-hero .game-score-logo-wrap,
+.game-score-hero .game-score-score {
+  align-self: center !important;
+}
+
+.game-score-hero .game-score-center {
+  top: 1.42rem !important;
+  display: grid !important;
+  grid-template-rows: 1.1rem 5.15rem 1rem !important;
+  row-gap: 0 !important;
+  align-content: start !important;
+  justify-items: center !important;
+}
+
+.game-score-hero .game-score-center-row-top,
+.game-score-hero .game-score-center-row-main,
+.game-score-hero .game-score-center-row-bottom {
+  width: max-content !important;
+  max-width: 100% !important;
+  min-height: 0 !important;
+  height: auto !important;
+  display: grid !important;
+  justify-items: center !important;
+  text-align: center !important;
+}
+
+.game-score-hero .game-score-center-row-top {
+  align-self: start !important;
+  align-items: start !important;
+  align-content: start !important;
+}
+
+.game-score-hero .game-score-center-row-main {
+  align-self: center !important;
+  align-items: center !important;
+  align-content: center !important;
+  row-gap: .16rem !important;
+}
+
+.game-score-hero .game-score-center-row-bottom {
+  align-self: start !important;
+  align-items: start !important;
+  align-content: start !important;
+  padding-top: .14rem !important;
+}
+
+.game-score-hero .game-score-status,
+.game-score-hero .game-score-status.is-pre,
+.game-score-hero .game-score-status.is-live,
+.game-score-hero .game-score-status.is-final {
+  align-self: center !important;
+  line-height: 1 !important;
+}
+
+.game-score-hero .game-score-date,
+.game-score-hero .game-score-record {
+  align-self: start !important;
+  line-height: 1 !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-hero .game-score-team {
+    grid-template-rows: 1.04rem 4.98rem .95rem !important;
+  }
+
+  .game-score-hero .game-score-team-main {
+    min-height: 4.98rem !important;
+    height: 4.98rem !important;
+  }
+
+  .game-score-hero .game-score-center {
+    top: 1.42rem !important;
+    grid-template-rows: 1.04rem 4.98rem .95rem !important;
+    row-gap: 0 !important;
+  }
+
+  .game-score-hero .game-score-center-row-bottom {
+    padding-top: .12rem !important;
+  }
+}
