@@ -27,7 +27,11 @@
 }
 
 .player-detail-topbar button {
+  width: 3.05rem !important;
+  height: 3.05rem !important;
+  min-height: 3.05rem !important;
   transform: translateY(-.02rem) !important;
+  margin-left: -.24rem !important;
 }
 
 .player-detail-hero-main {
@@ -38,6 +42,11 @@
 .player-detail-feature-stats {
   padding-top: .04rem !important;
   padding-bottom: .84rem !important;
+}
+
+.player-detail-feature-stats strong {
+  font-size: 1.08rem !important;
+  line-height: 1.02 !important;
 }
 
 .player-detail-tabs {
@@ -59,7 +68,7 @@
 .player-detail-body {
   position: relative;
   z-index: 1;
-  padding-top: calc(14.42rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
+  padding-top: calc(14.82rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
 }
 
 .player-detail-season-heading {
@@ -145,7 +154,7 @@
 .gamecast-pitcher-tag span:last-child,
 .gamecast-pitch-label {
   color: var(--score-meta, rgba(255, 248, 236, 0.86)) !important;
-  font-size: .64rem !important;
+  font-size: .7rem !important;
   line-height: 1.32 !important;
   font-weight: 500 !important;
   text-shadow: none !important;
@@ -153,7 +162,7 @@
 
 .gamecast-play-text.is-scoring-play,
 .gamecast-generic-play-text.is-scoring-play {
-  color: color-mix(in srgb, var(--gamecast-half-color, var(--accent)) 44%, var(--score-meta, rgba(255, 248, 236, 0.86)) 56%) !important;
+  color: var(--text) !important;
   font-size: .8rem !important;
   line-height: 1.32 !important;
   font-weight: 675 !important;
@@ -189,6 +198,6 @@
   }
 
   .player-detail-body {
-    padding-top: calc(13.98rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
+    padding-top: calc(14.38rem + max(0px, calc(env(safe-area-inset-top, 0px) - 1.04rem))) !important;
   }
 }
