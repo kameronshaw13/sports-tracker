@@ -62,6 +62,8 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
   const { home, away, status, situation, odds } = data;
   const isLive = status?.state === "in";
   const isPregame = status?.state === "pre";
+  const showLineupTab = league === "mlb" && isPregame;
+  const visibleTab: TabId = activeTab === "lineup" && !showLineupTab ? "main" : activeTab;
   const statusName = String(status?.statusName || "").toUpperCase();
   const isNonPlayed = /POSTPONED|CANCELED|CANCELLED|SUSPENDED/.test(statusName);
 
@@ -72,17 +74,17 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
         <ScoreboardHero league={league} home={home} away={away} status={status} situation={situation} odds={odds} eventId={eventId} gameDate={data?.date} onTeamClick={onTeamClick} />
         <div className="game-detail-tabs" role="tablist">
           <div className="flex overflow-x-auto no-scrollbar px-4 gap-7">
-            <TabBtn label="GameTracker" isActive={activeTab === "main"} onClick={() => setActiveTab("main")} />
-            {isPregame && <TabBtn label="Lineup" isActive={activeTab === "lineup"} onClick={() => setActiveTab("lineup")} />}
-            <TabBtn label="Box Score" isActive={activeTab === "boxscore"} onClick={() => setActiveTab("boxscore")} />
+            <TabBtn label="GameTracker" isActive={visibleTab === "main"} onClick={() => setActiveTab("main")} />
+            {showLineupTab && <TabBtn label="Lineup" isActive={visibleTab === "lineup"} onClick={() => setActiveTab("lineup")} />}
+            <TabBtn label="Box Score" isActive={visibleTab === "boxscore"} onClick={() => setActiveTab("boxscore")} />
           </div>
         </div>
       </div>
       <div className="game-detail-content">
-        {activeTab === "main" && !isNonPlayed && <Gamecast league={league} eventId={eventId} isLive={isLive} situation={situation} onPlayerClick={onPlayerClick ? (p) => onPlayerClick(p, "main") : undefined} />}
-        {activeTab === "main" && isNonPlayed && <div className="m-4 p-6 text-center text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>This game was {nonPlayedLabel(statusName).toLowerCase()}.</div>}
-        {activeTab === "lineup" && isPregame && <GameLineup league={league} eventId={eventId} />}
-        {activeTab === "boxscore" && <Boxscore league={league} eventId={eventId} isLive={isLive} onPlayerClick={onPlayerClick ? (p) => onPlayerClick(p, "boxscore") : undefined} />}
+        {visibleTab === "main" && !isNonPlayed && <Gamecast league={league} eventId={eventId} isLive={isLive} situation={situation} onPlayerClick={onPlayerClick ? (p) => onPlayerClick(p, "main") : undefined} />}
+        {visibleTab === "main" && isNonPlayed && <div className="m-4 p-6 text-center text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>This game was {nonPlayedLabel(statusName).toLowerCase()}.</div>}
+        {visibleTab === "lineup" && showLineupTab && <GameLineup league={league} eventId={eventId} />}
+        {visibleTab === "boxscore" && <Boxscore league={league} eventId={eventId} isLive={isLive} onPlayerClick={onPlayerClick ? (p) => onPlayerClick(p, "boxscore") : undefined} />}
       </div>
     </div>
   );

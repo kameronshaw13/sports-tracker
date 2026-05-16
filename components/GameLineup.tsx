@@ -66,8 +66,22 @@ export default function GameLineup({ league, eventId }: Props) {
         {players.length ? players.map((player: any, index: number) => (
           <div key={`${player.id || player.name || index}-${index}`} className="game-lineup-row">
             <div className="game-lineup-order tabular-nums">{index + 1}</div>
+            <div className="game-lineup-headshot-wrap">
+              {player.headshot ? (
+                <Image
+                  src={player.headshot}
+                  alt=""
+                  width={38}
+                  height={38}
+                  className="game-lineup-headshot"
+                  unoptimized
+                />
+              ) : (
+                <span>{initialsFor(player.name || player.shortName)}</span>
+              )}
+            </div>
             <div className="game-lineup-player">
-              <div className="game-lineup-name">{player.shortName || player.name || "Player"}</div>
+              <div className="game-lineup-name">{player.name || player.shortName || "Player"}</div>
               <div className="game-lineup-meta">
                 {[player.position, player.jersey ? `#${player.jersey}` : null].filter(Boolean).join(" · ")}
               </div>
@@ -89,4 +103,13 @@ function lineupPlayers(team: any) {
     if (a?.starter !== b?.starter) return a?.starter ? -1 : 1;
     return 0;
   });
+}
+
+function initialsFor(name: string | null | undefined) {
+  const parts = String(name || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!parts.length) return "–";
+  return parts.slice(0, 2).map((p) => p[0]?.toUpperCase()).join("");
 }

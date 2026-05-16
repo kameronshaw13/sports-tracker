@@ -1121,3 +1121,103 @@ body::-webkit-scrollbar,
 .generic-gamecast-shell .gamecast-generic-play-text {
   transform: translateY(.13rem) !important;
 }
+
+/* v180: final-load overrides for box score text, lineup rows, and GameTracker header lanes */
+.game-score-hero {
+  --gt-middle-axis: 4.27rem;
+  --gt-bottom-row-axis: 6.21rem;
+}
+
+.game-score-hero .game-score-score {
+  transform: translateY(calc(-50% + .28rem)) !important;
+}
+
+.game-score-hero .game-score-center-row-main:has(.game-score-status.is-live) {
+  top: calc(var(--gt-middle-axis) - .42rem) !important;
+}
+
+.game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {
+  top: calc(var(--gt-bottom-row-axis) - .48rem) !important;
+  transform: translate(-42%, 0) !important;
+}
+
+.boxscore-team-toggle-btn,
+.boxscore-team-toggle-mid {
+  min-height: 2.12rem !important;
+  height: 2.12rem !important;
+  padding-top: .26rem !important;
+}
+
+.boxscore-team-toggle-btn.is-active {
+  min-height: 2.12rem !important;
+  height: 2.12rem !important;
+}
+
+.boxscore-split-cell {
+  padding-top: .08rem !important;
+}
+
+.boxscore-split-table .boxscore-player-name button {
+  transform: translateY(.04rem) !important;
+}
+
+.boxscore-split-stats-grid .boxscore-stat-value,
+.boxscore-split-stats-grid .boxscore-stat-head-cell,
+.boxscore-split-name-rail .boxscore-split-head,
+.boxscore-split-name-rail .boxscore-split-separator {
+  transform: translateY(.04rem) !important;
+}
+
+.game-lineup-shell {
+  background: color-mix(in srgb, var(--surface) 90%, #8a603a 10%) !important;
+}
+
+.game-lineup-toggle {
+  padding: .62rem .76rem !important;
+}
+
+.game-lineup-toggle-btn {
+  min-height: 2.12rem !important;
+  height: 2.12rem !important;
+  padding-top: .18rem !important;
+  border-radius: 999px !important;
+}
+
+.game-lineup-row {
+  grid-template-columns: 2.15rem 2.55rem minmax(0, 1fr) !important;
+  min-height: 3.42rem !important;
+  padding: .42rem .9rem .38rem !important;
+}
+
+.game-lineup-headshot-wrap {
+  width: 2.18rem !important;
+  height: 2.18rem !important;
+  border-radius: 999px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: color-mix(in srgb, var(--surface-2) 72%, #8a603a 18%) !important;
+  color: var(--text) !important;
+  font-size: .72rem !important;
+  font-weight: 900 !important;
+}
+
+.game-lineup-headshot {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center top !important;
+}
+
+.game-lineup-name,
+.game-lineup-meta {
+  transform: translateY(.06rem) !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-hero {
+    --gt-middle-axis: 4.21rem;
+    --gt-bottom-row-axis: 6.04rem;
+  }
+}
