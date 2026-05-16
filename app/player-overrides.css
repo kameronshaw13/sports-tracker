@@ -1244,7 +1244,7 @@ body::-webkit-scrollbar,
 }
 
 .game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {
-  top: calc(var(--gt-bottom-row-axis) - 1.62rem) !important;
+  top: calc(var(--gt-bottom-row-axis) - 1.98rem) !important;
   transform: translate(-50%, 0) !important;
 }
 
@@ -1253,12 +1253,18 @@ body::-webkit-scrollbar,
 }
 
 .game-score-hero .game-score-situation svg {
-  width: 3.25rem !important;
-  height: 2.65rem !important;
+  width: 3.02rem !important;
+  height: 2.46rem !important;
 }
 
 .game-score-hero .game-score-count {
-  font-size: .72rem !important;
+  font-size: .68rem !important;
+  line-height: 1 !important;
+}
+
+.gamecast-pitch-label {
+  padding-top: .04rem !important;
+  transform: translateY(-.1rem) !important;
   line-height: 1 !important;
 }
 
@@ -1270,15 +1276,20 @@ body::-webkit-scrollbar,
   }
 
   .game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {
-    top: calc(var(--gt-bottom-row-axis) - 1.48rem) !important;
+    top: calc(var(--gt-bottom-row-axis) - 1.82rem) !important;
   }
 
   .game-score-hero .game-score-situation svg {
-    width: 3rem !important;
-    height: 2.45rem !important;
+    width: 2.86rem !important;
+    height: 2.32rem !important;
   }
 
   .game-score-hero .game-score-count {
-    font-size: .68rem !important;
+    font-size: .65rem !important;
+  }
+
+  .gamecast-pitch-label {
+    padding-top: .03rem !important;
+    transform: translateY(-.08rem) !important;
   }
 }
