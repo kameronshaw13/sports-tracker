@@ -467,14 +467,16 @@ export async function GET(req: NextRequest) {
     const home = competitors.find((c: any) => c.homeAway === "home");
     const away = competitors.find((c: any) => c.homeAway === "away");
     const seriesInfo = extractSeriesInfo(data, comp, home, away, league);
-    const scoreboardSeriesInfo = (!seriesInfo.homeSeriesRecord || !seriesInfo.awaySeriesRecord || !seriesInfo.seriesGame)
+    const shouldUseScoresCardSeries =
+      SERIES_LEAGUES.has(league) && isPostseasonGame(data, comp, league);
+    const scoreboardSeriesInfo = shouldUseScoresCardSeries
       ? await loadScoreboardSeriesInfo(req.nextUrl.origin, league, eventId, header?.competitions?.[0]?.date)
       : null;
     if (scoreboardSeriesInfo) {
-      seriesInfo.summary = seriesInfo.summary || scoreboardSeriesInfo.summary;
-      seriesInfo.seriesGame = seriesInfo.seriesGame || scoreboardSeriesInfo.seriesGame;
-      seriesInfo.homeSeriesRecord = seriesInfo.homeSeriesRecord || scoreboardSeriesInfo.homeSeriesRecord;
-      seriesInfo.awaySeriesRecord = seriesInfo.awaySeriesRecord || scoreboardSeriesInfo.awaySeriesRecord;
+      seriesInfo.summary = scoreboardSeriesInfo.summary || seriesInfo.summary;
+      seriesInfo.seriesGame = scoreboardSeriesInfo.seriesGame || seriesInfo.seriesGame;
+      seriesInfo.homeSeriesRecord = scoreboardSeriesInfo.homeSeriesRecord || seriesInfo.homeSeriesRecord;
+      seriesInfo.awaySeriesRecord = scoreboardSeriesInfo.awaySeriesRecord || seriesInfo.awaySeriesRecord;
     }
     applyCompletedSeriesResult(seriesInfo, comp, home, away);
 

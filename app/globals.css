@@ -16716,8 +16716,8 @@ main.view-scores .pull-refresh-indicator {
    that axis so they no longer pull the Final/time label up or down. */
 .game-score-hero {
   --gt-top-row-axis: 1.42rem;
-  --gt-middle-axis: 4.02rem;
-  --gt-bottom-row-axis: 5.96rem;
+  --gt-middle-axis: 4.15rem;
+  --gt-bottom-row-axis: 6.09rem;
   --gt-logo-size: 3.58rem;
   --gt-logo-img-size: 3.36rem;
   --gt-score-height: 2.55rem;
@@ -16882,8 +16882,8 @@ main.view-scores .pull-refresh-indicator {
 @media (max-width: 420px) {
   .game-score-hero {
     --gt-top-row-axis: 1.42rem;
-    --gt-middle-axis: 3.96rem;
-    --gt-bottom-row-axis: 5.78rem;
+    --gt-middle-axis: 4.09rem;
+    --gt-bottom-row-axis: 5.91rem;
     --gt-logo-size: 3.34rem;
     --gt-logo-img-size: 3.14rem;
     --gt-score-height: 2.42rem;
