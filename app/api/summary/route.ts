@@ -47,6 +47,12 @@ function validSeriesRecord(record: any): string | null {
   return `${Number(m[1])}-${Number(m[2])}`;
 }
 
+function pickCompetitorSeriesRecord(c: any): string | null {
+  const records = Array.isArray(c?.records) ? c.records : [];
+  const series = records.find((r: any) => /series|playoff|vsopponent|vs opponent/i.test(String(r?.type || r?.name || "")));
+  return validSeriesRecord(series?.summary || series?.displayValue || series?.record);
+}
+
 function teamNameTokens(team: any): string[] {
   return [
     team?.team?.displayName,
@@ -143,6 +149,8 @@ function isPostseasonGame(data: any, comp: any, league: string): boolean {
     if (strings.some((s) => /\bgame\s+\d+\b|series\s+tied|leads\s+(?:the\s+)?series|wins\s+(?:the\s+)?series|won\s+(?:the\s+)?series/i.test(s))) {
       return true;
     }
+    const competitors = Array.isArray(comp?.competitors) ? comp.competitors : [];
+    if (competitors.some((c: any) => pickCompetitorSeriesRecord(c))) return true;
   }
   return false;
 }
@@ -185,6 +193,8 @@ function extractSeriesInfo(data: any, comp: any, home: any, away: any, league: s
     homeSeriesRecord = homeSeriesRecord || parsed.homeSeriesRecord;
     awaySeriesRecord = awaySeriesRecord || parsed.awaySeriesRecord;
   }
+  if (!homeSeriesRecord) homeSeriesRecord = pickCompetitorSeriesRecord(home);
+  if (!awaySeriesRecord) awaySeriesRecord = pickCompetitorSeriesRecord(away);
   if ((!homeSeriesRecord || !awaySeriesRecord) && strings.length) {
     const parsed = parseSeriesFromString(strings, home, away);
     homeSeriesRecord = homeSeriesRecord || parsed.homeSeriesRecord;

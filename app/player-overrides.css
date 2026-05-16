@@ -1004,7 +1004,7 @@ body::-webkit-scrollbar,
   overflow-y: hidden !important;
   -webkit-overflow-scrolling: touch !important;
   background: color-mix(in srgb, var(--surface) 90%, #8a603a 10%) !important;
-  padding-left: .16rem !important;
+  padding-left: .03rem !important;
 }
 
 .boxscore-split-stats-grid {
@@ -1097,4 +1097,9 @@ body::-webkit-scrollbar,
 
 .boxscore-split-table .boxscore-player-name.is-substitute-row button {
   padding-left: .95rem !important;
+}
+
+/* v171: close the locked-name/stat rail gap and lower generic hockey/basketball play text */
+.generic-gamecast-shell .gamecast-generic-play-text {
+  transform: translateY(.08rem) !important;
 }

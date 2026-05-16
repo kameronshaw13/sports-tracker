@@ -769,10 +769,11 @@ function StatGroup({
   const columnKeys = pickColumnKeys(group, league);
   const rows = withBasketballSeparators(visible, league);
   const isBasketball = league === "nba" || league === "cbb";
+  const isNhlGoalies = league === "nhl" && looksLikeGoalies(group, Array.isArray(group?.keys) ? group.keys : []);
   const displayRows = isBasketball && rows[0]?.__separator ? rows.slice(1) : rows;
   const railTitle = isBasketball && rows[0]?.__separator ? String(rows[0].label || "Starters") : groupTitle;
   const nameColumnWidth = 9.75;
-  const statColumnWidth = league === "nhl" ? 2.52 : league === "mlb" ? 2.52 : 2.58;
+  const statColumnWidth = isNhlGoalies ? 2.82 : league === "nhl" ? 2.52 : league === "mlb" ? 2.52 : 2.58;
   const endSpacerWidth = 1.05;
   const statsWidth = columnKeys.length * statColumnWidth + endSpacerWidth;
   const tableStyle = {
