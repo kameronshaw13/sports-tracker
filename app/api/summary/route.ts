@@ -39,6 +39,12 @@ function buildRecordString(wins: number, losses: number) {
   return `${wins}-${losses}`;
 }
 
+function textValue(value: any): string | null {
+  if (!value) return null;
+  if (typeof value === "string") return value;
+  return value.displayName || value.fullName || value.name || value.shortName || value.text || value.summary || null;
+}
+
 function validSeriesRecord(record: any): string | null {
   const text = String(record || "").trim();
   const m = text.match(/^(\d+)\s*[-–]\s*(\d+)$/);
@@ -280,10 +286,68 @@ async function loadScoreboardSeriesInfo(league: string, eventId: string, gameDat
       const competitors = comp?.competitors || [];
       const home = competitors.find((c: any) => c.homeAway === "home");
       const away = competitors.find((c: any) => c.homeAway === "away");
-      return extractSeriesInfo(event, comp, home, away, league);
+      const info = extractScoreboardSeriesInfo(event, comp, home, away, league);
+      if (info.homeSeriesRecord || info.awaySeriesRecord || info.seriesGame) return info;
     } catch {}
   }
   return null;
+}
+
+function extractScoreboardSeriesInfo(event: any, comp: any, home: any, away: any, league: string) {
+  if (!SERIES_LEAGUES.has(league)) {
+    return { summary: null, seriesGame: null, homeSeriesRecord: null, awaySeriesRecord: null };
+  }
+
+  const series = comp?.series || event?.series || event?.competitions?.[0]?.series || null;
+  const strings = Array.from(collectStrings({ series, notes: comp?.notes, status: comp?.status, event }));
+  const summary =
+    textValue(series?.summary) ||
+    textValue(series?.shortSummary) ||
+    textValue(series?.description) ||
+    textValue(series?.name) ||
+    textValue(comp?.notes?.[0]?.headline) ||
+    textValue(comp?.notes?.[0]?.text) ||
+    textValue(event?.note) ||
+    textValue(comp?.status?.type?.detail) ||
+    textValue(comp?.status?.type?.shortDetail) ||
+    strings.find((s) => /series|game\s+\d+/i.test(s)) ||
+    null;
+
+  const hasPostseasonSignal =
+    event?.season?.type === 3 ||
+    comp?.season?.type === 3 ||
+    !!summary ||
+    !!pickCompetitorSeriesRecord(home) ||
+    !!pickCompetitorSeriesRecord(away) ||
+    strings.some((s) => /\bgame\s+\d+\b|series\s+tied|lead[s]?\s+(?:the\s+)?series|win[s]?\s+(?:the\s+)?series|won\s+(?:the\s+)?series/i.test(s));
+
+  if (!hasPostseasonSignal) {
+    return { summary: null, seriesGame: null, homeSeriesRecord: null, awaySeriesRecord: null };
+  }
+
+  let seriesGame = series?.gameNumber ? `Game ${series.gameNumber}` : parseGameNumber(strings);
+  let { homeSeriesRecord, awaySeriesRecord } = parseSeriesFromString(strings, home, away);
+
+  const seriesCompetitors = Array.isArray(series?.competitors) ? series.competitors : [];
+  if (seriesCompetitors.length) {
+    const homeIds = [home?.id, home?.team?.id, home?.teamId].filter(Boolean).map(String);
+    const awayIds = [away?.id, away?.team?.id, away?.teamId].filter(Boolean).map(String);
+    for (const c of seriesCompetitors) {
+      const id = String(c?.id || c?.competitor?.id || c?.team?.id || "");
+      const wins = c?.wins ?? c?.competitor?.wins ?? c?.record?.wins;
+      const losses = c?.losses ?? c?.competitor?.losses ?? c?.record?.losses;
+      const record = validSeriesRecord(textValue(c?.record) || c?.summary || c?.displayValue || (wins != null && losses != null ? `${wins}-${losses}` : null));
+      if (!record) continue;
+      if (id && homeIds.includes(id) && !homeSeriesRecord) homeSeriesRecord = record;
+      if (id && awayIds.includes(id) && !awaySeriesRecord) awaySeriesRecord = record;
+    }
+  }
+
+  homeSeriesRecord = homeSeriesRecord || pickCompetitorSeriesRecord(home);
+  awaySeriesRecord = awaySeriesRecord || pickCompetitorSeriesRecord(away);
+  if (!seriesGame && summary) seriesGame = parseGameNumber([summary]);
+
+  return { summary, seriesGame, homeSeriesRecord, awaySeriesRecord };
 }
 
 export async function GET(req: NextRequest) {
