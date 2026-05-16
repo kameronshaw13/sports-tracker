@@ -53,6 +53,69 @@ function validSeriesRecord(record: any): string | null {
   return `${Number(m[1])}-${Number(m[2])}`;
 }
 
+function parseSeriesRecordParts(record: any): { wins: number; losses: number } | null {
+  const valid = validSeriesRecord(record);
+  if (!valid) return null;
+  const [wins, losses] = valid.split("-").map(Number);
+  return Number.isFinite(wins) && Number.isFinite(losses) ? { wins, losses } : null;
+}
+
+function seriesGameNumber(value: any): number | null {
+  const m = String(value || "").match(/\bGame\s+(\d+)\b/i);
+  if (!m) return null;
+  const num = Number(m[1]);
+  return Number.isFinite(num) ? num : null;
+}
+
+function isFinalCompetition(comp: any): boolean {
+  const status = comp?.status?.type;
+  return status?.completed === true || status?.state === "post";
+}
+
+function competitorScore(c: any): number | null {
+  const num = Number(c?.score);
+  return Number.isFinite(num) ? num : null;
+}
+
+function winnerSide(home: any, away: any): "home" | "away" | null {
+  if (home?.winner === true) return "home";
+  if (away?.winner === true) return "away";
+  const homeScore = competitorScore(home);
+  const awayScore = competitorScore(away);
+  if (homeScore == null || awayScore == null || homeScore === awayScore) return null;
+  return homeScore > awayScore ? "home" : "away";
+}
+
+function applyCompletedSeriesResult(seriesInfo: {
+  seriesGame: string | null;
+  homeSeriesRecord: string | null;
+  awaySeriesRecord: string | null;
+}, comp: any, home: any, away: any) {
+  if (!isFinalCompetition(comp)) return;
+  const gameNumber = seriesGameNumber(seriesInfo.seriesGame || comp?.status?.type?.detail || comp?.status?.type?.shortDetail);
+  const homeRecord = parseSeriesRecordParts(seriesInfo.homeSeriesRecord);
+  const awayRecord = parseSeriesRecordParts(seriesInfo.awaySeriesRecord);
+  const winner = winnerSide(home, away);
+  if (!gameNumber || !homeRecord || !awayRecord || !winner) return;
+
+  // ESPN often leaves the summary endpoint on the pregame series record after
+  // a playoff game ends. If the records add up to one fewer game than the
+  // current Game number, advance the winner so the GameTracker header matches
+  // the scores card after finals and series-clinching games.
+  const looksPregame =
+    homeRecord.wins + homeRecord.losses === gameNumber - 1 &&
+    awayRecord.wins + awayRecord.losses === gameNumber - 1;
+  if (!looksPregame) return;
+
+  if (winner === "home") {
+    seriesInfo.homeSeriesRecord = buildRecordString(homeRecord.wins + 1, homeRecord.losses);
+    seriesInfo.awaySeriesRecord = buildRecordString(awayRecord.wins, awayRecord.losses + 1);
+  } else {
+    seriesInfo.homeSeriesRecord = buildRecordString(homeRecord.wins, homeRecord.losses + 1);
+    seriesInfo.awaySeriesRecord = buildRecordString(awayRecord.wins + 1, awayRecord.losses);
+  }
+}
+
 function pickCompetitorSeriesRecord(c: any): string | null {
   const records = Array.isArray(c?.records) ? c.records : [];
   const series = records.find((r: any) => /series|playoff|postseason|vs\s*\.?\s*opponent|vsopponent|head.?to.?head/i.test(String(r?.type || r?.name || r?.displayName || "")));
@@ -413,6 +476,7 @@ export async function GET(req: NextRequest) {
       seriesInfo.homeSeriesRecord = seriesInfo.homeSeriesRecord || scoreboardSeriesInfo.homeSeriesRecord;
       seriesInfo.awaySeriesRecord = seriesInfo.awaySeriesRecord || scoreboardSeriesInfo.awaySeriesRecord;
     }
+    applyCompletedSeriesResult(seriesInfo, comp, home, away);
 
     const plays = (data?.plays || []).slice().reverse().slice(0, 50).map((p: any) => ({
       id: p.id,

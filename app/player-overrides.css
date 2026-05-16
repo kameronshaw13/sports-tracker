@@ -1109,7 +1109,13 @@ body::-webkit-scrollbar,
 .boxscore-split-table.is-goalie-static .boxscore-split-stats-grid {
   width: 100% !important;
   min-width: 100% !important;
-  justify-content: end !important;
+  justify-content: stretch !important;
+}
+
+.boxscore-split-table.is-goalie-static .boxscore-goalie-stat-fill,
+.boxscore-split-table.is-goalie-static .boxscore-goalie-stat-tail {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 .generic-gamecast-shell .gamecast-generic-play-text {

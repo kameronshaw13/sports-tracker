@@ -775,14 +775,16 @@ function StatGroup({
   const nameColumnWidth = 9.75;
   const statColumnWidth = league === "nhl" ? 2.52 : league === "mlb" ? 2.52 : 2.58;
   const endSpacerWidth = 1.05;
+  const goalieEndSpacerWidth = 0.72;
   const statsWidth = columnKeys.length * statColumnWidth + endSpacerWidth;
   const statGridTemplate = isNhlGoalies
-    ? `repeat(${columnKeys.length}, var(--boxscore-stat-column-width))`
+    ? `minmax(.52rem, 1fr) repeat(${columnKeys.length}, var(--boxscore-stat-column-width)) var(--boxscore-goalie-stat-end-spacer-width)`
     : `repeat(${columnKeys.length}, var(--boxscore-stat-column-width)) var(--boxscore-stat-end-spacer-width)`;
   const tableStyle = {
     "--player-name-column-width": `${nameColumnWidth.toFixed(2)}rem`,
     "--boxscore-stat-column-width": `${statColumnWidth.toFixed(2)}rem`,
     "--boxscore-stat-end-spacer-width": `${endSpacerWidth.toFixed(2)}rem`,
+    "--boxscore-goalie-stat-end-spacer-width": `${goalieEndSpacerWidth.toFixed(2)}rem`,
     "--boxscore-stat-columns-width": `${statsWidth.toFixed(2)}rem`,
   } as CSSProperties;
 
@@ -828,30 +830,45 @@ function StatGroup({
             className="boxscore-split-stats-grid"
             style={{ gridTemplateColumns: statGridTemplate }}
           >
+            {isNhlGoalies && <div className="boxscore-split-cell boxscore-split-head boxscore-goalie-stat-fill" aria-hidden="true" />}
             {columnKeys.map((k: string) => (
               <div key={`head-${k}`} className="boxscore-split-cell boxscore-split-head boxscore-stat-head-cell" title={describeKey(league, k)}>
                 {statHeaderLabel(league, k)}
               </div>
             ))}
-            {!isNhlGoalies && <div className="boxscore-split-cell boxscore-split-head boxscore-stat-end-spacer" aria-hidden="true" />}
+            {isNhlGoalies ? (
+              <div className="boxscore-split-cell boxscore-split-head boxscore-goalie-stat-tail" aria-hidden="true" />
+            ) : (
+              <div className="boxscore-split-cell boxscore-split-head boxscore-stat-end-spacer" aria-hidden="true" />
+            )}
             {displayRows.map((row: any, idx: number) =>
               row.__separator ? (
                 <Fragment key={`stat-sep-${row.label}-${idx}`}>
+                  {isNhlGoalies && <div key={`stat-sep-${row.label}-${idx}-lead`} className="boxscore-split-cell boxscore-split-separator boxscore-goalie-stat-fill" aria-hidden="true" />}
                   {columnKeys.map((k: string) => (
                     <div key={`stat-sep-${row.label}-${idx}-${k}`} className="boxscore-split-cell boxscore-split-separator boxscore-stat-head-cell" title={describeKey(league, k)}>
                       {isBasketball ? statHeaderLabel(league, k) : ""}
                     </div>
                   ))}
-                  {!isNhlGoalies && <div key={`stat-sep-${row.label}-${idx}-spacer`} className="boxscore-split-cell boxscore-split-separator boxscore-stat-end-spacer" aria-hidden="true" />}
+                  {isNhlGoalies ? (
+                    <div key={`stat-sep-${row.label}-${idx}-tail`} className="boxscore-split-cell boxscore-split-separator boxscore-goalie-stat-tail" aria-hidden="true" />
+                  ) : (
+                    <div key={`stat-sep-${row.label}-${idx}-spacer`} className="boxscore-split-cell boxscore-split-separator boxscore-stat-end-spacer" aria-hidden="true" />
+                  )}
                 </Fragment>
               ) : (
                 <Fragment key={`stat-row-${row.id || idx}`}>
+                  {isNhlGoalies && <div key={`${row.id || idx}-goalie-lead`} className="boxscore-split-cell boxscore-goalie-stat-fill" aria-hidden="true" />}
                   {columnKeys.map((k: string) => (
                     <div key={`${row.id || idx}-${k}`} className="boxscore-split-cell boxscore-stat-value tabular-nums">
                       {getBoxscoreStat(row, k)}
                     </div>
                   ))}
-                  {!isNhlGoalies && <div key={`${row.id || idx}-spacer`} className="boxscore-split-cell boxscore-stat-end-spacer" aria-hidden="true" />}
+                  {isNhlGoalies ? (
+                    <div key={`${row.id || idx}-goalie-tail`} className="boxscore-split-cell boxscore-goalie-stat-tail" aria-hidden="true" />
+                  ) : (
+                    <div key={`${row.id || idx}-spacer`} className="boxscore-split-cell boxscore-stat-end-spacer" aria-hidden="true" />
+                  )}
                 </Fragment>
               ),
             )}
