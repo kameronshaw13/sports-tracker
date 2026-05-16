@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { CSSProperties } from "react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
 
@@ -376,22 +376,44 @@ function isMlbPitchingGroup(group: any): boolean {
 
 function getBoxscoreStat(row: any, key: string): string | number {
   if (key === "AB") {
-    const combo = row.stats?.["H-AB"] ?? row.stats?.["H_AB"] ?? row.stats?.["H/AB"];
+    const combo = readRowStat(row, ["H-AB", "H_AB", "H/AB", "HAB"]);
     if (combo != null) {
       const parts = String(combo).split(/[\/-]/).map((x) => x.trim());
       if (parts.length >= 2) return parts[1] || "—";
     }
+    return readRowStat(row, ["AB", "At Bats", "atBats"]) ?? "—";
   }
   if (key === "H") {
-    const direct = row.stats?.H ?? row.stats?.HT;
+    const direct = readRowStat(row, ["H", "HT", "Hits", "hits"]);
     if (direct != null) return direct;
-    const combo = row.stats?.["H-AB"] ?? row.stats?.["H_AB"] ?? row.stats?.["H/AB"];
+    const combo = readRowStat(row, ["H-AB", "H_AB", "H/AB", "HAB"]);
     if (combo != null) {
       const parts = String(combo).split(/[\/-]/).map((x) => x.trim());
       return parts[0] || "—";
     }
   }
-  return row.stats?.[key] ?? "—";
+  if (key === "IP") {
+    return readRowStat(row, ["IP", "INN", "Innings", "Innings Pitched", "inningsPitched"]) ?? "—";
+  }
+  return readRowStat(row, [key, canonicalLabel(key)]) ?? "—";
+}
+
+function normalizeStatLookupKey(value: string): string {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function readRowStat(row: any, keys: string[]): string | number | null {
+  const stats = row?.stats || {};
+  for (const key of keys) {
+    if (stats[key] != null && stats[key] !== "") return stats[key];
+  }
+  const wanted = new Set(keys.map(normalizeStatLookupKey));
+  for (const [key, value] of Object.entries(stats)) {
+    if (wanted.has(normalizeStatLookupKey(key)) && value != null && value !== "") {
+      return value as string | number;
+    }
+  }
+  return null;
 }
 
 // NHL group-type detection. ESPN labels groups inconsistently — could be
@@ -712,16 +734,21 @@ function StatGroup({
 
   const columnKeys = pickColumnKeys(group, league);
   const rows = withBasketballSeparators(visible, league);
+  const isBasketball = league === "nba" || league === "cbb";
+  const displayRows = isBasketball && rows[0]?.__separator ? rows.slice(1) : rows;
+  const railTitle = isBasketball && rows[0]?.__separator ? String(rows[0].label || "Starters") : groupTitle;
   const longestName = rows.reduce((max: number, row: any) => {
     if (row?.__separator) return max;
     return Math.max(max, boxscorePlayerName(row, league).length);
   }, groupTitle.length);
   const nameColumnWidth = Math.min(10.2, Math.max(7.15, longestName * 0.42 + 1.2));
-  const statColumnWidth = league === "nhl" ? 2.12 : 2.22;
-  const statsWidth = columnKeys.length * statColumnWidth + 0.35;
+  const statColumnWidth = league === "nhl" ? 2.38 : league === "mlb" ? 2.42 : 2.46;
+  const endSpacerWidth = 0.85;
+  const statsWidth = columnKeys.length * statColumnWidth + endSpacerWidth;
   const tableStyle = {
     "--player-name-column-width": `${nameColumnWidth.toFixed(2)}rem`,
     "--boxscore-stat-column-width": `${statColumnWidth.toFixed(2)}rem`,
+    "--boxscore-stat-end-spacer-width": `${endSpacerWidth.toFixed(2)}rem`,
     "--boxscore-stat-columns-width": `${statsWidth.toFixed(2)}rem`,
   } as CSSProperties;
 
@@ -732,8 +759,8 @@ function StatGroup({
       </div>
       <div className="boxscore-split-grid">
         <div className="boxscore-split-name-rail">
-          <div className="boxscore-split-cell boxscore-split-head boxscore-player-stat-head">{groupTitle}</div>
-          {rows.map((row: any, idx: number) =>
+          <div className="boxscore-split-cell boxscore-split-head boxscore-player-stat-head">{railTitle}</div>
+          {displayRows.map((row: any, idx: number) =>
             row.__separator ? (
               <div key={`name-sep-${row.label}-${idx}`} className="boxscore-split-cell boxscore-split-separator">
                 {row.label}
@@ -765,27 +792,33 @@ function StatGroup({
         <div className="boxscore-split-stats-scroll">
           <div
             className="boxscore-split-stats-grid"
-            style={{ gridTemplateColumns: `repeat(${columnKeys.length}, var(--boxscore-stat-column-width))` }}
+            style={{ gridTemplateColumns: `repeat(${columnKeys.length}, var(--boxscore-stat-column-width)) var(--boxscore-stat-end-spacer-width)` }}
           >
             {columnKeys.map((k: string) => (
               <div key={`head-${k}`} className="boxscore-split-cell boxscore-split-head boxscore-stat-head-cell" title={describeKey(league, k)}>
                 {statHeaderLabel(league, k)}
               </div>
             ))}
-            {rows.map((row: any, idx: number) =>
+            <div className="boxscore-split-cell boxscore-split-head boxscore-stat-end-spacer" aria-hidden="true" />
+            {displayRows.map((row: any, idx: number) =>
               row.__separator ? (
-                <div
-                  key={`stat-sep-${row.label}-${idx}`}
-                  className="boxscore-split-cell boxscore-split-separator boxscore-split-separator-blank"
-                  style={{ gridColumn: `1 / span ${columnKeys.length}` }}
-                  aria-hidden="true"
-                />
+                <Fragment key={`stat-sep-${row.label}-${idx}`}>
+                  {columnKeys.map((k: string) => (
+                    <div key={`stat-sep-${row.label}-${idx}-${k}`} className="boxscore-split-cell boxscore-split-separator boxscore-stat-head-cell" title={describeKey(league, k)}>
+                      {isBasketball ? statHeaderLabel(league, k) : ""}
+                    </div>
+                  ))}
+                  <div key={`stat-sep-${row.label}-${idx}-spacer`} className="boxscore-split-cell boxscore-split-separator boxscore-stat-end-spacer" aria-hidden="true" />
+                </Fragment>
               ) : (
-                columnKeys.map((k: string) => (
-                  <div key={`${row.id || idx}-${k}`} className="boxscore-split-cell boxscore-stat-value tabular-nums">
-                    {getBoxscoreStat(row, k)}
-                  </div>
-                ))
+                <Fragment key={`stat-row-${row.id || idx}`}>
+                  {columnKeys.map((k: string) => (
+                    <div key={`${row.id || idx}-${k}`} className="boxscore-split-cell boxscore-stat-value tabular-nums">
+                      {getBoxscoreStat(row, k)}
+                    </div>
+                  ))}
+                  <div key={`${row.id || idx}-spacer`} className="boxscore-split-cell boxscore-stat-end-spacer" aria-hidden="true" />
+                </Fragment>
               ),
             )}
           </div>

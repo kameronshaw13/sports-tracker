@@ -1049,6 +1049,14 @@ body::-webkit-scrollbar,
   text-align: right !important;
 }
 
+.boxscore-stat-end-spacer {
+  width: var(--boxscore-stat-end-spacer-width, .85rem) !important;
+  min-width: var(--boxscore-stat-end-spacer-width, .85rem) !important;
+  max-width: var(--boxscore-stat-end-spacer-width, .85rem) !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
 .boxscore-split-separator {
   min-height: 1.72rem !important;
   color: var(--text-2) !important;
@@ -1061,6 +1069,12 @@ body::-webkit-scrollbar,
 
 .boxscore-split-separator-blank {
   color: transparent !important;
+}
+
+.boxscore-split-separator.boxscore-stat-head-cell {
+  color: var(--text-3) !important;
+  font-size: .7rem !important;
+  font-weight: 800 !important;
 }
 
 .boxscore-split-table .boxscore-player-name button {
