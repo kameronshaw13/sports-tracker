@@ -975,3 +975,105 @@ body::-webkit-scrollbar,
   padding-left: .1rem !important;
   padding-right: .1rem !important;
 }
+
+/* v167: real locked-name rail for box scores, matching team player stats behavior */
+.boxscore-split-table {
+  overflow: hidden !important;
+  background: color-mix(in srgb, var(--surface) 90%, #8a603a 10%) !important;
+}
+
+.boxscore-split-grid {
+  display: grid !important;
+  grid-template-columns: var(--player-name-column-width) minmax(0, 1fr) !important;
+  align-items: start !important;
+  width: 100% !important;
+  background: color-mix(in srgb, var(--surface) 90%, #8a603a 10%) !important;
+}
+
+.boxscore-split-name-rail {
+  width: var(--player-name-column-width) !important;
+  min-width: var(--player-name-column-width) !important;
+  max-width: var(--player-name-column-width) !important;
+  background: color-mix(in srgb, var(--surface) 90%, #8a603a 10%) !important;
+  z-index: 3 !important;
+}
+
+.boxscore-split-stats-scroll {
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  background: color-mix(in srgb, var(--surface) 90%, #8a603a 10%) !important;
+}
+
+.boxscore-split-stats-grid {
+  display: grid !important;
+  width: var(--boxscore-stat-columns-width) !important;
+  min-width: var(--boxscore-stat-columns-width) !important;
+  background: color-mix(in srgb, var(--surface) 90%, #8a603a 10%) !important;
+}
+
+.boxscore-split-cell {
+  min-height: 2.05rem !important;
+  display: flex !important;
+  align-items: center !important;
+  border-top: 1px solid rgba(220, 220, 220, .15) !important;
+  background: color-mix(in srgb, var(--surface) 90%, #8a603a 10%) !important;
+  color: var(--score-meta, rgba(255, 248, 236, .86)) !important;
+  font-size: .74rem !important;
+  line-height: 1.12 !important;
+}
+
+.boxscore-split-head {
+  min-height: 2.12rem !important;
+  border-top: 0 !important;
+  background: color-mix(in srgb, var(--surface-2) 80%, #8a603a 20%) !important;
+  color: var(--text-3) !important;
+  font-size: .72rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .035em !important;
+  text-transform: uppercase !important;
+}
+
+.boxscore-split-name-rail .boxscore-split-cell {
+  justify-content: flex-start !important;
+  padding-left: .72rem !important;
+  padding-right: .28rem !important;
+  box-shadow: none !important;
+}
+
+.boxscore-split-stats-grid .boxscore-split-cell {
+  justify-content: flex-end !important;
+  padding-left: .1rem !important;
+  padding-right: .1rem !important;
+  text-align: right !important;
+}
+
+.boxscore-split-separator {
+  min-height: 1.72rem !important;
+  color: var(--text-2) !important;
+  font-size: .64rem !important;
+  font-weight: 850 !important;
+  letter-spacing: .06em !important;
+  text-transform: uppercase !important;
+  background: color-mix(in srgb, var(--surface) 86%, #8a603a 14%) !important;
+}
+
+.boxscore-split-separator-blank {
+  color: transparent !important;
+}
+
+.boxscore-split-table .boxscore-player-name button {
+  display: block !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  color: var(--score-meta, rgba(255, 248, 236, .86)) !important;
+  font-size: .74rem !important;
+  line-height: 1.12 !important;
+}
+
+.boxscore-split-table .boxscore-player-name.is-substitute-row button {
+  padding-left: .95rem !important;
+}

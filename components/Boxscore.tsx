@@ -711,106 +711,85 @@ function StatGroup({
   if (group.athletes.length === 0) return null;
 
   const columnKeys = pickColumnKeys(group, league);
-  const longestName = withBasketballSeparators(visible, league).reduce((max: number, row: any) => {
+  const rows = withBasketballSeparators(visible, league);
+  const longestName = rows.reduce((max: number, row: any) => {
     if (row?.__separator) return max;
     return Math.max(max, boxscorePlayerName(row, league).length);
   }, groupTitle.length);
   const nameColumnWidth = Math.min(10.2, Math.max(7.15, longestName * 0.42 + 1.2));
   const statColumnWidth = league === "nhl" ? 2.12 : 2.22;
-  const tableWidth = nameColumnWidth + columnKeys.length * statColumnWidth + 0.45;
+  const statsWidth = columnKeys.length * statColumnWidth + 0.35;
   const tableStyle = {
     "--player-name-column-width": `${nameColumnWidth.toFixed(2)}rem`,
     "--boxscore-stat-column-width": `${statColumnWidth.toFixed(2)}rem`,
-    "--player-stats-table-width": `${tableWidth.toFixed(2)}rem`,
+    "--boxscore-stat-columns-width": `${statsWidth.toFixed(2)}rem`,
   } as CSSProperties;
 
   return (
-    <div className="boxscore-stat-group player-stats-table" style={tableStyle}>
+    <div className="boxscore-stat-group boxscore-split-table" style={tableStyle}>
       <div className="boxscore-stat-group-title">
         {groupTitle}
       </div>
-      <div className="boxscore-stat-scroll player-stats-scroll overflow-x-auto">
-        <table className="boxscore-stat-table text-xs">
-          <thead>
-            <tr style={{ color: "var(--text-3)" }}>
-              <th
-                className="boxscore-player-stat-head text-left px-3 py-2 font-medium sticky left-0 z-10"
-                style={{ background: "var(--surface)" }}
+      <div className="boxscore-split-grid">
+        <div className="boxscore-split-name-rail">
+          <div className="boxscore-split-cell boxscore-split-head boxscore-player-stat-head">{groupTitle}</div>
+          {rows.map((row: any, idx: number) =>
+            row.__separator ? (
+              <div key={`name-sep-${row.label}-${idx}`} className="boxscore-split-cell boxscore-split-separator">
+                {row.label}
+              </div>
+            ) : (
+              <div
+                key={`name-${row.id || idx}`}
+                className={`boxscore-split-cell boxscore-player-name ${league === "mlb" && !isMlbPitching && isSubstituteRow(row) ? "is-substitute-row" : ""}`}
               >
-                {groupTitle}
-              </th>
-              {columnKeys.map((k: string) => (
-                <th
-                  key={k}
-                  className="text-right px-2 py-2 font-medium tabular-nums whitespace-nowrap"
-                  title={describeKey(league, k)}
+                <button
+                  type="button"
+                  onClick={() =>
+                    onPlayerClick?.({
+                      id: row.id,
+                      name: row.name || row.shortName,
+                      league,
+                      teamKey,
+                    })
+                  }
+                  disabled={!onPlayerClick || !row.id}
+                  className="font-medium text-left hover:opacity-80"
                 >
-                  {statHeaderLabel(league, k)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {withBasketballSeparators(visible, league).map(
-              (row: any, idx: number) =>
-                row.__separator ? (
-                  <tr
-                    key={`sep-${row.label}-${idx}`}
-                    style={{
-                      borderTop: "1px solid var(--border)",
-                      background: "var(--surface-2)",
-                    }}
-                  >
-                    <td
-                      colSpan={columnKeys.length + 1}
-                      className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider"
-                      style={{ color: "var(--text-2)" }}
-                    >
-                      {row.label}
-                    </td>
-                  </tr>
-                ) : (
-                  <tr
-                    key={row.id || idx}
-                    style={{ borderTop: "1px solid var(--border)" }}
-                  >
-                    <th
-                      scope="row"
-                      className={`boxscore-player-name px-3 py-2 whitespace-nowrap sticky left-0 ${
-                        league === "mlb" && !isMlbPitching && isSubstituteRow(row) ? "is-substitute-row" : ""
-                      }`}
-                      style={{ background: "var(--surface)" }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onPlayerClick?.({
-                            id: row.id,
-                            name: row.name || row.shortName,
-                            league,
-                            teamKey,
-                          })
-                        }
-                        disabled={!onPlayerClick || !row.id}
-                        className="font-medium text-left hover:opacity-80"
-                      >
-                        {boxscorePlayerName(row, league)}
-                      </button>
-                    </th>
-                    {columnKeys.map((k: string) => (
-                      <td
-                        key={k}
-                        className="text-right px-2 py-2 tabular-nums"
-                        style={{ color: "var(--text-2)" }}
-                      >
-                        {getBoxscoreStat(row, k)}
-                      </td>
-                    ))}
-                  </tr>
-                ),
+                  {boxscorePlayerName(row, league)}
+                </button>
+              </div>
+            ),
+          )}
+        </div>
+        <div className="boxscore-split-stats-scroll">
+          <div
+            className="boxscore-split-stats-grid"
+            style={{ gridTemplateColumns: `repeat(${columnKeys.length}, var(--boxscore-stat-column-width))` }}
+          >
+            {columnKeys.map((k: string) => (
+              <div key={`head-${k}`} className="boxscore-split-cell boxscore-split-head boxscore-stat-head-cell" title={describeKey(league, k)}>
+                {statHeaderLabel(league, k)}
+              </div>
+            ))}
+            {rows.map((row: any, idx: number) =>
+              row.__separator ? (
+                <div
+                  key={`stat-sep-${row.label}-${idx}`}
+                  className="boxscore-split-cell boxscore-split-separator boxscore-split-separator-blank"
+                  style={{ gridColumn: `1 / span ${columnKeys.length}` }}
+                  aria-hidden="true"
+                />
+              ) : (
+                columnKeys.map((k: string) => (
+                  <div key={`${row.id || idx}-${k}`} className="boxscore-split-cell boxscore-stat-value tabular-nums">
+                    {getBoxscoreStat(row, k)}
+                  </div>
+                ))
+              ),
             )}
-          </tbody>
-        </table>
+          </div>
+        </div>
       </div>
     </div>
   );
