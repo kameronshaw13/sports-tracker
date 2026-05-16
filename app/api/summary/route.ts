@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGameSummary } from "@/lib/espn";
+import { getGameSummary, getScoreboard } from "@/lib/espn";
 import { parseTeamKey } from "@/lib/teams";
 
 export const revalidate = 15;
@@ -246,6 +246,40 @@ function extractOdds(comp: any) {
   return { awayMoneyLine, homeMoneyLine, overUnder };
 }
 
+function espnDateParam(value?: string | null): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return null;
+  return date.toISOString().slice(0, 10).replace(/-/g, "");
+}
+
+function offsetEspnDate(dateParam: string, offsetDays: number): string {
+  const year = Number(dateParam.slice(0, 4));
+  const month = Number(dateParam.slice(4, 6));
+  const day = Number(dateParam.slice(6, 8));
+  const date = new Date(Date.UTC(year, month - 1, day + offsetDays));
+  return date.toISOString().slice(0, 10).replace(/-/g, "");
+}
+
+async function loadScoreboardSeriesInfo(league: string, eventId: string, gameDate?: string | null) {
+  const date = espnDateParam(gameDate);
+  if (!date) return null;
+  const dates = [date, offsetEspnDate(date, -1), offsetEspnDate(date, 1)];
+  for (const dateParam of dates) {
+    try {
+      const scoreboard = await getScoreboard(league, dateParam);
+      const event = (scoreboard?.events || []).find((ev: any) => String(ev?.id) === String(eventId));
+      const comp = event?.competitions?.[0];
+      if (!comp) continue;
+      const competitors = comp?.competitors || [];
+      const home = competitors.find((c: any) => c.homeAway === "home");
+      const away = competitors.find((c: any) => c.homeAway === "away");
+      return extractSeriesInfo(event, comp, home, away, league);
+    } catch {}
+  }
+  return null;
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const eventId = searchParams.get("event");
@@ -273,6 +307,15 @@ export async function GET(req: NextRequest) {
     const home = competitors.find((c: any) => c.homeAway === "home");
     const away = competitors.find((c: any) => c.homeAway === "away");
     const seriesInfo = extractSeriesInfo(data, comp, home, away, league);
+    const scoreboardSeriesInfo = (!seriesInfo.homeSeriesRecord || !seriesInfo.awaySeriesRecord || !seriesInfo.seriesGame)
+      ? await loadScoreboardSeriesInfo(league, eventId, header?.competitions?.[0]?.date)
+      : null;
+    if (scoreboardSeriesInfo) {
+      seriesInfo.summary = seriesInfo.summary || scoreboardSeriesInfo.summary;
+      seriesInfo.seriesGame = seriesInfo.seriesGame || scoreboardSeriesInfo.seriesGame;
+      seriesInfo.homeSeriesRecord = seriesInfo.homeSeriesRecord || scoreboardSeriesInfo.homeSeriesRecord;
+      seriesInfo.awaySeriesRecord = seriesInfo.awaySeriesRecord || scoreboardSeriesInfo.awaySeriesRecord;
+    }
 
     const plays = (data?.plays || []).slice().reverse().slice(0, 50).map((p: any) => ({
       id: p.id,

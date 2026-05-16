@@ -1004,7 +1004,8 @@ body::-webkit-scrollbar,
   overflow-y: hidden !important;
   -webkit-overflow-scrolling: touch !important;
   background: color-mix(in srgb, var(--surface) 90%, #8a603a 10%) !important;
-  padding-left: .03rem !important;
+  padding-left: 0 !important;
+  margin-left: -1px !important;
 }
 
 .boxscore-split-stats-grid {
@@ -1099,7 +1100,16 @@ body::-webkit-scrollbar,
   padding-left: .95rem !important;
 }
 
-/* v171: close the locked-name/stat rail gap and lower generic hockey/basketball play text */
+/* v172: close the locked-name/stat rail seam, freeze goalie stats, and lower generic play text */
+.boxscore-split-table.is-goalie-static .boxscore-split-stats-scroll {
+  overflow-x: hidden !important;
+}
+
+.boxscore-split-table.is-goalie-static .boxscore-split-stats-grid {
+  width: 100% !important;
+  min-width: 100% !important;
+}
+
 .generic-gamecast-shell .gamecast-generic-play-text {
-  transform: translateY(.08rem) !important;
+  transform: translateY(.13rem) !important;
 }

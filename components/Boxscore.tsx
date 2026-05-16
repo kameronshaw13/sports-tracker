@@ -776,6 +776,9 @@ function StatGroup({
   const statColumnWidth = isNhlGoalies ? 2.82 : league === "nhl" ? 2.52 : league === "mlb" ? 2.52 : 2.58;
   const endSpacerWidth = 1.05;
   const statsWidth = columnKeys.length * statColumnWidth + endSpacerWidth;
+  const statGridTemplate = isNhlGoalies
+    ? `repeat(${columnKeys.length}, minmax(0, 1fr))`
+    : `repeat(${columnKeys.length}, var(--boxscore-stat-column-width)) var(--boxscore-stat-end-spacer-width)`;
   const tableStyle = {
     "--player-name-column-width": `${nameColumnWidth.toFixed(2)}rem`,
     "--boxscore-stat-column-width": `${statColumnWidth.toFixed(2)}rem`,
@@ -784,7 +787,7 @@ function StatGroup({
   } as CSSProperties;
 
   return (
-    <div className="boxscore-stat-group boxscore-split-table" style={tableStyle}>
+    <div className={`boxscore-stat-group boxscore-split-table ${isNhlGoalies ? "is-goalie-static" : ""}`} style={tableStyle}>
       <div className="boxscore-stat-group-title">
         {groupTitle}
       </div>
@@ -823,14 +826,14 @@ function StatGroup({
         <div className="boxscore-split-stats-scroll">
           <div
             className="boxscore-split-stats-grid"
-            style={{ gridTemplateColumns: `repeat(${columnKeys.length}, var(--boxscore-stat-column-width)) var(--boxscore-stat-end-spacer-width)` }}
+            style={{ gridTemplateColumns: statGridTemplate }}
           >
             {columnKeys.map((k: string) => (
               <div key={`head-${k}`} className="boxscore-split-cell boxscore-split-head boxscore-stat-head-cell" title={describeKey(league, k)}>
                 {statHeaderLabel(league, k)}
               </div>
             ))}
-            <div className="boxscore-split-cell boxscore-split-head boxscore-stat-end-spacer" aria-hidden="true" />
+            {!isNhlGoalies && <div className="boxscore-split-cell boxscore-split-head boxscore-stat-end-spacer" aria-hidden="true" />}
             {displayRows.map((row: any, idx: number) =>
               row.__separator ? (
                 <Fragment key={`stat-sep-${row.label}-${idx}`}>
@@ -839,7 +842,7 @@ function StatGroup({
                       {isBasketball ? statHeaderLabel(league, k) : ""}
                     </div>
                   ))}
-                  <div key={`stat-sep-${row.label}-${idx}-spacer`} className="boxscore-split-cell boxscore-split-separator boxscore-stat-end-spacer" aria-hidden="true" />
+                  {!isNhlGoalies && <div key={`stat-sep-${row.label}-${idx}-spacer`} className="boxscore-split-cell boxscore-split-separator boxscore-stat-end-spacer" aria-hidden="true" />}
                 </Fragment>
               ) : (
                 <Fragment key={`stat-row-${row.id || idx}`}>
@@ -848,7 +851,7 @@ function StatGroup({
                       {getBoxscoreStat(row, k)}
                     </div>
                   ))}
-                  <div key={`${row.id || idx}-spacer`} className="boxscore-split-cell boxscore-stat-end-spacer" aria-hidden="true" />
+                  {!isNhlGoalies && <div key={`${row.id || idx}-spacer`} className="boxscore-split-cell boxscore-stat-end-spacer" aria-hidden="true" />}
                 </Fragment>
               ),
             )}
