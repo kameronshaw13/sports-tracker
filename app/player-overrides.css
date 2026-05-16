@@ -1244,8 +1244,22 @@ body::-webkit-scrollbar,
 }
 
 .game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {
-  top: calc(var(--gt-bottom-row-axis) - 1.28rem) !important;
+  top: calc(var(--gt-bottom-row-axis) - 1.62rem) !important;
   transform: translate(-50%, 0) !important;
+}
+
+.game-score-hero .game-score-situation {
+  gap: .12rem !important;
+}
+
+.game-score-hero .game-score-situation svg {
+  width: 3.25rem !important;
+  height: 2.65rem !important;
+}
+
+.game-score-hero .game-score-count {
+  font-size: .72rem !important;
+  line-height: 1 !important;
 }
 
 @media (max-width: 420px) {
@@ -1256,6 +1270,15 @@ body::-webkit-scrollbar,
   }
 
   .game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {
-    top: calc(var(--gt-bottom-row-axis) - 1.2rem) !important;
+    top: calc(var(--gt-bottom-row-axis) - 1.48rem) !important;
+  }
+
+  .game-score-hero .game-score-situation svg {
+    width: 3rem !important;
+    height: 2.45rem !important;
+  }
+
+  .game-score-hero .game-score-count {
+    font-size: .68rem !important;
   }
 }
