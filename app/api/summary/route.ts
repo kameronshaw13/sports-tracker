@@ -49,7 +49,7 @@ function validSeriesRecord(record: any): string | null {
 
 function pickCompetitorSeriesRecord(c: any): string | null {
   const records = Array.isArray(c?.records) ? c.records : [];
-  const series = records.find((r: any) => /series|playoff|vsopponent|vs opponent/i.test(String(r?.type || r?.name || "")));
+  const series = records.find((r: any) => /series|playoff|postseason|vs\s*\.?\s*opponent|vsopponent|head.?to.?head/i.test(String(r?.type || r?.name || r?.displayName || "")));
   return validSeriesRecord(series?.summary || series?.displayValue || series?.record);
 }
 
@@ -85,8 +85,9 @@ function parseSeriesFromString(strings: string[], home: any, away: any) {
       return { homeSeriesRecord: `${tied[1]}-${tied[2]}`, awaySeriesRecord: `${tied[2]}-${tied[1]}` };
     }
     const leads =
-      s.match(/(.+?)\s+(?:leads|lead|wins|win|won|takes|take)\s+(?:the\s+)?series\s+(\d+)\s*[-–]\s*(\d+)/i) ||
-      s.match(/(.+?)\s+(?:leads|lead|wins|win|won|takes|take)\s+(\d+)\s*[-–]\s*(\d+)/i);
+      s.match(/(.+?)\s+(?:leads|lead|wins|win|won|takes|take|took)\s+(?:the\s+)?series\s+(\d+)\s*[-–]\s*(\d+)/i) ||
+      s.match(/(.+?)\s+(?:leads|lead|wins|win|won|takes|take|took)\s+(\d+)\s*[-–]\s*(\d+)/i) ||
+      s.match(/(.+?)\s+(?:defeats|defeat|beats|beat|eliminates|eliminate|knocks\s+out|knock\s+out)\s+.+?\s+(?:in|to win|wins?)\s+(?:the\s+)?series\s+(\d+)\s*[-–]\s*(\d+)/i);
     if (leads) {
       const leader = leads[1].trim();
       const w = Number(leads[2]);
@@ -186,6 +187,11 @@ function extractSeriesInfo(data: any, comp: any, home: any, away: any, league: s
       if (id && homeIds.includes(id) && !homeSeriesRecord) homeSeriesRecord = String(record);
       if (id && awayIds.includes(id) && !awaySeriesRecord) awaySeriesRecord = String(record);
     }
+  }
+
+  for (const c of comp?.competitors || []) {
+    if (!homeSeriesRecord && String(c?.homeAway) === "home") homeSeriesRecord = pickCompetitorSeriesRecord(c);
+    if (!awaySeriesRecord && String(c?.homeAway) === "away") awaySeriesRecord = pickCompetitorSeriesRecord(c);
   }
 
   if ((!homeSeriesRecord || !awaySeriesRecord) && comp?.series?.summary) {

@@ -1103,6 +1103,7 @@ body::-webkit-scrollbar,
 /* v172: close the locked-name/stat rail seam, freeze goalie stats, and lower generic play text */
 .boxscore-split-table.is-goalie-static .boxscore-split-stats-scroll {
   overflow-x: hidden !important;
+  padding-right: .45rem !important;
 }
 
 .boxscore-split-table.is-goalie-static .boxscore-split-stats-grid {

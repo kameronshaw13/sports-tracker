@@ -12,8 +12,10 @@ function pickRecord(c: any) {
 
 function pickSeriesRecord(c: any) {
   const records = Array.isArray(c?.records) ? c.records : [];
-  const series = records.find((r: any) => /series|playoff|vsopponent|vs opponent/i.test(String(r?.type || r?.name || "")));
-  return series?.summary || null;
+  const series = records.find((r: any) => /series|playoff|postseason|vs\s*\.?\s*opponent|vsopponent|head.?to.?head/i.test(String(r?.type || r?.name || r?.displayName || "")));
+  const summary = series?.summary || series?.displayValue || series?.record || null;
+  const match = String(summary || "").match(/^(\d+)\s*[-–]\s*(\d+)$/);
+  return match && !(match[1] === "0" && match[2] === "0") ? `${Number(match[1])}-${Number(match[2])}` : null;
 }
 
 function textValue(value: any): string | null {
@@ -60,7 +62,17 @@ function extractPitchingMatchup(comp: any, away: any, home: any): string | null 
 
 function extractSeriesInfo(ev: any, comp: any) {
   const series = comp?.series || ev?.series || ev?.competitions?.[0]?.series || null;
-  const summary = textValue(series?.summary) || textValue(series?.shortSummary) || textValue(series?.description) || textValue(series?.name) || null;
+  const summary =
+    textValue(series?.summary) ||
+    textValue(series?.shortSummary) ||
+    textValue(series?.description) ||
+    textValue(series?.name) ||
+    textValue(comp?.notes?.[0]?.headline) ||
+    textValue(comp?.notes?.[0]?.text) ||
+    textValue(ev?.note) ||
+    textValue(comp?.status?.type?.detail) ||
+    textValue(comp?.status?.type?.shortDetail) ||
+    null;
   const seriesGame = series?.gameNumber ? `Game ${series.gameNumber}` : (summary && /game\s+\d+/i.test(summary) ? summary.match(/game\s+\d+/i)?.[0]?.replace(/^game/i, "Game") : null);
   const competitors = Array.isArray(series?.competitors) ? series.competitors : [];
   const recordById = new Map<string, string>();
@@ -70,6 +82,11 @@ function extractSeriesInfo(ev: any, comp: any) {
     const losses = c?.losses ?? c?.record?.losses;
     const rec = textValue(c?.record) || (wins != null && losses != null ? `${wins}-${losses}` : null);
     if (id && rec) recordById.set(id, rec);
+  }
+  for (const c of comp?.competitors || []) {
+    const id = String(c?.team?.id || c?.id || "");
+    const rec = pickSeriesRecord(c);
+    if (id && rec && !recordById.has(id)) recordById.set(id, rec);
   }
   return { summary, seriesGame, recordById };
 }
@@ -117,10 +134,13 @@ function deriveSeriesRecords(summary: string | null, away: any, home: any): { aw
   const txt = String(summary);
   const tied = txt.match(/tied[^0-9]*(\d+)\s*-\s*(\d+)/i) || txt.match(/series\s+tied[^0-9]*(\d+)?\s*-?\s*(\d+)?/i);
   if (tied) {
-    const rec = tied[1] != null && tied[2] != null ? `${tied[1]}-${tied[2]}` : "0-0";
+    if (tied[1] == null || tied[2] == null) return {};
+    const rec = `${tied[1]}-${tied[2]}`;
     return { away: rec, home: rec };
   }
-  const lead = txt.match(/(.+?)\s+lead[s]?\s+(?:the\s+)?(?:series\s+)?(\d+)\s*-\s*(\d+)/i);
+  const lead =
+    txt.match(/(.+?)\s+(?:lead[s]?|win[s]?|won|take[s]?|took)\s+(?:the\s+)?(?:series\s+)?(\d+)\s*[-–]\s*(\d+)/i) ||
+    txt.match(/(.+?)\s+(?:defeat[s]?|beat[s]?|eliminate[s]?|knock[s]?\s+out)\s+.+?\s+(?:in|to win|wins?)\s+(?:the\s+)?series\s+(\d+)\s*[-–]\s*(\d+)/i);
   if (lead) {
     const leader = normalizeTextName(lead[1]);
     const rec = `${lead[2]}-${lead[3]}`;
@@ -209,8 +229,7 @@ export async function GET(req: NextRequest) {
           ? (
               seriesInfo.recordById.get(String(c.team?.id || c.id || "")) ||
               (c.homeAway === "away" ? derivedSeries.away : derivedSeries.home) ||
-              pickSeriesRecord(c) ||
-              "0-0"
+              pickSeriesRecord(c)
             )
           : null;
         return {
