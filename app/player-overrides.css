@@ -1124,12 +1124,17 @@ body::-webkit-scrollbar,
 
 /* v180: final-load overrides for box score text, lineup rows, and GameTracker header lanes */
 .game-score-hero {
-  --gt-middle-axis: 4.27rem;
-  --gt-bottom-row-axis: 6.21rem;
+  --gt-middle-axis: 4.42rem;
+  --gt-bottom-row-axis: 6.34rem;
 }
 
 .game-score-hero .game-score-score {
-  transform: translateY(calc(-50% + .28rem)) !important;
+  transform: translateY(calc(-50% + .52rem)) !important;
+}
+
+.game-score-hero .game-score-status.is-pre,
+.game-score-hero .game-score-status.is-final {
+  transform: translateY(.16rem) !important;
 }
 
 .game-score-hero .game-score-center-row-main:has(.game-score-status.is-live) {
@@ -1137,8 +1142,8 @@ body::-webkit-scrollbar,
 }
 
 .game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {
-  top: calc(var(--gt-bottom-row-axis) - .48rem) !important;
-  transform: translate(-42%, 0) !important;
+  top: calc(var(--gt-bottom-row-axis) - .86rem) !important;
+  transform: translate(-50%, 0) !important;
 }
 
 .boxscore-team-toggle-btn,
@@ -1154,18 +1159,22 @@ body::-webkit-scrollbar,
 }
 
 .boxscore-split-cell {
-  padding-top: .08rem !important;
+  box-sizing: border-box !important;
+  align-items: center !important;
+  padding-top: .15rem !important;
+  padding-bottom: .02rem !important;
 }
 
 .boxscore-split-table .boxscore-player-name button {
-  transform: translateY(.04rem) !important;
+  transform: none !important;
 }
 
 .boxscore-split-stats-grid .boxscore-stat-value,
 .boxscore-split-stats-grid .boxscore-stat-head-cell,
 .boxscore-split-name-rail .boxscore-split-head,
 .boxscore-split-name-rail .boxscore-split-separator {
-  transform: translateY(.04rem) !important;
+  transform: none !important;
+  align-items: center !important;
 }
 
 .game-lineup-shell {
@@ -1217,7 +1226,7 @@ body::-webkit-scrollbar,
 
 @media (max-width: 420px) {
   .game-score-hero {
-    --gt-middle-axis: 4.21rem;
-    --gt-bottom-row-axis: 6.04rem;
+    --gt-middle-axis: 4.35rem;
+    --gt-bottom-row-axis: 6.18rem;
   }
 }
