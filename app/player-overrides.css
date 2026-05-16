@@ -1004,6 +1004,7 @@ body::-webkit-scrollbar,
   overflow-y: hidden !important;
   -webkit-overflow-scrolling: touch !important;
   background: color-mix(in srgb, var(--surface) 90%, #8a603a 10%) !important;
+  padding-left: .16rem !important;
 }
 
 .boxscore-split-stats-grid {
@@ -1044,8 +1045,8 @@ body::-webkit-scrollbar,
 
 .boxscore-split-stats-grid .boxscore-split-cell {
   justify-content: flex-end !important;
-  padding-left: .1rem !important;
-  padding-right: .1rem !important;
+  padding-left: .14rem !important;
+  padding-right: .18rem !important;
   text-align: right !important;
 }
 
@@ -1071,10 +1072,16 @@ body::-webkit-scrollbar,
   color: transparent !important;
 }
 
-.boxscore-split-separator.boxscore-stat-head-cell {
+.boxscore-split-name-rail .boxscore-split-separator,
+.boxscore-split-separator.boxscore-stat-head-cell,
+.boxscore-split-separator.boxscore-stat-end-spacer {
+  min-height: 2.12rem !important;
+  background: color-mix(in srgb, var(--surface-2) 80%, #8a603a 20%) !important;
   color: var(--text-3) !important;
-  font-size: .7rem !important;
+  font-size: .72rem !important;
   font-weight: 800 !important;
+  letter-spacing: .035em !important;
+  text-transform: uppercase !important;
 }
 
 .boxscore-split-table .boxscore-player-name button {

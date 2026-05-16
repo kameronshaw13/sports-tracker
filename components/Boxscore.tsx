@@ -312,7 +312,13 @@ const NHL_SKATER_PREFERRED = [
   "H",
   "BS",
 ];
-const NHL_GOALIE_PREFERRED = ["SA", "GA", "SV", "SV%", "TOI"];
+const NHL_GOALIE_PREFERRED = [
+  ["SA", "Shots Against", "SOG Against", "SH"],
+  ["GA"],
+  ["SV", "Saves"],
+  ["SV%", "Save %", "Save Percentage", "SVPCT"],
+  ["TOI"],
+];
 
 // Pick which keys to show given the group and league. Preserves the "first
 // match wins" ordering of the preferred list and dedupes (e.g. ESPN sometimes
@@ -323,15 +329,26 @@ function pickColumnKeys(group: any, league: string): string[] {
 
   if (league === "nhl") {
     const isGoalies = looksLikeGoalies(group, allKeys);
-    const preferred = isGoalies ? NHL_GOALIE_PREFERRED : NHL_SKATER_PREFERRED;
 
     const out: string[] = [];
     const seenLabels = new Set<string>();
 
+    if (isGoalies) {
+      for (const aliases of NHL_GOALIE_PREFERRED) {
+        const key = findStatKey(allKeys, aliases);
+        if (!key) continue;
+        const label = nhlColumnConcept(key);
+        if (seenLabels.has(label)) continue;
+        out.push(key);
+        seenLabels.add(label);
+      }
+      return out.slice(0, 5);
+    }
+
     // First pass: take preferred keys in order, skipping ones the data
     // doesn't have. We treat S and SOG as the same column conceptually so
     // we don't end up with both.
-    for (const key of preferred) {
+    for (const key of NHL_SKATER_PREFERRED) {
       if (!allKeys.includes(key)) continue;
       const label = nhlColumnConcept(key);
       if (seenLabels.has(label)) continue;
@@ -358,13 +375,23 @@ function pickColumnKeys(group: any, league: string): string[] {
 
 function mlbColumnKeys(allKeys: string[], group?: any): string[] {
   const isPitching = isMlbPitchingGroup(group);
-  const usableKeys = isPitching ? allKeys.filter((k) => canonicalLabel(k) !== "HR") : allKeys;
+  const usableKeys = isPitching
+    ? allKeys.filter((k) => !["HR", "PC-ST", "PC_ST", "P-ST"].includes(canonicalLabel(k)))
+    : allKeys;
   const hasCombo = allKeys.some((k) => k === "H-AB" || k === "H_AB" || k === "H/AB");
   if (hasCombo && !isPitching) {
     const rest = usableKeys.filter((k) => !["H-AB", "H_AB", "H/AB", "AB", "H", "HT"].includes(k));
     return ["AB", "H", ...rest].slice(0, 7);
   }
   return usableKeys.map((k) => (k === "HT" ? "H" : k)).slice(0, 7);
+}
+
+function findStatKey(allKeys: string[], aliases: string[]): string | undefined {
+  for (const alias of aliases) {
+    if (allKeys.includes(alias)) return alias;
+  }
+  const normalizedAliases = new Set(aliases.map(normalizeStatLookupKey));
+  return allKeys.find((key) => normalizedAliases.has(normalizeStatLookupKey(key)));
 }
 
 function isMlbPitchingGroup(group: any): boolean {
@@ -423,7 +450,7 @@ function looksLikeGoalies(group: any, keys: string[]): boolean {
   const name = String(group?.name || group?.displayName || "").toLowerCase();
   if (name.includes("goalie") || name === "g") return true;
   // Fallback: column signature
-  return keys.includes("SA") && keys.includes("SV");
+  return !!findStatKey(keys, ["SA", "Shots Against", "SOG Against", "SH"]) && !!findStatKey(keys, ["SV", "Saves"]);
 }
 
 // Treat "S" and "SOG" as the same logical column — both mean "shots on goal"
@@ -436,6 +463,13 @@ function canonicalLabel(key: string): string {
 }
 
 function nhlColumnConcept(key: string): string {
+  if (key === "SV%" || key.includes("%")) return "SV%";
+  const normalized = normalizeStatLookupKey(key);
+  if (["sa", "shotsagainst", "sogagainst", "sh"].includes(normalized)) return "SA";
+  if (normalized === "ga") return "GA";
+  if (["svpct", "savepct", "savepercentage"].includes(normalized)) return "SV%";
+  if (normalized === "sv" || normalized === "saves") return "SV";
+  if (normalized === "toi") return "TOI";
   if (key === "S" || key === "SOG") return "SOG";
   if (key === "HT" || key === "H") return "HIT";
   if (key === "BS") return "BLK";
@@ -737,13 +771,9 @@ function StatGroup({
   const isBasketball = league === "nba" || league === "cbb";
   const displayRows = isBasketball && rows[0]?.__separator ? rows.slice(1) : rows;
   const railTitle = isBasketball && rows[0]?.__separator ? String(rows[0].label || "Starters") : groupTitle;
-  const longestName = rows.reduce((max: number, row: any) => {
-    if (row?.__separator) return max;
-    return Math.max(max, boxscorePlayerName(row, league).length);
-  }, groupTitle.length);
-  const nameColumnWidth = Math.min(10.2, Math.max(7.15, longestName * 0.42 + 1.2));
-  const statColumnWidth = league === "nhl" ? 2.38 : league === "mlb" ? 2.42 : 2.46;
-  const endSpacerWidth = 0.85;
+  const nameColumnWidth = 9.75;
+  const statColumnWidth = league === "nhl" ? 2.52 : league === "mlb" ? 2.52 : 2.58;
+  const endSpacerWidth = 1.05;
   const statsWidth = columnKeys.length * statColumnWidth + endSpacerWidth;
   const tableStyle = {
     "--player-name-column-width": `${nameColumnWidth.toFixed(2)}rem`,
