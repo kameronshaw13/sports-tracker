@@ -273,7 +273,34 @@ function offsetEspnDate(dateParam: string, offsetDays: number): string {
   return date.toISOString().slice(0, 10).replace(/-/g, "");
 }
 
-async function loadScoreboardSeriesInfo(league: string, eventId: string, gameDate?: string | null) {
+async function loadLeagueEndpointSeriesInfo(origin: string, league: string, eventId: string, gameDate?: string | null) {
+  const date = espnDateParam(gameDate);
+  if (!date) return null;
+  const dates = [date, offsetEspnDate(date, -1), offsetEspnDate(date, 1)];
+  for (const dateParam of dates) {
+    try {
+      const res = await fetch(`${origin}/api/league?league=${encodeURIComponent(league)}&date=${dateParam}`, { cache: "no-store" });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const event = (data?.events || []).find((ev: any) => String(ev?.id) === String(eventId));
+      if (!event) continue;
+      return {
+        summary: event.seriesSummary || null,
+        seriesGame: event.seriesGame || null,
+        homeSeriesRecord: event.home?.seriesRecord || null,
+        awaySeriesRecord: event.away?.seriesRecord || null,
+      };
+    } catch {}
+  }
+  return null;
+}
+
+async function loadScoreboardSeriesInfo(origin: string, league: string, eventId: string, gameDate?: string | null) {
+  const fromLeagueEndpoint = await loadLeagueEndpointSeriesInfo(origin, league, eventId, gameDate);
+  if (fromLeagueEndpoint?.homeSeriesRecord || fromLeagueEndpoint?.awaySeriesRecord || fromLeagueEndpoint?.seriesGame) {
+    return fromLeagueEndpoint;
+  }
+
   const date = espnDateParam(gameDate);
   if (!date) return null;
   const dates = [date, offsetEspnDate(date, -1), offsetEspnDate(date, 1)];
@@ -378,7 +405,7 @@ export async function GET(req: NextRequest) {
     const away = competitors.find((c: any) => c.homeAway === "away");
     const seriesInfo = extractSeriesInfo(data, comp, home, away, league);
     const scoreboardSeriesInfo = (!seriesInfo.homeSeriesRecord || !seriesInfo.awaySeriesRecord || !seriesInfo.seriesGame)
-      ? await loadScoreboardSeriesInfo(league, eventId, header?.competitions?.[0]?.date)
+      ? await loadScoreboardSeriesInfo(req.nextUrl.origin, league, eventId, header?.competitions?.[0]?.date)
       : null;
     if (scoreboardSeriesInfo) {
       seriesInfo.summary = seriesInfo.summary || scoreboardSeriesInfo.summary;

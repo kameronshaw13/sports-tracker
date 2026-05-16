@@ -773,11 +773,11 @@ function StatGroup({
   const displayRows = isBasketball && rows[0]?.__separator ? rows.slice(1) : rows;
   const railTitle = isBasketball && rows[0]?.__separator ? String(rows[0].label || "Starters") : groupTitle;
   const nameColumnWidth = 9.75;
-  const statColumnWidth = isNhlGoalies ? 2.82 : league === "nhl" ? 2.52 : league === "mlb" ? 2.52 : 2.58;
+  const statColumnWidth = league === "nhl" ? 2.52 : league === "mlb" ? 2.52 : 2.58;
   const endSpacerWidth = 1.05;
   const statsWidth = columnKeys.length * statColumnWidth + endSpacerWidth;
   const statGridTemplate = isNhlGoalies
-    ? `repeat(${columnKeys.length}, minmax(0, 1fr))`
+    ? `repeat(${columnKeys.length}, var(--boxscore-stat-column-width))`
     : `repeat(${columnKeys.length}, var(--boxscore-stat-column-width)) var(--boxscore-stat-end-spacer-width)`;
   const tableStyle = {
     "--player-name-column-width": `${nameColumnWidth.toFixed(2)}rem`,
