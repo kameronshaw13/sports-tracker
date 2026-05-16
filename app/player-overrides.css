@@ -1230,3 +1230,32 @@ body::-webkit-scrollbar,
     --gt-bottom-row-axis: 6.18rem;
   }
 }
+
+/* v182: force GameTracker score lane down while lifting live baseball situation */
+.game-score-hero .game-score-score,
+.game-score-hero .game-score-team-away .game-score-score,
+.game-score-hero .game-score-team-home .game-score-score {
+  top: calc(var(--gt-middle-axis) + .24rem) !important;
+  transform: translateY(-50%) !important;
+}
+
+.game-score-hero .game-score-status.is-live {
+  color: var(--text) !important;
+}
+
+.game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {
+  top: calc(var(--gt-bottom-row-axis) - 1.28rem) !important;
+  transform: translate(-50%, 0) !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-hero .game-score-score,
+  .game-score-hero .game-score-team-away .game-score-score,
+  .game-score-hero .game-score-team-home .game-score-score {
+    top: calc(var(--gt-middle-axis) + .22rem) !important;
+  }
+
+  .game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {
+    top: calc(var(--gt-bottom-row-axis) - 1.2rem) !important;
+  }
+}
