@@ -301,18 +301,27 @@ function HalfInningCard({
         </div>
       </div>
 
-      {pitcher && (
-        <div className="gamecast-pitcher-tag">
-          <span className="gamecast-pitcher-ball" aria-hidden="true" />
-          <span>{pitcher} pitching</span>
-        </div>
-      )}
-
       <div className="gamecast-half-rows">
         {visible.length === 0 ? (
-          <div className="p-4 text-sm" style={{ color: "var(--text-2)" }}>No at-bats yet this half inning.</div>
+          <>
+            {pitcher && <PitcherTag name={pitcher} />}
+            <div className="p-4 text-sm" style={{ color: "var(--text-2)" }}>No at-bats yet this half inning.</div>
+          </>
         ) : (
-          visible.map((ab) => <AtBatSummaryRow key={ab.id} atBat={ab} away={away} home={home} />)
+          (() => {
+            let lastPitcher = "";
+            return visible.map((ab, idx) => {
+              const currentPitcher = pitcherNameForAtBat(ab) || (idx === 0 ? pitcher || "" : "");
+              const showPitcher = !!currentPitcher && currentPitcher !== lastPitcher;
+              if (currentPitcher) lastPitcher = currentPitcher;
+              return (
+                <div key={ab.id}>
+                  {showPitcher && <PitcherTag name={currentPitcher} />}
+                  <AtBatSummaryRow atBat={ab} away={away} home={home} />
+                </div>
+              );
+            });
+          })()
         )}
       </div>
 
@@ -325,6 +334,19 @@ function HalfInningCard({
           <div className="gamecast-half-end-score tabular-nums">{lastScore?.homeScore ?? 0}</div>
         </div>
       )}
+    </div>
+  );
+}
+
+function pitcherNameForAtBat(atBat: MlbAtBat): string {
+  return String(atBat.pitcher?.displayName || atBat.pitcher?.name || atBat.pitcher?.shortName || "").trim();
+}
+
+function PitcherTag({ name }: { name: string }) {
+  return (
+    <div className="gamecast-pitcher-tag">
+      <span className="gamecast-pitcher-ball" aria-hidden="true" />
+      <span>{name} pitching</span>
     </div>
   );
 }

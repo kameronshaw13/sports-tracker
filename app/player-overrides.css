@@ -1241,7 +1241,7 @@ body::-webkit-scrollbar,
 
 .game-score-hero .game-score-status.is-pre,
 .game-score-hero .game-score-status.is-final {
-  transform: translateY(.24rem) !important;
+  transform: translateY(.14rem) !important;
 }
 
 .game-score-hero.game-score-hero-mlb .game-score-center-row-main:has(.game-score-status.is-live) {
@@ -1285,6 +1285,10 @@ body::-webkit-scrollbar,
   line-height: 1 !important;
 }
 
+.gamecast-pitcher-tag {
+  transform: translateY(-.08rem) !important;
+}
+
 @media (max-width: 420px) {
   .game-score-hero .game-score-score,
   .game-score-hero .game-score-team-away .game-score-score,
@@ -1294,7 +1298,7 @@ body::-webkit-scrollbar,
 
   .game-score-hero .game-score-status.is-pre,
   .game-score-hero .game-score-status.is-final {
-    transform: translateY(.22rem) !important;
+    transform: translateY(.12rem) !important;
   }
 
   .game-score-hero.game-score-hero-mlb .game-score-center-row-main:has(.game-score-status.is-live) {
@@ -1325,5 +1329,9 @@ body::-webkit-scrollbar,
   .gamecast-pitch-label {
     padding-top: .1rem !important;
     transform: translateY(.01rem) !important;
+  }
+
+  .gamecast-pitcher-tag {
+    transform: translateY(-.06rem) !important;
   }
 }
