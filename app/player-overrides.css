@@ -1351,7 +1351,7 @@ body::-webkit-scrollbar,
 
 .gamecast-baserunning-event {
   min-height: 2.45rem !important;
-  padding: .58rem .95rem .52rem 2.06rem !important;
+  padding: .58rem .95rem .52rem 1.78rem !important;
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
@@ -1370,7 +1370,7 @@ body::-webkit-scrollbar,
   height: .68rem !important;
   flex: 0 0 .68rem !important;
   border-radius: .08rem !important;
-  background: color-mix(in srgb, var(--cream) 72%, var(--accent) 28%) !important;
+  background: #fff !important;
   border: 1px solid rgba(255,255,255,.58) !important;
   box-shadow: 0 0 0 1px rgba(0,0,0,.28), 0 1px 4px rgba(0,0,0,.18) !important;
   transform: translateY(-.03rem) rotate(45deg) !important;
