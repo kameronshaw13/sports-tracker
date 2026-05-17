@@ -424,6 +424,15 @@ function looksLikeAtBat(text: string, type?: string | null): boolean {
   return /single|double|triple|home run|homerun|homer(?:ed|ing|s)|ground|fly|line|pop|strikeout|struck out|walk|hit by pitch|reached|fielder|sacrifice|intentional|double play|forceout|bunt|error|out/.test(value);
 }
 
+function shortenChallengeResultNames(text: string): string {
+  const actionPattern = "(?:walks?|singles?|doubles?|triples?|homers?|homered|grounds?|grounded|flies?|flied|lines?|lined|pops?|popped|strikes?|struck|reaches?|reached|scores?|scored|advances?|advanced|stole|caught|thrown|hit|safe|out)";
+  const fullNameBeforeAction = new RegExp(`\\b([A-Z][a-zA-Z.'-]+)\\s+([A-Z][a-zA-Z.'-]+)(?=\\s+${actionPattern}\\b)`, "g");
+  const fullNameBeforeBase = /\b([A-Z][a-zA-Z.'-]+)\s+([A-Z][a-zA-Z.'-]+)(?=\s+to\s+(?:second|third|home)\b)/g;
+  return String(text || "")
+    .replace(fullNameBeforeAction, "$2")
+    .replace(fullNameBeforeBase, "$2");
+}
+
 function challengeAtBatResult(text: string, type?: string | null): { text: string; type: string | null } | null {
   const clean = String(text || "").replace(/\s+/g, " ").trim();
   if (!clean || !isChallengeReviewEvent(clean, type)) return null;
@@ -436,14 +445,14 @@ function challengeAtBatResult(text: string, type?: string | null): { text: strin
 
   for (const candidate of candidates) {
     if (!candidate) continue;
-    if (looksLikeAtBat(candidate, type)) return { text: candidate, type };
-    if (/\bsafe\b/i.test(candidate)) return { text: candidate, type };
+    if (looksLikeAtBat(candidate, type)) return { text: shortenChallengeResultNames(candidate), type };
+    if (/\bsafe\b/i.test(candidate)) return { text: shortenChallengeResultNames(candidate), type };
   }
 
   // ABS challenge rows can be the final pitch of a walk or strikeout. Preserve
   // the at-bat rather than hiding it inside pitch-by-pitch.
   if (/\b(abs|automatic ball strike)\b/i.test(clean) && /\b(strikeout|struck out|walk(?:ed)?|ball four|called strike three)\b/i.test(clean)) {
-    return { text: clean, type };
+    return { text: shortenChallengeResultNames(clean), type };
   }
 
   return null;
