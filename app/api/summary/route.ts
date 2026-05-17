@@ -605,6 +605,10 @@ export async function GET(req: NextRequest) {
       seriesInfo.awaySeriesRecord = scoreboardSeriesInfo.awaySeriesRecord || seriesInfo.awaySeriesRecord;
     }
     applyCompletedSeriesResult(seriesInfo, comp, home, away);
+    if (shouldUseScoresCardSeries && seriesGameNumber(seriesInfo.seriesGame) === 1) {
+      seriesInfo.homeSeriesRecord = seriesInfo.homeSeriesRecord || "0-0";
+      seriesInfo.awaySeriesRecord = seriesInfo.awaySeriesRecord || "0-0";
+    }
     const odds = mergeOdds(
       extractOdds(comp),
       await loadScoreboardOdds(req.nextUrl.origin, league, eventId, header?.competitions?.[0]?.date)

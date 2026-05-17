@@ -111,6 +111,13 @@ function fallbackSeriesGame(ev: any, comp: any): string | null {
   return null;
 }
 
+function seriesGameNumber(value: any): number | null {
+  const match = String(value || "").match(/\bGame\s+(\d+)\b/i);
+  if (!match) return null;
+  const num = Number(match[1]);
+  return Number.isFinite(num) ? num : null;
+}
+
 async function fetchMlbSummaryPitchers(eventId: string, away: any, home: any): Promise<string | null> {
   try {
     const url = `https://site.web.api.espn.com/apis/site/v2/sports/baseball/mlb/summary?event=${eventId}`;
@@ -310,6 +317,8 @@ export async function GET(req: NextRequest) {
       const hasPlayoffSeries = ["nba", "nhl", "mlb"].includes(league);
       const isPlayoff = ev?.season?.type === 3 || comp?.season?.type === 3 || (hasPlayoffSeries && (!!seriesInfo.summary || !!seriesInfo.seriesGame));
       const derivedSeries = deriveSeriesRecords(seriesInfo.summary, away, home);
+      const displaySeriesGame = seriesInfo.seriesGame || fallbackSeriesGame(ev, comp);
+      const defaultSeriesRecord = isPlayoff && seriesGameNumber(displaySeriesGame) === 1 ? "0-0" : null;
 
       const formatTeam = (c: any) => {
         if (!c) return null;
@@ -317,7 +326,8 @@ export async function GET(req: NextRequest) {
           ? (
               seriesInfo.recordById.get(String(c.team?.id || c.id || "")) ||
               (c.homeAway === "away" ? derivedSeries.away : derivedSeries.home) ||
-              pickSeriesRecord(c)
+              pickSeriesRecord(c) ||
+              defaultSeriesRecord
             )
           : null;
         return {
@@ -374,7 +384,7 @@ export async function GET(req: NextRequest) {
         situation: normalizedSituation,
         isPlayoff,
         seriesSummary: seriesInfo.summary,
-        seriesGame: seriesInfo.seriesGame || fallbackSeriesGame(ev, comp),
+        seriesGame: displaySeriesGame,
         pitchers: league === "mlb" ? (extractPitchingMatchup(comp, away, home) || await fetchMlbSummaryPitchers(ev.id, away, home) || "TBD vs TBD") : null,
         note: comp?.notes?.[0]?.headline || comp?.notes?.[0]?.text || ev?.note || null,
         broadcast: comp?.broadcasts?.[0]?.names?.[0] || null,

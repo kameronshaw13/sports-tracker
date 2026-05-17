@@ -525,6 +525,9 @@ function scoreOddsText(game: any, team: any) {
   const odds = game?.odds;
   if (!odds) return null;
   const side = String(team?.homeAway || "").toLowerCase();
+  if (/^(nba|wnba|nfl|cfb|cbb)$/i.test(String(game?.league || "")) && side === "home") {
+    return odds.homeSpread || null;
+  }
   if (side === "away") return odds.overUnder || null;
   if (side === "home") return cleanMoneyLineText(odds.homeMoneyLine || odds.details, team?.abbr);
   return null;

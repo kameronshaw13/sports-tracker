@@ -1810,6 +1810,29 @@ body::-webkit-scrollbar,
     drop-shadow(-.66px -.66px 0 #fff) !important;
 }
 
+/* v221: make Odds tab logos use the same thin white logo edge as the rest of the app */
+.game-odds-team img.logo-outline-dark,
+.game-odds-team .logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(.92px 0 0 #fff)
+    drop-shadow(-.92px 0 0 #fff)
+    drop-shadow(0 .92px 0 #fff)
+    drop-shadow(0 -.92px 0 #fff)
+    drop-shadow(.66px .66px 0 #fff)
+    drop-shadow(-.66px .66px 0 #fff)
+    drop-shadow(.66px -.66px 0 #fff)
+    drop-shadow(-.66px -.66px 0 #fff) !important;
+  filter:
+    drop-shadow(.92px 0 0 #fff)
+    drop-shadow(-.92px 0 0 #fff)
+    drop-shadow(0 .92px 0 #fff)
+    drop-shadow(0 -.92px 0 #fff)
+    drop-shadow(.66px .66px 0 #fff)
+    drop-shadow(-.66px .66px 0 #fff)
+    drop-shadow(.66px -.66px 0 #fff)
+    drop-shadow(-.66px -.66px 0 #fff) !important;
+}
+
 .boxscore-team-toggle-btn,
 .boxscore-team-toggle-mid {
   min-width: 5.45rem !important;
