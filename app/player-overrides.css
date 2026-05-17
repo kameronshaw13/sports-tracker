@@ -1124,8 +1124,8 @@ body::-webkit-scrollbar,
 
 /* v180: final-load overrides for box score text, lineup rows, and GameTracker header lanes */
 .game-score-hero {
-  --gt-middle-axis: 4.42rem;
-  --gt-bottom-row-axis: 6.34rem;
+  --gt-middle-axis: 4.30rem;
+  --gt-bottom-row-axis: 6.22rem;
 }
 
 .game-score-hero .game-score-score {
@@ -1226,8 +1226,8 @@ body::-webkit-scrollbar,
 
 @media (max-width: 420px) {
   .game-score-hero {
-    --gt-middle-axis: 4.35rem;
-    --gt-bottom-row-axis: 6.18rem;
+    --gt-middle-axis: 4.23rem;
+    --gt-bottom-row-axis: 6.06rem;
   }
 }
 
