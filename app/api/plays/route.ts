@@ -410,7 +410,7 @@ function isPitcherBatterIntroText(text: string): boolean {
 
 function isMinorBaseballEvent(text: string, type?: string | null): boolean {
   const value = `${type || ""} ${text}`.toLowerCase();
-  return /defensive replacement|pitching change|mound visit|injury delay|delay|challeng|substitution|pinch-runner|pinch runner|coach visit|umpire/.test(value);
+  return /defensive replacement|pitching change|mound visit|injury delay|delay|substitution|pinch-runner|pinch runner|coach visit|umpire/.test(value);
 }
 
 function isChallengeReviewEvent(text: string, type?: string | null): boolean {
@@ -422,6 +422,31 @@ function looksLikeAtBat(text: string, type?: string | null): boolean {
   const value = `${type || ""} ${text}`.toLowerCase();
   if (isMinorBaseballEvent(text, type)) return false;
   return /single|double|triple|home run|homerun|homer(?:ed|ing|s)|ground|fly|line|pop|strikeout|struck out|walk|hit by pitch|reached|fielder|sacrifice|intentional|double play|forceout|bunt|error|out/.test(value);
+}
+
+function challengeAtBatResult(text: string, type?: string | null): { text: string; type: string | null } | null {
+  const clean = String(text || "").replace(/\s+/g, " ").trim();
+  if (!clean || !isChallengeReviewEvent(clean, type)) return null;
+
+  const candidates = [
+    clean.split(/:\s*/).pop() || "",
+    clean.replace(/^(?:.*?\b(?:overturned|confirmed|stands|upheld)\b[:,]?\s*)/i, ""),
+    clean,
+  ].map((value) => value.replace(/\b(?:after review|upon review|call(?: on the field)?(?: was)?|play reviewed|reviewed)\b[:,]?\s*/gi, "").trim());
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    if (looksLikeAtBat(candidate, type)) return { text: candidate, type };
+    if (/\bsafe\b/i.test(candidate)) return { text: candidate, type };
+  }
+
+  // ABS challenge rows can be the final pitch of a walk or strikeout. Preserve
+  // the at-bat rather than hiding it inside pitch-by-pitch.
+  if (/\b(abs|automatic ball strike)\b/i.test(clean) && /\b(strikeout|struck out|walk(?:ed)?|ball four|called strike three)\b/i.test(clean)) {
+    return { text: clean, type };
+  }
+
+  return null;
 }
 
 function normalizeResult(text: string, type?: string | null): string {
@@ -650,7 +675,8 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
       continue;
     }
 
-    const minor = isMinorBaseballEvent(base.text, base.type);
+    const challengeFinal = atBatStem ? challengeAtBatResult(base.text, base.type) : null;
+    const minor = isMinorBaseballEvent(base.text, base.type) && !challengeFinal;
     const embeddedFinal = atBatStem ? embeddedAtBatResult(p) : null;
     const isFinalAtBat = looksLikeAtBat(base.text, base.type) && !/^pitch\s*\d*\s*:/i.test(base.text);
     const isPitchRow = !minor && !isFinalAtBat && isPitchEvent(base.text, base.type);
@@ -662,6 +688,18 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
       if (!group.teamId && base.teamId) group.teamId = base.teamId;
       if (!group.homeAway && base.homeAway) group.homeAway = base.homeAway;
       pushUnique(group.pitches, [pitchTextFromRow(base.text, base.type)]);
+      if (challengeFinal) {
+        group.resultPlay = p;
+        group.resultText = challengeFinal.text;
+        group.resultType = challengeFinal.type;
+        group.scoringPlay = !!p?.scoringPlay || isLikelyScoringText(challengeFinal.text, challengeFinal.type);
+        group.awayScore = p?.awayScore;
+        group.homeScore = p?.homeScore;
+        group.clock = p?.clock?.displayValue || null;
+        if (!group.batter) group.batter = inferBatterFromText(challengeFinal.text);
+        if (!group.pitcher) group.pitcher = pitcherByHalf.get(key) || null;
+        if (group.pitcher) pitcherByHalf.set(key, group.pitcher);
+      }
       continue;
     }
 

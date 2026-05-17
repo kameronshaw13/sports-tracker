@@ -81,11 +81,12 @@ export default function GameLineup({ league, eventId }: Props) {
               )}
             </div>
             <div className="game-lineup-player">
-              <div className="game-lineup-name">{player.name || player.shortName || "Player"}</div>
-              <div className="game-lineup-meta">
-                {[player.position, player.jersey ? `#${player.jersey}` : null].filter(Boolean).join(" · ")}
+              <div className="game-lineup-name">
+                <span>{player.name || player.shortName || "Player"}</span>
+                {player.position && <em>{player.position}</em>}
               </div>
             </div>
+            <div className="game-lineup-avg tabular-nums">{lineupAverage(player)}</div>
           </div>
         )) : (
           <div className="game-lineup-empty">Lineup has not been posted yet.</div>
@@ -103,6 +104,19 @@ function lineupPlayers(team: any) {
     if (a?.starter !== b?.starter) return a?.starter ? -1 : 1;
     return 0;
   });
+}
+
+function lineupAverage(player: any) {
+  const stats = player?.stats || {};
+  const direct = stats.AVG ?? stats.Avg ?? stats.avg ?? stats.BA ?? stats.BattingAverage ?? stats["Batting Average"];
+  if (direct != null && direct !== "") return String(direct);
+  for (const [key, value] of Object.entries(stats)) {
+    const normalized = String(key).toLowerCase().replace(/[^a-z0-9]/g, "");
+    if ((normalized === "avg" || normalized === "ba" || normalized === "battingaverage") && value != null && value !== "") {
+      return String(value);
+    }
+  }
+  return "—";
 }
 
 function initialsFor(name: string | null | undefined) {

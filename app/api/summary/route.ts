@@ -317,8 +317,11 @@ function extractOdds(comp: any) {
     odds?.homeMoneyline
   );
   const overUnder = formatOverUnder(odds?.overUnder ?? odds?.total ?? odds?.oU);
-  if (!awayMoneyLine && !homeMoneyLine && !overUnder) return null;
-  return { awayMoneyLine, homeMoneyLine, overUnder };
+  const awaySpread = formatAmericanOdds(odds?.awayTeamOdds?.spreadOdds ?? odds?.awaySpreadOdds);
+  const homeSpread = formatAmericanOdds(odds?.homeTeamOdds?.spreadOdds ?? odds?.homeSpreadOdds);
+  const details = typeof odds?.details === "string" ? odds.details : null;
+  if (!awayMoneyLine && !homeMoneyLine && !overUnder && !awaySpread && !homeSpread && !details) return null;
+  return { awayMoneyLine, homeMoneyLine, overUnder, awaySpread, homeSpread, details };
 }
 
 function espnDateParam(value?: string | null): string | null {

@@ -15,11 +15,12 @@ type Props = {
   eventId: string;
   onClose?: () => void;
   onTeamClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
-  onPlayerClick?: (player: { id: string; name: string; league: string }, returnTab?: TabId) => void;
-  initialTab?: TabId;
+  onPlayerClick?: (player: { id: string; name: string; league: string }, returnTab?: ReturnableGameTab) => void;
+  initialTab?: ReturnableGameTab;
 };
 
-type TabId = "main" | "lineup" | "boxscore";
+type TabId = "main" | "lineup" | "boxscore" | "odds";
+type ReturnableGameTab = "main" | "lineup" | "boxscore";
 
 export default function GameDetail({ league, eventId, onClose, onTeamClick, onPlayerClick, initialTab = "main" }: Props) {
   const freshKey = useFreshKey();
@@ -63,7 +64,11 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
   const isLive = status?.state === "in";
   const isPregame = status?.state === "pre";
   const showLineupTab = league === "mlb" && isPregame;
-  const visibleTab: TabId = activeTab === "lineup" && !showLineupTab ? "main" : activeTab;
+  const showOddsTab = hasOdds(odds);
+  const visibleTab: TabId =
+    activeTab === "lineup" && !showLineupTab ? "main" :
+    activeTab === "odds" && !showOddsTab ? "main" :
+    activeTab;
   const statusName = String(status?.statusName || "").toUpperCase();
   const isNonPlayed = /POSTPONED|CANCELED|CANCELLED|SUSPENDED/.test(statusName);
 
@@ -77,6 +82,7 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
             <TabBtn label="GameTracker" isActive={visibleTab === "main"} onClick={() => setActiveTab("main")} />
             {showLineupTab && <TabBtn label="Lineup" isActive={visibleTab === "lineup"} onClick={() => setActiveTab("lineup")} />}
             <TabBtn label="Box Score" isActive={visibleTab === "boxscore"} onClick={() => setActiveTab("boxscore")} />
+            {showOddsTab && <TabBtn label="Odds" isActive={visibleTab === "odds"} onClick={() => setActiveTab("odds")} />}
           </div>
         </div>
       </div>
@@ -85,6 +91,7 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
         {visibleTab === "main" && isNonPlayed && <div className="m-4 p-6 text-center text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>This game was {nonPlayedLabel(statusName).toLowerCase()}.</div>}
         {visibleTab === "lineup" && showLineupTab && <GameLineup league={league} eventId={eventId} />}
         {visibleTab === "boxscore" && <Boxscore league={league} eventId={eventId} isLive={isLive} onPlayerClick={onPlayerClick ? (p) => onPlayerClick(p, "boxscore") : undefined} />}
+        {visibleTab === "odds" && showOddsTab && <OddsPanel odds={odds} away={away} home={home} />}
       </div>
     </div>
   );
@@ -137,6 +144,35 @@ function GameOddsLine({ odds, away, home }: { odds: any; away: any; home: any })
       {odds.awayMoneyLine && <span>{away?.abbr} {odds.awayMoneyLine}</span>}
       {odds.overUnder && <span>Total {odds.overUnder}</span>}
       {odds.homeMoneyLine && <span>{home?.abbr} {odds.homeMoneyLine}</span>}
+    </div>
+  );
+}
+
+function hasOdds(odds: any) {
+  return !!(odds?.awayMoneyLine || odds?.homeMoneyLine || odds?.overUnder || odds?.awaySpread || odds?.homeSpread || odds?.details);
+}
+
+function OddsPanel({ odds, away, home }: { odds: any; away: any; home: any }) {
+  const rows = [
+    { label: "Moneyline", away: odds?.awayMoneyLine || "—", home: odds?.homeMoneyLine || "—" },
+    { label: "Spread", away: odds?.awaySpread || "—", home: odds?.homeSpread || "—" },
+    { label: "Total", away: odds?.overUnder ? `o${String(odds.overUnder).replace(/^o/i, "")}` : "—", home: odds?.overUnder ? `u${String(odds.overUnder).replace(/^o/i, "")}` : "—" },
+  ];
+  return (
+    <div className="game-odds-panel">
+      <div className="game-odds-header">
+        <div />
+        <div>{away?.abbr || "Away"}</div>
+        <div>{home?.abbr || "Home"}</div>
+      </div>
+      {rows.map((row) => (
+        <div key={row.label} className="game-odds-row">
+          <span>{row.label}</span>
+          <strong>{row.away}</strong>
+          <strong>{row.home}</strong>
+        </div>
+      ))}
+      {odds?.details && <div className="game-odds-note">{odds.details}</div>}
     </div>
   );
 }

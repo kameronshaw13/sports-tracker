@@ -313,10 +313,13 @@ function BioPanel({ profile, league }: { profile: Profile; league: string }) {
     ["Throws", fields.throws],
   ].filter(([, value]) => value != null && value !== "");
   return (
-    <div className="player-detail-bio-list">
-      {rows.map(([label, value]) => (
-        <div key={label}><span>{label}</span><strong>{value}</strong></div>
-      ))}
+    <div className="player-detail-bio-sections">
+      <h3 className="player-detail-season-heading">Player Details</h3>
+      <div className="player-detail-bio-list">
+        {rows.map(([label, value]) => (
+          <div key={label}><span>{label}</span><strong>{value}</strong></div>
+        ))}
+      </div>
     </div>
   );
 }
