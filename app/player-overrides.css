@@ -1330,6 +1330,10 @@ body::-webkit-scrollbar,
   transform: translateY(-.07rem) !important;
 }
 
+.gamecast-pitcher-tag > .gamecast-pitcher-ball {
+  transform: translateY(-.12rem) !important;
+}
+
 .gamecast-pitcher-tag > span:last-child {
   display: inline-flex !important;
   align-items: center !important;
@@ -1409,6 +1413,10 @@ body::-webkit-scrollbar,
 
   .gamecast-pitcher-tag > span {
     transform: translateY(-.06rem) !important;
+  }
+
+  .gamecast-pitcher-tag > .gamecast-pitcher-ball {
+    transform: translateY(-.1rem) !important;
   }
 
   .gamecast-pitcher-tag > span:last-child {
