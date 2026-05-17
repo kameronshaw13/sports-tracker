@@ -1290,7 +1290,7 @@ body::-webkit-scrollbar,
 }
 
 .game-detail-content .boxscore-panel {
-  margin-top: -.22rem !important;
+  margin-top: -.34rem !important;
 }
 
 .boxscore-line-wrap {
@@ -1323,7 +1323,15 @@ body::-webkit-scrollbar,
 }
 
 .gamecast-pitcher-tag {
-  transform: translateY(-.16rem) !important;
+  transform: translateY(-.2rem) !important;
+}
+
+.gamecast-pitcher-tag > span {
+  transform: translateY(-.07rem) !important;
+}
+
+.gamecast-half-rows > div:not(:first-child) > .gamecast-pitcher-tag {
+  border-top: 1px solid rgba(220, 220, 220, .18) !important;
 }
 
 @media (max-width: 420px) {
@@ -1373,7 +1381,7 @@ body::-webkit-scrollbar,
   }
 
   .game-detail-content .boxscore-panel {
-    margin-top: -.18rem !important;
+    margin-top: -.3rem !important;
   }
 
   .boxscore-line-wrap {
@@ -1385,6 +1393,10 @@ body::-webkit-scrollbar,
   }
 
   .gamecast-pitcher-tag {
-    transform: translateY(-.12rem) !important;
+    transform: translateY(-.16rem) !important;
+  }
+
+  .gamecast-pitcher-tag > span {
+    transform: translateY(-.06rem) !important;
   }
 }
