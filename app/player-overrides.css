@@ -1832,3 +1832,46 @@ body::-webkit-scrollbar,
 .game-odds-card-row strong {
   min-width: 3.15rem !important;
 }
+
+/* v164: direct middle Team selector control */
+.boxscore-team-toggle-mid {
+  min-width: 6.05rem !important;
+  padding-left: 1.32rem !important;
+  padding-right: 1.32rem !important;
+  align-items: flex-start !important;
+  padding-top: .05rem !important;
+}
+
+.boxscore-team-toggle-mid.is-active {
+  min-width: 6.2rem !important;
+  padding-left: 1.42rem !important;
+  padding-right: 1.42rem !important;
+}
+
+.boxscore-team-toggle-label {
+  display: inline-block !important;
+  transform: translateY(-.28rem) !important;
+  line-height: 1 !important;
+}
+
+.game-lineup-toggle-btn img.logo-outline-dark,
+.game-lineup-toggle-btn .logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(.92px 0 0 #fff)
+    drop-shadow(-.92px 0 0 #fff)
+    drop-shadow(0 .92px 0 #fff)
+    drop-shadow(0 -.92px 0 #fff)
+    drop-shadow(.66px .66px 0 #fff)
+    drop-shadow(-.66px .66px 0 #fff)
+    drop-shadow(.66px -.66px 0 #fff)
+    drop-shadow(-.66px -.66px 0 #fff) !important;
+  filter:
+    drop-shadow(.92px 0 0 #fff)
+    drop-shadow(-.92px 0 0 #fff)
+    drop-shadow(0 .92px 0 #fff)
+    drop-shadow(0 -.92px 0 #fff)
+    drop-shadow(.66px .66px 0 #fff)
+    drop-shadow(-.66px .66px 0 #fff)
+    drop-shadow(.66px -.66px 0 #fff)
+    drop-shadow(-.66px -.66px 0 #fff) !important;
+}
