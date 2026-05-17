@@ -1841,6 +1841,7 @@ body::-webkit-scrollbar,
   align-items: flex-start !important;
   justify-content: center !important;
   padding-top: .05rem !important;
+  transform: translate(-.18rem, -.32rem) !important;
 }
 
 .boxscore-team-toggle-mid.is-active {

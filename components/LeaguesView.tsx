@@ -757,6 +757,7 @@ function moneyLineFromDetails(value: any, abbr?: string): string | null {
     const escaped = team.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const teamMatch = text.match(new RegExp(`\\b${escaped}\\b\\s*([+-]\\d{2,4})`, "i"));
     if (teamMatch) return teamMatch[1];
+    return null;
   }
   const first = text.match(/[+-]\d{2,4}/);
   return first ? first[0] : null;
