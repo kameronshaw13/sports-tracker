@@ -1235,7 +1235,7 @@ body::-webkit-scrollbar,
 .game-score-hero .game-score-score,
 .game-score-hero .game-score-team-away .game-score-score,
 .game-score-hero .game-score-team-home .game-score-score {
-  top: calc(var(--gt-middle-axis) + .32rem) !important;
+  top: calc(var(--gt-middle-axis) + .44rem) !important;
   transform: translateY(-50%) !important;
 }
 
@@ -1245,7 +1245,7 @@ body::-webkit-scrollbar,
 }
 
 .game-score-hero.game-score-hero-mlb .game-score-center-row-main:has(.game-score-status.is-live) {
-  top: calc(var(--gt-middle-axis) - .88rem) !important;
+  top: calc(var(--gt-middle-axis) - 1.04rem) !important;
 }
 
 .game-score-hero:not(.game-score-hero-mlb) .game-score-center-row-main:has(.game-score-status.is-live) {
@@ -1261,7 +1261,7 @@ body::-webkit-scrollbar,
 }
 
 .game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {
-  top: calc(var(--gt-bottom-row-axis) - 2.32rem) !important;
+  top: calc(var(--gt-bottom-row-axis) - 2.48rem) !important;
   transform: translate(-50%, 0) !important;
 }
 
@@ -1289,7 +1289,7 @@ body::-webkit-scrollbar,
   .game-score-hero .game-score-score,
   .game-score-hero .game-score-team-away .game-score-score,
   .game-score-hero .game-score-team-home .game-score-score {
-    top: calc(var(--gt-middle-axis) + .3rem) !important;
+    top: calc(var(--gt-middle-axis) + .4rem) !important;
   }
 
   .game-score-hero .game-score-status.is-pre,
@@ -1298,7 +1298,7 @@ body::-webkit-scrollbar,
   }
 
   .game-score-hero.game-score-hero-mlb .game-score-center-row-main:has(.game-score-status.is-live) {
-    top: calc(var(--gt-middle-axis) - .8rem) !important;
+    top: calc(var(--gt-middle-axis) - .94rem) !important;
   }
 
   .game-score-hero:not(.game-score-hero-mlb) .game-score-center-row-main:has(.game-score-status.is-live) {
@@ -1310,7 +1310,7 @@ body::-webkit-scrollbar,
   }
 
   .game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {
-    top: calc(var(--gt-bottom-row-axis) - 2.14rem) !important;
+    top: calc(var(--gt-bottom-row-axis) - 2.28rem) !important;
   }
 
   .game-score-hero .game-score-situation svg {
