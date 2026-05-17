@@ -1784,3 +1784,51 @@ body::-webkit-scrollbar,
 .game-odds-card-row strong + strong {
   color: var(--score-meta, rgba(255, 248, 236, .82)) !important;
 }
+
+/* v163: use the standard thin logo outline and tighten game odds selectors */
+.game-lineup-toggle-btn img.logo-outline-dark,
+.game-lineup-toggle-btn .logo-outline-dark,
+.game-odds-team img.logo-outline-dark,
+.game-odds-team .logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(.92px 0 0 #fff)
+    drop-shadow(-.92px 0 0 #fff)
+    drop-shadow(0 .92px 0 #fff)
+    drop-shadow(0 -.92px 0 #fff)
+    drop-shadow(.66px .66px 0 #fff)
+    drop-shadow(-.66px .66px 0 #fff)
+    drop-shadow(.66px -.66px 0 #fff)
+    drop-shadow(-.66px -.66px 0 #fff) !important;
+  filter:
+    drop-shadow(.92px 0 0 #fff)
+    drop-shadow(-.92px 0 0 #fff)
+    drop-shadow(0 .92px 0 #fff)
+    drop-shadow(0 -.92px 0 #fff)
+    drop-shadow(.66px .66px 0 #fff)
+    drop-shadow(-.66px .66px 0 #fff)
+    drop-shadow(.66px -.66px 0 #fff)
+    drop-shadow(-.66px -.66px 0 #fff) !important;
+}
+
+.boxscore-team-toggle-btn,
+.boxscore-team-toggle-mid {
+  min-width: 5.45rem !important;
+}
+
+.boxscore-team-toggle-btn.is-active {
+  min-width: 5.65rem !important;
+  padding-left: 1.12rem !important;
+  padding-right: 1.12rem !important;
+}
+
+.boxscore-team-toggle-mid {
+  transform: translateY(-.32rem) !important;
+}
+
+.game-odds-panel {
+  padding-top: .66rem !important;
+}
+
+.game-odds-card-row strong {
+  min-width: 3.15rem !important;
+}

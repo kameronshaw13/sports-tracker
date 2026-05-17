@@ -287,7 +287,7 @@ function formatAmericanOdds(value: any): string | null {
   if (value == null || value === "") return null;
   const raw = typeof value === "object" ? (value?.american || value?.displayValue || value?.value) : value;
   const num = Number(String(raw).replace(/[^\d.-]/g, ""));
-  if (!Number.isFinite(num) || num === 0) return null;
+  if (!Number.isFinite(num) || num === 0 || Math.abs(num) < 50) return null;
   return num > 0 ? `+${Math.round(num)}` : `${Math.round(num)}`;
 }
 
@@ -303,7 +303,7 @@ function formatSpreadValue(value: any): string | null {
   if (value == null || value === "") return null;
   const raw = typeof value === "object" ? (value?.displayValue || value?.value) : value;
   const num = Number(String(raw).replace(/[^\d.-]/g, ""));
-  if (!Number.isFinite(num) || num === 0) return null;
+  if (!Number.isFinite(num) || num === 0 || Math.abs(num) >= 50) return null;
   const display = Number.isInteger(num) ? String(Math.abs(num)) : Math.abs(num).toFixed(1).replace(/\.0$/, "");
   return `${num > 0 ? "+" : "-"}${display}`;
 }
@@ -328,8 +328,8 @@ function extractOdds(comp: any) {
   const overUnder = formatOverUnder(odds?.overUnder ?? odds?.total ?? odds?.oU);
   const overOdds = formatAmericanOdds(odds?.overOdds ?? odds?.over?.odds ?? odds?.totalOverOdds ?? odds?.overTeamOdds?.moneyLine);
   const underOdds = formatAmericanOdds(odds?.underOdds ?? odds?.under?.odds ?? odds?.totalUnderOdds ?? odds?.underTeamOdds?.moneyLine);
-  const awaySpread = formatSpreadValue(odds?.awayTeamOdds?.spread ?? odds?.awayTeamOdds?.current?.spread ?? odds?.awaySpread);
-  const homeSpread = formatSpreadValue(odds?.homeTeamOdds?.spread ?? odds?.homeTeamOdds?.current?.spread ?? odds?.homeSpread);
+  const awaySpread = formatSpreadValue(odds?.awayTeamOdds?.spread ?? odds?.awayTeamOdds?.current?.spread ?? odds?.awaySpread ?? odds?.awayTeamOdds?.spreadOdds);
+  const homeSpread = formatSpreadValue(odds?.homeTeamOdds?.spread ?? odds?.homeTeamOdds?.current?.spread ?? odds?.homeSpread ?? odds?.homeTeamOdds?.spreadOdds);
   const awaySpreadOdds = formatAmericanOdds(odds?.awayTeamOdds?.spreadOdds ?? odds?.awayTeamOdds?.current?.spreadOdds ?? odds?.awaySpreadOdds);
   const homeSpreadOdds = formatAmericanOdds(odds?.homeTeamOdds?.spreadOdds ?? odds?.homeTeamOdds?.current?.spreadOdds ?? odds?.homeSpreadOdds);
   const details = typeof odds?.details === "string" ? odds.details : null;

@@ -138,22 +138,23 @@ function ScoreboardHero({ league, home, away, status, situation, odds, eventId, 
 }
 
 function GameOddsLine({ odds, away, home }: { odds: any; away: any; home: any }) {
-  if (!odds?.awayMoneyLine && !odds?.homeMoneyLine && !odds?.overUnder) return null;
+  if (!odds?.awayMoneyLine && !odds?.homeMoneyLine) return null;
   return (
     <div className="game-score-odds">
       {odds.awayMoneyLine && <span>{away?.abbr} {odds.awayMoneyLine}</span>}
-      {odds.overUnder && <span>Total {odds.overUnder}</span>}
       {odds.homeMoneyLine && <span>{home?.abbr} {odds.homeMoneyLine}</span>}
     </div>
   );
 }
 
 function hasOdds(odds: any) {
-  return !!(odds?.awayMoneyLine || odds?.homeMoneyLine || odds?.overUnder || odds?.awaySpread || odds?.homeSpread || odds?.awaySpreadOdds || odds?.homeSpreadOdds || odds?.details);
+  return !!(odds?.awayMoneyLine || odds?.homeMoneyLine || odds?.overUnder || odds?.awaySpread || odds?.homeSpread || odds?.awaySpreadOdds || odds?.homeSpreadOdds);
 }
 
 function OddsPanel({ league, odds, away, home }: { league: string; odds: any; away: any; home: any }) {
   const total = odds?.overUnder ? String(odds.overUnder).replace(/^o\/?u?/i, "").replace(/^o/i, "") : null;
+  const defaultAwayLine = inferDefaultLine(league, odds, "away");
+  const defaultHomeLine = inferDefaultLine(league, odds, "home");
   return (
     <div className="game-odds-panel">
       <OddsMarketCard
@@ -166,8 +167,8 @@ function OddsPanel({ league, odds, away, home }: { league: string; odds: any; aw
       <OddsMarketCard
         title={/^(nba|wnba|nfl|cfb|cbb)$/i.test(league || "") ? "Line" : "Run Line"}
         rows={[
-          { key: "away", team: away, value: odds?.awaySpreadOdds || "—", line: odds?.awaySpread || "—" },
-          { key: "home", team: home, value: odds?.homeSpreadOdds || "—", line: odds?.homeSpread || "—" },
+          { key: "away", team: away, value: odds?.awaySpreadOdds || odds?.awayMoneyLine || "—", line: odds?.awaySpread || defaultAwayLine },
+          { key: "home", team: home, value: odds?.homeSpreadOdds || odds?.homeMoneyLine || "—", line: odds?.homeSpread || defaultHomeLine },
         ]}
         showLine
       />
@@ -179,9 +180,22 @@ function OddsPanel({ league, odds, away, home }: { league: string; odds: any; aw
         ]}
         showLine
       />
-      {odds?.details && <div className="game-odds-note">{odds.details}</div>}
     </div>
   );
+}
+
+function inferDefaultLine(league: string, odds: any, side: "away" | "home") {
+  if (!/^(mlb|nhl)$/i.test(league || "")) return "—";
+  const awayMl = moneylineNumber(odds?.awayMoneyLine);
+  const homeMl = moneylineNumber(odds?.homeMoneyLine);
+  if (awayMl == null || homeMl == null) return side === "away" ? "+1.5" : "-1.5";
+  const favorite = awayMl < homeMl ? "away" : "home";
+  return side === favorite ? "-1.5" : "+1.5";
+}
+
+function moneylineNumber(value: any) {
+  const n = Number(String(value || "").replace(/[^\d.-]/g, ""));
+  return Number.isFinite(n) ? n : null;
 }
 
 function OddsMarketCard({ title, rows, showLine = false }: { title: string; rows: any[]; showLine?: boolean }) {
