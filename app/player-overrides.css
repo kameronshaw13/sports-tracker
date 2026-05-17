@@ -1244,8 +1244,16 @@ body::-webkit-scrollbar,
   transform: translateY(.24rem) !important;
 }
 
-.game-score-hero .game-score-center-row-main:has(.game-score-status.is-live) {
-  top: calc(var(--gt-middle-axis) - .76rem) !important;
+.game-score-hero.game-score-hero-mlb .game-score-center-row-main:has(.game-score-status.is-live) {
+  top: calc(var(--gt-middle-axis) - .88rem) !important;
+}
+
+.game-score-hero:not(.game-score-hero-mlb) .game-score-center-row-main:has(.game-score-status.is-live) {
+  top: var(--gt-middle-axis) !important;
+}
+
+.game-score-hero:not(.game-score-hero-mlb) .game-score-status.is-live {
+  transform: translateY(.24rem) !important;
 }
 
 .game-score-hero .game-score-status.is-live {
@@ -1289,8 +1297,16 @@ body::-webkit-scrollbar,
     transform: translateY(.22rem) !important;
   }
 
-  .game-score-hero .game-score-center-row-main:has(.game-score-status.is-live) {
-    top: calc(var(--gt-middle-axis) - .68rem) !important;
+  .game-score-hero.game-score-hero-mlb .game-score-center-row-main:has(.game-score-status.is-live) {
+    top: calc(var(--gt-middle-axis) - .8rem) !important;
+  }
+
+  .game-score-hero:not(.game-score-hero-mlb) .game-score-center-row-main:has(.game-score-status.is-live) {
+    top: var(--gt-middle-axis) !important;
+  }
+
+  .game-score-hero:not(.game-score-hero-mlb) .game-score-status.is-live {
+    transform: translateY(.22rem) !important;
   }
 
   .game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {

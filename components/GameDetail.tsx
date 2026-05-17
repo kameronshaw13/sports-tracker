@@ -108,7 +108,7 @@ function ScoreboardHero({ league, home, away, status, situation, odds, eventId, 
   const homeScoreNum = Number(home?.score);
   const hasFinalWinner = isFinal && Number.isFinite(awayScoreNum) && Number.isFinite(homeScoreNum) && awayScoreNum !== homeScoreNum;
   return (
-    <section className="game-score-hero relative overflow-hidden">
+    <section className={`game-score-hero game-score-hero-${league} relative overflow-hidden`}>
       <div className="game-score-field" aria-hidden="true" />
       <div className="game-score-layout">
           <TeamBlock team={away} league={league} eventId={eventId} onClick={onTeamClick} align="left" showScore={showScore} isWinner={hasFinalWinner && awayScoreNum > homeScoreNum} isLoser={hasFinalWinner && awayScoreNum < homeScoreNum} />
