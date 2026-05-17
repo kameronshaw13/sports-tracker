@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
 import Boxscore from "./Boxscore";
@@ -57,10 +57,20 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
     };
   }, [league, eventId, initialTab]);
 
+  const displayOdds = mergeOddsForDisplay(data?.odds, readPregameOdds(league, eventId));
+
+  useEffect(() => {
+    if (data?.status?.state === "post" || !displayOdds || typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(pregameOddsKey(league, eventId), JSON.stringify(displayOdds));
+    } catch {}
+  }, [eventId, league, displayOdds, data?.status?.state]);
+
   if (isLoading) return <div className="space-y-3"><div className="h-12 animate-pulse" style={{ background: "var(--surface)" }} /><div className="h-44 animate-pulse" style={{ background: "var(--surface)" }} /></div>;
   if (error || !data) return <div className="space-y-3"><GameTopBar title="Game" onClose={onClose} /><div className="p-6 text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>Couldn't load this game.</div></div>;
 
-  const { home, away, status, situation, odds } = data;
+  const { home, away, status, situation } = data;
+  const odds = displayOdds;
   const isLive = status?.state === "in";
   const isPregame = status?.state === "pre";
   const showLineupTab = league === "mlb" && isPregame;
@@ -95,6 +105,30 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
       </div>
     </div>
   );
+}
+
+function pregameOddsKey(league: string, eventId: string) {
+  return `sportsTrackerPregameOdds:${league}:${eventId}`;
+}
+
+function readPregameOdds(league: string, eventId: string) {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(pregameOddsKey(league, eventId));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function mergeOddsForDisplay(primary: any, fallback: any) {
+  if (!primary) return fallback || null;
+  if (!fallback) return primary;
+  const merged = { ...fallback, ...primary };
+  for (const [key, value] of Object.entries(fallback)) {
+    if (merged[key] == null || merged[key] === "") merged[key] = value;
+  }
+  return merged;
 }
 
 function GameTopBar({ title, onClose }: { title: string; onClose?: () => void }) {

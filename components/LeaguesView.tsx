@@ -675,7 +675,10 @@ function sublineForGame(league: League, game: any, density: ScoreDensity) {
 }
 
 function completedOddsLine(game: any, league: League): string | null {
-  const odds = game?.odds || getCachedPregameOdds(league, game?.id);
+  const cachedOdds = getCachedPregameOdds(league, game?.id);
+  const odds = game?.status?.state === "post"
+    ? mergeStoredOdds(game?.odds, cachedOdds)
+    : mergeStoredOdds(cachedOdds, game?.odds);
   if (!odds) return null;
 
   const awayScore = Number(game?.away?.score);
@@ -710,7 +713,8 @@ function persistPregameOdds(games: any[]) {
     const state = String(game?.status?.state || "");
     if (state === "post") continue;
     try {
-      window.localStorage.setItem(pregameOddsKey(game.league, game.id), JSON.stringify(game.odds));
+      const existing = getCachedPregameOdds(game.league, game.id);
+      window.localStorage.setItem(pregameOddsKey(game.league, game.id), JSON.stringify(mergeStoredOdds(existing, game.odds)));
     } catch {}
   }
 }
@@ -727,6 +731,15 @@ function getCachedPregameOdds(league: League, eventId: any) {
 
 function pregameOddsKey(league: string, eventId: any) {
   return `sportsTrackerPregameOdds:${league}:${eventId}`;
+}
+
+function mergeStoredOdds(primary: any, fallback: any) {
+  if (!primary) return fallback || null;
+  if (!fallback) return primary;
+  return {
+    ...primary,
+    ...Object.fromEntries(Object.entries(fallback).filter(([, value]) => value != null && value !== "")),
+  };
 }
 
 function cleanMoneyLineText(value: any, abbr?: string): string | null {
