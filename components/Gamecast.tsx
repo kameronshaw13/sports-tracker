@@ -375,7 +375,7 @@ function baserunningEventsForAtBat(atBat: MlbAtBat) {
 function BaserunningEventRow({ text }: { text: string }) {
   return (
     <div className="gamecast-baserunning-event">
-      <span className="gamecast-baserunning-dot" aria-hidden="true" />
+      <span className="gamecast-baserunning-base" aria-hidden="true" />
       <span>{text}</span>
     </div>
   );

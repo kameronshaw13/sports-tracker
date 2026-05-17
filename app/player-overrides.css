@@ -1351,28 +1351,29 @@ body::-webkit-scrollbar,
 
 .gamecast-baserunning-event {
   min-height: 2.45rem !important;
-  padding: .58rem .95rem .52rem 2.18rem !important;
+  padding: .58rem .95rem .52rem 2.06rem !important;
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
-  gap: .56rem !important;
+  gap: .4rem !important;
   color: var(--score-meta, rgba(255, 248, 236, 0.86)) !important;
   font-size: .74rem !important;
   line-height: 1.28 !important;
   font-weight: 500 !important;
   text-align: left !important;
-  background: var(--surface) !important;
+  background: transparent !important;
   border-bottom: 1px solid rgba(220, 220, 220, .18) !important;
 }
 
-.gamecast-baserunning-dot {
-  width: .72rem !important;
-  height: .72rem !important;
-  flex: 0 0 .72rem !important;
-  border-radius: 999px !important;
-  background: color-mix(in srgb, var(--accent) 72%, var(--cream) 28%) !important;
-  box-shadow: 0 0 0 1px rgba(255,255,255,.2) !important;
-  transform: translateY(-.03rem) !important;
+.gamecast-baserunning-base {
+  width: .68rem !important;
+  height: .68rem !important;
+  flex: 0 0 .68rem !important;
+  border-radius: .08rem !important;
+  background: color-mix(in srgb, var(--cream) 72%, var(--accent) 28%) !important;
+  border: 1px solid rgba(255,255,255,.58) !important;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.28), 0 1px 4px rgba(0,0,0,.18) !important;
+  transform: translateY(-.03rem) rotate(45deg) !important;
 }
 
 @media (max-width: 420px) {
