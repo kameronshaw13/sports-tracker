@@ -361,6 +361,41 @@ async function loadLeagueEndpointSeriesInfo(origin: string, league: string, even
   return null;
 }
 
+async function loadLeagueEndpointOdds(origin: string, league: string, eventId: string, gameDate?: string | null) {
+  const date = espnDateParam(gameDate);
+  if (!date) return null;
+  const dates = [date, offsetEspnDate(date, -1), offsetEspnDate(date, 1)];
+  for (const dateParam of dates) {
+    try {
+      const res = await fetch(`${origin}/api/league?league=${encodeURIComponent(league)}&date=${dateParam}`, { cache: "no-store" });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const event = (data?.events || []).find((ev: any) => String(ev?.id) === String(eventId));
+      if (event?.odds) return event.odds;
+    } catch {}
+  }
+  return null;
+}
+
+async function loadScoreboardOdds(origin: string, league: string, eventId: string, gameDate?: string | null) {
+  const fromLeagueEndpoint = await loadLeagueEndpointOdds(origin, league, eventId, gameDate);
+  if (fromLeagueEndpoint) return fromLeagueEndpoint;
+
+  const date = espnDateParam(gameDate);
+  if (!date) return null;
+  const dates = [date, offsetEspnDate(date, -1), offsetEspnDate(date, 1)];
+  for (const dateParam of dates) {
+    try {
+      const scoreboard = await getScoreboard(league, dateParam);
+      const event = (scoreboard?.events || []).find((ev: any) => String(ev?.id) === String(eventId));
+      const comp = event?.competitions?.[0];
+      const odds = extractOdds(comp);
+      if (odds) return odds;
+    } catch {}
+  }
+  return null;
+}
+
 async function loadScoreboardSeriesInfo(origin: string, league: string, eventId: string, gameDate?: string | null) {
   const fromLeagueEndpoint = await loadLeagueEndpointSeriesInfo(origin, league, eventId, gameDate);
   if (fromLeagueEndpoint?.homeSeriesRecord || fromLeagueEndpoint?.awaySeriesRecord || fromLeagueEndpoint?.seriesGame) {
@@ -482,6 +517,7 @@ export async function GET(req: NextRequest) {
       seriesInfo.awaySeriesRecord = scoreboardSeriesInfo.awaySeriesRecord || seriesInfo.awaySeriesRecord;
     }
     applyCompletedSeriesResult(seriesInfo, comp, home, away);
+    const odds = extractOdds(comp) || await loadScoreboardOdds(req.nextUrl.origin, league, eventId, header?.competitions?.[0]?.date);
 
     const plays = (data?.plays || []).slice().reverse().slice(0, 50).map((p: any) => ({
       id: p.id,
@@ -523,7 +559,7 @@ export async function GET(req: NextRequest) {
       away: formatTeam(away, "away"),
       plays,
       situation: data?.situation || null,
-      odds: extractOdds(comp),
+      odds,
       venue: comp?.venue?.fullName || null,
       broadcast: comp?.broadcasts?.[0]?.names?.[0] || null,
       date: header?.competitions?.[0]?.date,

@@ -1677,3 +1677,54 @@ body::-webkit-scrollbar,
 .player-detail-bio-sections .player-detail-season-heading {
   margin: 0 !important;
 }
+
+/* v161: lineup selector/header polish and odds card alignment */
+.game-lineup-wrap {
+  background: transparent !important;
+}
+
+.game-lineup-wrap > .game-lineup-toggle {
+  margin: .68rem .76rem .58rem !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.game-lineup-shell {
+  background: color-mix(in srgb, var(--surface) 90%, #8a603a 10%) !important;
+  border-top: 1px solid rgba(226, 197, 150, .18) !important;
+  border-bottom: 1px solid rgba(226, 197, 150, .18) !important;
+}
+
+.game-lineup-section-title {
+  min-height: 2.38rem !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: .18rem .92rem 0 !important;
+  background: color-mix(in srgb, var(--surface-2) 74%, #8a603a 18%) !important;
+  border-bottom: 1px solid rgba(226, 197, 150, .16) !important;
+  color: var(--text-3) !important;
+  font-family: var(--retro-font, inherit) !important;
+  font-size: .72rem !important;
+  font-weight: 950 !important;
+  letter-spacing: .05em !important;
+  text-transform: uppercase !important;
+}
+
+.game-lineup-order {
+  transform: translateY(.19rem) !important;
+}
+
+.boxscore-team-toggle-btn,
+.boxscore-team-toggle-mid {
+  padding-left: .8rem !important;
+  padding-right: .8rem !important;
+}
+
+.boxscore-team-toggle-btn img {
+  transform: translateY(-.05rem) !important;
+}
+
+.boxscore-team-toggle-mid {
+  transform: translateY(-.18rem) !important;
+}

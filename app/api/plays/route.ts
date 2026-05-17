@@ -425,12 +425,13 @@ function looksLikeAtBat(text: string, type?: string | null): boolean {
 }
 
 function shortenChallengeResultNames(text: string): string {
-  const actionPattern = "(?:walks?|singles?|doubles?|triples?|homers?|homered|grounds?|grounded|flies?|flied|lines?|lined|pops?|popped|strikes?|struck|reaches?|reached|scores?|scored|advances?|advanced|stole|caught|thrown|hit|safe|out)";
+  const actionPattern = "(?:walks?|walked|singles?|singled|doubles?|doubled|triples?|tripled|homers?|homered|grounds?|grounded|flies?|flied|lines?|lined|pops?|popped|strikes?|struck|reaches?|reached|scores?|scored|advances?|advanced|stole|caught|thrown|hit|safe|out)";
   const fullNameBeforeAction = new RegExp(`\\b([A-Z][a-zA-Z.'-]+)\\s+([A-Z][a-zA-Z.'-]+)(?=\\s+${actionPattern}\\b)`, "g");
   const fullNameBeforeBase = /\b([A-Z][a-zA-Z.'-]+)\s+([A-Z][a-zA-Z.'-]+)(?=\s+to\s+(?:second|third|home)\b)/g;
   return String(text || "")
     .replace(fullNameBeforeAction, "$2")
-    .replace(fullNameBeforeBase, "$2");
+    .replace(fullNameBeforeBase, "$2")
+    .replace(/\.\s+([A-Z][a-zA-Z.'-]+\s+to\s+(?:second|third|home)\b)/g, ", $1");
 }
 
 function challengeAtBatResult(text: string, type?: string | null): { text: string; type: string | null } | null {

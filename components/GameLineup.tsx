@@ -38,7 +38,7 @@ export default function GameLineup({ league, eventId }: Props) {
   const players = lineupPlayers(team);
 
   return (
-    <div className="game-lineup-shell">
+    <div className="game-lineup-wrap">
       <div className="game-lineup-toggle">
         {teams.map((t: any, index: number) => (
           <button
@@ -62,35 +62,38 @@ export default function GameLineup({ league, eventId }: Props) {
         ))}
       </div>
 
-      <div className="game-lineup-list">
-        {players.length ? players.map((player: any, index: number) => (
-          <div key={`${player.id || player.name || index}-${index}`} className="game-lineup-row">
-            <div className="game-lineup-order tabular-nums">{index + 1}</div>
-            <div className="game-lineup-headshot-wrap">
-              {player.headshot ? (
-                <Image
-                  src={player.headshot}
-                  alt=""
-                  width={38}
-                  height={38}
-                  className="game-lineup-headshot"
-                  unoptimized
-                />
-              ) : (
-                <span>{initialsFor(player.name || player.shortName)}</span>
-              )}
-            </div>
-            <div className="game-lineup-player">
-              <div className="game-lineup-name">
-                <span>{player.name || player.shortName || "Player"}</span>
-                {player.position && <em>{player.position}</em>}
+      <div className="game-lineup-shell">
+        <div className="game-lineup-section-title">Starting Lineup</div>
+        <div className="game-lineup-list">
+          {players.length ? players.map((player: any, index: number) => (
+            <div key={`${player.id || player.name || index}-${index}`} className="game-lineup-row">
+              <div className="game-lineup-order tabular-nums">{index + 1}</div>
+              <div className="game-lineup-headshot-wrap">
+                {player.headshot ? (
+                  <Image
+                    src={player.headshot}
+                    alt=""
+                    width={38}
+                    height={38}
+                    className="game-lineup-headshot"
+                    unoptimized
+                  />
+                ) : (
+                  <span>{initialsFor(player.name || player.shortName)}</span>
+                )}
               </div>
+              <div className="game-lineup-player">
+                <div className="game-lineup-name">
+                  <span>{player.name || player.shortName || "Player"}</span>
+                  {player.position && <em>{player.position}</em>}
+                </div>
+              </div>
+              <div className="game-lineup-avg tabular-nums">{lineupAverage(player)}</div>
             </div>
-            <div className="game-lineup-avg tabular-nums">{lineupAverage(player)}</div>
-          </div>
-        )) : (
-          <div className="game-lineup-empty">Lineup has not been posted yet.</div>
-        )}
+          )) : (
+            <div className="game-lineup-empty">Lineup has not been posted yet.</div>
+          )}
+        </div>
       </div>
     </div>
   );
