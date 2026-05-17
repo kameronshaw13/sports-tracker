@@ -1835,10 +1835,11 @@ body::-webkit-scrollbar,
 
 /* v164: direct middle Team selector control */
 .boxscore-team-toggle-mid {
-  min-width: 6.05rem !important;
-  padding-left: 1.32rem !important;
-  padding-right: 1.32rem !important;
+  min-width: 6.85rem !important;
+  padding-left: 1.72rem !important;
+  padding-right: 1.72rem !important;
   align-items: flex-start !important;
+  justify-content: center !important;
   padding-top: .05rem !important;
 }
 
@@ -1846,6 +1847,7 @@ body::-webkit-scrollbar,
   min-width: 6.85rem !important;
   padding-left: 1.72rem !important;
   padding-right: 1.72rem !important;
+  justify-content: center !important;
 }
 
 .boxscore-team-toggle-label {

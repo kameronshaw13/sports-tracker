@@ -127,7 +127,6 @@ function ScoreboardHero({ league, home, away, status, situation, odds, eventId, 
               <div className={`game-score-status ${status?.state === "in" ? "is-live" : status?.state === "pre" ? "is-pre" : "is-final"}`}>{formatGameStatus(status, gameDate)}</div>
             </div>
             <div className="game-score-center-row game-score-center-row-bottom">
-              <GameOddsLine odds={odds} away={away} home={home} />
               {league === "mlb" && status?.state === "in" && hasBaseballSituation(situation) && <BaseballSituationBlock situation={situation} />}
             </div>
           </div>
@@ -137,18 +136,8 @@ function ScoreboardHero({ league, home, away, status, situation, odds, eventId, 
   );
 }
 
-function GameOddsLine({ odds, away, home }: { odds: any; away: any; home: any }) {
-  if (!odds?.awayMoneyLine && !odds?.homeMoneyLine) return null;
-  return (
-    <div className="game-score-odds">
-      {odds.awayMoneyLine && <span>{away?.abbr} {odds.awayMoneyLine}</span>}
-      {odds.homeMoneyLine && <span>{home?.abbr} {odds.homeMoneyLine}</span>}
-    </div>
-  );
-}
-
 function hasOdds(odds: any) {
-  return !!(odds?.awayMoneyLine || odds?.homeMoneyLine || odds?.overUnder || odds?.awaySpread || odds?.homeSpread || odds?.awaySpreadOdds || odds?.homeSpreadOdds);
+  return !!(odds?.awayMoneyLine || odds?.homeMoneyLine || odds?.overUnder || odds?.overOdds || odds?.underOdds || odds?.awaySpread || odds?.homeSpread || odds?.awaySpreadOdds || odds?.homeSpreadOdds);
 }
 
 function OddsPanel({ league, odds, away, home }: { league: string; odds: any; away: any; home: any }) {
@@ -167,8 +156,8 @@ function OddsPanel({ league, odds, away, home }: { league: string; odds: any; aw
       <OddsMarketCard
         title={/^(nba|wnba|nfl|cfb|cbb)$/i.test(league || "") ? "Line" : "Run Line"}
         rows={[
-          { key: "away", team: away, value: odds?.awaySpreadOdds || odds?.awayMoneyLine || "—", line: odds?.awaySpread || defaultAwayLine },
-          { key: "home", team: home, value: odds?.homeSpreadOdds || odds?.homeMoneyLine || "—", line: odds?.homeSpread || defaultHomeLine },
+          { key: "away", team: away, value: odds?.awaySpreadOdds || "—", line: odds?.awaySpread || defaultAwayLine },
+          { key: "home", team: home, value: odds?.homeSpreadOdds || "—", line: odds?.homeSpread || defaultHomeLine },
         ]}
         showLine
       />
