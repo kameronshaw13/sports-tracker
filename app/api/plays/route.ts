@@ -431,7 +431,7 @@ function shortenChallengeResultNames(text: string): string {
   return String(text || "")
     .replace(fullNameBeforeAction, "$2")
     .replace(fullNameBeforeBase, "$2")
-    .replace(/\.\s+([A-Z][a-zA-Z.'-]+\s+to\s+(?:second|third|home)\b)/g, ", $1");
+    .replace(/\.\s+([A-Z][a-zA-Z.'-]+\s+(?:to|advances?|scores?|scored|stole|caught|thrown)\b)/g, ", $1");
 }
 
 function challengeAtBatResult(text: string, type?: string | null): { text: string; type: string | null } | null {
@@ -462,8 +462,7 @@ function challengeAtBatResult(text: string, type?: string | null): { text: strin
 function normalizeResult(text: string, type?: string | null): string {
   const clean = String(text || "").replace(/\s+/g, " ").trim();
   if (!clean) return type || "Play";
-  // ESPN text is usually already the best human-readable result, so keep it.
-  return clean;
+  return shortenChallengeResultNames(clean);
 }
 
 function embeddedAtBatResult(p: any): { text: string; type: string | null } | null {
@@ -780,7 +779,7 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
     if (!group.resultText && !group.pitches.length) continue;
     rows.push({
       id: String(group.resultPlay?.id || `live-${group.atBatKey}-${group.firstIndex}`),
-      text: group.resultText || "Current at-bat",
+      text: group.resultText ? normalizeResult(group.resultText, group.resultType) : "Current at-bat",
       result: group.resultText ? normalizeResult(group.resultText, group.resultType) : "Current at-bat",
       period: group.period,
       halfInning: group.halfInning,

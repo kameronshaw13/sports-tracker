@@ -1728,3 +1728,59 @@ body::-webkit-scrollbar,
 .boxscore-team-toggle-mid {
   transform: translateY(-.18rem) !important;
 }
+
+/* v162: odds market layout, lineup logo outline, boxscore selector sizing */
+.game-lineup-toggle-btn img.logo-outline-dark,
+.game-lineup-toggle-btn .logo-outline-dark {
+  filter:
+    drop-shadow(0 0 .6px rgba(255,255,255,.98))
+    drop-shadow(0 0 1px rgba(255,255,255,.72))
+    drop-shadow(0 1px 2px rgba(0,0,0,.42)) !important;
+}
+
+.boxscore-team-toggle {
+  gap: .34rem !important;
+}
+
+.boxscore-team-toggle-btn,
+.boxscore-team-toggle-mid {
+  min-width: 5.15rem !important;
+  padding-left: .95rem !important;
+  padding-right: .95rem !important;
+}
+
+.boxscore-team-toggle-btn.is-active {
+  min-width: 5.15rem !important;
+}
+
+.boxscore-team-toggle-mid {
+  transform: translateY(-.24rem) !important;
+}
+
+.boxscore-team-toggle-btn img {
+  transform: translateY(-.08rem) !important;
+}
+
+.game-odds-card-head,
+.game-odds-card-row {
+  grid-template-columns: minmax(0, 1fr) minmax(3.5rem, .46fr) !important;
+}
+
+.game-odds-card.has-line .game-odds-card-head,
+.game-odds-card.has-line .game-odds-card-row {
+  grid-template-columns: minmax(0, 1fr) minmax(3.3rem, .42fr) minmax(3.3rem, .42fr) !important;
+}
+
+.game-odds-card-head {
+  padding-top: .16rem !important;
+}
+
+.game-odds-card-head span:nth-child(2),
+.game-odds-card-head span:nth-child(3),
+.game-odds-card-row strong {
+  justify-self: end !important;
+}
+
+.game-odds-card-row strong + strong {
+  color: var(--score-meta, rgba(255, 248, 236, .82)) !important;
+}

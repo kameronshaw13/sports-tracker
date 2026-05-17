@@ -149,53 +149,56 @@ function GameOddsLine({ odds, away, home }: { odds: any; away: any; home: any })
 }
 
 function hasOdds(odds: any) {
-  return !!(odds?.awayMoneyLine || odds?.homeMoneyLine || odds?.overUnder || odds?.awaySpread || odds?.homeSpread || odds?.details);
+  return !!(odds?.awayMoneyLine || odds?.homeMoneyLine || odds?.overUnder || odds?.awaySpread || odds?.homeSpread || odds?.awaySpreadOdds || odds?.homeSpreadOdds || odds?.details);
 }
 
 function OddsPanel({ league, odds, away, home }: { league: string; odds: any; away: any; home: any }) {
   const total = odds?.overUnder ? String(odds.overUnder).replace(/^o\/?u?/i, "").replace(/^o/i, "") : null;
-  const showLine = /^(nba|wnba|nfl|cfb|cbb)$/i.test(league || "");
-  const markets = [
-    {
-      title: "Moneyline",
-      rows: [
-        { key: "away", team: away, value: odds?.awayMoneyLine },
-        { key: "home", team: home, value: odds?.homeMoneyLine },
-      ],
-    },
-    showLine ? {
-      title: "Line",
-      rows: [
-        { key: "away", team: away, value: odds?.awaySpread },
-        { key: "home", team: home, value: odds?.homeSpread },
-      ],
-    } : null,
-    total ? {
-      title: "Total",
-      rows: [
-        { key: "over", label: "Over", value: `o${total}` },
-        { key: "under", label: "Under", value: `u${total}` },
-      ],
-    } : null,
-  ].filter((market: any) => market && market.rows.some((row: any) => row.value && row.value !== "—"));
-
   return (
     <div className="game-odds-panel">
-      {markets.map((market: any) => (
-        <div key={market.title} className="game-odds-card">
-          <div className="game-odds-card-head">
-            <span>{market.title}</span>
-            <span>Current</span>
-          </div>
-          {market.rows.map((row: any) => (
-            <div key={row.key} className="game-odds-card-row">
-              <OddsTeamLabel team={row.team} label={row.label} />
-              <strong>{row.value || "—"}</strong>
-            </div>
-          ))}
+      <OddsMarketCard
+        title="Moneyline"
+        rows={[
+          { key: "away", team: away, value: odds?.awayMoneyLine || "—" },
+          { key: "home", team: home, value: odds?.homeMoneyLine || "—" },
+        ]}
+      />
+      <OddsMarketCard
+        title={/^(nba|wnba|nfl|cfb|cbb)$/i.test(league || "") ? "Line" : "Run Line"}
+        rows={[
+          { key: "away", team: away, value: odds?.awaySpreadOdds || "—", line: odds?.awaySpread || "—" },
+          { key: "home", team: home, value: odds?.homeSpreadOdds || "—", line: odds?.homeSpread || "—" },
+        ]}
+        showLine
+      />
+      <OddsMarketCard
+        title="Over/Under"
+        rows={[
+          { key: "over", label: "Over", value: odds?.overOdds || "—", line: total ? `o${total}` : "—" },
+          { key: "under", label: "Under", value: odds?.underOdds || "—", line: total ? `u${total}` : "—" },
+        ]}
+        showLine
+      />
+      {odds?.details && <div className="game-odds-note">{odds.details}</div>}
+    </div>
+  );
+}
+
+function OddsMarketCard({ title, rows, showLine = false }: { title: string; rows: any[]; showLine?: boolean }) {
+  return (
+    <div className={`game-odds-card ${showLine ? "has-line" : ""}`}>
+      <div className="game-odds-card-head">
+        <span>{title}</span>
+        <span>Odds</span>
+        {showLine && <span>{title === "Over/Under" ? "Total" : "Line"}</span>}
+      </div>
+      {rows.map((row: any) => (
+        <div key={row.key} className="game-odds-card-row">
+          <OddsTeamLabel team={row.team} label={row.label} />
+          <strong>{row.value || "—"}</strong>
+          {showLine && <strong>{row.line || "—"}</strong>}
         </div>
       ))}
-      {odds?.details && <div className="game-odds-note">{odds.details}</div>}
     </div>
   );
 }

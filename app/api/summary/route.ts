@@ -299,6 +299,15 @@ function formatOverUnder(value: any): string | null {
   return Number.isInteger(num) ? String(num) : num.toFixed(1).replace(/\.0$/, "");
 }
 
+function formatSpreadValue(value: any): string | null {
+  if (value == null || value === "") return null;
+  const raw = typeof value === "object" ? (value?.displayValue || value?.value) : value;
+  const num = Number(String(raw).replace(/[^\d.-]/g, ""));
+  if (!Number.isFinite(num) || num === 0) return null;
+  const display = Number.isInteger(num) ? String(Math.abs(num)) : Math.abs(num).toFixed(1).replace(/\.0$/, "");
+  return `${num > 0 ? "+" : "-"}${display}`;
+}
+
 function extractOdds(comp: any) {
   const odds = Array.isArray(comp?.odds) ? comp.odds[0] : comp?.odds;
   if (!odds) return null;
@@ -317,11 +326,15 @@ function extractOdds(comp: any) {
     odds?.homeMoneyline
   );
   const overUnder = formatOverUnder(odds?.overUnder ?? odds?.total ?? odds?.oU);
-  const awaySpread = formatAmericanOdds(odds?.awayTeamOdds?.spreadOdds ?? odds?.awaySpreadOdds);
-  const homeSpread = formatAmericanOdds(odds?.homeTeamOdds?.spreadOdds ?? odds?.homeSpreadOdds);
+  const overOdds = formatAmericanOdds(odds?.overOdds ?? odds?.over?.odds ?? odds?.totalOverOdds ?? odds?.overTeamOdds?.moneyLine);
+  const underOdds = formatAmericanOdds(odds?.underOdds ?? odds?.under?.odds ?? odds?.totalUnderOdds ?? odds?.underTeamOdds?.moneyLine);
+  const awaySpread = formatSpreadValue(odds?.awayTeamOdds?.spread ?? odds?.awayTeamOdds?.current?.spread ?? odds?.awaySpread);
+  const homeSpread = formatSpreadValue(odds?.homeTeamOdds?.spread ?? odds?.homeTeamOdds?.current?.spread ?? odds?.homeSpread);
+  const awaySpreadOdds = formatAmericanOdds(odds?.awayTeamOdds?.spreadOdds ?? odds?.awayTeamOdds?.current?.spreadOdds ?? odds?.awaySpreadOdds);
+  const homeSpreadOdds = formatAmericanOdds(odds?.homeTeamOdds?.spreadOdds ?? odds?.homeTeamOdds?.current?.spreadOdds ?? odds?.homeSpreadOdds);
   const details = typeof odds?.details === "string" ? odds.details : null;
-  if (!awayMoneyLine && !homeMoneyLine && !overUnder && !awaySpread && !homeSpread && !details) return null;
-  return { awayMoneyLine, homeMoneyLine, overUnder, awaySpread, homeSpread, details };
+  if (!awayMoneyLine && !homeMoneyLine && !overUnder && !awaySpread && !homeSpread && !awaySpreadOdds && !homeSpreadOdds && !details) return null;
+  return { awayMoneyLine, homeMoneyLine, overUnder, overOdds, underOdds, awaySpread, homeSpread, awaySpreadOdds, homeSpreadOdds, details };
 }
 
 function espnDateParam(value?: string | null): string | null {
