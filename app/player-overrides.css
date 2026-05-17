@@ -1241,7 +1241,7 @@ body::-webkit-scrollbar,
 
 .game-score-hero .game-score-status.is-pre,
 .game-score-hero .game-score-status.is-final {
-  transform: translateY(.14rem) !important;
+  transform: translateY(.08rem) !important;
 }
 
 .game-score-hero.game-score-hero-mlb .game-score-center-row-main:has(.game-score-status.is-live) {
@@ -1253,7 +1253,7 @@ body::-webkit-scrollbar,
 }
 
 .game-score-hero:not(.game-score-hero-mlb) .game-score-status.is-live {
-  transform: translateY(.24rem) !important;
+  transform: translateY(.08rem) !important;
 }
 
 .game-score-hero .game-score-status.is-live {
@@ -1298,7 +1298,7 @@ body::-webkit-scrollbar,
 
   .game-score-hero .game-score-status.is-pre,
   .game-score-hero .game-score-status.is-final {
-    transform: translateY(.12rem) !important;
+    transform: translateY(.06rem) !important;
   }
 
   .game-score-hero.game-score-hero-mlb .game-score-center-row-main:has(.game-score-status.is-live) {
@@ -1310,7 +1310,7 @@ body::-webkit-scrollbar,
   }
 
   .game-score-hero:not(.game-score-hero-mlb) .game-score-status.is-live {
-    transform: translateY(.22rem) !important;
+    transform: translateY(.06rem) !important;
   }
 
   .game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {
