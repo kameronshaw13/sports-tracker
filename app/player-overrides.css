@@ -1245,7 +1245,7 @@ body::-webkit-scrollbar,
 }
 
 .game-score-hero .game-score-center-row-main:has(.game-score-status.is-live) {
-  top: calc(var(--gt-middle-axis) - .58rem) !important;
+  top: calc(var(--gt-middle-axis) - .76rem) !important;
 }
 
 .game-score-hero .game-score-status.is-live {
@@ -1253,7 +1253,7 @@ body::-webkit-scrollbar,
 }
 
 .game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {
-  top: calc(var(--gt-bottom-row-axis) - 2.14rem) !important;
+  top: calc(var(--gt-bottom-row-axis) - 2.32rem) !important;
   transform: translate(-50%, 0) !important;
 }
 
@@ -1272,8 +1272,8 @@ body::-webkit-scrollbar,
 }
 
 .gamecast-pitch-label {
-  padding-top: .08rem !important;
-  transform: translateY(-.04rem) !important;
+  padding-top: .12rem !important;
+  transform: translateY(.01rem) !important;
   line-height: 1 !important;
 }
 
@@ -1290,11 +1290,11 @@ body::-webkit-scrollbar,
   }
 
   .game-score-hero .game-score-center-row-main:has(.game-score-status.is-live) {
-    top: calc(var(--gt-middle-axis) - .52rem) !important;
+    top: calc(var(--gt-middle-axis) - .68rem) !important;
   }
 
   .game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {
-    top: calc(var(--gt-bottom-row-axis) - 1.98rem) !important;
+    top: calc(var(--gt-bottom-row-axis) - 2.14rem) !important;
   }
 
   .game-score-hero .game-score-situation svg {
@@ -1307,7 +1307,7 @@ body::-webkit-scrollbar,
   }
 
   .gamecast-pitch-label {
-    padding-top: .07rem !important;
-    transform: translateY(-.03rem) !important;
+    padding-top: .1rem !important;
+    transform: translateY(.01rem) !important;
   }
 }
