@@ -1324,6 +1324,7 @@ body::-webkit-scrollbar,
 
 .gamecast-pitcher-tag {
   transform: translateY(-.2rem) !important;
+  padding-left: 2rem !important;
 }
 
 .gamecast-pitcher-tag > span {
