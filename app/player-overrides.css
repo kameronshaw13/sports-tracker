@@ -1351,11 +1351,11 @@ body::-webkit-scrollbar,
 
 .gamecast-baserunning-event {
   min-height: 2.45rem !important;
-  padding: .58rem .95rem .52rem 1.78rem !important;
+  padding: .58rem .95rem .52rem 1.36rem !important;
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
-  gap: .4rem !important;
+  gap: .76rem !important;
   color: var(--score-meta, rgba(255, 248, 236, 0.86)) !important;
   font-size: .74rem !important;
   line-height: 1.28 !important;
