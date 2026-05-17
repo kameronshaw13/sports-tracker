@@ -314,9 +314,13 @@ function HalfInningCard({
               const currentPitcher = pitcherNameForAtBat(ab) || (idx === 0 ? pitcher || "" : "");
               const showPitcher = !!currentPitcher && currentPitcher !== lastPitcher;
               if (currentPitcher) lastPitcher = currentPitcher;
+              const baserunningEvents = baserunningEventsForAtBat(ab);
               return (
                 <div key={ab.id}>
                   {showPitcher && <PitcherTag name={currentPitcher} />}
+                  {baserunningEvents.map((event, eventIdx) => (
+                    <BaserunningEventRow key={`${ab.id}-runner-${eventIdx}`} text={event} />
+                  ))}
                   <AtBatSummaryRow atBat={ab} away={away} home={home} />
                 </div>
               );
@@ -347,6 +351,32 @@ function PitcherTag({ name }: { name: string }) {
     <div className="gamecast-pitcher-tag">
       <span className="gamecast-pitcher-ball" aria-hidden="true" />
       <span>{name} pitching</span>
+    </div>
+  );
+}
+
+function isBaserunningPitchText(text: string) {
+  const value = String(text || "").replace(/\s+/g, " ").trim().toLowerCase();
+  if (!value) return false;
+  return (
+    /\bstole\s+(second|third|home|2nd|3rd)\b/.test(value) ||
+    /\bcaught\s+stealing\s+(second|third|home|2nd|3rd)\b/.test(value) ||
+    /\bthrown\s+out\b.*\battempt(?:ing)?\s+to\s+steal\b/.test(value) ||
+    /\battempt(?:ing)?\s+to\s+steal\b.*\bthrown\s+out\b/.test(value)
+  );
+}
+
+function baserunningEventsForAtBat(atBat: MlbAtBat) {
+  return (atBat.pitches || [])
+    .filter(isBaserunningPitchText)
+    .map((text) => cleanResultText(text));
+}
+
+function BaserunningEventRow({ text }: { text: string }) {
+  return (
+    <div className="gamecast-baserunning-event">
+      <span className="gamecast-baserunning-dot" aria-hidden="true" />
+      <span>{text}</span>
     </div>
   );
 }
@@ -444,8 +474,9 @@ function AtBatSummaryRow({ atBat, forceOpen = false, mode = "default", away, hom
 }
 
 function PitchSequence({ atBat, compact = false, horizontalScroll = false }: { atBat: MlbAtBat; compact?: boolean; horizontalScroll?: boolean }) {
-  if (!atBat.pitches?.length) return null;
-  const pitchRows = atBat.pitches.map((pitch, idx) => ({ pitch, idx }));
+  const pitches = (atBat.pitches || []).filter((pitch) => !isBaserunningPitchText(pitch));
+  if (!pitches.length) return null;
+  const pitchRows = pitches.map((pitch, idx) => ({ pitch, idx }));
   const displayRows = horizontalScroll ? [...pitchRows].reverse() : pitchRows;
   return (
     <div className={["gamecast-pitch-strip-wrap", compact ? "is-compact" : "", horizontalScroll ? "is-horizontal-scroll" : ""].filter(Boolean).join(" ")}>

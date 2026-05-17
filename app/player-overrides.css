@@ -1349,6 +1349,32 @@ body::-webkit-scrollbar,
   transform: translateY(-.06rem) !important;
 }
 
+.gamecast-baserunning-event {
+  min-height: 2.45rem !important;
+  padding: .58rem .95rem .52rem 2.18rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: .56rem !important;
+  color: var(--score-meta, rgba(255, 248, 236, 0.86)) !important;
+  font-size: .74rem !important;
+  line-height: 1.28 !important;
+  font-weight: 500 !important;
+  text-align: left !important;
+  background: var(--surface) !important;
+  border-bottom: 1px solid rgba(220, 220, 220, .18) !important;
+}
+
+.gamecast-baserunning-dot {
+  width: .72rem !important;
+  height: .72rem !important;
+  flex: 0 0 .72rem !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--accent) 72%, var(--cream) 28%) !important;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.2) !important;
+  transform: translateY(-.03rem) !important;
+}
+
 @media (max-width: 420px) {
   .game-score-hero .game-score-score,
   .game-score-hero .game-score-team-away .game-score-score,
@@ -1425,5 +1451,10 @@ body::-webkit-scrollbar,
 
   .gamecast-half-rows details summary .gamecast-play-text {
     transform: translateY(-.05rem) !important;
+  }
+
+  .gamecast-baserunning-event {
+    padding-top: .54rem !important;
+    padding-bottom: .48rem !important;
   }
 }
