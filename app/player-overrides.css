@@ -1235,8 +1235,17 @@ body::-webkit-scrollbar,
 .game-score-hero .game-score-score,
 .game-score-hero .game-score-team-away .game-score-score,
 .game-score-hero .game-score-team-home .game-score-score {
-  top: calc(var(--gt-middle-axis) + .24rem) !important;
+  top: calc(var(--gt-middle-axis) + .32rem) !important;
   transform: translateY(-50%) !important;
+}
+
+.game-score-hero .game-score-status.is-pre,
+.game-score-hero .game-score-status.is-final {
+  transform: translateY(.24rem) !important;
+}
+
+.game-score-hero .game-score-center-row-main:has(.game-score-status.is-live) {
+  top: calc(var(--gt-middle-axis) - .58rem) !important;
 }
 
 .game-score-hero .game-score-status.is-live {
@@ -1244,7 +1253,7 @@ body::-webkit-scrollbar,
 }
 
 .game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {
-  top: calc(var(--gt-bottom-row-axis) - 1.98rem) !important;
+  top: calc(var(--gt-bottom-row-axis) - 2.14rem) !important;
   transform: translate(-50%, 0) !important;
 }
 
@@ -1263,8 +1272,8 @@ body::-webkit-scrollbar,
 }
 
 .gamecast-pitch-label {
-  padding-top: .04rem !important;
-  transform: translateY(-.1rem) !important;
+  padding-top: .08rem !important;
+  transform: translateY(-.04rem) !important;
   line-height: 1 !important;
 }
 
@@ -1272,11 +1281,20 @@ body::-webkit-scrollbar,
   .game-score-hero .game-score-score,
   .game-score-hero .game-score-team-away .game-score-score,
   .game-score-hero .game-score-team-home .game-score-score {
-    top: calc(var(--gt-middle-axis) + .22rem) !important;
+    top: calc(var(--gt-middle-axis) + .3rem) !important;
+  }
+
+  .game-score-hero .game-score-status.is-pre,
+  .game-score-hero .game-score-status.is-final {
+    transform: translateY(.22rem) !important;
+  }
+
+  .game-score-hero .game-score-center-row-main:has(.game-score-status.is-live) {
+    top: calc(var(--gt-middle-axis) - .52rem) !important;
   }
 
   .game-score-hero .game-score-center-row-bottom:has(.game-score-situation) {
-    top: calc(var(--gt-bottom-row-axis) - 1.82rem) !important;
+    top: calc(var(--gt-bottom-row-axis) - 1.98rem) !important;
   }
 
   .game-score-hero .game-score-situation svg {
@@ -1289,7 +1307,7 @@ body::-webkit-scrollbar,
   }
 
   .gamecast-pitch-label {
-    padding-top: .03rem !important;
-    transform: translateY(-.08rem) !important;
+    padding-top: .07rem !important;
+    transform: translateY(-.03rem) !important;
   }
 }
