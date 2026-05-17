@@ -54,7 +54,7 @@ export default function Boxscore({
   const team = data.teams[activeTeamIdx];
 
   return (
-    <div className="space-y-4">
+    <div className="boxscore-panel space-y-4">
       {data.lineScore && (
         <GameLineScore lineScore={data.lineScore} />
       )}

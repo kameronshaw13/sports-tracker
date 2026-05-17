@@ -1289,6 +1289,43 @@ body::-webkit-scrollbar,
   transform: translateY(-.08rem) !important;
 }
 
+.game-detail-content .boxscore-panel {
+  margin-top: -.22rem !important;
+}
+
+.boxscore-line-wrap {
+  margin-top: -.06rem !important;
+}
+
+.boxscore-line-table tbody td:not(:first-child) {
+  transform: translateY(.06rem) !important;
+  overflow: visible !important;
+}
+
+.boxscore-line-table tbody td {
+  padding-top: .48rem !important;
+  padding-bottom: .34rem !important;
+  overflow: visible !important;
+}
+
+.boxscore-line-team,
+.boxscore-line-team .logo-outline-dark,
+.boxscore-team-stat-team .logo-outline-dark,
+.boxscore-team-toggle-btn .logo-outline-dark {
+  overflow: visible !important;
+}
+
+.boxscore-line-team img,
+.boxscore-team-stat-team img,
+.boxscore-team-toggle-btn img {
+  box-sizing: content-box !important;
+  padding: .035rem !important;
+}
+
+.gamecast-pitcher-tag {
+  transform: translateY(-.16rem) !important;
+}
+
 @media (max-width: 420px) {
   .game-score-hero .game-score-score,
   .game-score-hero .game-score-team-away .game-score-score,
@@ -1333,5 +1370,21 @@ body::-webkit-scrollbar,
 
   .gamecast-pitcher-tag {
     transform: translateY(-.06rem) !important;
+  }
+
+  .game-detail-content .boxscore-panel {
+    margin-top: -.18rem !important;
+  }
+
+  .boxscore-line-wrap {
+    margin-top: -.05rem !important;
+  }
+
+  .boxscore-line-table tbody td:not(:first-child) {
+    transform: translateY(.05rem) !important;
+  }
+
+  .gamecast-pitcher-tag {
+    transform: translateY(-.12rem) !important;
   }
 }
