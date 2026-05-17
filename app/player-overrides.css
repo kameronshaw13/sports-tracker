@@ -1333,11 +1333,16 @@ body::-webkit-scrollbar,
 .gamecast-pitcher-tag > span:last-child {
   display: inline-flex !important;
   align-items: center !important;
-  transform: translateY(-.18rem) !important;
+  transform: translateY(-.12rem) !important;
 }
 
 .gamecast-half-rows > div:not(:first-child) > .gamecast-pitcher-tag {
   border-top: 1px solid rgba(220, 220, 220, .18) !important;
+}
+
+.gamecast-half-rows details summary .gamecast-play-text {
+  display: block !important;
+  transform: translateY(-.06rem) !important;
 }
 
 @media (max-width: 420px) {
@@ -1407,6 +1412,10 @@ body::-webkit-scrollbar,
   }
 
   .gamecast-pitcher-tag > span:last-child {
-    transform: translateY(-.15rem) !important;
+    transform: translateY(-.1rem) !important;
+  }
+
+  .gamecast-half-rows details summary .gamecast-play-text {
+    transform: translateY(-.05rem) !important;
   }
 }
