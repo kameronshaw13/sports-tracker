@@ -310,11 +310,28 @@ function HalfInningCard({
         ) : (
           (() => {
             let lastPitcher = "";
+            const seenBaserunning = new Set<string>();
+            const takeBaserunningEvent = (event: string) => {
+              const key = baserunningEventKey(event);
+              if (!key || seenBaserunning.has(key)) return false;
+              seenBaserunning.add(key);
+              return true;
+            };
             return visible.map((ab, idx) => {
               const currentPitcher = pitcherNameForAtBat(ab) || (idx === 0 ? pitcher || "" : "");
               const showPitcher = !!currentPitcher && currentPitcher !== lastPitcher;
               if (currentPitcher) lastPitcher = currentPitcher;
-              const baserunningEvents = baserunningEventsForAtBat(ab);
+              if (ab.isMinor && isBaserunningPitchText(ab.text)) {
+                const text = cleanResultText(ab.text);
+                if (!takeBaserunningEvent(text)) return null;
+                return (
+                  <div key={ab.id}>
+                    {showPitcher && <PitcherTag name={currentPitcher} />}
+                    <BaserunningEventRow text={text} />
+                  </div>
+                );
+              }
+              const baserunningEvents = baserunningEventsForAtBat(ab).filter(takeBaserunningEvent);
               return (
                 <div key={ab.id}>
                   {showPitcher && <PitcherTag name={currentPitcher} />}
@@ -381,6 +398,16 @@ function baserunningEventsForAtBat(atBat: MlbAtBat) {
   return (atBat.pitches || [])
     .filter(isBaserunningPitchText)
     .map((text) => cleanResultText(text));
+}
+
+function baserunningEventKey(text: string) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\b(base|bases)\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function BaserunningEventRow({ text }: { text: string }) {

@@ -522,14 +522,15 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
 }
 
 function scoreOddsText(league: League, game: any, team: any) {
-  const odds = game?.odds;
+  const cachedOdds = getCachedPregameOdds(league, game?.id);
+  const odds = mergeStoredOdds(game?.odds, cachedOdds);
   if (!odds) return null;
   const side = String(team?.homeAway || "").toLowerCase();
   if (/^(nba|nfl|cfb|cbb)$/i.test(String(league || "")) && side === "home") {
     return odds.homeSpread || null;
   }
   if (side === "away") return odds.overUnder || null;
-  if (side === "home") return cleanDirectAmericanOdds(odds.homeMoneyLine) || moneyLineForTeam(odds.details, team);
+  if (side === "home") return cleanDirectAmericanOdds(odds.homeMoneyLine);
   return null;
 }
 
@@ -717,11 +718,27 @@ function persistPregameOdds(games: any[]) {
     if (state !== "pre") continue;
     try {
       const existing = getCachedPregameOdds(game.league, game.id);
-      if (!existing) {
-        window.localStorage.setItem(pregameOddsKey(game.league, game.id), JSON.stringify(game.odds));
+      const merged = mergeStoredOdds(existing, game.odds);
+      if (!existing || oddsCompleteness(merged) > oddsCompleteness(existing)) {
+        window.localStorage.setItem(pregameOddsKey(game.league, game.id), JSON.stringify(merged));
       }
     } catch {}
   }
+}
+
+function oddsCompleteness(odds: any) {
+  if (!odds) return 0;
+  return [
+    odds.awayMoneyLine,
+    odds.homeMoneyLine,
+    odds.overUnder,
+    odds.overOdds,
+    odds.underOdds,
+    odds.awaySpread,
+    odds.homeSpread,
+    odds.awaySpreadOdds,
+    odds.homeSpreadOdds,
+  ].filter((value) => value != null && value !== "").length;
 }
 
 function getCachedPregameOdds(league: League, eventId: any) {
