@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getGameSummary, getScoreboard } from "@/lib/espn";
 import { parseTeamKey } from "@/lib/teams";
 import { mergeOdds } from "@/lib/oddsApi";
+import { getStoredOddsForEvent } from "@/lib/oddsStore";
 
 export const revalidate = 15;
 
@@ -610,8 +611,11 @@ export async function GET(req: NextRequest) {
       seriesInfo.awaySeriesRecord = seriesInfo.awaySeriesRecord || "0-0";
     }
     const odds = mergeOdds(
-      extractOdds(comp),
-      await loadScoreboardOdds(req.nextUrl.origin, league, eventId, header?.competitions?.[0]?.date)
+      mergeOdds(
+        extractOdds(comp),
+        await loadScoreboardOdds(req.nextUrl.origin, league, eventId, header?.competitions?.[0]?.date)
+      ),
+      await getStoredOddsForEvent(league, eventId)
     );
 
     const plays = (data?.plays || []).slice().reverse().slice(0, 50).map((p: any) => ({

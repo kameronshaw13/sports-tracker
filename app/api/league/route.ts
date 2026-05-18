@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getScoreboard } from "@/lib/espn";
 import { getOddsApiOddsForGames, mergeOdds } from "@/lib/oddsApi";
+import { getStoredOddsForGames, lockStartedGames, oddsStoreEnabled } from "@/lib/oddsStore";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -390,10 +391,12 @@ export async function GET(req: NextRequest) {
         broadcast: comp?.broadcasts?.[0]?.names?.[0] || null,
       };
     }));
-    const oddsApiOdds = await getOddsApiOddsForGames(league, date || null, events);
+    await lockStartedGames(league, events);
+    const storedOdds = await getStoredOddsForGames(league, events);
+    const oddsApiOdds = oddsStoreEnabled() ? new Map() : await getOddsApiOddsForGames(league, date || null, events);
     const enrichedEvents = events.map((event: any) => ({
       ...event,
-      odds: mergeOdds(event.odds, oddsApiOdds.get(String(event.id))),
+      odds: mergeOdds(mergeOdds(event.odds, oddsApiOdds.get(String(event.id))), storedOdds.get(String(event.id))),
     }));
 
     return NextResponse.json({ league, date, events: enrichedEvents }, { headers: { "Cache-Control": "no-store" } });

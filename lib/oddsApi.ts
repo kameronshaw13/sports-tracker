@@ -1,6 +1,6 @@
-type League = "mlb" | "nfl" | "nba" | "nhl" | "cfb" | "cbb";
+export type League = "mlb" | "nfl" | "nba" | "nhl" | "cfb" | "cbb";
 
-type EspnGame = {
+export type EspnGame = {
   id?: string;
   date?: string;
   name?: string;
@@ -10,7 +10,7 @@ type EspnGame = {
   status?: any;
 };
 
-type NormalizedOdds = {
+export type NormalizedOdds = {
   awayMoneyLine?: string | null;
   homeMoneyLine?: string | null;
   overUnder?: string | null;
@@ -24,7 +24,7 @@ type NormalizedOdds = {
   source?: "oddsapi";
 };
 
-const ODDS_SPORT_KEYS: Record<League, string> = {
+export const ODDS_SPORT_KEYS: Record<League, string> = {
   mlb: "baseball_mlb",
   nfl: "americanfootball_nfl",
   nba: "basketball_nba",
@@ -114,6 +114,10 @@ function dateWindow(dateParam?: string | null) {
     commenceTimeFrom: from.toISOString().replace(/\.\d{3}Z$/, "Z"),
     commenceTimeTo: to.toISOString().replace(/\.\d{3}Z$/, "Z"),
   };
+}
+
+function isoSecond(date: Date) {
+  return date.toISOString().replace(/\.\d{3}Z$/, "Z");
 }
 
 function gameTimeClose(a?: string | null, b?: string | null): boolean {
@@ -251,6 +255,66 @@ export async function getOddsApiOddsForGames(league: string, dateParam: string |
       if (!game?.id) continue;
       const match = matchOddsGame(oddsGames, game);
       if (!match) continue;
+      const normalized = normalizeOddsEvent(match, game);
+      if (normalized) out.set(String(game.id), normalized);
+    }
+    return out;
+  } catch {
+    return new Map<string, NormalizedOdds>();
+  }
+}
+
+export async function getOddsApiOddsForGamesWindow(
+  league: string,
+  windowFrom: Date,
+  windowTo: Date,
+  games: EspnGame[],
+  options: { cacheKeySuffix?: string; cacheTtlMs?: number } = {}
+) {
+  const apiKey = process.env.THE_ODDS_API_KEY;
+  const sport = ODDS_SPORT_KEYS[league as League];
+  const fromMs = windowFrom.getTime();
+  const toMs = windowTo.getTime();
+  const pregameGames = games.filter((game) => {
+    if (String(game?.status?.state || "") !== "pre") return false;
+    const start = new Date(String(game?.date || "")).getTime();
+    return Number.isFinite(start) && start > Date.now() && start >= fromMs && start <= toMs;
+  });
+  if (!apiKey || !sport || !pregameGames.length) return new Map<string, NormalizedOdds>();
+
+  const params = new URLSearchParams({
+    apiKey,
+    regions: "us",
+    markets: "h2h,spreads,totals",
+    oddsFormat: "american",
+    dateFormat: "iso",
+    commenceTimeFrom: isoSecond(windowFrom),
+    commenceTimeTo: isoSecond(windowTo),
+  });
+
+  const cacheTtl = options.cacheTtlMs ?? Math.min(ODDS_CLOSING_CACHE_MS, 10 * 60 * 1000);
+  const revalidateSeconds = Math.max(60, Math.round(cacheTtl / 1000));
+  const cacheKey = `${sport}:${isoSecond(windowFrom)}:${isoSecond(windowTo)}:${options.cacheKeySuffix || "window"}`;
+
+  try {
+    const cached = oddsApiRawCache.get(cacheKey);
+    let oddsGames = cached && cached.expires > Date.now() ? cached.data : null;
+    if (!oddsGames) {
+      const res = await fetch(`${ODDS_API_BASE}/${sport}/odds?${params.toString()}`, {
+        next: { revalidate: revalidateSeconds },
+      });
+      if (!res.ok) return new Map<string, NormalizedOdds>();
+      oddsGames = await res.json();
+      oddsApiRawCache.set(cacheKey, { expires: Date.now() + cacheTtl, data: oddsGames });
+    }
+
+    const out = new Map<string, NormalizedOdds>();
+    for (const game of pregameGames) {
+      if (!game?.id) continue;
+      const match = matchOddsGame(oddsGames, game);
+      if (!match) continue;
+      const commenceTime = new Date(String(match?.commence_time || "")).getTime();
+      if (Number.isFinite(commenceTime) && commenceTime <= Date.now()) continue;
       const normalized = normalizeOddsEvent(match, game);
       if (normalized) out.set(String(game.id), normalized);
     }
