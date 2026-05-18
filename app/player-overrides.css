@@ -1932,6 +1932,31 @@ body::-webkit-scrollbar,
   line-height: 1 !important;
 }
 
+/* v238: clean middle Team selector class without old mid-tab transform conflicts */
+.boxscore-team-toggle .boxscore-team-toggle-mid-fixed,
+.boxscore-team-toggle .boxscore-team-toggle-mid-fixed.is-active {
+  min-width: 0 !important;
+  width: 100% !important;
+  height: 2rem !important;
+  min-height: 2rem !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  transform: translateX(-.26rem) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.boxscore-team-toggle .boxscore-team-toggle-mid-fixed .boxscore-team-toggle-label,
+.boxscore-team-toggle .boxscore-team-toggle-mid-fixed.is-active .boxscore-team-toggle-label {
+  position: static !important;
+  display: block !important;
+  transform: translateY(.07rem) !important;
+  line-height: 1 !important;
+  width: auto !important;
+}
+
 .game-lineup-toggle-btn img.logo-outline-dark,
 .game-lineup-toggle-btn .logo-outline-dark {
   -webkit-filter:

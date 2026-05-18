@@ -89,7 +89,7 @@ export default function Boxscore({
                     key="team-label"
                     type="button"
                     onClick={() => setActiveView("team")}
-                    className={`boxscore-team-toggle-btn boxscore-team-toggle-mid ${activeView === "team" ? "is-active" : ""}`}
+                    className={`boxscore-team-toggle-btn boxscore-team-toggle-mid-fixed ${activeView === "team" ? "is-active" : ""}`}
                   >
                     <span className="boxscore-team-toggle-label">Team</span>
                   </button>,
