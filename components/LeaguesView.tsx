@@ -755,6 +755,9 @@ function cleanMoneyLineText(value: any, abbr?: string): string | null {
 }
 
 function cleanDirectAmericanOdds(value: any): string | null {
+  if (typeof value === "number" && Number.isFinite(value) && value !== 0) {
+    return value > 0 ? `+${Math.round(value)}` : `${Math.round(value)}`;
+  }
   const text = String(value || "").trim();
   return /^[+-]\d{2,4}$/.test(text) ? text : null;
 }

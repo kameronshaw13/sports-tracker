@@ -459,6 +459,7 @@ function ScoringAtBatRow({ atBat, team }: { atBat: MlbAtBat; team?: TeamMeta }) 
 function AtBatSummaryRow({ atBat, forceOpen = false, mode = "default", away, home }: { atBat: MlbAtBat; forceOpen?: boolean; mode?: "default" | "scoring"; away?: TeamMeta; home?: TeamMeta }) {
   if (atBat.isMinor) {
     if (isHiddenMinorEvent(atBat.text)) return null;
+    if (isBaserunningPitchText(atBat.text)) return <BaserunningEventRow text={cleanResultText(atBat.text)} />;
     return (
       <div className="px-4 py-2 text-xs" style={{ color: "var(--text-3)", background: "var(--surface)" }}>
         {cleanResultText(atBat.text)}
