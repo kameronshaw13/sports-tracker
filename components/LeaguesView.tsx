@@ -714,10 +714,12 @@ function persistPregameOdds(games: any[]) {
   for (const game of games || []) {
     if (!game?.id || !game?.league || !game?.odds) continue;
     const state = String(game?.status?.state || "");
-    if (state === "post") continue;
+    if (state !== "pre") continue;
     try {
       const existing = getCachedPregameOdds(game.league, game.id);
-      window.localStorage.setItem(pregameOddsKey(game.league, game.id), JSON.stringify(mergeStoredOdds(existing, game.odds)));
+      if (!existing) {
+        window.localStorage.setItem(pregameOddsKey(game.league, game.id), JSON.stringify(game.odds));
+      }
     } catch {}
   }
 }

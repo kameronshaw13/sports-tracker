@@ -60,11 +60,14 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
   const displayOdds = mergeOddsForDisplay(data?.odds, readPregameOdds(league, eventId));
 
   useEffect(() => {
-    if (data?.status?.state === "post" || !displayOdds || typeof window === "undefined") return;
+    if (data?.status?.state !== "pre" || !data?.odds || typeof window === "undefined") return;
     try {
-      window.localStorage.setItem(pregameOddsKey(league, eventId), JSON.stringify(displayOdds));
+      const key = pregameOddsKey(league, eventId);
+      if (!window.localStorage.getItem(key)) {
+        window.localStorage.setItem(key, JSON.stringify(data.odds));
+      }
     } catch {}
-  }, [eventId, league, displayOdds, data?.status?.state]);
+  }, [eventId, league, data?.odds, data?.status?.state]);
 
   if (isLoading) return <div className="space-y-3"><div className="h-12 animate-pulse" style={{ background: "var(--surface)" }} /><div className="h-44 animate-pulse" style={{ background: "var(--surface)" }} /></div>;
   if (error || !data) return <div className="space-y-3"><GameTopBar title="Game" onClose={onClose} /><div className="p-6 text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>Couldn't load this game.</div></div>;

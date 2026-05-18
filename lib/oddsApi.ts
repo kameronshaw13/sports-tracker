@@ -7,6 +7,7 @@ type EspnGame = {
   shortName?: string;
   home?: any;
   away?: any;
+  status?: any;
 };
 
 type NormalizedOdds = {
@@ -178,7 +179,8 @@ function matchOddsGame(oddsGames: any[], espnGame: EspnGame) {
 export async function getOddsApiOddsForGames(league: string, dateParam: string | null | undefined, games: EspnGame[]) {
   const apiKey = process.env.THE_ODDS_API_KEY;
   const sport = ODDS_SPORT_KEYS[league as League];
-  if (!apiKey || !sport || !games.length) return new Map<string, NormalizedOdds>();
+  const pregameGames = games.filter((game) => String(game?.status?.state || "") === "pre");
+  if (!apiKey || !sport || !pregameGames.length) return new Map<string, NormalizedOdds>();
 
   const window = dateWindow(dateParam);
   const params = new URLSearchParams({
@@ -204,7 +206,7 @@ export async function getOddsApiOddsForGames(league: string, dateParam: string |
       oddsApiRawCache.set(cacheKey, { expires: Date.now() + ODDS_CACHE_TTL_MS, data: oddsGames });
     }
     const out = new Map<string, NormalizedOdds>();
-    for (const game of games) {
+    for (const game of pregameGames) {
       if (!game?.id) continue;
       const match = matchOddsGame(oddsGames, game);
       if (!match) continue;
