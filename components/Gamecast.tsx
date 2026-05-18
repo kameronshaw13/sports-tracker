@@ -363,8 +363,13 @@ function isBaserunningPitchText(text: string) {
     /\b(advances?|advanced|scores?|scored)\b/.test(value) ||
     /\bto\s+(second|third|home|2nd|3rd)\b/.test(value) ||
     /\b(thrown\s+out|out)\b/.test(value);
-  return (
+  const hasStolenBase =
     /\bstole\s+(second|third|home|2nd|3rd)\b/.test(value) ||
+    /\bsteals?\s+(second|third|home|2nd|3rd)(?:\s+base)?\b/.test(value) ||
+    /\bsteals?\s*\(\d+\)\s*(second|third|home|2nd|3rd)(?:\s+base)?\b/.test(value) ||
+    /\bstolen\s+base\b/.test(value);
+  return (
+    hasStolenBase ||
     /\bcaught\s+stealing\s+(second|third|home|2nd|3rd)\b/.test(value) ||
     /\bthrown\s+out\b.*\battempt(?:ing)?\s+to\s+steal\b/.test(value) ||
     /\battempt(?:ing)?\s+to\s+steal\b.*\bthrown\s+out\b/.test(value) ||

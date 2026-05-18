@@ -36,7 +36,8 @@ const ODDS_SPORT_KEYS: Record<League, string> = {
 const ODDS_API_BASE = "https://api.the-odds-api.com/v4/sports";
 const ODDS_CACHE_TTL_MS = envHours("ODDS_API_CACHE_HOURS", 12) * 60 * 60 * 1000;
 const ODDS_LOOKAHEAD_MS = envHours("ODDS_API_LOOKAHEAD_HOURS", 18) * 60 * 60 * 1000;
-const ODDS_CACHE_REVALIDATE_SECONDS = Math.max(300, Math.round(ODDS_CACHE_TTL_MS / 1000));
+const ODDS_CLOSING_WINDOW_MS = envHours("ODDS_API_CLOSING_WINDOW_HOURS", 1) * 60 * 60 * 1000;
+const ODDS_CLOSING_CACHE_MS = envHours("ODDS_API_CLOSING_CACHE_HOURS", 1) * 60 * 60 * 1000;
 const oddsApiRawCache = new Map<string, { expires: number; data: any[] }>();
 
 function envHours(name: string, fallback: number) {
@@ -191,6 +192,14 @@ function isPregameOddsCandidate(game: EspnGame) {
   return start >= now - 10 * 60 * 1000 && start <= now + ODDS_LOOKAHEAD_MS;
 }
 
+function hasClosingPregameGame(games: EspnGame[]) {
+  const now = Date.now();
+  return games.some((game) => {
+    const start = new Date(String(game?.date || "")).getTime();
+    return Number.isFinite(start) && start >= now - 10 * 60 * 1000 && start <= now + ODDS_CLOSING_WINDOW_MS;
+  });
+}
+
 export async function getOddsApiOddsForGames(league: string, dateParam: string | null | undefined, games: EspnGame[]) {
   const apiKey = process.env.THE_ODDS_API_KEY;
   const sport = ODDS_SPORT_KEYS[league as League];
@@ -207,18 +216,21 @@ export async function getOddsApiOddsForGames(league: string, dateParam: string |
   });
   if (window.commenceTimeFrom) params.set("commenceTimeFrom", window.commenceTimeFrom);
   if (window.commenceTimeTo) params.set("commenceTimeTo", window.commenceTimeTo);
-  const cacheKey = `${sport}:${window.commenceTimeFrom || "all"}:${window.commenceTimeTo || "all"}`;
+  const isClosingWindow = hasClosingPregameGame(pregameGames);
+  const cacheTtl = isClosingWindow ? ODDS_CLOSING_CACHE_MS : ODDS_CACHE_TTL_MS;
+  const revalidateSeconds = Math.max(300, Math.round(cacheTtl / 1000));
+  const cacheKey = `${sport}:${window.commenceTimeFrom || "all"}:${window.commenceTimeTo || "all"}:${isClosingWindow ? "closing" : "daily"}`;
 
   try {
     const cached = oddsApiRawCache.get(cacheKey);
     let oddsGames = cached && cached.expires > Date.now() ? cached.data : null;
     if (!oddsGames) {
       const res = await fetch(`${ODDS_API_BASE}/${sport}/odds?${params.toString()}`, {
-        next: { revalidate: ODDS_CACHE_REVALIDATE_SECONDS },
+        next: { revalidate: revalidateSeconds },
       });
       if (!res.ok) return new Map<string, NormalizedOdds>();
       oddsGames = await res.json();
-      oddsApiRawCache.set(cacheKey, { expires: Date.now() + ODDS_CACHE_TTL_MS, data: oddsGames });
+      oddsApiRawCache.set(cacheKey, { expires: Date.now() + cacheTtl, data: oddsGames });
     }
     const out = new Map<string, NormalizedOdds>();
     for (const game of pregameGames) {
