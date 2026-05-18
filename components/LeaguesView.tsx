@@ -529,7 +529,7 @@ function scoreOddsText(league: League, game: any, team: any) {
     return odds.homeSpread || null;
   }
   if (side === "away") return odds.overUnder || null;
-  if (side === "home") return cleanMoneyLineText(odds.homeMoneyLine || odds.details, team?.abbr);
+  if (side === "home") return cleanDirectAmericanOdds(odds.homeMoneyLine) || moneyLineForTeam(odds.details, team);
   return null;
 }
 
@@ -752,6 +752,11 @@ function cleanMoneyLineText(value: any, abbr?: string): string | null {
   if (fromDetails) return fromDetails;
   const match = String(value || "").match(/[+-]\d{2,4}/);
   return match ? match[0] : null;
+}
+
+function cleanDirectAmericanOdds(value: any): string | null {
+  const text = String(value || "").trim();
+  return /^[+-]\d{2,4}$/.test(text) ? text : null;
 }
 
 function moneyLineForTeam(value: any, team: any): string | null {
