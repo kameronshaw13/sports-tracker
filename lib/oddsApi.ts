@@ -34,8 +34,15 @@ const ODDS_SPORT_KEYS: Record<League, string> = {
 };
 
 const ODDS_API_BASE = "https://api.the-odds-api.com/v4/sports";
-const ODDS_CACHE_TTL_MS = 5 * 60 * 1000;
+const ODDS_CACHE_TTL_MS = envHours("ODDS_API_CACHE_HOURS", 12) * 60 * 60 * 1000;
+const ODDS_LOOKAHEAD_MS = envHours("ODDS_API_LOOKAHEAD_HOURS", 18) * 60 * 60 * 1000;
+const ODDS_CACHE_REVALIDATE_SECONDS = Math.max(300, Math.round(ODDS_CACHE_TTL_MS / 1000));
 const oddsApiRawCache = new Map<string, { expires: number; data: any[] }>();
+
+function envHours(name: string, fallback: number) {
+  const value = Number(process.env[name]);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
 
 function normalizeName(value: any): string {
   return String(value || "")
@@ -176,10 +183,18 @@ function matchOddsGame(oddsGames: any[], espnGame: EspnGame) {
   });
 }
 
+function isPregameOddsCandidate(game: EspnGame) {
+  if (String(game?.status?.state || "") !== "pre") return false;
+  const start = new Date(String(game?.date || "")).getTime();
+  if (!Number.isFinite(start)) return true;
+  const now = Date.now();
+  return start >= now - 10 * 60 * 1000 && start <= now + ODDS_LOOKAHEAD_MS;
+}
+
 export async function getOddsApiOddsForGames(league: string, dateParam: string | null | undefined, games: EspnGame[]) {
   const apiKey = process.env.THE_ODDS_API_KEY;
   const sport = ODDS_SPORT_KEYS[league as League];
-  const pregameGames = games.filter((game) => String(game?.status?.state || "") === "pre");
+  const pregameGames = games.filter(isPregameOddsCandidate);
   if (!apiKey || !sport || !pregameGames.length) return new Map<string, NormalizedOdds>();
 
   const window = dateWindow(dateParam);
@@ -199,7 +214,7 @@ export async function getOddsApiOddsForGames(league: string, dateParam: string |
     let oddsGames = cached && cached.expires > Date.now() ? cached.data : null;
     if (!oddsGames) {
       const res = await fetch(`${ODDS_API_BASE}/${sport}/odds?${params.toString()}`, {
-        next: { revalidate: 300 },
+        next: { revalidate: ODDS_CACHE_REVALIDATE_SECONDS },
       });
       if (!res.ok) return new Map<string, NormalizedOdds>();
       oddsGames = await res.json();
