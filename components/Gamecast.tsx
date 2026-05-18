@@ -358,11 +358,17 @@ function PitcherTag({ name }: { name: string }) {
 function isBaserunningPitchText(text: string) {
   const value = String(text || "").replace(/\s+/g, " ").trim().toLowerCase();
   if (!value) return false;
+  const hasWildPitchOrPassedBall = /\b(wild pitch|passed ball)\b/.test(value);
+  const hasRunnerAdvance =
+    /\b(advances?|advanced|scores?|scored)\b/.test(value) ||
+    /\bto\s+(second|third|home|2nd|3rd)\b/.test(value) ||
+    /\b(thrown\s+out|out)\b/.test(value);
   return (
     /\bstole\s+(second|third|home|2nd|3rd)\b/.test(value) ||
     /\bcaught\s+stealing\s+(second|third|home|2nd|3rd)\b/.test(value) ||
     /\bthrown\s+out\b.*\battempt(?:ing)?\s+to\s+steal\b/.test(value) ||
-    /\battempt(?:ing)?\s+to\s+steal\b.*\bthrown\s+out\b/.test(value)
+    /\battempt(?:ing)?\s+to\s+steal\b.*\bthrown\s+out\b/.test(value) ||
+    (hasWildPitchOrPassedBall && hasRunnerAdvance)
   );
 }
 
