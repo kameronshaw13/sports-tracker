@@ -523,7 +523,7 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
 
 function scoreOddsText(league: League, game: any, team: any) {
   const cachedOdds = getCachedPregameOdds(league, game?.id);
-  const odds = mergeStoredOdds(game?.odds, cachedOdds);
+  const odds = mergeStoredOdds(cachedOdds, game?.odds);
   if (!odds) return null;
   const side = String(team?.homeAway || "").toLowerCase();
   if (/^(nba|nfl|cfb|cbb)$/i.test(String(league || "")) && side === "home") {
@@ -680,9 +680,7 @@ function sublineForGame(league: League, game: any, density: ScoreDensity) {
 
 function completedOddsLine(game: any, league: League): string | null {
   const cachedOdds = getCachedPregameOdds(league, game?.id);
-  const odds = game?.status?.state === "post"
-    ? mergeStoredOdds(game?.odds, cachedOdds)
-    : mergeStoredOdds(cachedOdds, game?.odds);
+  const odds = mergeStoredOdds(cachedOdds, game?.odds);
   if (!odds) return null;
 
   const awayScore = Number(game?.away?.score);
@@ -719,7 +717,7 @@ function persistPregameOdds(games: any[]) {
     try {
       const existing = getCachedPregameOdds(game.league, game.id);
       const merged = mergeStoredOdds(existing, game.odds);
-      if (!existing || oddsCompleteness(merged) > oddsCompleteness(existing)) {
+      if (!existing || oddsCompleteness(merged) >= oddsCompleteness(existing) && JSON.stringify(merged) !== JSON.stringify(existing)) {
         window.localStorage.setItem(pregameOddsKey(game.league, game.id), JSON.stringify(merged));
       }
     } catch {}
