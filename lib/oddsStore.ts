@@ -51,7 +51,9 @@ async function supabaseFetch(path: string, init: RequestInit = {}) {
     throw new Error(`Supabase odds store failed: ${res.status} ${text}`);
   }
   if (res.status === 204) return null;
-  return res.json();
+  const text = await res.text();
+  if (!text.trim()) return null;
+  return JSON.parse(text);
 }
 
 function gameIds(games: EspnGame[]) {
