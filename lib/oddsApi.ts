@@ -134,6 +134,16 @@ function market(bookmaker: any, key: string) {
   return (bookmaker?.markets || []).find((m: any) => String(m?.key || "").toLowerCase() === key);
 }
 
+function pickBookmakerForMarket(bookmakers: any[], key: string) {
+  if (!Array.isArray(bookmakers) || bookmakers.length === 0) return null;
+  const preferred = ["draftkings", "fanduel", "betmgm", "caesars", "espnbet", "betrivers", "pointsbetus"];
+  const ordered = [
+    ...preferred.map((wanted) => bookmakers.find((b) => String(b?.key || "").toLowerCase() === wanted)).filter(Boolean),
+    ...bookmakers.filter((b) => !preferred.includes(String(b?.key || "").toLowerCase())),
+  ];
+  return ordered.find((b) => market(b, key)?.outcomes?.length) || null;
+}
+
 function outcomeForTeam(marketData: any, team: any) {
   return (marketData?.outcomes || []).find((outcome: any) => teamMatches(outcome?.name, team));
 }
@@ -143,12 +153,16 @@ function totalOutcome(marketData: any, label: "Over" | "Under") {
 }
 
 function normalizeOddsEvent(oddsGame: any, espnGame: EspnGame): NormalizedOdds | null {
-  const bookmaker = pickBookmaker(oddsGame?.bookmakers || []);
-  if (!bookmaker) return null;
+  const bookmakers = oddsGame?.bookmakers || [];
+  const bookmaker = pickBookmaker(bookmakers);
+  const h2hBook = pickBookmakerForMarket(bookmakers, "h2h") || bookmaker;
+  const spreadsBook = pickBookmakerForMarket(bookmakers, "spreads") || bookmaker;
+  const totalsBook = pickBookmakerForMarket(bookmakers, "totals") || bookmaker;
+  if (!h2hBook && !spreadsBook && !totalsBook) return null;
 
-  const h2h = market(bookmaker, "h2h");
-  const spreads = market(bookmaker, "spreads");
-  const totals = market(bookmaker, "totals");
+  const h2h = market(h2hBook, "h2h");
+  const spreads = market(spreadsBook, "spreads");
+  const totals = market(totalsBook, "totals");
 
   const awayMl = outcomeForTeam(h2h, espnGame.away);
   const homeMl = outcomeForTeam(h2h, espnGame.home);
@@ -168,7 +182,7 @@ function normalizeOddsEvent(oddsGame: any, espnGame: EspnGame): NormalizedOdds |
     overUnder: total ? `o${total}` : null,
     overOdds: formatAmerican(over?.price),
     underOdds: formatAmerican(under?.price),
-    details: bookmaker?.title ? `Odds from ${bookmaker.title}` : "Odds from The Odds API",
+    details: h2hBook?.title ? `Odds from ${h2hBook.title}` : bookmaker?.title ? `Odds from ${bookmaker.title}` : "Odds from The Odds API",
     source: "oddsapi",
   };
 

@@ -399,6 +399,24 @@ function isPitchEvent(text: string, type?: string | null): boolean {
   return /\b(ball|strike|called strike|swinging strike|strike looking|strike swinging|foul|pitch|blocked|wild pitch|passed ball|pickoff|automatic ball|intent ball|bunt foul|missed bunt|hit by pitch)\b/.test(value);
 }
 
+function isBaserunningEventText(text: string, type?: string | null): boolean {
+  const value = `${type || ""} ${text || ""}`.replace(/\s+/g, " ").trim().toLowerCase();
+  if (!value) return false;
+  const steal =
+    /\bstole\s+(second|third|home|2nd|3rd)\b/.test(value) ||
+    /\bsteals?\s+(second|third|home|2nd|3rd)(?:\s+base)?\b/.test(value) ||
+    /\bsteals?\s*\(\d+\)\s*(second|third|home|2nd|3rd)(?:\s+base)?\b/.test(value) ||
+    /\bstolen\s+base\b/.test(value);
+  const caught =
+    /\bcaught\s+stealing\b/.test(value) ||
+    /\bpick(?:ed)?\s+off\b/.test(value) ||
+    /\bthrown\s+out\b.*\battempt(?:ing)?\s+to\s+steal\b/.test(value) ||
+    /\battempt(?:ing)?\s+to\s+steal\b.*\bthrown\s+out\b/.test(value);
+  const hasWildPitchOrPassedBall = /\b(wild pitch|passed ball)\b/.test(value);
+  const hasAdvance = /\b(advances?|advanced|scores?|scored)\b/.test(value) || /\bto\s+(second|third|home|2nd|3rd)\b/.test(value);
+  return steal || caught || (hasWildPitchOrPassedBall && hasAdvance);
+}
+
 function isInningTransitionText(text: string, type?: string | null): boolean {
   const value = `${type || ""} ${text || ""}`.toLowerCase().trim();
   return /^(top|bottom|middle|end) of the \d+(st|nd|rd|th)? inning\.?$/.test(value) || /^(middle|end) of the/.test(value);
@@ -685,7 +703,8 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
     }
 
     const challengeFinal = atBatStem ? challengeAtBatResult(base.text, base.type) : null;
-    const minor = isMinorBaseballEvent(base.text, base.type) && !challengeFinal;
+    const baserunning = isBaserunningEventText(base.text, base.type);
+    const minor = (isMinorBaseballEvent(base.text, base.type) || baserunning) && !challengeFinal;
     const embeddedFinal = atBatStem ? embeddedAtBatResult(p) : null;
     const isFinalAtBat = looksLikeAtBat(base.text, base.type) && !/^pitch\s*\d*\s*:/i.test(base.text);
     const isPitchRow = !minor && !isFinalAtBat && isPitchEvent(base.text, base.type);
