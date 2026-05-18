@@ -1905,6 +1905,12 @@ body::-webkit-scrollbar,
   line-height: 1 !important;
 }
 
+/* v236: center the middle Team selector between the two team tabs */
+.boxscore-team-toggle-mid,
+.boxscore-team-toggle-mid.is-active {
+  transform: translate(-.46rem, -.32rem) !important;
+}
+
 .game-lineup-toggle-btn img.logo-outline-dark,
 .game-lineup-toggle-btn .logo-outline-dark {
   -webkit-filter:
