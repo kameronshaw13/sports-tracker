@@ -504,7 +504,7 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
   const recordText = seriesTeamRecord(game, team) || team.record;
   const label = compact ? team.abbr : favoriteTeamLabel(team, league);
   const showScore = scoreShouldShow(game) && team.score !== undefined && team.score !== null && team.score !== "";
-  const oddsText = !showScore ? scoreOddsText(game, team) : null;
+  const oddsText = !showScore ? scoreOddsText(league, game, team) : null;
   const hasWinner = Boolean(game?.away?.winner || game?.home?.winner);
   const isWinner = Boolean(team?.winner);
   return (
@@ -521,11 +521,11 @@ function TeamLine({ team, league, compact, favorite, game, showLogo = true }: { 
   );
 }
 
-function scoreOddsText(game: any, team: any) {
+function scoreOddsText(league: League, game: any, team: any) {
   const odds = game?.odds;
   if (!odds) return null;
   const side = String(team?.homeAway || "").toLowerCase();
-  if (/^(nba|wnba|nfl|cfb|cbb)$/i.test(String(game?.league || "")) && side === "home") {
+  if (/^(nba|nfl|cfb|cbb)$/i.test(String(league || "")) && side === "home") {
     return odds.homeSpread || null;
   }
   if (side === "away") return odds.overUnder || null;

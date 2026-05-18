@@ -1810,6 +1810,31 @@ body::-webkit-scrollbar,
     drop-shadow(-.66px -.66px 0 #fff) !important;
 }
 
+/* v222: final logo-outline enforcement for GameTracker lineup and odds tabs */
+.game-lineup-toggle-btn > img.logo-outline-dark,
+.game-odds-team > img.logo-outline-dark,
+.game-lineup-toggle-btn img[data-nimg].logo-outline-dark,
+.game-odds-team img[data-nimg].logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(1.05px 0 0 #fff)
+    drop-shadow(-1.05px 0 0 #fff)
+    drop-shadow(0 1.05px 0 #fff)
+    drop-shadow(0 -1.05px 0 #fff)
+    drop-shadow(.74px .74px 0 #fff)
+    drop-shadow(-.74px .74px 0 #fff)
+    drop-shadow(.74px -.74px 0 #fff)
+    drop-shadow(-.74px -.74px 0 #fff) !important;
+  filter:
+    drop-shadow(1.05px 0 0 #fff)
+    drop-shadow(-1.05px 0 0 #fff)
+    drop-shadow(0 1.05px 0 #fff)
+    drop-shadow(0 -1.05px 0 #fff)
+    drop-shadow(.74px .74px 0 #fff)
+    drop-shadow(-.74px .74px 0 #fff)
+    drop-shadow(.74px -.74px 0 #fff)
+    drop-shadow(-.74px -.74px 0 #fff) !important;
+}
+
 /* v221: make Odds tab logos use the same thin white logo edge as the rest of the app */
 .game-odds-team img.logo-outline-dark,
 .game-odds-team .logo-outline-dark {
