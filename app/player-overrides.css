@@ -1911,6 +1911,27 @@ body::-webkit-scrollbar,
   transform: translate(-.46rem, -.32rem) !important;
 }
 
+/* v237: keep the middle Team label fixed between active and inactive states */
+.boxscore-team-toggle-mid,
+.boxscore-team-toggle-mid.is-active {
+  position: relative !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding-left: 1.72rem !important;
+  padding-right: 1.72rem !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.boxscore-team-toggle-mid .boxscore-team-toggle-label,
+.boxscore-team-toggle-mid.is-active .boxscore-team-toggle-label {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -44%) !important;
+  line-height: 1 !important;
+}
+
 .game-lineup-toggle-btn img.logo-outline-dark,
 .game-lineup-toggle-btn .logo-outline-dark {
   -webkit-filter:
