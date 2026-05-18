@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getScoreboard } from "@/lib/espn";
 import { getOddsApiOddsForGamesWindow, type EspnGame } from "@/lib/oddsApi";
-import { hasRefreshRun, lockStartedGames, oddsStoreEnabled, recordRefreshRun, upsertOddsSnapshots } from "@/lib/oddsStore";
+import { claimRefreshRun, hasRefreshRun, lockStartedGames, oddsStoreEnabled, upsertOddsSnapshots } from "@/lib/oddsStore";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const VALID_LEAGUES = ["mlb", "nfl", "nba", "nhl", "cfb", "cbb"];
 const CENTRAL_TZ = "America/Chicago";
-const PULL_LEAD_MS = 10 * 60 * 1000;
+const PULL_LEAD_MS = 15 * 60 * 1000;
 const MIN_WAVE_GAP_MS = 75 * 60 * 1000;
 
 function ymdInZone(date: Date, timeZone = CENTRAL_TZ) {
@@ -71,10 +71,13 @@ function pregameFutureGames(games: EspnGame[], now: Date) {
 }
 
 function wavesForSlate(games: EspnGame[], slateDate: string) {
-  if (!games.length) return [];
-  const gaps = games.slice(1).map((game, index) => ({
+  const slateGames = games
+    .filter((game) => Number.isFinite(new Date(String(game.date || "")).getTime()))
+    .sort((a, b) => new Date(String(a.date)).getTime() - new Date(String(b.date)).getTime());
+  if (!slateGames.length) return [];
+  const gaps = slateGames.slice(1).map((game, index) => ({
     index: index + 1,
-    gap: new Date(String(game.date)).getTime() - new Date(String(games[index].date)).getTime(),
+    gap: new Date(String(game.date)).getTime() - new Date(String(slateGames[index].date)).getTime(),
   }));
   const splits = gaps
     .filter((item) => item.gap >= MIN_WAVE_GAP_MS)
@@ -86,10 +89,10 @@ function wavesForSlate(games: EspnGame[], slateDate: string) {
   const groups: EspnGame[][] = [];
   let start = 0;
   for (const split of splits) {
-    groups.push(games.slice(start, split));
+    groups.push(slateGames.slice(start, split));
     start = split;
   }
-  groups.push(games.slice(start));
+  groups.push(slateGames.slice(start));
 
   return groups.filter(Boolean).map((group, index) => {
     const firstStart = new Date(String(group[0].date));
@@ -111,6 +114,14 @@ function authOk(req: NextRequest) {
   const secret = process.env.ODDS_REFRESH_SECRET;
   if (!secret) return process.env.NODE_ENV !== "production";
   return req.nextUrl.searchParams.get("secret") === secret || req.headers.get("x-refresh-secret") === secret;
+}
+
+function waveHasFuturePregame(wave: { games: EspnGame[] }, now: Date) {
+  const nowMs = now.getTime();
+  return wave.games.some((game) => {
+    const start = new Date(String(game.date || "")).getTime();
+    return String(game?.status?.state || "") === "pre" && Number.isFinite(start) && start > nowMs;
+  });
 }
 
 export async function GET(req: NextRequest) {
@@ -149,8 +160,8 @@ export async function GET(req: NextRequest) {
 
       const dueRuns: { slateDate: string; waveKey: string; gameCount: number }[] = [];
       for (const [slateDate, games] of gamesByDate) {
-        const preGames = pregameFutureGames(games, now);
-        for (const wave of wavesForSlate(preGames, slateDate)) {
+        for (const wave of wavesForSlate(games, slateDate)) {
+          if (!waveHasFuturePregame(wave, now)) continue;
           if (!force && now.getTime() < wave.pullAt.getTime()) continue;
           if (!force && await hasRefreshRun(league, isoDateFromYmd(slateDate), wave.waveKey)) continue;
           dueRuns.push({ slateDate, waveKey: wave.waveKey, gameCount: wave.games.length });
@@ -163,16 +174,39 @@ export async function GET(req: NextRequest) {
       }
 
       const windowTo = nextNightWindow(now);
+      const pulledAt = new Date().toISOString();
+      const claimedRuns = [];
+      for (const run of dueRuns) {
+        if (force) {
+          claimedRuns.push(run);
+          continue;
+        }
+        const claimed = await claimRefreshRun({
+          league,
+          slate_date: isoDateFromYmd(run.slateDate),
+          wave_key: run.waveKey,
+          pulled_at: pulledAt,
+          window_from: now.toISOString(),
+          window_to: windowTo.toISOString(),
+          game_count: run.gameCount,
+        });
+        if (claimed) claimedRuns.push(run);
+      }
+
+      if (!claimedRuns.length) {
+        results.push({ league, pulled: false, reason: "due wave already claimed", games: allGames.length });
+        continue;
+      }
+
       const preGamesInWindow = pregameFutureGames(allGames, now).filter((game) => {
         const start = new Date(String(game.date || "")).getTime();
         return Number.isFinite(start) && start <= windowTo.getTime();
       });
       const odds = await getOddsApiOddsForGamesWindow(league, now, windowTo, preGamesInWindow, {
-        cacheKeySuffix: `refresh-${dueRuns.map((run) => run.waveKey).join("-")}`,
+        cacheKeySuffix: `refresh-${claimedRuns.map((run) => run.waveKey).join("-")}`,
         cacheTtlMs: 5 * 60 * 1000,
       });
 
-      const pulledAt = new Date().toISOString();
       const rows = preGamesInWindow
         .map((game) => {
           const normalized = odds.get(String(game.id));
@@ -193,19 +227,7 @@ export async function GET(req: NextRequest) {
         .filter(Boolean) as any[];
       const stored = await upsertOddsSnapshots(rows);
 
-      for (const run of dueRuns) {
-        await recordRefreshRun({
-          league,
-          slate_date: isoDateFromYmd(run.slateDate),
-          wave_key: run.waveKey,
-          pulled_at: pulledAt,
-          window_from: now.toISOString(),
-          window_to: windowTo.toISOString(),
-          game_count: run.gameCount,
-        });
-      }
-
-      results.push({ league, pulled: true, dueRuns, stored, windowFrom: now.toISOString(), windowTo: windowTo.toISOString() });
+      results.push({ league, pulled: true, dueRuns: claimedRuns, stored, windowFrom: now.toISOString(), windowTo: windowTo.toISOString() });
     }
 
     return NextResponse.json({ ok: true, now: now.toISOString(), results }, { headers: { "Cache-Control": "no-store" } });

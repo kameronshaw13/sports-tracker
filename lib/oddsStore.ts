@@ -115,6 +115,16 @@ export async function recordRefreshRun(row: RefreshRunRow) {
   });
 }
 
+export async function claimRefreshRun(row: RefreshRunRow) {
+  if (!oddsStoreEnabled()) return false;
+  const result = await supabaseFetch("odds_refresh_runs?on_conflict=league,slate_date,wave_key", {
+    method: "POST",
+    headers: { Prefer: "resolution=ignore-duplicates,return=representation" },
+    body: JSON.stringify(row),
+  });
+  return Array.isArray(result) && result.length > 0;
+}
+
 export async function upsertOddsSnapshots(rows: StoredOddsRow[]) {
   if (!oddsStoreEnabled() || !rows.length) return 0;
   await supabaseFetch("odds_snapshots?on_conflict=league,event_id,snapshot_type", {
