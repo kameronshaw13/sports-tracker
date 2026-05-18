@@ -114,100 +114,110 @@ function authOk(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  if (!authOk(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!oddsStoreEnabled()) {
-    return NextResponse.json({ error: "Odds database is not configured. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY." }, { status: 400 });
-  }
-
-  const now = new Date();
-  const force = req.nextUrl.searchParams.get("force") === "1";
-  const leagues = (req.nextUrl.searchParams.get("leagues") || req.nextUrl.searchParams.get("league") || "mlb,nba,nhl,nfl")
-    .split(",")
-    .map((item) => item.trim().toLowerCase())
-    .filter((item) => VALID_LEAGUES.includes(item));
-  const dateParams = (req.nextUrl.searchParams.get("dates") || "")
-    .split(",")
-    .map((item) => item.trim())
-    .filter((item) => /^\d{8}$/.test(item));
-  const dates = dateParams.length
-    ? dateParams
-    : [ymdInZone(now), ymdInZone(new Date(now.getTime() + 24 * 60 * 60 * 1000))];
-
-  const results: any[] = [];
-  for (const league of leagues) {
-    const gamesByDate = new Map<string, EspnGame[]>();
-    const allGames: EspnGame[] = [];
-    for (const date of dates) {
-      const scoreboard = await getScoreboard(league, date);
-      const games = gamesFromScoreboard(scoreboard);
-      gamesByDate.set(date, games);
-      allGames.push(...games);
+  try {
+    if (!authOk(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!oddsStoreEnabled()) {
+      return NextResponse.json({ error: "Odds database is not configured. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY." }, { status: 400 });
     }
 
-    await lockStartedGames(league, allGames);
+    const now = new Date();
+    const force = req.nextUrl.searchParams.get("force") === "1";
+    const leagues = (req.nextUrl.searchParams.get("leagues") || req.nextUrl.searchParams.get("league") || "mlb,nba,nhl,nfl")
+      .split(",")
+      .map((item) => item.trim().toLowerCase())
+      .filter((item) => VALID_LEAGUES.includes(item));
+    const dateParams = (req.nextUrl.searchParams.get("dates") || "")
+      .split(",")
+      .map((item) => item.trim())
+      .filter((item) => /^\d{8}$/.test(item));
+    const dates = dateParams.length
+      ? dateParams
+      : [ymdInZone(now), ymdInZone(new Date(now.getTime() + 24 * 60 * 60 * 1000))];
 
-    const dueRuns: { slateDate: string; waveKey: string; gameCount: number }[] = [];
-    for (const [slateDate, games] of gamesByDate) {
-      const preGames = pregameFutureGames(games, now);
-      for (const wave of wavesForSlate(preGames, slateDate)) {
-        if (!force && now.getTime() < wave.pullAt.getTime()) continue;
-        if (!force && await hasRefreshRun(league, isoDateFromYmd(slateDate), wave.waveKey)) continue;
-        dueRuns.push({ slateDate, waveKey: wave.waveKey, gameCount: wave.games.length });
+    const results: any[] = [];
+    for (const league of leagues) {
+      const gamesByDate = new Map<string, EspnGame[]>();
+      const allGames: EspnGame[] = [];
+      for (const date of dates) {
+        const scoreboard = await getScoreboard(league, date);
+        const games = gamesFromScoreboard(scoreboard);
+        gamesByDate.set(date, games);
+        allGames.push(...games);
       }
-    }
 
-    if (!dueRuns.length) {
-      results.push({ league, pulled: false, reason: "no due wave", games: allGames.length });
-      continue;
-    }
+      await lockStartedGames(league, allGames);
 
-    const windowTo = nextNightWindow(now);
-    const preGamesInWindow = pregameFutureGames(allGames, now).filter((game) => {
-      const start = new Date(String(game.date || "")).getTime();
-      return Number.isFinite(start) && start <= windowTo.getTime();
-    });
-    const odds = await getOddsApiOddsForGamesWindow(league, now, windowTo, preGamesInWindow, {
-      cacheKeySuffix: `refresh-${dueRuns.map((run) => run.waveKey).join("-")}`,
-      cacheTtlMs: 5 * 60 * 1000,
-    });
+      const dueRuns: { slateDate: string; waveKey: string; gameCount: number }[] = [];
+      for (const [slateDate, games] of gamesByDate) {
+        const preGames = pregameFutureGames(games, now);
+        for (const wave of wavesForSlate(preGames, slateDate)) {
+          if (!force && now.getTime() < wave.pullAt.getTime()) continue;
+          if (!force && await hasRefreshRun(league, isoDateFromYmd(slateDate), wave.waveKey)) continue;
+          dueRuns.push({ slateDate, waveKey: wave.waveKey, gameCount: wave.games.length });
+        }
+      }
 
-    const pulledAt = new Date().toISOString();
-    const rows = preGamesInWindow
-      .map((game) => {
-        const normalized = odds.get(String(game.id));
-        if (!normalized) return null;
-        return {
-          league,
-          event_id: String(game.id),
-          game_date: isoDateFromYmd(ymdInZone(new Date(String(game.date)))),
-          commence_time: new Date(String(game.date)).toISOString(),
-          home_abbr: game.home?.abbr || game.home?.abbreviation || null,
-          away_abbr: game.away?.abbr || game.away?.abbreviation || null,
-          snapshot_type: "pregame",
-          pulled_at: pulledAt,
-          locked: false,
-          odds: normalized,
-        };
-      })
-      .filter(Boolean) as any[];
-    const stored = await upsertOddsSnapshots(rows);
+      if (!dueRuns.length) {
+        results.push({ league, pulled: false, reason: "no due wave", games: allGames.length });
+        continue;
+      }
 
-    for (const run of dueRuns) {
-      await recordRefreshRun({
-        league,
-        slate_date: isoDateFromYmd(run.slateDate),
-        wave_key: run.waveKey,
-        pulled_at: pulledAt,
-        window_from: now.toISOString(),
-        window_to: windowTo.toISOString(),
-        game_count: run.gameCount,
+      const windowTo = nextNightWindow(now);
+      const preGamesInWindow = pregameFutureGames(allGames, now).filter((game) => {
+        const start = new Date(String(game.date || "")).getTime();
+        return Number.isFinite(start) && start <= windowTo.getTime();
       });
+      const odds = await getOddsApiOddsForGamesWindow(league, now, windowTo, preGamesInWindow, {
+        cacheKeySuffix: `refresh-${dueRuns.map((run) => run.waveKey).join("-")}`,
+        cacheTtlMs: 5 * 60 * 1000,
+      });
+
+      const pulledAt = new Date().toISOString();
+      const rows = preGamesInWindow
+        .map((game) => {
+          const normalized = odds.get(String(game.id));
+          if (!normalized) return null;
+          return {
+            league,
+            event_id: String(game.id),
+            game_date: isoDateFromYmd(ymdInZone(new Date(String(game.date)))),
+            commence_time: new Date(String(game.date)).toISOString(),
+            home_abbr: game.home?.abbr || game.home?.abbreviation || null,
+            away_abbr: game.away?.abbr || game.away?.abbreviation || null,
+            snapshot_type: "pregame",
+            pulled_at: pulledAt,
+            locked: false,
+            odds: normalized,
+          };
+        })
+        .filter(Boolean) as any[];
+      const stored = await upsertOddsSnapshots(rows);
+
+      for (const run of dueRuns) {
+        await recordRefreshRun({
+          league,
+          slate_date: isoDateFromYmd(run.slateDate),
+          wave_key: run.waveKey,
+          pulled_at: pulledAt,
+          window_from: now.toISOString(),
+          window_to: windowTo.toISOString(),
+          game_count: run.gameCount,
+        });
+      }
+
+      results.push({ league, pulled: true, dueRuns, stored, windowFrom: now.toISOString(), windowTo: windowTo.toISOString() });
     }
 
-    results.push({ league, pulled: true, dueRuns, stored, windowFrom: now.toISOString(), windowTo: windowTo.toISOString() });
+    return NextResponse.json({ ok: true, now: now.toISOString(), results }, { headers: { "Cache-Control": "no-store" } });
+  } catch (err: any) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: err?.message || "Odds refresh failed",
+      },
+      { status: 500, headers: { "Cache-Control": "no-store" } }
+    );
   }
-
-  return NextResponse.json({ ok: true, now: now.toISOString(), results }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(req: NextRequest) {
