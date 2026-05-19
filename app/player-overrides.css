@@ -2130,6 +2130,81 @@ body::-webkit-scrollbar,
   overflow: visible !important;
 }
 
+/* v245: restore normal line score formatting; only extra-inning MLB tables scroll */
+.boxscore-line-wrap {
+  overflow: visible !important;
+}
+
+.boxscore-line-wrap.has-extra-innings {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none !important;
+}
+
+.boxscore-line-wrap.has-extra-innings::-webkit-scrollbar {
+  display: none !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table {
+  table-layout: fixed !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table th,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table td {
+  min-width: 2.05rem !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-sticky-team {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 4 !important;
+  min-width: 6.2rem !important;
+  background: var(--surface) !important;
+  box-shadow: 1px 0 0 var(--border) !important;
+}
+
+.boxscore-line-wrap.has-extra-innings thead .boxscore-line-sticky-team {
+  z-index: 6 !important;
+  background: var(--surface-2) !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-sticky-total {
+  position: sticky !important;
+  z-index: 5 !important;
+  min-width: 2.02rem !important;
+  background: var(--surface) !important;
+}
+
+.boxscore-line-wrap.has-extra-innings thead .boxscore-line-sticky-total {
+  z-index: 7 !important;
+  background: var(--surface-2) !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-total-e {
+  right: 0 !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-total-h {
+  right: 2.02rem !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-total-r {
+  right: 4.04rem !important;
+  box-shadow: -1px 0 0 var(--border) !important;
+}
+
+.boxscore-line-table .boxscore-line-team span {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+.boxscore-line-table .boxscore-line-team img {
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 18px !important;
+}
+
 .game-lineup-toggle-btn img.logo-outline-dark,
 .game-lineup-toggle-btn .logo-outline-dark {
   -webkit-filter:

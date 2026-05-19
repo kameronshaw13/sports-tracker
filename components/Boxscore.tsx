@@ -132,74 +132,76 @@ function GameLineScore({ lineScore }: { lineScore: any }) {
     ? lineScore.columns
     : Array.from({ length: Number(lineScore.innings || 0) }, (_, i) => String(i + 1));
   const showHitsErrors = lineScore.showHitsErrors !== false && lineScore.league === "mlb";
-  const totalColumns = [lineScore.totalLabel || "T", ...(showHitsErrors ? ["H", "E"] : [])];
+  const hasExtraInnings = lineScore.league === "mlb" && columns.length > 9;
   return (
     <div>
-      <div className={`boxscore-line-wrap ${columns.length > 9 ? "has-extra-innings" : ""}`}>
-        <div className="boxscore-line-scroll-grid">
-          <div className="boxscore-line-fixed-teams">
-            <div className="boxscore-line-cell boxscore-line-head-cell boxscore-line-team-head">Team</div>
-            {teams.map((t: any) => (
-              <div key={t.id || t.abbr} className="boxscore-line-cell boxscore-line-team-cell">
-                <div className="boxscore-line-team">
-                  {t.logo && (
-                    <Image
-                      src={t.logo}
-                      alt=""
-                      width={18}
-                      height={18}
-                      className="object-contain logo-outline-dark"
-                      unoptimized
-                    />
-                  )}
-                  <span>{t.abbr}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="boxscore-line-innings-scroll" aria-label="Inning scores">
-            <div
-              className="boxscore-line-innings-grid"
-              style={{ ["--line-innings" as any]: columns.length }}
+      <div className={`boxscore-line-wrap ${hasExtraInnings ? "has-extra-innings" : ""}`}>
+        <table
+          className="boxscore-line-table w-full text-[10px] sm:text-xs"
+          style={hasExtraInnings ? { minWidth: `${6.2 + columns.length * 2.05 + (showHitsErrors ? 6.05 : 2.1)}rem` } : undefined}
+        >
+          <thead>
+            <tr
+              style={{ background: "var(--surface-2)", color: "var(--text-3)" }}
             >
+              <th className="boxscore-line-sticky-team text-left px-1.5 py-2 font-semibold">Team</th>
               {columns.map((label: string, i: number) => (
-                <div key={`h-${i}`} className="boxscore-line-cell boxscore-line-head-cell">
+                <th key={i} className="text-center px-1 py-2 font-semibold">
                   {label}
-                </div>
+                </th>
               ))}
-              {teams.flatMap((t: any) =>
-                columns.map((_: string, i: number) => (
-                  <div key={`${t.id || t.abbr}-${i}`} className="boxscore-line-cell boxscore-line-score-cell tabular-nums">
-                    {t.innings?.[i] ?? "–"}
-                  </div>
-                )),
+              <th className="boxscore-line-sticky-total boxscore-line-total-r text-center px-1 py-2 font-black">{lineScore.totalLabel || "T"}</th>
+              {showHitsErrors && (
+                <>
+                  <th className="boxscore-line-sticky-total boxscore-line-total-h text-center px-1 py-2 font-black">H</th>
+                  <th className="boxscore-line-sticky-total boxscore-line-total-e text-center px-1 py-2 font-black">E</th>
+                </>
               )}
-            </div>
-          </div>
-
-          <div
-            className="boxscore-line-fixed-totals"
-            style={{ ["--line-totals" as any]: totalColumns.length }}
-          >
-            {totalColumns.map((label) => (
-              <div key={label} className="boxscore-line-cell boxscore-line-head-cell boxscore-line-total-head">
-                {label}
-              </div>
+            </tr>
+          </thead>
+          <tbody>
+            {teams.map((t: any) => (
+              <tr
+                key={t.id || t.abbr}
+                style={{ borderTop: "1px solid var(--border)" }}
+              >
+                <td className="boxscore-line-sticky-team px-1.5 py-2 font-bold">
+                  <div className="boxscore-line-team">
+                    {t.logo && (
+                      <Image
+                        src={t.logo}
+                        alt=""
+                        width={18}
+                        height={18}
+                        className="object-contain logo-outline-dark"
+                        unoptimized
+                      />
+                    )}
+                    <span>{t.abbr}</span>
+                  </div>
+                </td>
+                {columns.map((_: string, i: number) => (
+                  <td key={i} className="text-center px-1 py-2 tabular-nums">
+                    {t.innings?.[i] ?? "–"}
+                  </td>
+                ))}
+                <td className="boxscore-line-sticky-total boxscore-line-total-r text-center px-1 py-2 font-black tabular-nums">
+                  {t.total ?? t.runs ?? "–"}
+                </td>
+                {showHitsErrors && (
+                  <>
+                    <td className="boxscore-line-sticky-total boxscore-line-total-h text-center px-1 py-2 font-black tabular-nums">
+                      {t.hits ?? "0"}
+                    </td>
+                    <td className="boxscore-line-sticky-total boxscore-line-total-e text-center px-1 py-2 font-black tabular-nums">
+                      {t.errors ?? "0"}
+                    </td>
+                  </>
+                )}
+              </tr>
             ))}
-            {teams.flatMap((t: any) => {
-              const values = [
-                t.total ?? t.runs ?? "–",
-                ...(showHitsErrors ? [t.hits ?? "0", t.errors ?? "0"] : []),
-              ];
-              return values.map((value, i) => (
-                <div key={`${t.id || t.abbr}-total-${i}`} className="boxscore-line-cell boxscore-line-total-cell tabular-nums">
-                  {value}
-                </div>
-              ));
-            })}
-          </div>
-        </div>
+          </tbody>
+        </table>
       </div>
     </div>
   );
