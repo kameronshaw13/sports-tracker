@@ -138,7 +138,7 @@ function GameLineScore({ lineScore }: { lineScore: any }) {
       <div className={`boxscore-line-wrap ${hasExtraInnings ? "has-extra-innings" : ""}`}>
         <table
           className="boxscore-line-table w-full text-[10px] sm:text-xs"
-          style={hasExtraInnings ? { minWidth: `${6.2 + columns.length * 2.05 + (showHitsErrors ? 6.05 : 2.1)}rem` } : undefined}
+          style={hasExtraInnings ? { ["--line-extra" as any]: Math.max(0, columns.length - 9) } : undefined}
         >
           <thead>
             <tr

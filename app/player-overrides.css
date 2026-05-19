@@ -2205,6 +2205,102 @@ body::-webkit-scrollbar,
   flex: 0 0 18px !important;
 }
 
+/* v246: extra innings keep the normal line-score geometry and only overflow right */
+.boxscore-line-wrap.has-extra-innings {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none !important;
+  background: transparent !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+}
+
+.boxscore-line-wrap.has-extra-innings::-webkit-scrollbar {
+  display: none !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table {
+  table-layout: fixed !important;
+  width: calc(100% + (var(--line-extra, 1) * 1.84rem)) !important;
+  min-width: calc(100% + (var(--line-extra, 1) * 1.84rem)) !important;
+  border-collapse: collapse !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table th,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table td {
+  min-width: 0 !important;
+  box-shadow: none !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-sticky-team {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 4 !important;
+  width: 5.25rem !important;
+  min-width: 5.25rem !important;
+  background: var(--surface) !important;
+  box-shadow: none !important;
+}
+
+.boxscore-line-wrap.has-extra-innings thead .boxscore-line-sticky-team {
+  z-index: 6 !important;
+  background: var(--surface-2) !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-sticky-total {
+  position: sticky !important;
+  z-index: 5 !important;
+  width: 1.72rem !important;
+  min-width: 1.72rem !important;
+  background: var(--surface) !important;
+  box-shadow: none !important;
+}
+
+.boxscore-line-wrap.has-extra-innings thead .boxscore-line-sticky-total {
+  z-index: 7 !important;
+  background: var(--surface-2) !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-total-e {
+  right: 0 !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-total-h {
+  right: 1.72rem !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-total-r {
+  right: 3.44rem !important;
+}
+
+@media (max-width: 390px) {
+  .boxscore-line-wrap.has-extra-innings .boxscore-line-table {
+    width: calc(100% + (var(--line-extra, 1) * 1.7rem)) !important;
+    min-width: calc(100% + (var(--line-extra, 1) * 1.7rem)) !important;
+  }
+
+  .boxscore-line-wrap.has-extra-innings .boxscore-line-sticky-team {
+    width: 4.86rem !important;
+    min-width: 4.86rem !important;
+  }
+
+  .boxscore-line-wrap.has-extra-innings .boxscore-line-sticky-total {
+    width: 1.62rem !important;
+    min-width: 1.62rem !important;
+  }
+
+  .boxscore-line-wrap.has-extra-innings .boxscore-line-total-h {
+    right: 1.62rem !important;
+  }
+
+  .boxscore-line-wrap.has-extra-innings .boxscore-line-total-r {
+    right: 3.24rem !important;
+  }
+}
+
 .game-lineup-toggle-btn img.logo-outline-dark,
 .game-lineup-toggle-btn .logo-outline-dark {
   -webkit-filter:
