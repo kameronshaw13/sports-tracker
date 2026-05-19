@@ -62,48 +62,6 @@ type MlbSection = {
   atBats: MlbAtBat[];
 };
 
-type MlbPitchLocation = {
-  id?: string;
-  index?: number;
-  description?: string;
-  pitchNumber?: number | null;
-  pitchName?: string | null;
-  pitchType?: string | null;
-  velocity?: number | null;
-  px?: number | null;
-  pz?: number | null;
-  strikeZoneTop?: number | null;
-  strikeZoneBottom?: number | null;
-  zone?: number | null;
-  isStrike?: boolean;
-  isBall?: boolean;
-  isBallInPlay?: boolean;
-  count?: { balls?: number | null; strikes?: number | null; outs?: number | null };
-};
-
-type MlbLiveDefensePlayer = {
-  id?: string;
-  name: string;
-  shortName?: string;
-  position: string;
-};
-
-type MlbPitchZoneData = {
-  pitches?: MlbPitchLocation[];
-  bases?: {
-    first?: boolean;
-    second?: boolean;
-    third?: boolean;
-    firstName?: string | null;
-    secondName?: string | null;
-    thirdName?: string | null;
-  };
-  defense?: MlbLiveDefensePlayer[];
-  strikeZoneTop?: number | null;
-  strikeZoneBottom?: number | null;
-  count?: { balls?: number | null; strikes?: number | null; outs?: number | null };
-};
-
 export default function Gamecast({ league, eventId, isLive, situation: summarySituation, onPlayerClick }: Props) {
   const freshKey = useFreshKey();
   const cacheBust = isLive ? `&_t=${freshKey}` : "";
@@ -112,12 +70,6 @@ export default function Gamecast({ league, eventId, isLive, situation: summarySi
     fetcher,
     { refreshInterval: isLive ? 5_000 : 0, dedupingInterval: isLive ? 2_000 : 300_000, revalidateOnFocus: isLive }
   );
-  const { data: mlbLiveFeed } = useSWR(
-    league === "mlb" && eventId && isLive ? `/api/gamecast?league=mlb&event=${eventId}${cacheBust}` : null,
-    fetcher,
-    { refreshInterval: isLive ? 5_000 : 0, dedupingInterval: isLive ? 2_000 : 300_000, revalidateOnFocus: isLive }
-  );
-
   if (league === "mlb") {
     return (
       <MlbLiveGamecast
@@ -126,7 +78,6 @@ export default function Gamecast({ league, eventId, isLive, situation: summarySi
         isLoading={isLoading}
         isLive={isLive}
         fallbackSituation={summarySituation}
-        mlbLiveFeed={mlbLiveFeed}
         onPlayerClick={onPlayerClick}
       />
     );
@@ -154,7 +105,6 @@ function MlbLiveGamecast({
   isLoading,
   isLive,
   fallbackSituation,
-  mlbLiveFeed,
   onPlayerClick,
 }: {
   data: any;
@@ -162,7 +112,6 @@ function MlbLiveGamecast({
   isLoading: boolean;
   isLive: boolean;
   fallbackSituation?: any;
-  mlbLiveFeed?: any;
   onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
 }) {
   const [activeSubTab, setActiveSubTab] = useState<"scoring" | "live" | "plays">(() => isLive ? "live" : "scoring");
@@ -179,7 +128,6 @@ function MlbLiveGamecast({
   const liveAtBat = [...halfAtBatRows].reverse().find((ab) => ab.isComplete === false) || null;
   const lastCompletedInHalf = [...halfAtBatRows].reverse().find((ab) => ab.isComplete !== false) || null;
   const currentOrLast = liveAtBat || lastCompletedInHalf;
-  const fallbackPitchZone = buildFallbackPitchZone(currentOrLast, espnSituation);
   const battingTeam = currentHalf.half === "top" ? away : home;
   const sections = buildMlbSections(displayAtBats, home, away, "chronological");
   const scoringSections = buildMlbSections(displayAtBats.filter((ab) => ab.scoringPlay), home, away, "chronological").filter((s) => s.atBats.length > 0);
@@ -209,7 +157,6 @@ function MlbLiveGamecast({
             situation={espnSituation}
             currentAtBat={currentOrLast}
             battingTeam={battingTeam}
-            pitchZone={mlbLiveFeed?.pitchZone || fallbackPitchZone}
             onPlayerClick={onPlayerClick}
           />
 
@@ -250,14 +197,12 @@ function LiveAtBatCard({
   situation,
   currentAtBat,
   battingTeam,
-  pitchZone,
   onPlayerClick,
 }: {
   isLive: boolean;
   situation: any;
   currentAtBat: MlbAtBat | null;
   battingTeam?: TeamMeta;
-  pitchZone?: MlbPitchZoneData | null;
   onPlayerClick?: (player: { id: string; name: string; league: string }) => void;
 }) {
   const hasLiveAtBat = currentAtBat?.isComplete === false;
@@ -295,7 +240,6 @@ function LiveAtBatCard({
       </div>
 
       <div className="gamecast-live-result-wrap">
-        <MlbPitchCenter pitchZone={pitchZone} situation={situation} />
         <div className="gamecast-live-result">
           <div className="gamecast-live-result-text">
             {cleanResultText(currentAtBat?.result || (hasLiveAtBat ? situation?.lastPlay : null) || "Waiting for ESPN play update...")}
@@ -305,263 +249,6 @@ function LiveAtBatCard({
       </div>
     </div>
   );
-}
-
-function MlbPitchCenter({ pitchZone, situation }: { pitchZone?: MlbPitchZoneData | null; situation: any }) {
-  const [tab, setTab] = useState<"pitches" | "runners" | "defense">("pitches");
-  const bases = normalizeBases(pitchZone?.bases, situation);
-  const count = {
-    balls: numberOrNull(pitchZone?.count?.balls, situation?.balls),
-    strikes: numberOrNull(pitchZone?.count?.strikes, situation?.strikes),
-    outs: numberOrNull(pitchZone?.count?.outs, situation?.outs),
-  };
-  const pitchEvents = (pitchZone?.pitches || []).filter((p) => p && (p.description || p.pitchName || p.px != null || p.pz != null));
-  const locatedPitches = pitchEvents.filter((p) => typeof p.px === "number" && typeof p.pz === "number");
-  const defense = pitchZone?.defense || [];
-
-  return (
-    <div className="mlb-pitch-center">
-      <div className="mlb-pitch-tabs" role="tablist" aria-label="Live MLB details">
-        <PitchCenterTab label="Pitches" active={tab === "pitches"} onClick={() => setTab("pitches")} />
-        <PitchCenterTab label="Runners" active={tab === "runners"} onClick={() => setTab("runners")} />
-        <PitchCenterTab label="Defense" active={tab === "defense"} onClick={() => setTab("defense")} />
-      </div>
-
-      {tab === "pitches" && (
-        <div className="mlb-pitch-panel">
-          <div className="mlb-pitch-count-row">
-            <PitchCountGroup label="Balls" value={count.balls} max={4} tone="ball" />
-            <PitchCountGroup label="Strikes" value={count.strikes} max={3} tone="strike" />
-            <PitchCountGroup label="Outs" value={count.outs} max={3} tone="out" />
-            <div className="mlb-pitch-count-bases">
-              <BasesDiamond onFirst={!!bases.first} onSecond={!!bases.second} onThird={!!bases.third} />
-            </div>
-          </div>
-
-          <div className="mlb-zone-wrap">
-            <div className="mlb-zone-batter" aria-hidden="true">
-              <div className="mlb-zone-batter-head" />
-              <div className="mlb-zone-batter-body" />
-              <div className="mlb-zone-batter-bat" />
-            </div>
-            <div className="mlb-zone-field">
-              <div className="mlb-strike-zone">
-                <span />
-                <span />
-                <span />
-                <span />
-              </div>
-              <div className="mlb-home-plate" />
-              {locatedPitches.map((pitch, idx) => {
-                const pos = pitchPlotPosition(pitch, pitchZone);
-                const style = pitchDotStyle(pitch);
-                return (
-                  <span
-                    key={`${pitch.id || pitch.pitchNumber || idx}-${idx}`}
-                    className="mlb-zone-dot"
-                    style={{ left: `${pos.left}%`, top: `${pos.top}%`, background: style.bg, borderColor: style.border }}
-                  >
-                    {pitch.pitchNumber || idx + 1}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="mlb-pitch-recent" aria-label="Pitch list">
-            {pitchEvents.length ? (
-              [...pitchEvents].reverse().slice(0, 4).map((pitch, idx) => {
-                const style = pitchDotStyle(pitch);
-                return (
-                  <div key={`${pitch.id || pitch.pitchNumber || idx}-recent`} className="mlb-pitch-recent-item">
-                    <span className="mlb-pitch-recent-num" style={{ background: style.bg, borderColor: style.border }}>
-                      {pitch.pitchNumber || pitchEvents.length - idx}
-                    </span>
-                    <div className="mlb-pitch-recent-copy">
-                      <strong>{pitchLabel(pitch)}</strong>
-                      <span>{pitchMeta(pitch)}</span>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="mlb-pitch-empty">Pitch locations will appear once MLB posts them.</div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {tab === "runners" && (
-        <div className="mlb-runners-panel">
-          <div className="mlb-runners-diamond">
-            <BasesDiamond onFirst={!!bases.first} onSecond={!!bases.second} onThird={!!bases.third} />
-          </div>
-          <div className="mlb-runners-list">
-            {runnerRows(bases).length ? runnerRows(bases).map((row) => (
-              <div key={row.base} className="mlb-runner-row">
-                <span>{row.base}</span>
-                <strong>{row.name}</strong>
-              </div>
-            )) : <div className="mlb-pitch-empty">Bases empty</div>}
-          </div>
-        </div>
-      )}
-
-      {tab === "defense" && (
-        <div className="mlb-defense-grid">
-          {defense.length ? defense.map((player) => (
-            <div key={`${player.position}-${player.id || player.name}`} className="mlb-defense-item">
-              <span>{player.position}</span>
-              <strong>{player.shortName || player.name}</strong>
-            </div>
-          )) : <div className="mlb-pitch-empty">Defense will appear once MLB posts the live fielders.</div>}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function buildFallbackPitchZone(currentAtBat: MlbAtBat | null, situation: any): MlbPitchZoneData {
-  const pitches = (currentAtBat?.pitches || [])
-    .filter((pitch) => !isBaserunningPitchText(pitch))
-    .map((pitch, idx) => {
-      const parsed = formatPitch(pitch);
-      const lower = String(pitch || "").toLowerCase();
-      return {
-        id: `${currentAtBat?.id || "fallback"}-${idx}`,
-        description: parsed.label || pitch,
-        pitchNumber: idx + 1,
-        pitchName: pitchTypeFromText(pitch),
-        velocity: velocityFromText(pitch),
-        isBallInPlay: /in play|ball in play/.test(lower),
-        isStrike: /strike|foul|swing|missed/.test(lower),
-        isBall: /\bball\b|intent ball|automatic ball/.test(lower),
-      };
-    });
-
-  return {
-    pitches,
-    bases: normalizeBases(undefined, situation),
-    count: {
-      balls: numberOrNull(situation?.balls),
-      strikes: numberOrNull(situation?.strikes),
-      outs: numberOrNull(situation?.outs),
-    },
-    defense: [],
-    strikeZoneTop: 3.5,
-    strikeZoneBottom: 1.5,
-  };
-}
-
-function velocityFromText(text: string): number | null {
-  const match = String(text || "").match(/(\d{2,3}(?:\.\d+)?)\s*mph/i);
-  return match ? Number(match[1]) : null;
-}
-
-function pitchTypeFromText(text: string): string | null {
-  const cleaned = String(text || "")
-    .replace(/^Pitch\s*\d+\s*:\s*/i, "")
-    .replace(/\d{2,3}(?:\.\d+)?\s*mph/gi, "")
-    .replace(/\b(ball|called strike|strike swinging|strike looking|swinging strike|foul|in play|ball in play)\b/gi, "")
-    .replace(/[.,]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  return cleaned || null;
-}
-
-function PitchCenterTab({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
-  return (
-    <button type="button" className={`mlb-pitch-tab ${active ? "is-active" : ""}`} onClick={onClick}>
-      {label}
-    </button>
-  );
-}
-
-function PitchCountGroup({ label, value, max, tone }: { label: string; value: number | null; max: number; tone: "ball" | "strike" | "out" }) {
-  const count = Math.max(0, Math.min(max, typeof value === "number" ? value : 0));
-  return (
-    <div className="mlb-pitch-count-group">
-      <div className="mlb-pitch-dots">
-        {Array.from({ length: max }).map((_, idx) => (
-          <span key={idx} className={`mlb-pitch-count-dot ${idx < count ? `is-${tone}` : ""}`} />
-        ))}
-      </div>
-      <strong>{label}</strong>
-    </div>
-  );
-}
-
-function numberOrNull(...values: any[]): number | null {
-  for (const value of values) {
-    if (typeof value === "number" && Number.isFinite(value)) return value;
-    if (value !== undefined && value !== null && value !== "") {
-      const n = Number(value);
-      if (Number.isFinite(n)) return n;
-    }
-  }
-  return null;
-}
-
-function normalizeBases(bases: MlbPitchZoneData["bases"] | undefined, situation: any) {
-  const firstName = bases?.firstName || situation?.onFirst?.displayName || situation?.onFirst?.name || situation?.runnerOnFirst?.displayName || null;
-  const secondName = bases?.secondName || situation?.onSecond?.displayName || situation?.onSecond?.name || situation?.runnerOnSecond?.displayName || null;
-  const thirdName = bases?.thirdName || situation?.onThird?.displayName || situation?.onThird?.name || situation?.runnerOnThird?.displayName || null;
-  return {
-    first: !!bases?.first || !!situation?.onFirst || !!firstName,
-    second: !!bases?.second || !!situation?.onSecond || !!secondName,
-    third: !!bases?.third || !!situation?.onThird || !!thirdName,
-    firstName,
-    secondName,
-    thirdName,
-  };
-}
-
-function runnerRows(bases: ReturnType<typeof normalizeBases>) {
-  return [
-    bases.first ? { base: "1B", name: bases.firstName || "Runner on first" } : null,
-    bases.second ? { base: "2B", name: bases.secondName || "Runner on second" } : null,
-    bases.third ? { base: "3B", name: bases.thirdName || "Runner on third" } : null,
-  ].filter(Boolean) as { base: string; name: string }[];
-}
-
-function pitchPlotPosition(pitch: MlbPitchLocation, zone: MlbPitchZoneData | null | undefined) {
-  const px = typeof pitch.px === "number" ? pitch.px : 0;
-  const pz = typeof pitch.pz === "number" ? pitch.pz : 2.5;
-  const zoneTop = numberOrNull(pitch.strikeZoneTop, zone?.strikeZoneTop, 3.5) || 3.5;
-  const zoneBottom = numberOrNull(pitch.strikeZoneBottom, zone?.strikeZoneBottom, 1.5) || 1.5;
-  const chartLeft = -1.65;
-  const chartRight = 1.65;
-  const chartTop = zoneTop + 0.72;
-  const chartBottom = Math.max(0.25, zoneBottom - 0.72);
-  const left = ((px - chartLeft) / (chartRight - chartLeft)) * 100;
-  const top = ((chartTop - pz) / (chartTop - chartBottom)) * 100;
-  return {
-    left: Math.max(4, Math.min(96, left)),
-    top: Math.max(4, Math.min(96, top)),
-  };
-}
-
-function pitchDotStyle(pitch: MlbPitchLocation) {
-  if (pitch.isBallInPlay) return { bg: "#3b82f6", border: "rgba(255,255,255,.92)" };
-  if (pitch.isBall) return { bg: "#54c56b", border: "rgba(255,255,255,.9)" };
-  if (pitch.isStrike) return { bg: "#ef5350", border: "rgba(255,255,255,.9)" };
-  const desc = String(pitch.description || "").toLowerCase();
-  if (/ball/.test(desc)) return { bg: "#54c56b", border: "rgba(255,255,255,.9)" };
-  if (/strike|foul|swing/.test(desc)) return { bg: "#ef5350", border: "rgba(255,255,255,.9)" };
-  return { bg: "var(--accent)", border: "rgba(255,255,255,.9)" };
-}
-
-function pitchLabel(pitch: MlbPitchLocation) {
-  const parsed = formatPitch(pitch.description || "");
-  if (parsed.label && parsed.label !== "Pitch") return parsed.label;
-  return pitch.description || "Pitch";
-}
-
-function pitchMeta(pitch: MlbPitchLocation) {
-  const parts = [];
-  if (pitch.velocity != null) parts.push(`${Math.round(pitch.velocity)}mph`);
-  if (pitch.pitchName) parts.push(String(pitch.pitchName).toLowerCase());
-  return parts.join(" ") || "Location pending";
 }
 
 function teamDisplayName(team?: TeamMeta): string {
