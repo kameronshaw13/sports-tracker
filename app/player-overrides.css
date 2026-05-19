@@ -1810,6 +1810,155 @@ body::-webkit-scrollbar,
     drop-shadow(-.66px -.66px 0 #fff) !important;
 }
 
+/* v244: baseball line score keeps Team and R/H/E fixed while extra innings scroll */
+.boxscore-line-wrap {
+  width: 100% !important;
+  overflow: hidden !important;
+  border-top: 1px solid var(--border) !important;
+  border-bottom: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+}
+
+.boxscore-line-scroll-grid {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(5.65rem, 6.15rem) minmax(0, 1fr) auto !important;
+  align-items: stretch !important;
+  background: var(--surface) !important;
+}
+
+.boxscore-line-fixed-teams,
+.boxscore-line-fixed-totals {
+  position: relative !important;
+  z-index: 2 !important;
+  display: grid !important;
+  grid-template-rows: 2.25rem repeat(2, 2.62rem) !important;
+  background: var(--surface) !important;
+}
+
+.boxscore-line-fixed-totals {
+  grid-template-columns: repeat(var(--line-totals, 3), 2.16rem) !important;
+  border-left: 1px solid color-mix(in srgb, var(--border) 92%, #fff 5%) !important;
+}
+
+.boxscore-line-innings-scroll {
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none !important;
+  background: var(--surface) !important;
+}
+
+.boxscore-line-innings-scroll::-webkit-scrollbar {
+  display: none !important;
+}
+
+.boxscore-line-innings-grid {
+  min-width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(var(--line-innings, 9), minmax(1.94rem, 1fr)) !important;
+  grid-template-rows: 2.25rem repeat(2, 2.62rem) !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-innings-grid {
+  min-width: calc(var(--line-innings, 10) * 2.18rem) !important;
+  grid-template-columns: repeat(var(--line-innings, 10), 2.18rem) !important;
+}
+
+.boxscore-line-cell {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: .22rem .18rem .08rem !important;
+  color: var(--text) !important;
+  font-family: var(--font-display), Georgia, serif !important;
+  font-size: .78rem !important;
+  line-height: 1.05 !important;
+  font-weight: 850 !important;
+  overflow: visible !important;
+  border-top: 1px solid var(--border) !important;
+}
+
+.boxscore-line-head-cell {
+  color: var(--text-3) !important;
+  background: var(--surface-2) !important;
+  font-size: .74rem !important;
+  font-weight: 950 !important;
+  border-top: 0 !important;
+}
+
+.boxscore-line-team-head {
+  justify-content: flex-start !important;
+  padding-left: .62rem !important;
+}
+
+.boxscore-line-team-cell {
+  justify-content: flex-start !important;
+  padding-left: .48rem !important;
+  padding-right: .25rem !important;
+}
+
+.boxscore-line-score-cell,
+.boxscore-line-total-cell {
+  transform: translateY(.08rem) !important;
+}
+
+.boxscore-line-total-cell,
+.boxscore-line-total-head {
+  font-weight: 1000 !important;
+}
+
+.boxscore-line-team {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: .4rem !important;
+  overflow: visible !important;
+  transform: translateY(.04rem) !important;
+}
+
+.boxscore-line-team img {
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  flex: 0 0 1.25rem !important;
+  object-fit: contain !important;
+  overflow: visible !important;
+}
+
+.boxscore-line-team span {
+  min-width: 0 !important;
+  color: var(--text) !important;
+  font-size: .84rem !important;
+  line-height: 1.05 !important;
+  font-weight: 1000 !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+}
+
+@media (max-width: 390px) {
+  .boxscore-line-scroll-grid {
+    grid-template-columns: minmax(5.15rem, 5.55rem) minmax(0, 1fr) auto !important;
+  }
+
+  .boxscore-line-fixed-totals {
+    grid-template-columns: repeat(var(--line-totals, 3), 1.94rem) !important;
+  }
+
+  .boxscore-line-innings-grid {
+    grid-template-columns: repeat(var(--line-innings, 9), minmax(1.72rem, 1fr)) !important;
+  }
+
+  .boxscore-line-wrap.has-extra-innings .boxscore-line-innings-grid {
+    min-width: calc(var(--line-innings, 10) * 2rem) !important;
+    grid-template-columns: repeat(var(--line-innings, 10), 2rem) !important;
+  }
+}
+
 /* v222: final logo-outline enforcement for GameTracker lineup and odds tabs */
 .game-lineup-toggle-btn > img.logo-outline-dark,
 .game-odds-team > img.logo-outline-dark,
