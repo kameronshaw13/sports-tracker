@@ -179,6 +179,7 @@ function MlbLiveGamecast({
   const liveAtBat = [...halfAtBatRows].reverse().find((ab) => ab.isComplete === false) || null;
   const lastCompletedInHalf = [...halfAtBatRows].reverse().find((ab) => ab.isComplete !== false) || null;
   const currentOrLast = liveAtBat || lastCompletedInHalf;
+  const fallbackPitchZone = buildFallbackPitchZone(currentOrLast, espnSituation);
   const battingTeam = currentHalf.half === "top" ? away : home;
   const sections = buildMlbSections(displayAtBats, home, away, "chronological");
   const scoringSections = buildMlbSections(displayAtBats.filter((ab) => ab.scoringPlay), home, away, "chronological").filter((s) => s.atBats.length > 0);
@@ -208,7 +209,7 @@ function MlbLiveGamecast({
             situation={espnSituation}
             currentAtBat={currentOrLast}
             battingTeam={battingTeam}
-            pitchZone={mlbLiveFeed?.pitchZone || null}
+            pitchZone={mlbLiveFeed?.pitchZone || fallbackPitchZone}
             onPlayerClick={onPlayerClick}
           />
 
@@ -318,8 +319,6 @@ function MlbPitchCenter({ pitchZone, situation }: { pitchZone?: MlbPitchZoneData
   const locatedPitches = pitchEvents.filter((p) => typeof p.px === "number" && typeof p.pz === "number");
   const defense = pitchZone?.defense || [];
 
-  if (!pitchZone && !pitchEvents.length) return null;
-
   return (
     <div className="mlb-pitch-center">
       <div className="mlb-pitch-tabs" role="tablist" aria-label="Live MLB details">
@@ -420,6 +419,54 @@ function MlbPitchCenter({ pitchZone, situation }: { pitchZone?: MlbPitchZoneData
       )}
     </div>
   );
+}
+
+function buildFallbackPitchZone(currentAtBat: MlbAtBat | null, situation: any): MlbPitchZoneData {
+  const pitches = (currentAtBat?.pitches || [])
+    .filter((pitch) => !isBaserunningPitchText(pitch))
+    .map((pitch, idx) => {
+      const parsed = formatPitch(pitch);
+      const lower = String(pitch || "").toLowerCase();
+      return {
+        id: `${currentAtBat?.id || "fallback"}-${idx}`,
+        description: parsed.label || pitch,
+        pitchNumber: idx + 1,
+        pitchName: pitchTypeFromText(pitch),
+        velocity: velocityFromText(pitch),
+        isBallInPlay: /in play|ball in play/.test(lower),
+        isStrike: /strike|foul|swing|missed/.test(lower),
+        isBall: /\bball\b|intent ball|automatic ball/.test(lower),
+      };
+    });
+
+  return {
+    pitches,
+    bases: normalizeBases(undefined, situation),
+    count: {
+      balls: numberOrNull(situation?.balls),
+      strikes: numberOrNull(situation?.strikes),
+      outs: numberOrNull(situation?.outs),
+    },
+    defense: [],
+    strikeZoneTop: 3.5,
+    strikeZoneBottom: 1.5,
+  };
+}
+
+function velocityFromText(text: string): number | null {
+  const match = String(text || "").match(/(\d{2,3}(?:\.\d+)?)\s*mph/i);
+  return match ? Number(match[1]) : null;
+}
+
+function pitchTypeFromText(text: string): string | null {
+  const cleaned = String(text || "")
+    .replace(/^Pitch\s*\d+\s*:\s*/i, "")
+    .replace(/\d{2,3}(?:\.\d+)?\s*mph/gi, "")
+    .replace(/\b(ball|called strike|strike swinging|strike looking|swinging strike|foul|in play|ball in play)\b/gi, "")
+    .replace(/[.,]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned || null;
 }
 
 function PitchCenterTab({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
