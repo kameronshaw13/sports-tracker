@@ -1957,6 +1957,27 @@ body::-webkit-scrollbar,
   width: auto !important;
 }
 
+/* v239: keep the box score team selector on the thinner height in every state */
+.boxscore-team-toggle {
+  min-height: 2.16rem !important;
+  height: 2.16rem !important;
+  align-items: center !important;
+  padding-top: .12rem !important;
+  padding-bottom: .12rem !important;
+}
+
+.boxscore-team-toggle .boxscore-team-toggle-btn,
+.boxscore-team-toggle .boxscore-team-toggle-btn.is-active,
+.boxscore-team-toggle .boxscore-team-toggle-mid-fixed,
+.boxscore-team-toggle .boxscore-team-toggle-mid-fixed.is-active {
+  height: 1.88rem !important;
+  min-height: 1.88rem !important;
+  max-height: 1.88rem !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  box-sizing: border-box !important;
+}
+
 .game-lineup-toggle-btn img.logo-outline-dark,
 .game-lineup-toggle-btn .logo-outline-dark {
   -webkit-filter:
