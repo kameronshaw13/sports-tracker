@@ -1810,6 +1810,58 @@ body::-webkit-scrollbar,
     drop-shadow(-.66px -.66px 0 #fff) !important;
 }
 
+/* v247b: final extra-inning lock after all line-score geometry overrides */
+.boxscore-line-wrap.has-extra-innings {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-x: contain !important;
+  overscroll-behavior-y: none !important;
+  touch-action: pan-x !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table thead,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table tbody,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table tr,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table th,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table td {
+  touch-action: pan-x !important;
+}
+
+/* v247: extra-inning line scores should only move horizontally */
+.boxscore-line-wrap.has-extra-innings {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-x: contain !important;
+  overscroll-behavior-y: none !important;
+  touch-action: pan-x !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table thead,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table tbody,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table tr,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table th,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table td {
+  touch-action: pan-x !important;
+}
+
+button.game-lineup-row {
+  width: 100% !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: transparent !important;
+  color: inherit !important;
+  font: inherit !important;
+  text-align: left !important;
+}
+
+.game-lineup-row.is-clickable {
+  cursor: pointer !important;
+}
+
 /* v244: baseball line score keeps Team and R/H/E fixed while extra innings scroll */
 .boxscore-line-wrap {
   width: 100% !important;
@@ -2321,4 +2373,22 @@ body::-webkit-scrollbar,
     drop-shadow(-.66px .66px 0 #fff)
     drop-shadow(.66px -.66px 0 #fff)
     drop-shadow(-.66px -.66px 0 #fff) !important;
+}
+
+/* v247b: final extra-inning lock after all line-score geometry overrides */
+.boxscore-line-wrap.has-extra-innings {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-x: contain !important;
+  overscroll-behavior-y: none !important;
+  touch-action: pan-x !important;
+}
+
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table thead,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table tbody,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table tr,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table th,
+.boxscore-line-wrap.has-extra-innings .boxscore-line-table td {
+  touch-action: pan-x !important;
 }

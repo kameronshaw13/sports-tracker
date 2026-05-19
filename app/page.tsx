@@ -231,7 +231,15 @@ export default function Home() {
               <LiveGame team={activeTeam} onTeamLogoClick={handleTeamLogoClick} onPlayerClick={(p) => setSelectedPlayer({ ...p, teamKey: activeTeam.key })} />
             )}
             {activeTab === "schedule" && (
-              <Schedule team={activeTeam} onTeamLogoClick={handleTeamLogoClick} onPlayerClick={(p) => setSelectedPlayer({ ...p, teamKey: activeTeam.key })} />
+              <Schedule
+                team={activeTeam}
+                onTeamLogoClick={handleTeamLogoClick}
+                onPlayerClick={(p) => setSelectedPlayer({ ...p, teamKey: activeTeam.key })}
+                onOpenGame={(game) => {
+                  setSelectedGameTab("main");
+                  setSelectedGame(game);
+                }}
+              />
             )}
             {activeTab === "roster" && <Roster team={activeTeam} mode="active" onPlayerClick={(p) => setSelectedPlayer(p)} />}
             {activeTab === "stats" && <Stats team={activeTeam} onPlayerClick={(p) => setSelectedPlayer(p)} />}

@@ -15,7 +15,7 @@ type Props = {
   eventId: string;
   onClose?: () => void;
   onTeamClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
-  onPlayerClick?: (player: { id: string; name: string; league: string }, returnTab?: ReturnableGameTab) => void;
+  onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }, returnTab?: ReturnableGameTab) => void;
   initialTab?: ReturnableGameTab;
 };
 
@@ -102,7 +102,13 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
       <div className="game-detail-content">
         {visibleTab === "main" && !isNonPlayed && <Gamecast league={league} eventId={eventId} isLive={isLive} situation={situation} onPlayerClick={onPlayerClick ? (p) => onPlayerClick(p, "main") : undefined} />}
         {visibleTab === "main" && isNonPlayed && <div className="m-4 p-6 text-center text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>This game was {nonPlayedLabel(statusName).toLowerCase()}.</div>}
-        {visibleTab === "lineup" && showLineupTab && <GameLineup league={league} eventId={eventId} />}
+        {visibleTab === "lineup" && showLineupTab && (
+          <GameLineup
+            league={league}
+            eventId={eventId}
+            onPlayerClick={onPlayerClick ? (player) => onPlayerClick(player, "lineup") : undefined}
+          />
+        )}
         {visibleTab === "boxscore" && <Boxscore league={league} eventId={eventId} isLive={isLive} onPlayerClick={onPlayerClick ? (p) => onPlayerClick(p, "boxscore") : undefined} />}
         {visibleTab === "odds" && showOddsTab && <OddsPanel league={league} odds={odds} away={away} home={home} />}
       </div>

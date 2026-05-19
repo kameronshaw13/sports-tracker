@@ -15,9 +15,10 @@ type Props = {
   team: TeamConfig;
   onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
   onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void;
+  onOpenGame?: (game: { league: string; eventId: string }) => void;
 };
 
-export default function Schedule({ team, onTeamLogoClick, onPlayerClick }: Props) {
+export default function Schedule({ team, onTeamLogoClick, onPlayerClick, onOpenGame }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const freshKey = useFreshKey();
@@ -94,7 +95,18 @@ export default function Schedule({ team, onTeamLogoClick, onPlayerClick }: Props
       <section key={activeMonth}>
         <div className="cbs-table-panel">
           {activeList.map((ev: any) => (
-            <ScheduleRow key={ev.id} ev={ev} team={team} onClick={() => setSelected(ev.id)} />
+            <ScheduleRow
+              key={ev.id}
+              ev={ev}
+              team={team}
+              onClick={() => {
+                if (onOpenGame) {
+                  onOpenGame({ league: team.league, eventId: ev.id });
+                  return;
+                }
+                setSelected(ev.id);
+              }}
+            />
           ))}
         </div>
       </section>

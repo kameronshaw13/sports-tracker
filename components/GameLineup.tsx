@@ -10,9 +10,10 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 type Props = {
   league: string;
   eventId: string;
+  onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void;
 };
 
-export default function GameLineup({ league, eventId }: Props) {
+export default function GameLineup({ league, eventId, onPlayerClick }: Props) {
   const freshKey = useFreshKey();
   const { data, error, isLoading } = useSWR(
     eventId ? `/api/boxscore?league=${league}&event=${eventId}&_t=${freshKey}` : null,
@@ -36,6 +37,7 @@ export default function GameLineup({ league, eventId }: Props) {
 
   const team = teams[Math.min(activeTeam, teams.length - 1)];
   const players = lineupPlayers(team);
+  const teamKey = String(team?.team?.key || team?.team?.abbr || team?.team?.id || "").toLowerCase();
 
   return (
     <div className="game-lineup-wrap">
@@ -65,8 +67,18 @@ export default function GameLineup({ league, eventId }: Props) {
       <div className="game-lineup-shell">
         <div className="game-lineup-section-title">Starting Lineup</div>
         <div className="game-lineup-list">
-          {players.length ? players.map((player: any, index: number) => (
-            <div key={`${player.id || player.name || index}-${index}`} className="game-lineup-row">
+          {players.length ? players.map((player: any, index: number) => {
+            const playerId = String(player.id || player.uid || player.athlete?.id || "");
+            const playerName = player.name || player.shortName || player.displayName || "Player";
+            const isClickable = Boolean(onPlayerClick && playerId);
+            const RowTag = isClickable ? "button" : "div";
+            return (
+            <RowTag
+              key={`${playerId || playerName || index}-${index}`}
+              type={isClickable ? "button" : undefined}
+              className={`game-lineup-row ${isClickable ? "is-clickable" : ""}`}
+              onClick={isClickable ? () => onPlayerClick?.({ id: playerId, name: playerName, league, teamKey }) : undefined}
+            >
               <div className="game-lineup-order tabular-nums">{index + 1}</div>
               <div className="game-lineup-headshot-wrap">
                 {player.headshot ? (
@@ -84,13 +96,13 @@ export default function GameLineup({ league, eventId }: Props) {
               </div>
               <div className="game-lineup-player">
                 <div className="game-lineup-name">
-                  <span>{player.name || player.shortName || "Player"}</span>
+                  <span>{playerName}</span>
                   {player.position && <em>{player.position}</em>}
                 </div>
               </div>
               <div className="game-lineup-avg tabular-nums">{lineupAverage(player)}</div>
-            </div>
-          )) : (
+            </RowTag>
+          )}) : (
             <div className="game-lineup-empty">Lineup has not been posted yet.</div>
           )}
         </div>
