@@ -26,6 +26,8 @@ type PitchEvent = {
   velocity: number | null;
   px: number | null;
   pz: number | null;
+  strikeZoneTop: number | null;
+  strikeZoneBottom: number | null;
   zone: number | null;
   isPitch: boolean;
   isBallInPlay: boolean;
@@ -65,6 +67,17 @@ type MlbAtBat = {
   endCount: { balls: number | null; strikes: number | null; outs: number | null };
   pitches: PitchEvent[];
   hitData: HitData | null;
+  bases?: ReturnType<typeof basesFromMatchup>;
+  strikeZoneTop?: number | null;
+  strikeZoneBottom?: number | null;
+};
+
+type DefensePlayer = {
+  id: string;
+  name: string;
+  shortName: string;
+  position: string;
+  order: number;
 };
 
 type MlbHalfInning = {
@@ -248,6 +261,8 @@ function mapPitchEvent(ev: any, idx: number): PitchEvent {
     velocity: readNumber(pitchData?.startSpeed, pitchData?.endSpeed),
     px: readNumber(coords?.pX, coords?.px, coords?.x),
     pz: readNumber(coords?.pZ, coords?.pz, coords?.z),
+    strikeZoneTop: readNumber(pitchData?.strikeZoneTop, ev?.matchup?.strikeZoneTop),
+    strikeZoneBottom: readNumber(pitchData?.strikeZoneBottom, ev?.matchup?.strikeZoneBottom),
     zone: readNumber(coords?.zone),
     isPitch,
     isBallInPlay,
@@ -260,6 +275,54 @@ function mapPitchEvent(ev: any, idx: number): PitchEvent {
     },
     hitData: readHitData(ev),
   };
+}
+
+const DEFENSE_ORDER: Record<string, number> = {
+  P: 1,
+  C: 2,
+  "1B": 3,
+  "2B": 4,
+  "3B": 5,
+  SS: 6,
+  LF: 7,
+  CF: 8,
+  RF: 9,
+  OF: 10,
+};
+
+function buildDefensePlayers(live: any, side: "home" | "away", currentPitcher?: string | null): DefensePlayer[] {
+  const players = live?.liveData?.boxscore?.teams?.[side]?.players || {};
+  const byPosition = new Map<string, DefensePlayer>();
+
+  Object.values(players).forEach((raw: any) => {
+    const position = String(raw?.position?.abbreviation || "").toUpperCase();
+    if (!position || !(position in DEFENSE_ORDER)) return;
+    const name = String(raw?.person?.fullName || raw?.person?.displayName || raw?.person?.name || "").trim();
+    if (!name) return;
+    const item: DefensePlayer = {
+      id: String(raw?.person?.id || `${position}-${name}`),
+      name,
+      shortName: String(raw?.person?.boxscoreName || raw?.person?.lastInitName || name).trim(),
+      position,
+      order: DEFENSE_ORDER[position],
+    };
+
+    const existing = byPosition.get(position);
+    if (!existing) {
+      byPosition.set(position, item);
+      return;
+    }
+
+    if (position === "P" && currentPitcher && normalizeSimpleName(name) === normalizeSimpleName(currentPitcher)) {
+      byPosition.set(position, item);
+    }
+  });
+
+  return Array.from(byPosition.values()).sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
+}
+
+function normalizeSimpleName(name: string | null | undefined): string {
+  return String(name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
 function basesFromMatchup(matchup: any) {
@@ -306,13 +369,15 @@ function buildMlbLivePayload(live: any, summary: any, gamePk: number | null) {
   const atBats: MlbAtBat[] = allPlays.map((p: any, idx: number) => {
     const half = String(p?.about?.halfInning || "top").toLowerCase().startsWith("bot") ? "bottom" : "top";
     const battingTeam = half === "top" ? "away" : "home";
-    const pitches = (Array.isArray(p?.playEvents) ? p.playEvents : [])
-      .map((ev: any, evIdx: number) => mapPitchEvent(ev, evIdx))
-      .filter((ev: PitchEvent) => ev.isPitch || ev.hitData || ev.description);
-    const hitData = pitches.map((x) => x.hitData).find(Boolean) || readHitData(p);
-    const result = String(p?.result?.description || p?.result?.event || "At-bat in progress");
+      const playEvents = Array.isArray(p?.playEvents) ? p.playEvents : [];
+      const pitches = playEvents
+        .map((ev: any, evIdx: number) => mapPitchEvent(ev, evIdx))
+        .filter((ev: PitchEvent) => ev.isPitch || ev.hitData || ev.description);
+      const hitData = pitches.map((x) => x.hitData).find(Boolean) || readHitData(p);
+      const result = String(p?.result?.description || p?.result?.event || "At-bat in progress");
+      const zoneSource = [...pitches].reverse().find((pitch) => pitch.strikeZoneTop || pitch.strikeZoneBottom);
 
-    return {
+      return {
       id: String(p?.playEndTime || p?.about?.atBatIndex || idx),
       atBatIndex: Number(p?.about?.atBatIndex ?? idx),
       inning: Number(p?.about?.inning || 0),
@@ -333,14 +398,17 @@ function buildMlbLivePayload(live: any, summary: any, gamePk: number | null) {
         strikes: readNumber(p?.count?.strikes),
         outs: readNumber(p?.count?.outs),
       },
-      endCount: {
-        balls: readNumber(p?.count?.balls),
-        strikes: readNumber(p?.count?.strikes),
-        outs: readNumber(p?.count?.outs),
-      },
-      pitches,
-      hitData,
-    };
+        endCount: {
+          balls: readNumber(p?.count?.balls),
+          strikes: readNumber(p?.count?.strikes),
+          outs: readNumber(p?.count?.outs),
+        },
+        pitches,
+        hitData,
+        bases: basesFromMatchup(p?.matchup || {}),
+        strikeZoneTop: readNumber(p?.matchup?.strikeZoneTop, zoneSource?.strikeZoneTop),
+        strikeZoneBottom: readNumber(p?.matchup?.strikeZoneBottom, zoneSource?.strikeZoneBottom),
+      };
   });
 
   const currentAtBatIndex = currentPlay?.about?.atBatIndex != null
@@ -391,6 +459,23 @@ function buildMlbLivePayload(live: any, summary: any, gamePk: number | null) {
     bases: basesFromMatchup(matchup),
   };
 
+  const defenseSide: "home" | "away" = currentAtBat?.battingTeam === "away" ? "home" : "away";
+  const defense = buildDefensePlayers(live, defenseSide, situation.pitcher || currentAtBat?.pitcher || null);
+  const currentPitchZone = currentAtBat
+    ? {
+        ...currentAtBat,
+        bases: situation.bases || currentAtBat.bases,
+        strikeZoneTop: readNumber(currentAtBat.strikeZoneTop, [...(currentAtBat.pitches || [])].reverse().find((p) => p.strikeZoneTop)?.strikeZoneTop, 3.5),
+        strikeZoneBottom: readNumber(currentAtBat.strikeZoneBottom, [...(currentAtBat.pitches || [])].reverse().find((p) => p.strikeZoneBottom)?.strikeZoneBottom, 1.5),
+        count: {
+          balls: situation.balls,
+          strikes: situation.strikes,
+          outs: situation.outs,
+        },
+        defense,
+      }
+    : null;
+
   const currentHalfAtBats = currentHalf
     ? atBats.filter((ab) => ab.inning === currentHalf.inning && ab.half === currentHalf.half)
     : [];
@@ -406,6 +491,8 @@ function buildMlbLivePayload(live: any, summary: any, gamePk: number | null) {
     home,
     away,
     situation,
+    pitchZone: currentPitchZone,
+    defense,
     currentAtBat,
     currentHalfAtBats,
     halfInnings,
