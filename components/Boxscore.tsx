@@ -71,7 +71,7 @@ export default function Boxscore({
               className={`boxscore-team-toggle-btn ${activeView === i ? "is-active" : ""}`}
             >
               {t.team.logo && <OutlinedLogo src={t.team.logo} alt="" size={20} />}
-              {t.team.abbr}
+              <span className="boxscore-team-toggle-abbr">{t.team.abbr}</span>
             </button>
           )).flatMap((btn: any, i: number) =>
             i === 0

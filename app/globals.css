@@ -16909,3 +16909,28 @@ main.view-scores .pull-refresh-indicator {
     font-size: .6rem !important;
   }
 }
+
+/* v264: boxscore logo and selector alignment after all legacy overrides */
+.boxscore-line-team .outlined-logo {
+  transform: translateY(-.18rem) !important;
+}
+
+.boxscore-team-toggle-btn .outlined-logo {
+  transform: translateY(-.12rem) !important;
+}
+
+.boxscore-team-toggle-abbr {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  transform: translateY(-.05rem) !important;
+}
+
+.boxscore-team-toggle-btn.is-active:not(.boxscore-team-toggle-mid-fixed) {
+  padding-top: 0 !important;
+}
+
+.boxscore-team-toggle-btn.is-active:not(.boxscore-team-toggle-mid-fixed) .boxscore-team-toggle-abbr {
+  transform: translateY(-.08rem) !important;
+}
