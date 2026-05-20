@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { League, VALID_LEAGUES } from "@/lib/teams";
 import Standings from "./Standings";
+import OutlinedLogo from "./OutlinedLogo";
 
 const NCAA_LOGO = "/ncaa-logo.png";
 const LEAGUE_LABELS: Record<League, string> = { mlb: "MLB", nfl: "NFL", nba: "NBA", nhl: "NHL", cfb: "CFB", cbb: "CBB" };
@@ -44,8 +45,7 @@ export default function StandingsPage({ initialLeague = "mlb", onTeamClick }: { 
                 className={`standings-league-tab min-w-[76px] px-3 py-2 flex flex-col items-center gap-1 text-xs font-black uppercase tracking-wider ${selected ? "is-active" : ""}`}
                 style={{ color: selected ? "var(--text)" : "var(--text-2)" }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={LEAGUE_LOGOS[id]} alt={LEAGUE_LABELS[id]} width={26} height={26} className="object-contain" />
+                <OutlinedLogo src={LEAGUE_LOGOS[id]} alt={LEAGUE_LABELS[id]} size={26} />
                 <span>{LEAGUE_LABELS[id]}</span>
                 {selected && <span className="standings-league-tab-rule h-1 w-full" />}
               </button>

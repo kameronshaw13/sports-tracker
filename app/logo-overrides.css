@@ -1,4 +1,14 @@
 /* Loaded after globals/player-overrides so every team logo uses the same outline system. */
+.outlined-logo,
+.outlined-logo-svg {
+  overflow: visible !important;
+}
+
+.outlined-logo {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
 .score-team-logo-wrap,
 .espn-team-logo-wrap {
   --logo-outline-size: .62px;

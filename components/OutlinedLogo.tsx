@@ -12,7 +12,7 @@ type Props = {
 export default function OutlinedLogo({ src, alt = "", size = 30, className = "" }: Props) {
   const rawId = useId();
   const filterId = `outlined-logo-${rawId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
-  const radius = Math.max(0.58, Math.min(1.16, size * 0.025));
+  const radius = Math.max(0.72, Math.min(1.35, size * 0.032));
   const pad = Math.ceil(radius * 5);
 
   return (
