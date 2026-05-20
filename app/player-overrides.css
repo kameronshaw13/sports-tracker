@@ -2080,8 +2080,8 @@ button.game-lineup-row {
 
 .manage-done-btn {
   line-height: 1.04 !important;
-  padding-top: .66rem !important;
-  padding-bottom: .24rem !important;
+  padding-top: .62rem !important;
+  padding-bottom: .28rem !important;
 }
 
 .manage-remove-btn {
@@ -2089,7 +2089,7 @@ button.game-lineup-row {
   align-items: center !important;
   justify-content: center !important;
   line-height: 1 !important;
-  padding-top: .54rem !important;
+  padding-top: .46rem !important;
   padding-bottom: 0 !important;
 }
 
