@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { useFreshKey } from "@/lib/freshKey";
+import { GameNavTarget, warmGameSummary } from "@/lib/gamePrefetch";
 import { League, VALID_LEAGUES, logoUrl } from "@/lib/teams";
 import { useAppSettings, ScoreDensity } from "@/lib/useAppSettings";
 import { useFavoriteTeams } from "@/lib/useFavorites";
@@ -46,7 +47,7 @@ const LEAGUE_LOGOS: Record<League, string> = {
 type Props = {
   onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
   onPlayerClick?: (player: { id: string; name: string; league: string }, returnTab?: "main" | "lineup" | "boxscore") => void;
-  onGameContext?: (game: { league: string; eventId: string }, returnTab: "main" | "lineup" | "boxscore", scrollY: number) => void;
+  onGameContext?: (game: GameNavTarget, returnTab: "main" | "lineup" | "boxscore", scrollY: number) => void;
   initialLeague?: string;
   leaguePage?: boolean;
   onBack?: () => void;
@@ -65,22 +66,33 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, onGameCont
   const [league] = useState<League>(safeInitial);
   const [tab, setTab] = useState<LeagueTab>("scores");
   const [standingsView, setStandingsView] = useState<string>(defaultStandingsViewForLeague(safeInitial));
-  const [selectedEvent, setSelectedEvent] = useState<{ league: string; eventId: string } | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<GameNavTarget | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const scoresHeaderRef = useRef<HTMLDivElement | null>(null);
   const returnScrollRef = useRef(0);
   const pendingRestoreRef = useRef<number | null>(null);
+  const warmedEventsRef = useRef<Record<string, GameNavTarget>>({});
   const [scoresHeaderHeight, setScoresHeaderHeight] = useState(128);
   const { settings } = useAppSettings();
+  const { mutate } = useSWRConfig();
   const { favorites } = useFavoriteTeams();
   const { favoriteGames } = useFavoriteGames();
   const date = formatDate(dayOffset);
   const standingsControls = useMemo(() => controlsForLeague(league), [league]);
   const activeStandingsControl = standingsControls.find((control) => control.id === standingsView) || standingsControls[0];
 
+  const warmEvent = (next: { league: string; eventId: string }) => {
+    const key = `${next.league}:${next.eventId}`;
+    const cached = warmedEventsRef.current[key];
+    if (cached) return cached;
+    const warmed = warmGameSummary(mutate, next);
+    warmedEventsRef.current[key] = warmed;
+    return warmed;
+  };
+
   const openEvent = (next: { league: string; eventId: string }) => {
     returnScrollRef.current = typeof window !== "undefined" ? window.scrollY : 0;
-    setSelectedEvent(next);
+    setSelectedEvent(warmEvent(next));
     window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
   };
 
@@ -126,6 +138,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, onGameCont
       <GameDetail
         league={selectedEvent.league}
         eventId={selectedEvent.eventId}
+        freshKeyOverride={selectedEvent.freshKey}
         onClose={closeEvent}
         onTeamClick={onTeamLogoClick}
         onPlayerClick={(player, returnTab = "main") => {
@@ -145,7 +158,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, onGameCont
             <>
               <CbsDateBar dayOffset={dayOffset} setDayOffset={setDayOffset} />
               <div className="mt-3">
-                <LeagueDaySection league={league} date={date} density={settings.density} onGameClick={(eventId) => openEvent({ league, eventId })} onStandingsClick={onStandingsClick} stickyTop={0} hideHeader />
+                <LeagueDaySection league={league} date={date} density={settings.density} onGameClick={(eventId) => openEvent({ league, eventId })} onWarmGame={(eventId) => { warmEvent({ league, eventId }); }} onStandingsClick={onStandingsClick} stickyTop={0} hideHeader />
               </div>
             </>
           )}
@@ -198,9 +211,9 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, onGameCont
       </div>
 
       <div>
-        <FavoritesScores date={date} favoriteKeys={favoriteKeys} favoriteGameKeys={favoriteGameKeys} stickyTop={leagueStickyTop} onGameClick={(league, eventId) => openEvent({ league, eventId })} />
+        <FavoritesScores date={date} favoriteKeys={favoriteKeys} favoriteGameKeys={favoriteGameKeys} stickyTop={leagueStickyTop} onGameClick={(league, eventId) => openEvent({ league, eventId })} onWarmGame={(league, eventId) => { warmEvent({ league, eventId }); }} />
         {leagues.map((lg) => (
-          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => openEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={leagueStickyTop} />
+          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => openEvent({ league: lg, eventId })} onWarmGame={(eventId) => { warmEvent({ league: lg, eventId }); }} onStandingsClick={onStandingsClick} stickyTop={leagueStickyTop} />
         ))}
       </div>
     </div>
@@ -298,7 +311,7 @@ function defaultStandingsViewForLeague(league: League) {
   return "division";
 }
 
-function FavoritesScores({ date, favoriteKeys, favoriteGameKeys, stickyTop, onGameClick }: { date: string; favoriteKeys: Set<string>; favoriteGameKeys: Set<string>; stickyTop: number | string; onGameClick: (league: League, eventId: string) => void }) {
+function FavoritesScores({ date, favoriteKeys, favoriteGameKeys, stickyTop, onGameClick, onWarmGame }: { date: string; favoriteKeys: Set<string>; favoriteGameKeys: Set<string>; stickyTop: number | string; onGameClick: (league: League, eventId: string) => void; onWarmGame?: (league: League, eventId: string) => void }) {
   const freshKey = useFreshKey();
   const { settings } = useAppSettings();
   const requests = settings.sportOrder.map((league) => useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, { refreshInterval: 15_000, dedupingInterval: 4_000 }));
@@ -322,14 +335,14 @@ function FavoritesScores({ date, favoriteKeys, favoriteGameKeys, stickyTop, onGa
       <section className="mt-3 border-b" style={{ borderColor: "var(--border)" }}>
         <SectionHeader title="Favorites" sticky stickyTop={stickyTop} />
         <div className="grid grid-cols-1">
-          {games.slice(0, 4).map((game: any) => <ScoreCard key={`${game.league}-${game.id}`} league={game.league} game={game} density="expanded" favorite favoriteSide={game.favoriteSide} onClick={() => onGameClick(game.league, game.id)} />)}
+          {games.slice(0, 4).map((game: any) => <ScoreCard key={`${game.league}-${game.id}`} league={game.league} game={game} density="expanded" favorite favoriteSide={game.favoriteSide} onClick={() => onGameClick(game.league, game.id)} onWarm={() => onWarmGame?.(game.league, game.id)} />)}
         </div>
       </section>
     </>
   );
 }
 
-function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick, stickyTop = 124, hideHeader = false }: { league: League; date: string; density: ScoreDensity; onGameClick: (eventId: string) => void; onStandingsClick?: (league: League) => void; stickyTop?: number | string; hideHeader?: boolean }) {
+function LeagueDaySection({ league, date, density, onGameClick, onWarmGame, onStandingsClick, stickyTop = 124, hideHeader = false }: { league: League; date: string; density: ScoreDensity; onGameClick: (eventId: string) => void; onWarmGame?: (eventId: string) => void; onStandingsClick?: (league: League) => void; stickyTop?: number | string; hideHeader?: boolean }) {
   const freshKey = useFreshKey();
   const [collapsed, setCollapsed] = useState(false);
   const { data, error, isLoading } = useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, {
@@ -368,7 +381,7 @@ function LeagueDaySection({ league, date, density, onGameClick, onStandingsClick
         </div>
       ) : (
         <div className={compactGrid ? "grid grid-cols-2" : "grid grid-cols-1"}>
-          {events.map((game: any) => <ScoreCard key={game.id} league={league} game={game} density={density} onClick={() => onGameClick(game.id)} />)}
+          {events.map((game: any) => <ScoreCard key={game.id} league={league} game={game} density={density} onClick={() => onGameClick(game.id)} onWarm={() => onWarmGame?.(game.id)} />)}
         </div>
       ))}
     </section>
@@ -439,7 +452,7 @@ function favoriteAccent(team: any) {
   return team?.primary || team?.color || "#f97316";
 }
 
-function ScoreCard({ league, game, density, favorite = false, favoriteSide, onClick }: { league: League; game: any; density: ScoreDensity; favorite?: boolean; favoriteSide?: "away" | "home" | null; onClick: () => void }) {
+function ScoreCard({ league, game, density, favorite = false, favoriteSide, onClick, onWarm }: { league: League; game: any; density: ScoreDensity; favorite?: boolean; favoriteSide?: "away" | "home" | null; onClick: () => void; onWarm?: () => void }) {
   const state = game.status?.state;
   const isLive = state === "in";
   const compact = density === "compact" && !favorite;
@@ -449,6 +462,7 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
     return (
       <button
         onClick={onClick}
+        onPointerDown={onWarm}
         className="retro-score-card relative min-h-[150px] p-4 text-left border-t active:scale-[0.99] favorite-score-card"
         style={{ borderColor: "var(--border)" }}
       >
@@ -468,6 +482,7 @@ function ScoreCard({ league, game, density, favorite = false, favoriteSide, onCl
   return (
     <button
       onClick={onClick}
+      onPointerDown={onWarm}
       className="retro-score-card min-h-[136px] p-3.5 text-left border-t sm:odd:border-r active:scale-[0.99]"
       style={{ borderColor: "var(--border)" }}
     >

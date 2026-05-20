@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { TeamConfig } from "@/lib/teams";
 import { useFreshKey } from "@/lib/freshKey";
+import { GameNavTarget, warmGameSummary } from "@/lib/gamePrefetch";
 import GameDetail from "./GameDetail";
 import OutlinedLogo from "./OutlinedLogo";
 
@@ -16,12 +17,14 @@ type Props = {
   onTeamLogoClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
   onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }) => void;
   onOpenGame?: (game: { league: string; eventId: string }) => void;
+  onWarmGame?: (game: { league: string; eventId: string }) => void;
 };
 
-export default function Schedule({ team, onTeamLogoClick, onPlayerClick, onOpenGame }: Props) {
-  const [selected, setSelected] = useState<string | null>(null);
+export default function Schedule({ team, onTeamLogoClick, onPlayerClick, onOpenGame, onWarmGame }: Props) {
+  const [selected, setSelected] = useState<GameNavTarget | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const freshKey = useFreshKey();
+  const { mutate } = useSWRConfig();
   const useMonthPaging = team.league === "mlb" || team.league === "nba" || team.league === "nhl";
   const { data, error, isLoading } = useSWR(`/api/scoreboard?team=${team.key}&_t=${freshKey}`, fetcher, {
     refreshInterval: 30_000,
@@ -59,8 +62,9 @@ export default function Schedule({ team, onTeamLogoClick, onPlayerClick, onOpenG
   if (selected) {
     return (
       <GameDetail
-        league={team.league}
-        eventId={selected}
+        league={selected.league}
+        eventId={selected.eventId}
+        freshKeyOverride={selected.freshKey}
         onClose={() => setSelected(null)}
         onTeamClick={onTeamLogoClick}
         onPlayerClick={onPlayerClick}
@@ -103,12 +107,13 @@ export default function Schedule({ team, onTeamLogoClick, onPlayerClick, onOpenG
               key={ev.id}
               ev={ev}
               team={team}
+              onWarm={() => onWarmGame?.({ league: team.league, eventId: ev.id })}
               onClick={() => {
                 if (onOpenGame) {
                   onOpenGame({ league: team.league, eventId: ev.id });
                   return;
                 }
-                setSelected(ev.id);
+                setSelected(warmGameSummary(mutate, { league: team.league, eventId: ev.id }));
               }}
             />
           ))}
@@ -118,7 +123,7 @@ export default function Schedule({ team, onTeamLogoClick, onPlayerClick, onOpenG
   );
 }
 
-function ScheduleRow({ ev, team, onClick }: any) {
+function ScheduleRow({ ev, team, onClick, onWarm }: any) {
   const opp = ev.opponent;
   const opponentLabel = scheduleOpponentLabel(team?.league, opp);
   const state = ev.status?.state;
@@ -129,7 +134,7 @@ function ScheduleRow({ ev, team, onClick }: any) {
   const result = isResult && !nonPlayed ? (ev.us?.winner ? "W" : "L") : "";
 
   return (
-    <button onClick={onClick} className="cbs-schedule-row team-schedule-row w-full text-left">
+    <button onClick={onClick} onPointerDown={onWarm} className="cbs-schedule-row team-schedule-row w-full text-left">
       <div className="team-schedule-date shrink-0 text-sm font-black leading-tight" style={{ color: "var(--text-2)" }}>
         <div>{weekday(ev.date)}</div>
         <div>{monthDay(ev.date)}</div>

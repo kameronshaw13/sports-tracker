@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
+import { gameSummaryUrl } from "@/lib/gamePrefetch";
 import { gameDateKey, useFavoriteGames } from "@/lib/useFavoriteGames";
 import Boxscore from "./Boxscore";
 import Gamecast from "./Gamecast";
@@ -18,14 +19,21 @@ type Props = {
   onTeamClick?: (league: string, abbr: string, sourceGame?: { league: string; eventId: string }) => void;
   onPlayerClick?: (player: { id: string; name: string; league: string; teamKey?: string }, returnTab?: ReturnableGameTab) => void;
   initialTab?: ReturnableGameTab;
+  freshKeyOverride?: string;
 };
 
 type TabId = "main" | "lineup" | "boxscore" | "odds";
 type ReturnableGameTab = "main" | "lineup" | "boxscore";
 
-export default function GameDetail({ league, eventId, onClose, onTeamClick, onPlayerClick, initialTab = "main" }: Props) {
-  const freshKey = useFreshKey();
-  const { data, error, isLoading } = useSWR(`/api/summary?league=${league}&event=${eventId}&_t=${freshKey}`, fetcher, { refreshInterval: 15_000 });
+export default function GameDetail({ league, eventId, onClose, onTeamClick, onPlayerClick, initialTab = "main", freshKeyOverride }: Props) {
+  const generatedFreshKey = useFreshKey();
+  const freshKey = freshKeyOverride || generatedFreshKey;
+  const summaryKey = gameSummaryUrl(league, eventId, freshKey);
+  const { data, error, isLoading } = useSWR(summaryKey, fetcher, {
+    refreshInterval: (latestData) => latestData?.status?.state === "post" ? 0 : 15_000,
+    dedupingInterval: 4_000,
+    revalidateOnFocus: false,
+  });
   const [activeTab, setActiveTab] = useState<TabId>(initialTab);
   const { isFavoriteGame, toggleGame } = useFavoriteGames();
 
