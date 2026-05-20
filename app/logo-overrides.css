@@ -98,7 +98,7 @@ html[data-theme="light"] img[src*="teamlogos"] {
 .boxscore-team-toggle .boxscore-team-toggle-btn.is-active:not(.boxscore-team-toggle-mid-fixed)::before {
   content: "";
   position: absolute;
-  inset: .04rem 0 -.04rem;
+  inset: 0;
   border-radius: inherit;
   background: color-mix(in srgb, var(--surface) 74%, #000 18%);
   pointer-events: none;
@@ -110,12 +110,34 @@ html[data-theme="light"] img[src*="teamlogos"] {
   z-index: 1 !important;
 }
 
-.boxscore-team-toggle .boxscore-team-toggle-btn .outlined-logo,
+.boxscore-team-toggle .boxscore-team-toggle-btn:not(.boxscore-team-toggle-mid-fixed) .outlined-logo,
 .boxscore-team-toggle .boxscore-team-toggle-btn.is-active:not(.boxscore-team-toggle-mid-fixed) .outlined-logo {
   transform: translateY(-.12rem) !important;
 }
 
 .boxscore-team-toggle .boxscore-team-toggle-btn .boxscore-team-toggle-abbr,
 .boxscore-team-toggle-btn.is-active:not(.boxscore-team-toggle-mid-fixed) .boxscore-team-toggle-abbr {
-  transform: translateY(-.05rem) !important;
+  transform: translateY(-.02rem) !important;
+}
+
+.boxscore-team-toggle .boxscore-team-toggle-mid-fixed,
+.boxscore-team-toggle .boxscore-team-toggle-mid-fixed.is-active {
+  padding: 0 !important;
+  transform: translateX(-.26rem) !important;
+  background: transparent !important;
+}
+
+.boxscore-team-toggle .boxscore-team-toggle-mid-fixed.is-active::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--surface) 74%, #000 18%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.boxscore-team-toggle .boxscore-team-toggle-mid-fixed .boxscore-team-toggle-label,
+.boxscore-team-toggle .boxscore-team-toggle-mid-fixed.is-active .boxscore-team-toggle-label {
+  transform: translateY(.07rem) !important;
 }
