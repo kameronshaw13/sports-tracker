@@ -2093,6 +2093,12 @@ button.game-lineup-row {
   padding-bottom: 0 !important;
 }
 
+.manage-reorder-btn {
+  line-height: 1 !important;
+  padding-top: .28rem !important;
+  padding-bottom: 0 !important;
+}
+
 .manage-teams-page img.logo-outline-dark,
 .manage-teams-page .logo-outline-dark {
   -webkit-filter:

@@ -101,14 +101,14 @@ export default function ManageTeams({ onClose }: Props) {
                   <button
                     onClick={() => moveTeam(t.key, "up")}
                     disabled={idx === 0}
-                    className="w-8 h-8 rounded-lg text-sm disabled:opacity-30"
+                    className="manage-reorder-btn w-8 h-8 rounded-lg text-sm disabled:opacity-30"
                     style={{ background: "var(--surface-2)", color: "var(--text-2)" }}
                     aria-label="Move up"
                   >↑</button>
                   <button
                     onClick={() => moveTeam(t.key, "down")}
                     disabled={idx === favorites.length - 1}
-                    className="w-8 h-8 rounded-lg text-sm disabled:opacity-30"
+                    className="manage-reorder-btn w-8 h-8 rounded-lg text-sm disabled:opacity-30"
                     style={{ background: "var(--surface-2)", color: "var(--text-2)" }}
                     aria-label="Move down"
                   >↓</button>
