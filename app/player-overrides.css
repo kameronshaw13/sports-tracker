@@ -1828,6 +1828,78 @@ body::-webkit-scrollbar,
   touch-action: pan-x !important;
 }
 
+/* v258: true final logo outline cascade. Keep every logo on the same edge system. */
+.logo-outline-dark,
+.logo-outline-dark img,
+img.logo-outline-dark,
+img[src*="teamlogos"],
+.espn-team-logo-img.logo-outline-dark,
+.score-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+.espn-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .logo-outline-dark,
+html[data-theme="light"] .logo-outline-dark img,
+html[data-theme="light"] img.logo-outline-dark,
+html[data-theme="light"] img[src*="teamlogos"],
+html[data-theme="light"] .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .score-team-logo-wrap .espn-team-logo-img.logo-outline-dark,
+html[data-theme="light"] .espn-team-logo-wrap .espn-team-logo-img.logo-outline-dark {
+  --logo-outline-size: .62px;
+  --logo-outline-alpha: .95;
+  -webkit-filter:
+    drop-shadow(var(--logo-outline-size) 0 0 rgba(255,255,255,var(--logo-outline-alpha)))
+    drop-shadow(calc(var(--logo-outline-size) * -1) 0 0 rgba(255,255,255,var(--logo-outline-alpha)))
+    drop-shadow(0 var(--logo-outline-size) 0 rgba(255,255,255,var(--logo-outline-alpha)))
+    drop-shadow(0 calc(var(--logo-outline-size) * -1) 0 rgba(255,255,255,var(--logo-outline-alpha))) !important;
+  filter:
+    drop-shadow(var(--logo-outline-size) 0 0 rgba(255,255,255,var(--logo-outline-alpha)))
+    drop-shadow(calc(var(--logo-outline-size) * -1) 0 0 rgba(255,255,255,var(--logo-outline-alpha)))
+    drop-shadow(0 var(--logo-outline-size) 0 rgba(255,255,255,var(--logo-outline-alpha)))
+    drop-shadow(0 calc(var(--logo-outline-size) * -1) 0 rgba(255,255,255,var(--logo-outline-alpha))) !important;
+}
+
+.game-score-logo.logo-outline-dark,
+.game-score-hero .game-score-logo.logo-outline-dark,
+.team-page-logo-box img.logo-outline-dark,
+.team-page-logo-box .logo-outline-dark {
+  --logo-outline-size: .9px;
+  --logo-outline-alpha: .97;
+}
+
+.home-team-opponent-logo .logo-outline-dark,
+.more-team-row-logo-img.logo-outline-dark,
+.more-team-row-logo-img img.logo-outline-dark,
+.team-schedule-logo .logo-outline-dark,
+.team-schedule-logo img.logo-outline-dark,
+.game-lineup-toggle-btn .logo-outline-dark,
+.game-lineup-toggle-btn img.logo-outline-dark,
+.game-odds-team .logo-outline-dark,
+.game-odds-team img.logo-outline-dark,
+.manage-teams-page .logo-outline-dark,
+.manage-teams-page img.logo-outline-dark {
+  --logo-outline-size: .56px;
+  --logo-outline-alpha: .95;
+}
+
+.boxscore-line-team .logo-outline-dark,
+.boxscore-line-team img.logo-outline-dark,
+.boxscore-team-stat-team .logo-outline-dark,
+.boxscore-team-stat-team img.logo-outline-dark,
+.boxscore-team-stats-logo-head .logo-outline-dark,
+.boxscore-team-stats-logo-head img.logo-outline-dark,
+.gamecast-score-logo-row .logo-outline-dark,
+.gamecast-score-logo-row img.logo-outline-dark,
+.gamecast-scoring-logo .logo-outline-dark,
+.gamecast-scoring-logo img.logo-outline-dark,
+.gamecast-scoring-teamheads .logo-outline-dark,
+.gamecast-scoring-teamheads img.logo-outline-dark,
+.gamecast-scoreboard-logo .logo-outline-dark,
+.gamecast-scoreboard-logo img.logo-outline-dark,
+.standings-team-logo.logo-outline-dark,
+.standings-team-logo img.logo-outline-dark {
+  --logo-outline-size: .48px;
+  --logo-outline-alpha: .95;
+}
+
 /* v257: one final responsive logo outline so compact logos do not keep chunky desktop shadows. */
 img.logo-outline-dark,
 .logo-outline-dark img,

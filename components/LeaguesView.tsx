@@ -434,7 +434,7 @@ function ScoreTeamLogo({ team, league, size }: { team: any; league: League; size
 
   const alt = team?.abbr || team?.name || "Team logo";
   const filterId = `score-logo-outline-${rawId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
-  const outlineRadius = Math.max(0.42, Math.min(0.95, size * 0.02));
+  const outlineRadius = Math.max(0.5, Math.min(1.12, size * 0.024));
   return (
     <span className="score-team-logo-wrap espn-team-logo-wrap" style={{ width: size, height: size }}>
       <svg className="team-logo-svg" width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={alt}>
