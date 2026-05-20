@@ -71,15 +71,19 @@ html[data-theme="light"] img[src*="teamlogos"] {
   transform: translateY(-.1rem) !important;
 }
 
-.game-lineup-toggle-btn .outlined-logo,
+.game-lineup-toggle-btn .outlined-logo {
+  transform: translateY(-.1rem) !important;
+}
+
 .game-odds-team .outlined-logo {
   transform: translateY(-.14rem) !important;
 }
 
 .boxscore-team-toggle-btn.is-active:not(.boxscore-team-toggle-mid-fixed) {
-  transform: translateY(-.05rem) !important;
+  transform: none !important;
+  padding: .18rem .28rem 0 !important;
 }
 
 .boxscore-team-toggle-btn.is-active:not(.boxscore-team-toggle-mid-fixed) .boxscore-team-toggle-abbr {
-  transform: translateY(-.13rem) !important;
+  transform: translateY(-.05rem) !important;
 }
