@@ -22,6 +22,7 @@ export default function Schedule({ team, onTeamLogoClick, onPlayerClick, onOpenG
   const [selected, setSelected] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const freshKey = useFreshKey();
+  const useMonthPaging = team.league === "mlb" || team.league === "nba" || team.league === "nhl";
   const { data, error, isLoading } = useSWR(`/api/scoreboard?team=${team.key}&_t=${freshKey}`, fetcher, {
     refreshInterval: 30_000,
     revalidateOnFocus: true,
@@ -39,6 +40,7 @@ export default function Schedule({ team, onTeamLogoClick, onPlayerClick, onOpenG
   const monthKeys = Object.keys(grouped);
 
   useEffect(() => {
+    if (!useMonthPaging) return;
     if (monthKeys.length === 0) return;
     const currentMonth = monthKey(new Date());
     const upcoming = events.find((ev: any) => new Date(ev.date).getTime() >= Date.now());
@@ -52,7 +54,7 @@ export default function Schedule({ team, onTeamLogoClick, onPlayerClick, onOpenG
     if (!selectedMonth || !monthKeys.includes(selectedMonth)) {
       setSelectedMonth(preferred);
     }
-  }, [events, monthKeys, selectedMonth]);
+  }, [events, monthKeys, selectedMonth, useMonthPaging]);
 
   if (selected) {
     return (
@@ -71,28 +73,30 @@ export default function Schedule({ team, onTeamLogoClick, onPlayerClick, onOpenG
 
   const activeMonth = selectedMonth && grouped[selectedMonth] ? selectedMonth : monthKeys[0];
   const activeIndex = Math.max(0, monthKeys.indexOf(activeMonth));
-  const activeList = activeMonth ? grouped[activeMonth] || [] : [];
+  const activeList = useMonthPaging ? (activeMonth ? grouped[activeMonth] || [] : []) : events;
 
   return (
     <div className="-mx-4 sm:mx-0 cbs-panel-list">
-      <div className="team-month-toggle">
-        <button
-          onClick={() => setSelectedMonth(monthKeys[Math.max(0, activeIndex - 1)])}
-          disabled={activeIndex <= 0}
-          aria-label="Previous month"
-        >
-          ←
-        </button>
-        <div>{activeMonth || "Schedule"}</div>
-        <button
-          onClick={() => setSelectedMonth(monthKeys[Math.min(monthKeys.length - 1, activeIndex + 1)])}
-          disabled={activeIndex >= monthKeys.length - 1}
-          aria-label="Next month"
-        >
-          →
-        </button>
-      </div>
-      <section key={activeMonth}>
+      {useMonthPaging && (
+        <div className="team-month-toggle">
+          <button
+            onClick={() => setSelectedMonth(monthKeys[Math.max(0, activeIndex - 1)])}
+            disabled={activeIndex <= 0}
+            aria-label="Previous month"
+          >
+            ←
+          </button>
+          <div>{activeMonth || "Schedule"}</div>
+          <button
+            onClick={() => setSelectedMonth(monthKeys[Math.min(monthKeys.length - 1, activeIndex + 1)])}
+            disabled={activeIndex >= monthKeys.length - 1}
+            aria-label="Next month"
+          >
+            →
+          </button>
+        </div>
+      )}
+      <section key={useMonthPaging ? activeMonth : "full-schedule"}>
         <div className="cbs-table-panel">
           {activeList.map((ev: any) => (
             <ScheduleRow

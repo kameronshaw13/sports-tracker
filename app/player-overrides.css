@@ -1862,6 +1862,21 @@ button.game-lineup-row {
   cursor: pointer !important;
 }
 
+/* v249: GameTracker day-favorite heart */
+.game-detail-favorite-btn {
+  color: color-mix(in srgb, var(--text) 82%, transparent) !important;
+  transform: translateY(.03rem) !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+.game-detail-favorite-btn.is-active {
+  color: var(--accent) !important;
+}
+
+.game-detail-favorite-btn:active {
+  transform: translateY(.03rem) scale(.96) !important;
+}
+
 /* v244: baseball line score keeps Team and R/H/E fixed while extra innings scroll */
 .boxscore-line-wrap {
   width: 100% !important;

@@ -7,6 +7,7 @@ import { useFreshKey } from "@/lib/freshKey";
 import { League, VALID_LEAGUES, logoUrl } from "@/lib/teams";
 import { useAppSettings, ScoreDensity } from "@/lib/useAppSettings";
 import { useFavoriteTeams } from "@/lib/useFavorites";
+import { favoriteGameKey, useFavoriteGames } from "@/lib/useFavoriteGames";
 import AppSettingsButton from "./AppSettingsButton";
 import GameDetail from "./GameDetail";
 import Standings from "./Standings";
@@ -72,6 +73,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, onGameCont
   const [scoresHeaderHeight, setScoresHeaderHeight] = useState(128);
   const { settings } = useAppSettings();
   const { favorites } = useFavoriteTeams();
+  const { favoriteGames } = useFavoriteGames();
   const date = formatDate(dayOffset);
   const standingsControls = useMemo(() => controlsForLeague(league), [league]);
   const activeStandingsControl = standingsControls.find((control) => control.id === standingsView) || standingsControls[0];
@@ -178,6 +180,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, onGameCont
 
   const leagues = settings.sportOrder;
   const favoriteKeys = new Set((favorites || []).map((t) => t.key));
+  const favoriteGameKeys = new Set(favoriteGames[date] || []);
   const leagueStickyTop = Math.max(0, scoresHeaderHeight - 4);
 
   return (
@@ -195,7 +198,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, onGameCont
       </div>
 
       <div>
-        <FavoritesScores date={date} favoriteKeys={favoriteKeys} stickyTop={leagueStickyTop} onGameClick={(league, eventId) => openEvent({ league, eventId })} />
+        <FavoritesScores date={date} favoriteKeys={favoriteKeys} favoriteGameKeys={favoriteGameKeys} stickyTop={leagueStickyTop} onGameClick={(league, eventId) => openEvent({ league, eventId })} />
         {leagues.map((lg) => (
           <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => openEvent({ league: lg, eventId })} onStandingsClick={onStandingsClick} stickyTop={leagueStickyTop} />
         ))}
@@ -295,14 +298,18 @@ function defaultStandingsViewForLeague(league: League) {
   return "division";
 }
 
-function FavoritesScores({ date, favoriteKeys, stickyTop, onGameClick }: { date: string; favoriteKeys: Set<string>; stickyTop: number | string; onGameClick: (league: League, eventId: string) => void }) {
+function FavoritesScores({ date, favoriteKeys, favoriteGameKeys, stickyTop, onGameClick }: { date: string; favoriteKeys: Set<string>; favoriteGameKeys: Set<string>; stickyTop: number | string; onGameClick: (league: League, eventId: string) => void }) {
   const freshKey = useFreshKey();
   const { settings } = useAppSettings();
   const requests = settings.sportOrder.map((league) => useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, { refreshInterval: 15_000, dedupingInterval: 4_000 }));
   const games = requests.flatMap((req, idx) => {
     const league = settings.sportOrder[idx];
     return (req.data?.events || [])
-      .map((g: any) => ({ ...g, league, favoriteSide: favoriteSideForGame(g, favoriteKeys, league) }))
+      .map((g: any) => {
+        const teamFavoriteSide = favoriteSideForGame(g, favoriteKeys, league);
+        const isGameFavorite = favoriteGameKeys.has(favoriteGameKey(league, g.id));
+        return { ...g, league, favoriteSide: teamFavoriteSide || (isGameFavorite ? "home" : null) };
+      })
       .filter((g: any) => Boolean(g.favoriteSide));
   });
   useEffect(() => {

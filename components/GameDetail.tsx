@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useLayoutEffect, useState } from "react";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
+import { gameDateKey, useFavoriteGames } from "@/lib/useFavoriteGames";
 import Boxscore from "./Boxscore";
 import Gamecast from "./Gamecast";
 import GameLineup from "./GameLineup";
@@ -26,6 +27,7 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
   const freshKey = useFreshKey();
   const { data, error, isLoading } = useSWR(`/api/summary?league=${league}&event=${eventId}&_t=${freshKey}`, fetcher, { refreshInterval: 15_000 });
   const [activeTab, setActiveTab] = useState<TabId>(initialTab);
+  const { isFavoriteGame, toggleGame } = useFavoriteGames();
 
   useLayoutEffect(() => {
     setActiveTab(initialTab);
@@ -74,6 +76,8 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
 
   const { home, away, status, situation } = data;
   const odds = displayOdds;
+  const favoriteDate = gameDateKey(data?.date);
+  const gameFavorited = isFavoriteGame(favoriteDate, league, eventId);
   const isLive = status?.state === "in";
   const isPregame = status?.state === "pre";
   const showLineupTab = league === "mlb" && isPregame;
@@ -88,7 +92,12 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
   return (
     <div className="retro-page -mx-4 sm:mx-0 cbs-game-page game-detail-page">
       <div className="game-detail-sticky-shell">
-        <GameTopBar title={`${away?.abbr || ""} @ ${home?.abbr || ""}`} onClose={onClose} />
+        <GameTopBar
+          title={`${away?.abbr || ""} @ ${home?.abbr || ""}`}
+          onClose={onClose}
+          isFavorite={gameFavorited}
+          onToggleFavorite={() => toggleGame(favoriteDate, league, eventId)}
+        />
         <ScoreboardHero league={league} home={home} away={away} status={status} situation={situation} odds={odds} eventId={eventId} gameDate={data?.date} onTeamClick={onTeamClick} />
         <div className="game-detail-tabs" role="tablist">
           <div className="flex overflow-x-auto no-scrollbar px-4 gap-7">
@@ -140,13 +149,25 @@ function mergeOddsForDisplay(primary: any, fallback: any) {
   return merged;
 }
 
-function GameTopBar({ title, onClose }: { title: string; onClose?: () => void }) {
+function GameTopBar({ title, onClose, isFavorite = false, onToggleFavorite }: { title: string; onClose?: () => void; isFavorite?: boolean; onToggleFavorite?: () => void }) {
   return (
     <div className="game-detail-topbar sticky top-0 z-40 flex items-center justify-center px-4">
       <button onClick={onClose} className="game-detail-close absolute left-4 h-10 w-10 flex items-center justify-center" aria-label="Close game">
         <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M18 6 6 18M6 6l12 12" /></svg>
       </button>
       <h1 className="game-detail-title retro-title">{title}</h1>
+      {onToggleFavorite && (
+        <button
+          type="button"
+          onClick={onToggleFavorite}
+          className={`game-detail-favorite-btn absolute right-4 h-10 w-10 flex items-center justify-center ${isFavorite ? "is-active" : ""}`}
+          aria-label={isFavorite ? "Remove game from favorites" : "Add game to favorites"}
+        >
+          <svg viewBox="0 0 24 24" className="w-7 h-7" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20.8 4.6c-1.6-1.7-4.2-1.7-5.9 0L12 7.5 9.1 4.6c-1.7-1.7-4.3-1.7-5.9 0-1.6 1.7-1.6 4.3 0 6l8.8 8.9 8.8-8.9c1.6-1.7 1.6-4.3 0-6Z" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }
