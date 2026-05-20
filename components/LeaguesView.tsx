@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties } from "react";
-import Image from "next/image";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
 import { League, VALID_LEAGUES, logoUrl } from "@/lib/teams";
@@ -12,6 +10,7 @@ import { favoriteGameKey, useFavoriteGames } from "@/lib/useFavoriteGames";
 import AppSettingsButton from "./AppSettingsButton";
 import GameDetail from "./GameDetail";
 import Standings from "./Standings";
+import OutlinedLogo from "./OutlinedLogo";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -219,7 +218,7 @@ function LeagueHeader({ league, onBack, tab, setTab }: { league: League; onBack?
           <h1 className="text-lg font-black">{LEAGUE_LABELS[league]}</h1>
         </div>
         <div className="mt-3 flex justify-center">
-          <Image src={LEAGUE_LOGOS[league]} alt={LEAGUE_LABELS[league]} width={68} height={68} className="object-contain logo-outline-dark" unoptimized />
+          <OutlinedLogo src={LEAGUE_LOGOS[league]} alt={LEAGUE_LABELS[league]} size={68} />
         </div>
       </div>
       <div className="league-page-tabs flex gap-7 overflow-x-auto px-4">
@@ -384,7 +383,7 @@ function SectionHeader({ title, logo, sticky = false, collapsed = false, onToggl
       style={{ top: sticky ? stickyTop : undefined }}
     >
       <div className="flex items-center gap-3 min-w-0">
-        {logo && <Image src={logo} alt={title} width={22} height={22} className="object-contain logo-outline-dark" unoptimized />}
+        {logo && <OutlinedLogo src={logo} alt={title} size={22} />}
         <h2 className="text-sm font-black tracking-[.1em] uppercase truncate leading-[1.25] pt-[2px]">{title}</h2>
       </div>
       <div className="flex items-center gap-2">
@@ -433,17 +432,7 @@ function ScoreTeamLogo({ team, league, size }: { team: any; league: League; size
   if (!src) return null;
 
   const alt = team?.abbr || team?.name || "Team logo";
-  const outlineSize = Math.max(0.5, Math.min(1.08, size * 0.023));
-  const style = {
-    width: size,
-    height: size,
-    "--logo-outline-size": `${outlineSize}px`,
-  } as CSSProperties;
-  return (
-    <span className="score-team-logo-wrap espn-team-logo-wrap" style={style}>
-      <img src={src} alt={alt} width={size} height={size} className="team-logo-svg object-contain logo-outline-dark" />
-    </span>
-  );
+  return <OutlinedLogo src={src} alt={alt} size={size} className="score-team-logo-wrap espn-team-logo-wrap" />;
 }
 
 function favoriteAccent(team: any) {

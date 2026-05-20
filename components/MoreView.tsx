@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import useSWR from "swr";
 import RetroTeamLogo from "./RetroTeamLogo";
+import OutlinedLogo from "./OutlinedLogo";
 import { League, TeamConfig } from "@/lib/teams";
 import { useFavoriteTeams } from "@/lib/useFavorites";
 
@@ -139,7 +139,7 @@ function SearchGroup({ title, children }: { title: string; children: React.React
 function LeagueRow({ league, onClick }: { league: { id: League; label: string; logo: string }; onClick: () => void }) {
   return (
     <button onClick={onClick} className="more-league-row w-full px-4 py-4 flex items-center gap-4 text-left retro-card mb-2">
-      <Image src={league.logo} alt={league.label} width={34} height={34} className="object-contain" unoptimized />
+      <OutlinedLogo src={league.logo} alt={league.label} size={34} />
       <span className="flex-1 text-lg font-black">{league.label}</span>
       <span className="text-2xl" style={{ color: "var(--text-3)" }}>›</span>
     </button>

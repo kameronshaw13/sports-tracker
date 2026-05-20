@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { TeamConfig } from "@/lib/teams";
 import { useFreshKey } from "@/lib/freshKey";
 import GameDetail from "./GameDetail";
+import OutlinedLogo from "./OutlinedLogo";
 
 const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json());
 
@@ -136,7 +136,7 @@ function ScheduleRow({ ev, team, onClick }: any) {
       </div>
       <div className="team-schedule-at text-center font-black" style={{ color: "var(--text-2)" }}>{ev.home ? "vs" : "@"}</div>
       <div className="team-schedule-logo flex items-center justify-center shrink-0">
-        {opp?.logo && <Image src={opp.logo} alt={opp.abbr || opp.name || ""} width={28} height={28} className="object-contain logo-outline-dark" unoptimized />}
+        {opp?.logo && <OutlinedLogo src={opp.logo} alt={opp.abbr || opp.name || ""} size={28} />}
       </div>
       <div className="flex-1 min-w-0">
         <div className="team-schedule-opponent font-black truncate">{opponentLabel}</div>

@@ -1,7 +1,7 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import { League, logoUrl } from "@/lib/teams";
+import OutlinedLogo from "./OutlinedLogo";
 
 type TeamLike = {
   league?: League | string;
@@ -30,22 +30,6 @@ export default function RetroTeamLogo({
 }) {
   const src = espnLogo(team, league);
   if (!src) return null;
-  const outlineSize = Math.max(0.5, Math.min(1.08, size * 0.023));
-  const style = {
-    width: size,
-    height: size,
-    "--logo-outline-size": `${outlineSize}px`,
-  } as CSSProperties;
 
-  return (
-    <span className={`score-team-logo-wrap espn-team-logo-wrap ${className}`} style={style}>
-      <img
-        src={src}
-        alt={team?.abbr || team?.name || "Team logo"}
-        width={size}
-        height={size}
-        className="team-logo-svg object-contain logo-outline-dark"
-      />
-    </span>
-  );
+  return <OutlinedLogo src={src} alt={team?.abbr || team?.name || "Team logo"} size={size} className={`score-team-logo-wrap espn-team-logo-wrap ${className}`} />;
 }

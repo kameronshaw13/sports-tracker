@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useLayoutEffect, useState } from "react";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
@@ -8,6 +7,7 @@ import { gameDateKey, useFavoriteGames } from "@/lib/useFavoriteGames";
 import Boxscore from "./Boxscore";
 import Gamecast from "./Gamecast";
 import GameLineup from "./GameLineup";
+import OutlinedLogo from "./OutlinedLogo";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -273,7 +273,7 @@ function OddsMarketCard({ title, rows, showLine = false }: { title: string; rows
 function OddsTeamLabel({ team, label }: { team?: any; label?: string }) {
   return (
     <div className="game-odds-team">
-      {team?.logo && <Image src={team.logo} alt="" width={30} height={30} className="object-contain logo-outline-dark" unoptimized />}
+      {team?.logo && <OutlinedLogo src={team.logo} alt="" size={30} />}
       <span>{label || team?.abbr || team?.name || "Team"}</span>
     </div>
   );
@@ -287,7 +287,7 @@ function TeamBlock({ team, league, eventId, onClick, align, showScore, isWinner,
     <Comp onClick={onClick && team.abbr ? () => onClick(league, String(team.abbr).toLowerCase(), { league, eventId }) : undefined} className={`game-score-team ${align === "right" ? "game-score-team-home" : "game-score-team-away"}${resultClass}`}>
       <div className="game-score-record">{team.seriesRecord || team.record || ""}</div>
       <div className="game-score-team-main">
-        <div className="game-score-logo-wrap">{team.logo && <Image src={team.logo} alt={team.abbr || team.name || ""} width={84} height={84} className="game-score-logo object-contain logo-outline-dark" unoptimized />}</div>
+        <div className="game-score-logo-wrap">{team.logo && <OutlinedLogo src={team.logo} alt={team.abbr || team.name || ""} size={84} className="game-score-logo" />}</div>
         <div className="game-score-score retro-score tabular-nums">{showScore ? team.score ?? "—" : ""}</div>
       </div>
     </Comp>

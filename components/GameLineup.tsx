@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
+import OutlinedLogo from "./OutlinedLogo";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -49,16 +50,7 @@ export default function GameLineup({ league, eventId, onPlayerClick }: Props) {
             className={`game-lineup-toggle-btn ${activeTeam === index ? "is-active" : ""}`}
             onClick={() => setActiveTeam(index)}
           >
-            {t?.team?.logo && (
-              <Image
-                src={t.team.logo}
-                alt=""
-                width={20}
-                height={20}
-                className="object-contain logo-outline-dark"
-                unoptimized
-              />
-            )}
+            {t?.team?.logo && <OutlinedLogo src={t.team.logo} alt="" size={20} />}
             <span>{t?.team?.abbr || t?.team?.name || "Team"}</span>
           </button>
         ))}

@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 import { Fragment, useState } from "react";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
+import OutlinedLogo from "./OutlinedLogo";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -69,16 +70,7 @@ export default function Boxscore({
               onClick={() => setActiveView(i)}
               className={`boxscore-team-toggle-btn ${activeView === i ? "is-active" : ""}`}
             >
-              {t.team.logo && (
-                <Image
-                  src={t.team.logo}
-                  alt=""
-                  width={20}
-                  height={20}
-                  className="object-contain logo-outline-dark"
-                  unoptimized
-                />
-              )}
+              {t.team.logo && <OutlinedLogo src={t.team.logo} alt="" size={20} />}
               {t.team.abbr}
             </button>
           )).flatMap((btn: any, i: number) =>
@@ -167,16 +159,7 @@ function GameLineScore({ lineScore }: { lineScore: any }) {
               >
                 <td className="boxscore-line-sticky-team px-1.5 py-2 font-bold">
                   <div className="boxscore-line-team">
-                    {t.logo && (
-                      <Image
-                        src={t.logo}
-                        alt=""
-                        width={18}
-                        height={18}
-                        className="object-contain logo-outline-dark"
-                        unoptimized
-                      />
-                    )}
+                    {t.logo && <OutlinedLogo src={t.logo} alt="" size={18} />}
                     <span>{t.abbr}</span>
                   </div>
                 </td>
@@ -267,16 +250,7 @@ function LeaderCard({
           className="text-xs font-semibold uppercase tracking-wide flex items-center gap-1.5"
           style={{ color: "var(--text-3)" }}
         >
-          {teamLogo && (
-            <Image
-              src={teamLogo}
-              alt=""
-              width={12}
-              height={12}
-              className="object-contain logo-outline-dark"
-              unoptimized
-            />
-          )}
+          {teamLogo && <OutlinedLogo src={teamLogo} alt="" size={12} />}
           {cat.shortName || cat.name}
         </div>
         <div className="text-sm font-semibold truncate">{cat.leader.name}</div>
@@ -503,28 +477,14 @@ function TeamStatsView({ teams, league }: { teams: any[]; league: string }) {
         <div />
         <div className="boxscore-team-stat-team">
           {away?.logo ? (
-            <Image
-              src={away.logo}
-              alt={away?.abbr || "Away"}
-              width={24}
-              height={24}
-              className="object-contain logo-outline-dark"
-              unoptimized
-            />
+            <OutlinedLogo src={away.logo} alt={away?.abbr || "Away"} size={24} />
           ) : (
             away?.abbr || "Away"
           )}
         </div>
         <div className="boxscore-team-stat-team">
           {home?.logo ? (
-            <Image
-              src={home.logo}
-              alt={home?.abbr || "Home"}
-              width={24}
-              height={24}
-              className="object-contain logo-outline-dark"
-              unoptimized
-            />
+            <OutlinedLogo src={home.logo} alt={home?.abbr || "Home"} size={24} />
           ) : (
             home?.abbr || "Home"
           )}

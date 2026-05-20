@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import RetroTeamLogo from "./RetroTeamLogo";
+import OutlinedLogo from "./OutlinedLogo";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
 
@@ -215,7 +216,7 @@ function LiveAtBatCard({
     <div className="gamecast-live-card">
       <div className="gamecast-live-head">
         <div className="gamecast-live-team">
-          {battingTeam?.logo && <Image src={battingTeam.logo} alt={battingTeam.abbr} width={30} height={30} className="object-contain logo-outline-dark" unoptimized />}
+          {battingTeam?.logo && <OutlinedLogo src={battingTeam.logo} alt={battingTeam.abbr} size={30} />}
           <div className="gamecast-live-team-copy">
             <div className="gamecast-live-title">
               {battingTeam?.abbr || "MLB"} batting
@@ -291,7 +292,7 @@ function HalfInningCard({
     <div className="gamecast-half-card" style={{ ["--gamecast-half-color" as any]: teamColor, ["--gamecast-pitcher-color" as any]: pitcherColor }}>
       <div className="gamecast-half-head">
         <div className="gamecast-half-team">
-          {team?.logo && <Image src={team.logo} alt={team.abbr} width={24} height={24} className="object-contain logo-outline-dark" unoptimized />}
+          {team?.logo && <OutlinedLogo src={team.logo} alt={team.abbr} size={24} />}
           <div className="gamecast-half-copy">
             <div className="gamecast-half-title">
               {teamDisplayName(team)} - {half === "bottom" ? "Bottom" : "Top"} {ordinal(period)}
@@ -683,8 +684,8 @@ function GenericPeriodHeader({ label, away, home, showScoreColumns }: { label: s
       <div className="generic-gamecast-period-label">{label}</div>
       {showScoreColumns && (
         <div className="gamecast-score-logo-row">
-          {away?.logo && <Image src={away.logo} alt={away.abbr} width={22} height={22} className="object-contain logo-outline-dark" unoptimized />}
-          {home?.logo && <Image src={home.logo} alt={home.abbr} width={22} height={22} className="object-contain logo-outline-dark" unoptimized />}
+          {away?.logo && <OutlinedLogo src={away.logo} alt={away.abbr} size={22} />}
+          {home?.logo && <OutlinedLogo src={home.logo} alt={home.abbr} size={22} />}
         </div>
       )}
     </div>
@@ -719,7 +720,7 @@ function GenericPlayList({ plays, home, away, emphasizeScoring = false, scoreCol
           <div key={p.id} className="px-4 py-3 border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
             <div className={`gamecast-generic-row ${scoreColumns ? "has-score-columns" : ""}`}>
               {team?.logo ? (
-                <Image src={team.logo} alt={team.abbr} width={22} height={22} className="mt-0.5 object-contain flex-shrink-0 logo-outline-dark" unoptimized />
+                <OutlinedLogo src={team.logo} alt={team.abbr} size={22} className="mt-0.5 flex-shrink-0" />
               ) : team ? (
                 <span className="mt-1 w-2 h-2 rounded-full flex-shrink-0" style={{ background: team.color || "var(--text-3)" }} />
               ) : (
