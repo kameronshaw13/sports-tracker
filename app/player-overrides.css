@@ -1869,6 +1869,11 @@ button.game-lineup-row {
   -webkit-tap-highlight-color: transparent !important;
 }
 
+.game-detail-favorite-btn svg {
+  width: 1.18rem !important;
+  height: 1.18rem !important;
+}
+
 .game-detail-favorite-btn.is-active {
   color: var(--accent) !important;
 }

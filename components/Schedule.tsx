@@ -120,6 +120,7 @@ export default function Schedule({ team, onTeamLogoClick, onPlayerClick, onOpenG
 
 function ScheduleRow({ ev, team, onClick }: any) {
   const opp = ev.opponent;
+  const opponentLabel = scheduleOpponentLabel(team?.league, opp);
   const state = ev.status?.state;
   const nonPlayed = classifyNonPlayed(ev.status);
   const isResult = state === "post";
@@ -138,7 +139,7 @@ function ScheduleRow({ ev, team, onClick }: any) {
         {opp?.logo && <Image src={opp.logo} alt={opp.abbr || opp.name || ""} width={28} height={28} className="object-contain logo-outline-dark" unoptimized />}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="team-schedule-opponent font-black truncate">{opp?.name || opp?.abbr}</div>
+        <div className="team-schedule-opponent font-black truncate">{opponentLabel}</div>
       </div>
       <div className="team-schedule-status text-right shrink-0">
         <div className="font-black" style={{ color: isLive ? "var(--danger)" : "var(--text-2)" }}>{statusLabel}</div>
@@ -151,6 +152,46 @@ function ScheduleRow({ ev, team, onClick }: any) {
       </div>
     </button>
   );
+}
+
+function scheduleOpponentLabel(league: string, opponent: any) {
+  if (!opponent) return "";
+  const isCollege = league === "cfb" || league === "cbb";
+  const shortName = cleanName(opponent.shortName);
+  const nickname = cleanName(opponent.nickname);
+  const location = cleanName(opponent.location);
+  const fullName = cleanName(opponent.name);
+  const abbr = cleanName(opponent.abbr);
+
+  if (isCollege) {
+    return shortName || location || stripCollegeNickname(fullName) || abbr;
+  }
+
+  return nickname || shortName || stripProLocation(fullName) || abbr;
+}
+
+function cleanName(value: any) {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function stripCollegeNickname(name: string) {
+  return cleanName(name)
+    .replace(/\s+(Longhorns|Wildcats|Jayhawks|Sooners|Cowboys|Red Raiders|Bears|Horned Frogs|Cougars|Utes|Mountaineers|Sun Devils|Buffaloes|Cyclones|Knights)$/i, "")
+    .replace(/\s+(Crimson Tide|Razorbacks|Tigers|Gators|Bulldogs|Aggies|Rebels|Gamecocks|Volunteers|Commodores|Wildcats|Sooners)$/i, "")
+    .replace(/\s+(Buckeyes|Wolverines|Spartans|Nittany Lions|Hoosiers|Hawkeyes|Terrapins|Golden Gophers|Cornhuskers|Scarlet Knights|Badgers|Ducks|Huskies|Bruins|Trojans|Boilermakers|Fighting Illini)$/i, "")
+    .replace(/\s+(Hurricanes|Seminoles|Cardinals|Blue Devils|Tar Heels|Wolfpack|Yellow Jackets|Panthers|Mustangs|Orange|Cavaliers|Hokies|Demon Deacons)$/i, "")
+    .replace(/\s+(Fighting Irish|Runnin'? Rebels|Golden Eagles|Green Wave|Thundering Herd|Rainbow Warriors|Black Knights|Blue Hens|Roadrunners|Minutemen|Aztecs|Lobos|Rockets|Bobcats|Cardinals|Falcons|Chippewas|Broncos|Zips)$/i, "")
+    .trim();
+}
+
+function stripProLocation(name: string) {
+  const full = cleanName(name);
+  if (!full) return "";
+  const locations = [
+    "Arizona", "Atlanta", "Baltimore", "Boston", "Brooklyn", "Buffalo", "Calgary", "Carolina", "Charlotte", "Chicago", "Cincinnati", "Cleveland", "Colorado", "Columbus", "Dallas", "Denver", "Detroit", "Edmonton", "Florida", "Golden State", "Green Bay", "Houston", "Indiana", "Indianapolis", "Jacksonville", "Kansas City", "Las Vegas", "Los Angeles", "Memphis", "Miami", "Milwaukee", "Minnesota", "Montreal", "Nashville", "New England", "New Jersey", "New Orleans", "New York", "Oklahoma City", "Orlando", "Ottawa", "Philadelphia", "Phoenix", "Pittsburgh", "Portland", "Sacramento", "San Antonio", "San Diego", "San Francisco", "San Jose", "Seattle", "St. Louis", "Tampa Bay", "Tennessee", "Texas", "Toronto", "Utah", "Vancouver", "Vegas", "Washington", "Winnipeg"
+  ].sort((a, b) => b.length - a.length);
+  const location = locations.find((item) => full.toLowerCase().startsWith(`${item.toLowerCase()} `));
+  return location ? full.slice(location.length).trim() : full.split(/\s+/).slice(1).join(" ") || full;
 }
 
 function groupByMonth(events: any[]) {

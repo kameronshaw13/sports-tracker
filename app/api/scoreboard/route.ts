@@ -66,6 +66,9 @@ export async function GET(req: NextRequest) {
         opponent: {
           id: them?.id,
           name: them?.team?.displayName,
+          shortName: them?.team?.shortDisplayName,
+          nickname: them?.team?.nickname,
+          location: them?.team?.location,
           abbr: them?.team?.abbreviation,
           logo: them?.team?.logos?.[0]?.href || them?.team?.logo,
           score: them?.score?.value ?? them?.score,

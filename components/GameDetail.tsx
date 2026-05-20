@@ -163,8 +163,8 @@ function GameTopBar({ title, onClose, isFavorite = false, onToggleFavorite }: { 
           className={`game-detail-favorite-btn absolute right-4 h-10 w-10 flex items-center justify-center ${isFavorite ? "is-active" : ""}`}
           aria-label={isFavorite ? "Remove game from favorites" : "Add game to favorites"}
         >
-          <svg viewBox="0 0 24 24" className="w-7 h-7" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20.8 4.6c-1.6-1.7-4.2-1.7-5.9 0L12 7.5 9.1 4.6c-1.7-1.7-4.3-1.7-5.9 0-1.6 1.7-1.6 4.3 0 6l8.8 8.9 8.8-8.9c1.6-1.7 1.6-4.3 0-6Z" />
+          <svg viewBox="0 0 24 24" className="w-5 h-5" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.15" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19.1 13.9 12 21l-7.1-7.1C1 10 2.8 3.4 8.2 3.4c1.6 0 2.9.7 3.8 1.9.9-1.2 2.2-1.9 3.8-1.9 5.4 0 7.2 6.6 3.3 10.5Z" />
           </svg>
         </button>
       )}
