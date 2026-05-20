@@ -1828,6 +1828,80 @@ body::-webkit-scrollbar,
   touch-action: pan-x !important;
 }
 
+/* v256b: final compact-logo outline pass after older lineup/manage overrides. */
+.boxscore-line-team img.logo-outline-dark,
+.boxscore-team-stat-team img.logo-outline-dark,
+.boxscore-team-stats-logo-head img.logo-outline-dark,
+.gamecast-score-logo-row img.logo-outline-dark,
+.gamecast-scoring-logo img.logo-outline-dark,
+.gamecast-scoring-teamheads img.logo-outline-dark,
+.team-schedule-logo img.logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(.34px 0 0 rgba(255,255,255,.9))
+    drop-shadow(-.34px 0 0 rgba(255,255,255,.9))
+    drop-shadow(0 .34px 0 rgba(255,255,255,.9))
+    drop-shadow(0 -.34px 0 rgba(255,255,255,.9)) !important;
+  filter:
+    drop-shadow(.34px 0 0 rgba(255,255,255,.9))
+    drop-shadow(-.34px 0 0 rgba(255,255,255,.9))
+    drop-shadow(0 .34px 0 rgba(255,255,255,.9))
+    drop-shadow(0 -.34px 0 rgba(255,255,255,.9)) !important;
+}
+
+.game-lineup-toggle-btn img.logo-outline-dark,
+.game-odds-team img.logo-outline-dark,
+.manage-teams-page img.logo-outline-dark,
+.more-team-row-logo-img img.logo-outline-dark,
+.more-team-row-logo-img.logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(.46px 0 0 rgba(255,255,255,.92))
+    drop-shadow(-.46px 0 0 rgba(255,255,255,.92))
+    drop-shadow(0 .46px 0 rgba(255,255,255,.92))
+    drop-shadow(0 -.46px 0 rgba(255,255,255,.92)) !important;
+  filter:
+    drop-shadow(.46px 0 0 rgba(255,255,255,.92))
+    drop-shadow(-.46px 0 0 rgba(255,255,255,.92))
+    drop-shadow(0 .46px 0 rgba(255,255,255,.92))
+    drop-shadow(0 -.46px 0 rgba(255,255,255,.92)) !important;
+}
+
+/* v256: scale logo outlines down in compact logo slots so small marks stay crisp. */
+.boxscore-line-team img.logo-outline-dark,
+.boxscore-team-stat-team img.logo-outline-dark,
+.boxscore-team-stats-logo-head img.logo-outline-dark,
+.gamecast-score-logo-row img.logo-outline-dark,
+.gamecast-scoring-logo img.logo-outline-dark,
+.gamecast-scoring-teamheads img.logo-outline-dark,
+.team-schedule-logo img.logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(.34px 0 0 rgba(255,255,255,.9))
+    drop-shadow(-.34px 0 0 rgba(255,255,255,.9))
+    drop-shadow(0 .34px 0 rgba(255,255,255,.9))
+    drop-shadow(0 -.34px 0 rgba(255,255,255,.9)) !important;
+  filter:
+    drop-shadow(.34px 0 0 rgba(255,255,255,.9))
+    drop-shadow(-.34px 0 0 rgba(255,255,255,.9))
+    drop-shadow(0 .34px 0 rgba(255,255,255,.9))
+    drop-shadow(0 -.34px 0 rgba(255,255,255,.9)) !important;
+}
+
+.game-lineup-toggle-btn img.logo-outline-dark,
+.game-odds-team img.logo-outline-dark,
+.manage-teams-page img.logo-outline-dark,
+.more-team-row-logo-img img.logo-outline-dark,
+.more-team-row-logo-img.logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(.46px 0 0 rgba(255,255,255,.92))
+    drop-shadow(-.46px 0 0 rgba(255,255,255,.92))
+    drop-shadow(0 .46px 0 rgba(255,255,255,.92))
+    drop-shadow(0 -.46px 0 rgba(255,255,255,.92)) !important;
+  filter:
+    drop-shadow(.46px 0 0 rgba(255,255,255,.92))
+    drop-shadow(-.46px 0 0 rgba(255,255,255,.92))
+    drop-shadow(0 .46px 0 rgba(255,255,255,.92))
+    drop-shadow(0 -.46px 0 rgba(255,255,255,.92)) !important;
+}
+
 /* v253c: final source-order win for topbar/manage positioning */
 .game-detail-topbar .game-detail-title {
   position: relative !important;
@@ -2095,7 +2169,7 @@ button.game-lineup-row {
 
 .manage-reorder-btn {
   line-height: 1 !important;
-  padding-top: .28rem !important;
+  padding-top: .22rem !important;
   padding-bottom: 0 !important;
 }
 
