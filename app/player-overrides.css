@@ -1882,6 +1882,88 @@ button.game-lineup-row {
   transform: translateY(.03rem) scale(.96) !important;
 }
 
+/* v251: schedule, GameTracker top title, light team headers, and Manage Teams polish */
+.team-schedule-row {
+  gap: .22rem !important;
+}
+
+.team-schedule-date {
+  width: 2.02rem !important;
+  font-size: .66rem !important;
+  line-height: 1.12 !important;
+}
+
+.team-schedule-at {
+  width: .9rem !important;
+  font-size: .7rem !important;
+}
+
+.team-schedule-logo {
+  width: 1.64rem !important;
+  height: 1.64rem !important;
+}
+
+.team-schedule-logo img {
+  width: 1.46rem !important;
+  height: 1.46rem !important;
+}
+
+.team-schedule-opponent {
+  padding-left: .28rem !important;
+}
+
+.team-schedule-status,
+.team-schedule-status > div {
+  min-width: 3.05rem !important;
+  font-size: .66rem !important;
+  line-height: 1.12 !important;
+}
+
+.game-detail-title {
+  transform: translateY(.08rem) !important;
+  line-height: 1.05 !important;
+  padding-top: .08rem !important;
+}
+
+.team-sticky-shell,
+.team-page-hero {
+  background: color-mix(in srgb, var(--team-header-bg, var(--team-primary)) 74%, #11100d) !important;
+}
+
+.manage-done-btn {
+  line-height: 1.05 !important;
+  padding-top: .58rem !important;
+  padding-bottom: .32rem !important;
+}
+
+.manage-remove-btn {
+  line-height: 1 !important;
+  padding-top: .25rem !important;
+  padding-bottom: 0 !important;
+}
+
+.manage-teams-page img.logo-outline-dark,
+.manage-teams-page .logo-outline-dark {
+  -webkit-filter:
+    drop-shadow(.92px 0 0 #fff)
+    drop-shadow(-.92px 0 0 #fff)
+    drop-shadow(0 .92px 0 #fff)
+    drop-shadow(0 -.92px 0 #fff)
+    drop-shadow(.66px .66px 0 #fff)
+    drop-shadow(-.66px .66px 0 #fff)
+    drop-shadow(.66px -.66px 0 #fff)
+    drop-shadow(-.66px -.66px 0 #fff) !important;
+  filter:
+    drop-shadow(.92px 0 0 #fff)
+    drop-shadow(-.92px 0 0 #fff)
+    drop-shadow(0 .92px 0 #fff)
+    drop-shadow(0 -.92px 0 #fff)
+    drop-shadow(.66px .66px 0 #fff)
+    drop-shadow(-.66px .66px 0 #fff)
+    drop-shadow(.66px -.66px 0 #fff)
+    drop-shadow(-.66px -.66px 0 #fff) !important;
+}
+
 /* v244: baseball line score keeps Team and R/H/E fixed while extra innings scroll */
 .boxscore-line-wrap {
   width: 100% !important;

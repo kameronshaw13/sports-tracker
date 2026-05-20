@@ -68,7 +68,7 @@ export default function ManageTeams({ onClose }: Props) {
         </div>
         <button
           onClick={onClose}
-          className="text-sm font-medium px-3 py-1.5 rounded-lg"
+          className="manage-done-btn text-sm font-medium px-3 py-1.5 rounded-lg"
           style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}
         >
           Done
@@ -114,7 +114,7 @@ export default function ManageTeams({ onClose }: Props) {
                   >↓</button>
                   <button
                     onClick={() => removeTeam(t.key)}
-                    className="w-8 h-8 rounded-lg text-sm font-bold"
+                    className="manage-remove-btn w-8 h-8 rounded-lg text-sm font-bold"
                     style={{ background: "rgba(239, 68, 68, 0.12)", color: "var(--danger)" }}
                     aria-label="Remove team"
                   >×</button>

@@ -46,6 +46,21 @@ function resetScrollTop() {
   window.setTimeout(snapTop, 80);
 }
 
+function teamHeaderBackground(team: TeamConfig) {
+  const primary = team.primary || "";
+  const secondary = team.secondary || primary;
+  const hex = primary.replace("#", "").trim();
+  const normalized = hex.length === 3
+    ? hex.split("").map((ch) => ch + ch).join("")
+    : hex;
+  if (!/^[0-9a-f]{6}$/i.test(normalized)) return primary;
+  const r = parseInt(normalized.slice(0, 2), 16) / 255;
+  const g = parseInt(normalized.slice(2, 4), 16) / 255;
+  const b = parseInt(normalized.slice(4, 6), 16) / 255;
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance > 0.34 && secondary ? secondary : primary;
+}
+
 export default function Home() {
   const [view, setView] = useState<ViewId>("scores");
   // activeTeam holds a full TeamConfig (not a key). This way we can view a
@@ -202,7 +217,7 @@ export default function Home() {
       )}
       {activeTeam ? (
         <div key={activeTeam.key} className="team-page-shell">
-          <div className="team-sticky-shell" style={{ ["--team-primary" as any]: activeTeam.primary, ["--team-secondary" as any]: activeTeam.secondary }}>
+          <div className="team-sticky-shell" style={{ ["--team-primary" as any]: activeTeam.primary, ["--team-secondary" as any]: activeTeam.secondary, ["--team-header-bg" as any]: teamHeaderBackground(activeTeam) }}>
             <div className="team-header-actions -mx-4 sm:mx-0">
               <button
                 onClick={() => {
