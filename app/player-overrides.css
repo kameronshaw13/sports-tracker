@@ -1828,6 +1828,99 @@ body::-webkit-scrollbar,
   touch-action: pan-x !important;
 }
 
+/* v253c: final source-order win for topbar/manage positioning */
+.game-detail-topbar .game-detail-title {
+  position: relative !important;
+  top: .18rem !important;
+  transform: none !important;
+  padding-top: .12rem !important;
+  line-height: 1.05 !important;
+}
+
+.game-detail-favorite-btn.is-active,
+.game-detail-favorite-btn.is-active svg {
+  color: var(--text) !important;
+  fill: var(--text) !important;
+  stroke: var(--text) !important;
+}
+
+.manage-done-btn {
+  padding-top: .66rem !important;
+  padding-bottom: .24rem !important;
+  line-height: 1.04 !important;
+}
+
+.manage-remove-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding-top: .54rem !important;
+  padding-bottom: 0 !important;
+  line-height: 1 !important;
+}
+
+/* v253b: final source-order win for topbar/manage positioning */
+.game-detail-topbar .game-detail-title {
+  position: relative !important;
+  top: .18rem !important;
+  transform: none !important;
+  padding-top: .12rem !important;
+  line-height: 1.05 !important;
+}
+
+.game-detail-favorite-btn.is-active,
+.game-detail-favorite-btn.is-active svg {
+  color: var(--text) !important;
+  fill: var(--text) !important;
+  stroke: var(--text) !important;
+}
+
+.manage-done-btn {
+  padding-top: .66rem !important;
+  padding-bottom: .24rem !important;
+  line-height: 1.04 !important;
+}
+
+.manage-remove-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding-top: .54rem !important;
+  padding-bottom: 0 !important;
+  line-height: 1 !important;
+}
+
+/* v253: final-final topbar/manage positioning overrides */
+.game-detail-topbar .game-detail-title {
+  position: relative !important;
+  top: .18rem !important;
+  transform: none !important;
+  padding-top: .12rem !important;
+  line-height: 1.05 !important;
+}
+
+.game-detail-favorite-btn.is-active,
+.game-detail-favorite-btn.is-active svg {
+  color: var(--text) !important;
+  fill: var(--text) !important;
+  stroke: var(--text) !important;
+}
+
+.manage-done-btn {
+  padding-top: .66rem !important;
+  padding-bottom: .24rem !important;
+  line-height: 1.04 !important;
+}
+
+.manage-remove-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding-top: .54rem !important;
+  padding-bottom: 0 !important;
+  line-height: 1 !important;
+}
+
 /* v252: final GameTracker favorite and Manage Teams nudges */
 .game-detail-title {
   transform: translateY(.18rem) !important;
@@ -1973,9 +2066,11 @@ button.game-lineup-row {
 }
 
 .game-detail-title {
-  transform: translateY(.08rem) !important;
+  position: relative !important;
+  top: .18rem !important;
+  transform: none !important;
   line-height: 1.05 !important;
-  padding-top: .08rem !important;
+  padding-top: .12rem !important;
 }
 
 .team-sticky-shell,
@@ -1984,14 +2079,17 @@ button.game-lineup-row {
 }
 
 .manage-done-btn {
-  line-height: 1.05 !important;
-  padding-top: .58rem !important;
-  padding-bottom: .32rem !important;
+  line-height: 1.04 !important;
+  padding-top: .66rem !important;
+  padding-bottom: .24rem !important;
 }
 
 .manage-remove-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   line-height: 1 !important;
-  padding-top: .25rem !important;
+  padding-top: .54rem !important;
   padding-bottom: 0 !important;
 }
 
