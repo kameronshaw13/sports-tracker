@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import Image from "next/image";
 import useSWR from "swr";
 import { useFreshKey } from "@/lib/freshKey";
@@ -429,28 +430,18 @@ function scoreTeamLogoSrc(team: any, league: League) {
 
 function ScoreTeamLogo({ team, league, size }: { team: any; league: League; size: number }) {
   const src = scoreTeamLogoSrc(team, league);
-  const rawId = useId();
   if (!src) return null;
 
   const alt = team?.abbr || team?.name || "Team logo";
-  const filterId = `score-logo-outline-${rawId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
-  const outlineRadius = Math.max(0.5, Math.min(1.12, size * 0.024));
+  const outlineSize = Math.max(0.5, Math.min(1.08, size * 0.023));
+  const style = {
+    width: size,
+    height: size,
+    "--logo-outline-size": `${outlineSize}px`,
+  } as CSSProperties;
   return (
-    <span className="score-team-logo-wrap espn-team-logo-wrap" style={{ width: size, height: size }}>
-      <svg className="team-logo-svg" width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={alt}>
-        <defs>
-          <filter id={filterId} x="-4" y="-4" width={size + 8} height={size + 8} filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-            <feMorphology in="SourceAlpha" operator="dilate" radius={outlineRadius} result="expanded" />
-            <feFlood floodColor="#fff" floodOpacity="1" result="white" />
-            <feComposite in="white" in2="expanded" operator="in" result="outline" />
-            <feMerge>
-              <feMergeNode in="outline" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-        <image href={src} width={size} height={size} preserveAspectRatio="xMidYMid meet" filter={`url(#${filterId})`} />
-      </svg>
+    <span className="score-team-logo-wrap espn-team-logo-wrap" style={style}>
+      <img src={src} alt={alt} width={size} height={size} className="team-logo-svg object-contain logo-outline-dark" />
     </span>
   );
 }
