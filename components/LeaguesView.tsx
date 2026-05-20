@@ -357,6 +357,17 @@ function LeagueDaySection({ league, date, density, onGameClick, onWarmGame, onSt
     persistPregameOdds(events.map((game: any) => ({ ...game, league })));
   }, [events, league]);
 
+  if (isLoading && !data?.events) {
+    const compactGrid = density === "compact";
+    return (
+      <section className="mt-3 border-b" style={{ borderColor: "var(--border)" }}>
+        <div className={compactGrid ? "grid grid-cols-2" : "grid grid-cols-1"} aria-hidden="true">
+          {[0, 1, 2, 3].map((i) => <div key={i} className="h-[112px] animate-pulse border-t" style={{ background: "var(--surface)", borderColor: "var(--border)" }} />)}
+        </div>
+      </section>
+    );
+  }
+
   if (!isLoading && (!events.length || error)) return null;
   const compactGrid = density === "compact";
   const hasOddCompactGrid = compactGrid && events.length % 2 === 1;

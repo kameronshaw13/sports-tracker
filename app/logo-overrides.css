@@ -141,3 +141,23 @@ html[data-theme="light"] img[src*="teamlogos"] {
 .boxscore-team-toggle .boxscore-team-toggle-mid-fixed.is-active .boxscore-team-toggle-label {
   transform: translateY(.07rem) !important;
 }
+
+/* Keep team schedule text from clipping on iOS while preserving the row layout. */
+.team-schedule-row .team-schedule-date,
+.team-schedule-row .team-schedule-status,
+.team-schedule-row .team-schedule-status > div {
+  line-height: 1.28 !important;
+  overflow: visible !important;
+  padding-top: .05rem !important;
+}
+
+.team-schedule-row .team-schedule-date,
+.team-schedule-row .team-schedule-status {
+  transform: translateY(.12rem) !important;
+}
+
+.team-schedule-row .team-schedule-at {
+  line-height: 1.22 !important;
+  overflow: visible !important;
+  padding-top: .04rem !important;
+}
