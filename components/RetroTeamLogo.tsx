@@ -32,7 +32,7 @@ export default function RetroTeamLogo({
   const rawId = useId();
   if (!src) return null;
   const filterId = `logo-outline-${rawId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
-  const outlineRadius = Math.max(0.38, Math.min(0.9, size * 0.018));
+  const outlineRadius = Math.max(0.42, Math.min(0.95, size * 0.02));
 
   return (
     <span className={`score-team-logo-wrap espn-team-logo-wrap ${className}`} style={{ width: size, height: size }}>
