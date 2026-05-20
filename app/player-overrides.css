@@ -1828,6 +1828,59 @@ body::-webkit-scrollbar,
   touch-action: pan-x !important;
 }
 
+/* v252: final GameTracker favorite and Manage Teams nudges */
+.game-detail-title {
+  transform: translateY(.18rem) !important;
+  padding-top: .14rem !important;
+  line-height: 1.05 !important;
+}
+
+.game-detail-favorite-btn.is-active {
+  color: var(--text) !important;
+}
+
+.game-detail-favorite-btn.is-active svg {
+  fill: var(--text) !important;
+  stroke: var(--text) !important;
+}
+
+.manage-done-btn {
+  padding-top: .62rem !important;
+  padding-bottom: .28rem !important;
+  line-height: 1.04 !important;
+}
+
+.manage-remove-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding-top: .4rem !important;
+  padding-bottom: 0 !important;
+  line-height: 1 !important;
+}
+
+.manage-teams-page img.manage-logo-outline,
+.manage-teams-page img.logo-outline-dark.manage-logo-outline {
+  -webkit-filter:
+    drop-shadow(1px 0 0 #fff)
+    drop-shadow(-1px 0 0 #fff)
+    drop-shadow(0 1px 0 #fff)
+    drop-shadow(0 -1px 0 #fff)
+    drop-shadow(.7px .7px 0 #fff)
+    drop-shadow(-.7px .7px 0 #fff)
+    drop-shadow(.7px -.7px 0 #fff)
+    drop-shadow(-.7px -.7px 0 #fff) !important;
+  filter:
+    drop-shadow(1px 0 0 #fff)
+    drop-shadow(-1px 0 0 #fff)
+    drop-shadow(0 1px 0 #fff)
+    drop-shadow(0 -1px 0 #fff)
+    drop-shadow(.7px .7px 0 #fff)
+    drop-shadow(-.7px .7px 0 #fff)
+    drop-shadow(.7px -.7px 0 #fff)
+    drop-shadow(-.7px -.7px 0 #fff) !important;
+}
+
 /* v247: extra-inning line scores should only move horizontally */
 .boxscore-line-wrap.has-extra-innings {
   overflow-x: auto !important;
