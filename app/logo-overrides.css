@@ -65,3 +65,21 @@ html[data-theme="light"] img[src*="teamlogos"] {
   --logo-outline-size: .54px;
   --logo-outline-alpha: .96;
 }
+
+/* Boxscore/lineup/odds alignment lives here because this file loads last. */
+.boxscore-line-team .outlined-logo {
+  transform: translateY(-.1rem) !important;
+}
+
+.game-lineup-toggle-btn .outlined-logo,
+.game-odds-team .outlined-logo {
+  transform: translateY(-.14rem) !important;
+}
+
+.boxscore-team-toggle-btn.is-active:not(.boxscore-team-toggle-mid-fixed) {
+  transform: translateY(-.05rem) !important;
+}
+
+.boxscore-team-toggle-btn.is-active:not(.boxscore-team-toggle-mid-fixed) .boxscore-team-toggle-abbr {
+  transform: translateY(-.13rem) !important;
+}
