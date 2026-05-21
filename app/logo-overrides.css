@@ -171,10 +171,7 @@ html[data-theme="light"] img[src*="teamlogos"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  background:
-    radial-gradient(circle at 22% 0%, rgba(209,132,41,.12), transparent 28rem),
-    linear-gradient(180deg, rgba(255,255,255,.018), transparent 22rem),
-    var(--bg);
+  background: var(--bg);
 }
 
 .scores-initial-loader {
