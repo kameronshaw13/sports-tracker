@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { useFreshKey } from "@/lib/freshKey";
 import { GameNavTarget, warmGameSummary } from "@/lib/gamePrefetch";
@@ -78,6 +78,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, onGameCont
   const { favorites } = useFavoriteTeams();
   const { favoriteGames } = useFavoriteGames();
   const date = formatDate(dayOffset);
+  const scoresFreshKey = useFreshKey();
   const standingsControls = useMemo(() => controlsForLeague(league), [league]);
   const activeStandingsControl = standingsControls.find((control) => control.id === standingsView) || standingsControls[0];
 
@@ -158,7 +159,7 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, onGameCont
             <>
               <CbsDateBar dayOffset={dayOffset} setDayOffset={setDayOffset} />
               <div className="mt-3">
-                <LeagueDaySection league={league} date={date} density={settings.density} onGameClick={(eventId) => openEvent({ league, eventId })} onWarmGame={(eventId) => { warmEvent({ league, eventId }); }} onStandingsClick={onStandingsClick} stickyTop={0} hideHeader />
+                <LeagueDaySection league={league} date={date} density={settings.density} requestFreshKey={scoresFreshKey} onGameClick={(eventId) => openEvent({ league, eventId })} onWarmGame={(eventId) => { warmEvent({ league, eventId }); }} onStandingsClick={onStandingsClick} stickyTop={0} hideHeader />
               </div>
             </>
           )}
@@ -197,26 +198,28 @@ export default function LeaguesView({ onTeamLogoClick, onPlayerClick, onGameCont
   const leagueStickyTop = Math.max(0, scoresHeaderHeight - 4);
 
   return (
-    <div className="-mx-4 sm:mx-0">
-      <div ref={scoresHeaderRef} className="sticky top-0 z-40 px-4 pb-2 scores-sticky-header" style={{ background: "var(--bg)" }}>
-        <div className="relative flex min-h-[4.05rem] items-center justify-between">
-          <h1 className="absolute left-0 top-1/2 -translate-y-1/2 retro-title scores-page-heading text-[2.42rem] tracking-[.02em]">
-            Scores
-          </h1>
-          <div className="ml-auto flex items-center">
-            <AppSettingsButton />
+    <ScoresReadyGate leagues={leagues} date={date} freshKey={scoresFreshKey} favoritesReady={favorites !== null}>
+      <div className="-mx-4 sm:mx-0">
+        <div ref={scoresHeaderRef} className="sticky top-0 z-40 px-4 pb-2 scores-sticky-header" style={{ background: "var(--bg)" }}>
+          <div className="relative flex min-h-[4.05rem] items-center justify-between">
+            <h1 className="absolute left-0 top-1/2 -translate-y-1/2 retro-title scores-page-heading text-[2.42rem] tracking-[.02em]">
+              Scores
+            </h1>
+            <div className="ml-auto flex items-center">
+              <AppSettingsButton />
+            </div>
           </div>
+          <CbsDateBar dayOffset={dayOffset} setDayOffset={setDayOffset} />
         </div>
-        <CbsDateBar dayOffset={dayOffset} setDayOffset={setDayOffset} />
-      </div>
 
-      <div>
-        <FavoritesScores date={date} favoriteKeys={favoriteKeys} favoriteGameKeys={favoriteGameKeys} stickyTop={leagueStickyTop} onGameClick={(league, eventId) => openEvent({ league, eventId })} onWarmGame={(league, eventId) => { warmEvent({ league, eventId }); }} />
-        {leagues.map((lg) => (
-          <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} onGameClick={(eventId) => openEvent({ league: lg, eventId })} onWarmGame={(eventId) => { warmEvent({ league: lg, eventId }); }} onStandingsClick={onStandingsClick} stickyTop={leagueStickyTop} />
-        ))}
+        <div>
+          <FavoritesScores date={date} favoriteKeys={favoriteKeys} favoriteGameKeys={favoriteGameKeys} stickyTop={leagueStickyTop} requestFreshKey={scoresFreshKey} onGameClick={(league, eventId) => openEvent({ league, eventId })} onWarmGame={(league, eventId) => { warmEvent({ league, eventId }); }} />
+          {leagues.map((lg) => (
+            <LeagueDaySection key={`${lg}-${date}`} league={lg} date={date} density={settings.density} requestFreshKey={scoresFreshKey} onGameClick={(eventId) => openEvent({ league: lg, eventId })} onWarmGame={(eventId) => { warmEvent({ league: lg, eventId }); }} onStandingsClick={onStandingsClick} stickyTop={leagueStickyTop} />
+          ))}
+        </div>
       </div>
-    </div>
+    </ScoresReadyGate>
   );
 }
 
@@ -311,8 +314,28 @@ function defaultStandingsViewForLeague(league: League) {
   return "division";
 }
 
-function FavoritesScores({ date, favoriteKeys, favoriteGameKeys, stickyTop, onGameClick, onWarmGame }: { date: string; favoriteKeys: Set<string>; favoriteGameKeys: Set<string>; stickyTop: number | string; onGameClick: (league: League, eventId: string) => void; onWarmGame?: (league: League, eventId: string) => void }) {
-  const freshKey = useFreshKey();
+function ScoresReadyGate({ leagues, date, freshKey, favoritesReady, children }: { leagues: League[]; date: string; freshKey: string; favoritesReady: boolean; children: ReactNode }) {
+  const requests = leagues.map((league) => useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, {
+    dedupingInterval: 4_000,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  }));
+  const ready = favoritesReady && requests.every((req) => !req.isLoading && (req.data || req.error));
+
+  if (!ready) {
+    return (
+      <div className="scores-initial-loader" role="status" aria-label="Loading scores">
+        <div className="scores-initial-spinner" aria-hidden="true" />
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
+function FavoritesScores({ date, favoriteKeys, favoriteGameKeys, stickyTop, onGameClick, onWarmGame, requestFreshKey }: { date: string; favoriteKeys: Set<string>; favoriteGameKeys: Set<string>; stickyTop: number | string; onGameClick: (league: League, eventId: string) => void; onWarmGame?: (league: League, eventId: string) => void; requestFreshKey?: string }) {
+  const localFreshKey = useFreshKey();
+  const freshKey = requestFreshKey || localFreshKey;
   const { settings } = useAppSettings();
   const requests = settings.sportOrder.map((league) => useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, { refreshInterval: 15_000, dedupingInterval: 4_000 }));
   const games = requests.flatMap((req, idx) => {
@@ -342,8 +365,9 @@ function FavoritesScores({ date, favoriteKeys, favoriteGameKeys, stickyTop, onGa
   );
 }
 
-function LeagueDaySection({ league, date, density, onGameClick, onWarmGame, onStandingsClick, stickyTop = 124, hideHeader = false }: { league: League; date: string; density: ScoreDensity; onGameClick: (eventId: string) => void; onWarmGame?: (eventId: string) => void; onStandingsClick?: (league: League) => void; stickyTop?: number | string; hideHeader?: boolean }) {
-  const freshKey = useFreshKey();
+function LeagueDaySection({ league, date, density, onGameClick, onWarmGame, onStandingsClick, stickyTop = 124, hideHeader = false, requestFreshKey }: { league: League; date: string; density: ScoreDensity; onGameClick: (eventId: string) => void; onWarmGame?: (eventId: string) => void; onStandingsClick?: (league: League) => void; stickyTop?: number | string; hideHeader?: boolean; requestFreshKey?: string }) {
+  const localFreshKey = useFreshKey();
+  const freshKey = requestFreshKey || localFreshKey;
   const [collapsed, setCollapsed] = useState(false);
   const { data, error, isLoading } = useSWR(`/api/league?league=${league}&date=${date}&_t=${freshKey}`, fetcher, {
     refreshInterval: 15_000,

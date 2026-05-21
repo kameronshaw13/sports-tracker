@@ -161,3 +161,24 @@ html[data-theme="light"] img[src*="teamlogos"] {
   overflow: visible !important;
   padding-top: .04rem !important;
 }
+
+.scores-initial-loader {
+  min-height: calc(100vh - 9rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+
+.scores-initial-spinner {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, var(--text) 18%, transparent);
+  border-top-color: var(--accent);
+  animation: scores-initial-spin .78s linear infinite;
+}
+
+@keyframes scores-initial-spin {
+  to { transform: rotate(360deg); }
+}
