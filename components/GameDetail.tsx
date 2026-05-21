@@ -79,7 +79,7 @@ export default function GameDetail({ league, eventId, onClose, onTeamClick, onPl
     } catch {}
   }, [eventId, league, data?.odds, data?.status?.state]);
 
-  if (isLoading) return <div className="space-y-3"><div className="h-12 animate-pulse" style={{ background: "var(--surface)" }} /><div className="h-44 animate-pulse" style={{ background: "var(--surface)" }} /></div>;
+  if (isLoading) return <div className="game-detail-loading-screen" role="status" aria-label="Loading game"><div className="scores-initial-spinner" aria-hidden="true" /></div>;
   if (error || !data) return <div className="space-y-3"><GameTopBar title="Game" onClose={onClose} /><div className="p-6 text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-2)" }}>Couldn't load this game.</div></div>;
 
   const { home, away, status, situation } = data;

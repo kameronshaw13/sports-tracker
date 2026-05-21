@@ -162,12 +162,28 @@ html[data-theme="light"] img[src*="teamlogos"] {
   padding-top: .04rem !important;
 }
 
-.scores-initial-loader {
-  min-height: calc(100vh - 9rem);
+.scores-initial-loader,
+.game-detail-loading-screen {
+  width: 100vw;
+  min-height: 100dvh;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg);
+  background:
+    radial-gradient(circle at 22% 0%, rgba(209,132,41,.12), transparent 28rem),
+    linear-gradient(180deg, rgba(255,255,255,.018), transparent 22rem),
+    var(--bg);
+}
+
+.scores-initial-loader {
+  min-height: calc(100dvh - 5.5rem);
+  margin-top: calc(env(safe-area-inset-top, 0px) * -1);
+}
+
+.game-detail-loading-screen {
+  min-height: 100dvh;
 }
 
 .scores-initial-spinner {
