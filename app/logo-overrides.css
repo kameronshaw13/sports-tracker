@@ -175,8 +175,13 @@ html[data-theme="light"] img[src*="teamlogos"] {
 }
 
 .scores-initial-loader {
-  min-height: calc(100dvh - 5.5rem);
-  margin-top: calc(env(safe-area-inset-top, 0px) * -1);
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  min-height: 100dvh;
+  margin: 0;
+  padding-bottom: calc(5.8rem + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
 }
 
 .game-detail-loading-screen {
