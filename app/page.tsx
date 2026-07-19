@@ -93,13 +93,26 @@ export default function Home() {
     void loadGameDetail();
   }, []);
 
-  // Preload the team catalog once on mount so colors are ready when the user
-  // taps a non-favorite team logo. Cached an hour by API + by SWR.
+  // Load only the relevant league after a non-favorite team is opened. The
+  // previous eager request downloaded every college and pro team at startup.
   const { data: catalogData } = useSWR<{ teams: TeamConfig[] }>(
-    "/api/all-teams",
+    view === "teamPage" && activeTeam?._transient
+      ? `/api/all-teams?league=${activeTeam.league}`
+      : null,
     fetcher,
     { revalidateOnFocus: false, revalidateIfStale: false }
   );
+
+  useEffect(() => {
+    if (!activeTeam?._transient || !catalogData?.teams?.length) return;
+    const hydrated = catalogData.teams.find((team) => team.key === activeTeam.key);
+    if (
+      hydrated &&
+      (activeTeam.name !== hydrated.name || activeTeam.logo !== hydrated.logo || activeTeam.primary !== hydrated.primary)
+    ) {
+      setActiveTeam({ ...hydrated, _transient: true });
+    }
+  }, [activeTeam, catalogData?.teams]);
 
   // Pick a default active team once favorites load. Also reset if the
   // currently-active favorite team got removed in Manage Teams. Don't touch

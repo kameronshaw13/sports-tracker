@@ -1,72 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGameSummary, getMlbFortyManRoster } from "@/lib/espn";
+import { getGameSummary } from "@/lib/espn";
 
 export const revalidate = 30;
 
 const VALID_LEAGUES = ["mlb", "nfl", "nba", "nhl", "cfb", "cbb"];
-
-// MLB statsapi uses different person IDs than ESPN's athlete IDs. To make
-// player taps land on the correct profile, we build a name→MLB id lookup
-// from the two teams' 40-man rosters and override `id` for MLB athletes.
-// (ESPN-only sports — NFL/NBA/NHL/CFB/CBB — keep using ESPN athlete IDs.)
-function nameKey(name: string | null | undefined): string {
-  return String(name || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\s]/g, "")
-    .replace(/\b(jr|sr|ii|iii|iv)\b/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-async function buildMlbIdLookup(competitors: any[]): Promise<Map<string, number>> {
-  const map = new Map<string, number>();
-  const abbrs: string[] = competitors
-    .map((c) => c?.team?.abbreviation)
-    .filter(Boolean)
-    .map((a) => String(a).toLowerCase());
-  await Promise.all(
-    abbrs.map(async (abbr) => {
-      try {
-        const roster = await getMlbFortyManRoster(abbr);
-        for (const p of roster || []) {
-          if (!p?.mlbId || !p?.name) continue;
-          const full = nameKey(p.name);
-          if (full) map.set(full, p.mlbId);
-          const parts = full.split(" ").filter(Boolean);
-          if (parts.length >= 2) {
-            // ESPN sometimes returns short names like "C. Mullins" — index
-            // first-initial-plus-last and just-last so those resolve too.
-            map.set(`${parts[0]} ${parts[parts.length - 1]}`, p.mlbId);
-            map.set(`${parts[0][0]} ${parts[parts.length - 1]}`, p.mlbId);
-            map.set(parts[parts.length - 1], p.mlbId);
-          }
-        }
-      } catch {
-        // Roster enrichment is best-effort. If MLB statsapi is unreachable
-        // the box score still renders; player taps just won't resolve.
-      }
-    })
-  );
-  return map;
-}
-
-function resolveMlbId(name: string | null | undefined, lookup: Map<string, number>): number | null {
-  if (!name) return null;
-  const full = nameKey(name);
-  if (!full) return null;
-  const direct = lookup.get(full);
-  if (direct) return direct;
-  const parts = full.split(" ").filter(Boolean);
-  if (parts.length >= 2) {
-    const fl = lookup.get(`${parts[0]} ${parts[parts.length - 1]}`);
-    if (fl) return fl;
-    const lastOnly = lookup.get(parts[parts.length - 1]);
-    if (lastOnly) return lastOnly;
-  }
-  return null;
-}
 
 function readStatValue(stat: any): string | number | null {
   const value = stat?.displayValue ?? stat?.value ?? stat?.summary ?? stat?.text;
@@ -109,6 +46,40 @@ function indexTeamStats(source: any): Record<string, string | number> {
     }
   }
   return out;
+}
+
+function indexProbablePitcherStats(competitors: any[]) {
+  const byTeam = new Map<string, { athleteId: string | null; stats: Record<string, string> }>();
+  for (const competitor of competitors) {
+    const probable = (competitor?.probables || []).find((item: any) =>
+      /probable.*pitcher|starting.*pitcher|starter/i.test(String(item?.name || item?.displayName || item?.abbreviation || "")),
+    );
+    if (!probable) continue;
+    const indexed: Record<string, string> = {};
+    for (const stat of probable?.statistics?.splits?.categories || []) {
+      const value = stat?.displayValue ?? stat?.value;
+      if (value == null || value === "") continue;
+      for (const key of [stat?.abbreviation, stat?.name, stat?.shortDisplayName].filter(Boolean)) {
+        indexed[String(key).toUpperCase()] = String(value);
+      }
+    }
+    const teamId = String(competitor?.team?.id || competitor?.id || "");
+    if (teamId) {
+      byTeam.set(teamId, {
+        athleteId: probable?.athlete?.id ? String(probable.athlete.id) : probable?.playerId ? String(probable.playerId) : null,
+        stats: indexed,
+      });
+    }
+  }
+  return byTeam;
+}
+
+function addMlbRateStats(stats: Record<string, string>) {
+  const obp = Number(stats.OBP);
+  const slg = Number(stats.SLG);
+  if (!stats.OPS && Number.isFinite(obp) && Number.isFinite(slg)) {
+    stats.OPS = (obp + slg).toFixed(3).replace(/^0/, "");
+  }
 }
 
 function buildLineScore(league: string, competitors: any[], extractTotal: (c: any, names: string[], fallback?: string | number) => any) {
@@ -173,16 +144,9 @@ export async function GET(req: NextRequest) {
     const comp = data?.header?.competitions?.[0];
     const competitors = comp?.competitors || [];
 
-    // Build the MLB ID lookup BEFORE constructing leaders/teams so the id
-    // overrides apply uniformly.
-    const mlbIdLookup = league === "mlb" ? await buildMlbIdLookup(competitors) : null;
-    const idForAthlete = (athlete: any): string | null => {
-      if (league === "mlb" && mlbIdLookup) {
-        const mlbId = resolveMlbId(athlete?.displayName || athlete?.fullName || athlete?.shortName, mlbIdLookup);
-        if (mlbId) return String(mlbId);
-      }
-      return athlete?.id ? String(athlete.id) : null;
-    };
+    const isPregame = comp?.status?.type?.state === "pre" || comp?.status?.state === "pre";
+    const probablePitchers = league === "mlb" ? indexProbablePitcherStats(competitors) : new Map();
+    const currentBatterId = data?.situation?.batter?.id ? String(data.situation.batter.id) : null;
 
     const extractTotal = (c: any, names: string[], fallback: string | number = "0") => {
       for (const name of names) {
@@ -230,25 +194,50 @@ export async function GET(req: NextRequest) {
     const teams = (data?.boxscore?.players || []).map((teamBox: any) => {
       const teamInfo = teamBox.team;
       const groups = (teamBox.statistics || []).map((stat: any) => {
-        const labels: string[] = stat.labels || [];
+        let labels: string[] = [...(stat.labels || [])];
         const descriptions: string[] = stat.descriptions || [];
+        const isMlbPitching = league === "mlb" && labels.includes("IP");
+        const isMlbHitting = league === "mlb" && !isMlbPitching && (labels.includes("AB") || labels.includes("H-AB"));
+        const probable = probablePitchers.get(String(teamInfo?.id || ""));
         const athletes = (stat.athletes || []).map((a: any) => {
           const stats: Record<string, string> = {};
           (a.stats || []).forEach((val: string, i: number) => {
             const key = labels[i] || `stat${i}`;
             stats[key] = val;
           });
+          if (isMlbHitting) addMlbRateStats(stats);
+          if (isPregame && isMlbPitching && probable && (!probable.athleteId || probable.athleteId === String(a?.athlete?.id || ""))) {
+            const wins = probable.stats.W ?? probable.stats.WINS;
+            const losses = probable.stats.L ?? probable.stats.LOSSES;
+            if (wins != null && losses != null) stats["W-L"] = `${wins}-${losses}`;
+            if (probable.stats.ERA != null) stats.ERA = probable.stats.ERA;
+            if (probable.stats.WHIP != null) stats.WHIP = probable.stats.WHIP;
+            if (probable.stats.K != null || probable.stats.STRIKEOUTS != null) stats.K = probable.stats.K ?? probable.stats.STRIKEOUTS;
+          }
           return {
             id: a.athlete?.id,
             name: a.athlete?.displayName,
             shortName: a.athlete?.shortName,
-            position: a.athlete?.position?.abbreviation,
+            position: a.position?.abbreviation || a.position?.shortDisplayName || a.athlete?.position?.abbreviation,
+            listedPosition: a.athlete?.position?.abbreviation || null,
             jersey: a.athlete?.jersey,
             headshot: a.athlete?.headshot?.href || null,
             starter: a.starter,
+            active: a.active,
+            subbedIn: a.subbedIn,
+            batOrder: a.batOrder,
+            notes: a.notes || null,
             stats,
           };
         });
+        if (isMlbHitting) {
+          for (const key of ["AVG", "OBP", "SLG", "OPS"]) {
+            if (!labels.includes(key) && athletes.some((athlete: any) => athlete.stats?.[key] != null)) labels.push(key);
+          }
+        }
+        if (isPregame && isMlbPitching && athletes.some((athlete: any) => athlete.stats?.["W-L"] || athlete.stats?.WHIP)) {
+          labels = ["W-L", "ERA", "WHIP", "K"];
+        }
         return {
           name: stat.name || stat.text || "Stats",
           keys: labels,
@@ -289,7 +278,7 @@ export async function GET(req: NextRequest) {
       })).filter((c: any) => c.leader),
     }));
 
-    return NextResponse.json({ eventId, league, teams, leaders, lineScore });
+    return NextResponse.json({ eventId, league, teams, leaders, lineScore, currentBatterId });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Fetch failed" }, { status: 500 });
   }

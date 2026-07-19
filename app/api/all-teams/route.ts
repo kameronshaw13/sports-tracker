@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { TeamConfig, League, VALID_LEAGUES, makeKey, ensureHash, pickTextColor, getSport, formatCollegeSchoolName } from "@/lib/teams";
 import { COLLEGE_FOOTBALL_TEAMS_2026 } from "@/lib/collegeFootballTeams2026";
 
@@ -232,8 +232,12 @@ async function fetchLeagueTeams(league: League): Promise<TeamConfig[]> {
     .filter((t): t is TeamConfig => Boolean(t));
 }
 
-export async function GET() {
-  const settled = await Promise.allSettled(VALID_LEAGUES.map(fetchLeagueTeams));
+export async function GET(req: NextRequest) {
+  const requestedLeague = req.nextUrl.searchParams.get("league") as League | null;
+  const leagues = requestedLeague && VALID_LEAGUES.includes(requestedLeague)
+    ? [requestedLeague]
+    : VALID_LEAGUES;
+  const settled = await Promise.allSettled(leagues.map(fetchLeagueTeams));
   const byKey = new Map<string, TeamConfig>();
   settled.forEach((r) => {
     if (r.status === "fulfilled") for (const t of r.value) byKey.set(t.key, t);

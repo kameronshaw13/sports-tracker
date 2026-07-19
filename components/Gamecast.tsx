@@ -583,7 +583,7 @@ function isHiddenMinorEvent(text: string) {
   return /^(top|bottom|middle|end) of the \d+(st|nd|rd|th)? inning\.?$/i.test(value) ||
     /^(middle|end) of the/i.test(value) ||
     /\bpitches to\b/i.test(value) ||
-    /\b(challeng|review|substitution|defensive replacement|pinch-runner|pinch runner|mound visit|injury delay|delay)\b/i.test(value);
+    /\b(challeng|review|mound visit|injury delay|delay)\b/i.test(value);
 }
 
 function playerClickHandler(person: Person | null | undefined, onPlayerClick: ((player: { id: string; name: string; league: string }) => void) | undefined, fallbackName: string) {

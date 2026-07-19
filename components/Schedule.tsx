@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { TeamConfig } from "@/lib/teams";
 import { useFreshKey } from "@/lib/freshKey";
@@ -78,6 +78,7 @@ export default function Schedule({ team, onTeamLogoClick, onPlayerClick, onOpenG
   const activeMonth = selectedMonth && grouped[selectedMonth] ? selectedMonth : monthKeys[0];
   const activeIndex = Math.max(0, monthKeys.indexOf(activeMonth));
   const activeList = useMonthPaging ? (activeMonth ? grouped[activeMonth] || [] : []) : events;
+  const phaseGroups = groupBySeasonPhase(activeList);
 
   return (
     <div className="-mx-4 sm:mx-0 cbs-panel-list">
@@ -102,20 +103,25 @@ export default function Schedule({ team, onTeamLogoClick, onPlayerClick, onOpenG
       )}
       <section key={useMonthPaging ? activeMonth : "full-schedule"}>
         <div className="cbs-table-panel">
-          {activeList.map((ev: any) => (
-            <ScheduleRow
-              key={ev.id}
-              ev={ev}
-              team={team}
-              onWarm={() => onWarmGame?.({ league: team.league, eventId: ev.id })}
-              onClick={() => {
-                if (onOpenGame) {
-                  onOpenGame({ league: team.league, eventId: ev.id });
-                  return;
-                }
-                setSelected(warmGameSummary(mutate, { league: team.league, eventId: ev.id }));
-              }}
-            />
+          {phaseGroups.map((phase) => (
+            <Fragment key={phase.id}>
+              <div className="team-schedule-phase-heading">{phase.label}</div>
+              {phase.events.map((ev: any) => (
+                <ScheduleRow
+                  key={ev.id}
+                  ev={ev}
+                  team={team}
+                  onWarm={() => onWarmGame?.({ league: team.league, eventId: ev.id })}
+                  onClick={() => {
+                    if (onOpenGame) {
+                      onOpenGame({ league: team.league, eventId: ev.id });
+                      return;
+                    }
+                    setSelected(warmGameSummary(mutate, { league: team.league, eventId: ev.id }));
+                  }}
+                />
+              ))}
+            </Fragment>
           ))}
         </div>
       </section>
@@ -206,6 +212,20 @@ function groupByMonth(events: any[]) {
     (acc[key] ||= []).push(ev);
     return acc;
   }, {});
+}
+
+function groupBySeasonPhase(events: any[]) {
+  const phases = [
+    { id: "preseason", label: "Preseason", type: 1 },
+    { id: "regular", label: "Regular Season", type: 2 },
+    { id: "playoffs", label: "Playoffs", type: 3 },
+  ];
+  return phases
+    .map((phase) => ({
+      ...phase,
+      events: events.filter((event) => Number(event?.seasonType || (event?.playoff ? 3 : 2)) === phase.type),
+    }))
+    .filter((phase) => phase.events.length > 0);
 }
 
 function monthKey(d: Date) {

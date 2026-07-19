@@ -54,6 +54,7 @@ export async function GET(req: NextRequest) {
         name: ev.name,
         shortName: ev.shortName,
         weekText: ev.week?.text || ev.seasonType?.name || null,
+        seasonType: Number(ev._seasonType || ev.seasonType?.id || 2),
         playoff: ev._isPlayoff || ev.seasonType?.id === "3" || false,
         status: {
           state: status?.type?.state,

@@ -51,9 +51,9 @@ type Props = {
 
 export default function MoreView({ onTeamClick, onLeagueClick, onManage }: Props) {
   const { favorites } = useFavoriteTeams();
-  const { data } = useSWR<{ teams: TeamConfig[] }>("/api/all-teams", fetcher, { revalidateOnFocus: false });
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
+  const { data } = useSWR<{ teams: TeamConfig[] }>(q ? "/api/all-teams" : null, fetcher, { revalidateOnFocus: false });
 
   const leagueResults = useMemo(() => {
     if (!q) return [];

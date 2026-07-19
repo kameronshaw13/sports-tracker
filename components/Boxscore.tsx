@@ -4,7 +4,6 @@ import Image from "next/image";
 import type { CSSProperties } from "react";
 import { Fragment, useState } from "react";
 import useSWR from "swr";
-import { useFreshKey } from "@/lib/freshKey";
 import OutlinedLogo from "./OutlinedLogo";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -28,10 +27,9 @@ export default function Boxscore({
   onPlayerClick,
 }: Props) {
   // v17 behavior preserved: live polling at 15s for parity with summary.
-  const freshKey = useFreshKey();
   const { data, error, isLoading } = useSWR(
     eventId
-      ? `/api/boxscore?league=${league}&event=${eventId}&_t=${freshKey}`
+      ? `/api/boxscore?league=${league}&event=${eventId}`
       : null,
     fetcher,
     { refreshInterval: isLive ? 15_000 : 0 },
@@ -106,6 +104,7 @@ export default function Boxscore({
                     : undefined
                 }
                 onPlayerClick={onPlayerClick}
+                currentBatterId={data.currentBatterId}
               />
             ))}
           </div>
@@ -343,6 +342,13 @@ function pickColumnKeys(group: any, league: string): string[] {
     return allKeys;
   }
 
+  if (league === "cbb") {
+    const preferred = ["MIN", "FG", "3PT", "FT", "OREB", "DREB", "REB", "AST", "STL", "BLK", "TO", "PF", "PTS"];
+    const ordered = preferred.filter((key) => allKeys.includes(key));
+    const remaining = allKeys.filter((key) => !ordered.includes(key));
+    return [...ordered, ...remaining];
+  }
+
   if (league === "mlb") {
     return mlbColumnKeys(allKeys, group);
   }
@@ -356,6 +362,10 @@ function mlbColumnKeys(allKeys: string[], group?: any): string[] {
   const usableKeys = isPitching
     ? allKeys.filter((k) => !["HR", "PC-ST", "PC_ST", "P-ST"].includes(canonicalLabel(k)))
     : allKeys;
+  if (!isPitching) {
+    const preferred = ["AB", "H", "R", "RBI", "HR", "BB", "K", "AVG", "OBP", "SLG", "OPS"];
+    return preferred.filter((key) => key === "AB" || key === "H" || usableKeys.includes(key));
+  }
   const hasCombo = allKeys.some((k) => k === "H-AB" || k === "H_AB" || k === "H/AB");
   if (hasCombo && !isPitching) {
     const rest = usableKeys.filter((k) => !["H-AB", "H_AB", "H/AB", "AB", "H", "HT"].includes(k));
@@ -712,11 +722,13 @@ function StatGroup({
   teamKey,
   onPlayerClick,
   groupIndex,
+  currentBatterId,
 }: {
   group: any;
   league: string;
   teamKey?: string;
   groupIndex?: number;
+  currentBatterId?: string | null;
   onPlayerClick?: (player: {
     id: string;
     name: string;
@@ -768,7 +780,7 @@ function StatGroup({
             ) : (
               <div
                 key={`name-${row.id || idx}`}
-                className={`boxscore-split-cell boxscore-player-name ${league === "mlb" && !isMlbPitching && isSubstituteRow(row) ? "is-substitute-row" : ""}`}
+                className={`boxscore-split-cell boxscore-player-name ${league === "mlb" && !isMlbPitching && isSubstituteRow(row) ? "is-substitute-row" : ""} ${String(row.id || "") === String(currentBatterId || "") ? "is-current-player" : ""}`}
               >
                 <button
                   type="button"
@@ -824,7 +836,7 @@ function StatGroup({
                 <Fragment key={`stat-row-${row.id || idx}`}>
                   {isNhlGoalies && <div key={`${row.id || idx}-goalie-lead`} className="boxscore-split-cell boxscore-goalie-stat-fill" aria-hidden="true" />}
                   {columnKeys.map((k: string) => (
-                    <div key={`${row.id || idx}-${k}`} className="boxscore-split-cell boxscore-stat-value tabular-nums">
+                    <div key={`${row.id || idx}-${k}`} className={`boxscore-split-cell boxscore-stat-value tabular-nums ${String(row.id || "") === String(currentBatterId || "") ? "is-current-player" : ""}`}>
                       {getBoxscoreStat(row, k)}
                     </div>
                   ))}

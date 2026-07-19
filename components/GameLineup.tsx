@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useState } from "react";
 import useSWR from "swr";
-import { useFreshKey } from "@/lib/freshKey";
 import OutlinedLogo from "./OutlinedLogo";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -15,9 +14,8 @@ type Props = {
 };
 
 export default function GameLineup({ league, eventId, onPlayerClick }: Props) {
-  const freshKey = useFreshKey();
   const { data, error, isLoading } = useSWR(
-    eventId ? `/api/boxscore?league=${league}&event=${eventId}&_t=${freshKey}` : null,
+    eventId ? `/api/boxscore?league=${league}&event=${eventId}` : null,
     fetcher,
     { revalidateOnFocus: false },
   );

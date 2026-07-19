@@ -50,9 +50,9 @@ function currentSeasonYear(league: string): number {
   const month = now.getMonth() + 1;
 
   if (league === "mlb") return year;
-  if (league === "nfl") return month < 8 ? year - 1 : year;
+  if (league === "nfl") return month < 7 ? year - 1 : year;
   if (league === "nba" || league === "nhl" || league === "cbb") return month >= 8 ? year + 1 : year;
-  if (league === "cfb") return month < 8 ? year - 1 : year;
+  if (league === "cfb") return month < 7 ? year - 1 : year;
   return year;
 }
 
@@ -113,18 +113,23 @@ export async function getTeamSchedule(league: string, teamId: string) {
   // Keep team schedules to the CURRENT season only. The previous version also
   // fetched the prior postseason for NBA/NHL/NFL, which is why last year's
   // playoffs were appearing above this year's schedule.
-  const requests = [
-    fetchJson(`${base}?season=${year}&seasontype=2`, 0),
-    fetchJson(`${base}?season=${year}&seasontype=3`, 0),
-  ];
+  const seasonTypes = [1, 2, 3];
+  const requests = seasonTypes.map((seasonType) =>
+    fetchJson(`${base}?season=${year}&seasontype=${seasonType}`, 0),
+  );
 
   const results = await Promise.allSettled(requests);
   const allEvents: any[] = [];
   results.forEach((r, i) => {
     if (r.status === "fulfilled" && r.value?.events) {
-      const isPlayoff = i === 1;
+      const seasonType = seasonTypes[i];
+      const isPlayoff = seasonType === 3;
       r.value.events.forEach((ev: any) => {
-        allEvents.push({ ...ev, _isPlayoff: isPlayoff || ev.seasonType?.id === "3" });
+        allEvents.push({
+          ...ev,
+          _seasonType: seasonType,
+          _isPlayoff: isPlayoff || Number(ev.seasonType?.id) === 3,
+        });
       });
     }
   });

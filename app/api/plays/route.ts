@@ -436,7 +436,7 @@ function isPitcherBatterIntroText(text: string): boolean {
 
 function isMinorBaseballEvent(text: string, type?: string | null): boolean {
   const value = `${type || ""} ${text}`.toLowerCase();
-  return /defensive replacement|pitching change|mound visit|injury delay|delay|substitution|pinch-runner|pinch runner|coach visit|umpire/.test(value);
+  return /defensive replacement|defensive substitution|pitching change|mound visit|injury delay|delay|substitution|pinch-hit|pinch hit|pinch-hitter|pinch hitter|pinch-runner|pinch runner|enters the game|remains in the game|replaces|moves? to|coach visit|umpire/.test(value);
 }
 
 function isChallengeReviewEvent(text: string, type?: string | null): boolean {
