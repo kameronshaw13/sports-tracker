@@ -336,7 +336,26 @@ function nonPlayedLabel(statusName: string): string { if (statusName.includes("P
 function hasBaseballSituation(s: any): boolean { return s && (typeof s.balls === "number" || typeof s.strikes === "number" || typeof s.outs === "number"); }
 function BaseballSituationBlock({ situation }: { situation: any }) {
   const balls = situation.balls ?? 0; const strikes = situation.strikes ?? 0; const outs = situation.outs ?? 0;
-  return <div className="game-score-situation flex flex-col items-center gap-1"><BasesDiamond onFirst={!!situation.onFirst} onSecond={!!situation.onSecond} onThird={!!situation.onThird} /><div className="game-score-count text-xs font-black tabular-nums" style={{ color: "var(--text-2)" }}>{balls}-{strikes}, {outs} {outs === 1 ? "Out" : "Outs"}</div></div>;
+  return <div className="game-score-situation flex flex-col items-center gap-1"><BasesDiamond onFirst={!!situation.onFirst} onSecond={!!situation.onSecond} onThird={!!situation.onThird} /><BaseballCountDots balls={balls} strikes={strikes} outs={outs} /></div>;
+}
+function BaseballCountDots({ balls, strikes, outs }: { balls: number; strikes: number; outs: number }) {
+  return (
+    <div className="game-score-count game-score-count-dots" aria-label={`${balls} balls, ${strikes} strikes, ${outs} outs`}>
+      <CountDotGroup label="B" active={balls} total={4} tone="ball" />
+      <CountDotGroup label="S" active={strikes} total={3} tone="strike" />
+      <CountDotGroup label="O" active={outs} total={3} tone="out" />
+    </div>
+  );
+}
+function CountDotGroup({ label, active, total, tone }: { label: string; active: number; total: number; tone: "ball" | "strike" | "out" }) {
+  return (
+    <span className={`game-score-count-group is-${tone}`}>
+      <span className="game-score-count-label">{label}</span>
+      <span className="game-score-count-lights" aria-hidden="true">
+        {Array.from({ length: total }, (_, index) => <span key={index} className={index < active ? "is-on" : ""} />)}
+      </span>
+    </span>
+  );
 }
 function BasesDiamond({ onFirst, onSecond, onThird }: { onFirst: boolean; onSecond: boolean; onThird: boolean }) {
   const filled = "var(--accent)"; const empty = "var(--surface-2)"; const stroke = "var(--text-3)";

@@ -327,7 +327,7 @@ function HalfInningCard({
                 return (
                   <div key={ab.id}>
                     {showPitcher && <PitcherTag name={currentPitcher} />}
-                    <BaserunningEventRow text={text} />
+                    <BaserunningEventRow text={text} atBat={ab} away={away} home={home} />
                   </div>
                 );
               }
@@ -336,7 +336,7 @@ function HalfInningCard({
                 <div key={ab.id}>
                   {showPitcher && <PitcherTag name={currentPitcher} />}
                   {baserunningEvents.map((event, eventIdx) => (
-                    <BaserunningEventRow key={`${ab.id}-runner-${eventIdx}`} text={event} />
+                    <BaserunningEventRow key={`${ab.id}-runner-${eventIdx}`} text={event} atBat={ab} away={away} home={home} />
                   ))}
                   <AtBatSummaryRow atBat={ab} away={away} home={home} />
                 </div>
@@ -375,7 +375,7 @@ function PitcherTag({ name }: { name: string }) {
 function isBaserunningPitchText(text: string) {
   const value = String(text || "").replace(/\s+/g, " ").trim().toLowerCase();
   if (!value) return false;
-  const hasWildPitchOrPassedBall = /\b(wild pitch|passed ball)\b/.test(value);
+  const hasAutomaticAdvance = /\b(wild pitch|passed ball|balk)\b/.test(value);
   const hasRunnerAdvance =
     /\b(advances?|advanced|scores?|scored)\b/.test(value) ||
     /\bto\s+(second|third|home|2nd|3rd)\b/.test(value) ||
@@ -390,8 +390,15 @@ function isBaserunningPitchText(text: string) {
     /\bcaught\s+stealing\s+(second|third|home|2nd|3rd)\b/.test(value) ||
     /\bthrown\s+out\b.*\battempt(?:ing)?\s+to\s+steal\b/.test(value) ||
     /\battempt(?:ing)?\s+to\s+steal\b.*\bthrown\s+out\b/.test(value) ||
-    (hasWildPitchOrPassedBall && hasRunnerAdvance)
+    (hasAutomaticAdvance && hasRunnerAdvance)
   );
+}
+
+function isScoringBaserunningText(text: string) {
+  const value = String(text || "").replace(/\s+/g, " ").trim().toLowerCase();
+  if (/\b(stole|steals?)\s+(?:\(\d+\)\s*)?home\b/.test(value)) return true;
+  if (/\b(scores?|scored)\b/.test(value)) return true;
+  return /\b(wild pitch|passed ball|balk)\b/.test(value) && /\b(?:advances?|advanced|to)\s+home\b/.test(value);
 }
 
 function baserunningEventsForAtBat(atBat: MlbAtBat) {
@@ -410,11 +417,12 @@ function baserunningEventKey(text: string) {
     .trim();
 }
 
-function BaserunningEventRow({ text }: { text: string }) {
+function BaserunningEventRow({ text, atBat, away, home }: { text: string; atBat?: MlbAtBat; away?: TeamMeta; home?: TeamMeta }) {
+  const isScoring = !!atBat?.scoringPlay && isScoringBaserunningText(text);
   return (
-    <div className="gamecast-baserunning-event">
+    <div className={`gamecast-baserunning-event ${isScoring ? "is-scoring-play" : ""}`}>
       <span className="gamecast-baserunning-base" aria-hidden="true" />
-      <span>{text}</span>
+      <span>{text}{isScoring && atBat ? scoreSuffix(atBat, away, home) : ""}</span>
     </div>
   );
 }
@@ -486,7 +494,7 @@ function ScoringAtBatRow({ atBat, team }: { atBat: MlbAtBat; team?: TeamMeta }) 
 function AtBatSummaryRow({ atBat, forceOpen = false, mode = "default", away, home }: { atBat: MlbAtBat; forceOpen?: boolean; mode?: "default" | "scoring"; away?: TeamMeta; home?: TeamMeta }) {
   if (atBat.isMinor) {
     if (isHiddenMinorEvent(atBat.text)) return null;
-    if (isBaserunningPitchText(atBat.text)) return <BaserunningEventRow text={cleanResultText(atBat.text)} />;
+    if (isBaserunningPitchText(atBat.text)) return <BaserunningEventRow text={cleanResultText(atBat.text)} atBat={atBat} away={away} home={home} />;
     return (
       <div className="px-4 py-2 text-xs" style={{ color: "var(--text-3)", background: "var(--surface)" }}>
         {cleanResultText(atBat.text)}
@@ -555,7 +563,7 @@ function formatPitch(raw: string) {
   if (/ball in play|in play/.test(lower)) return { label: "In-play", bg: "#3b82f6", color: "#fff", border: "0" };
   if (/foul|foul tip|bunt foul/.test(lower)) return { label: "Foul", bg: "#64748b", color: "#fff", border: "0" };
   if (/swinging|missed bunt/.test(lower)) return { label: "Strike Swinging", bg: "#ef4444", color: "#fff", border: "0" };
-  if (/called strike|strike looking|looking/.test(lower)) return { label: "Strike Looking", bg: "#ef4444", color: "#fff", border: "0" };
+  if (/called strike|strike looking|looking|called third strike|strike three called|takes? strike/.test(lower)) return { label: "Strike Looking", bg: "#ef4444", color: "#fff", border: "0" };
   if (/strike/.test(lower)) return { label: "Strike", bg: "#ef4444", color: "#fff", border: "0" };
   if (/ball|intent ball|automatic ball/.test(lower)) return { label: "Ball", bg: "#22c55e", color: "#fff", border: "0" };
   return { label: text || "Pitch", bg: "#64748b", color: "#fff", border: "0" };
@@ -969,7 +977,8 @@ function isPeriodTransitionText(text?: string | null, type?: string | null): boo
 
 function periodLabel(period: number, league?: string): string {
   if (!period) return "Play";
-  if (league === "nba" || league === "cbb") return `${ordinal(period)} Quarter`;
+  if (league === "nba") return `${ordinal(period)} Quarter`;
+  if (league === "cbb") return `Period ${period}`;
   if (league === "nhl") return `Period ${period}`;
   return `Period ${period}`;
 }

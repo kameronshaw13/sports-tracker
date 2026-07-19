@@ -200,3 +200,88 @@ html[data-theme="light"] img[src*="teamlogos"] {
 @keyframes scores-initial-spin {
   to { transform: rotate(360deg); }
 }
+
+/* Batch 1: final alignment and live baseball clarity. */
+.more-league-row .outlined-logo {
+  transform: translateY(-.12rem) !important;
+}
+
+.gamecast-pitch-ball {
+  text-indent: .045rem !important;
+}
+
+.gamecast-baserunning-event.is-scoring-play > span:last-child {
+  color: #fff !important;
+  font-weight: 900 !important;
+}
+
+.game-score-count-dots {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .34rem !important;
+  margin-top: .02rem !important;
+  color: var(--text-2) !important;
+  font-size: .5rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+.game-score-count-group,
+.game-score-count-lights {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.game-score-count-group {
+  gap: .13rem !important;
+}
+
+.game-score-count-lights {
+  gap: .09rem !important;
+}
+
+.game-score-count-lights > span {
+  width: .25rem !important;
+  height: .25rem !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--text-3) 22%, transparent) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.05) !important;
+}
+
+.game-score-count-group.is-ball .game-score-count-lights > span.is-on {
+  background: #4fbf71 !important;
+}
+
+.game-score-count-group.is-strike .game-score-count-lights > span.is-on,
+.game-score-count-group.is-out .game-score-count-lights > span.is-on {
+  background: #d9534f !important;
+}
+
+/* Move both score numerals a fraction to the right while preserving their y-axis. */
+.game-score-hero {
+  --gt-side-score-inset: 2.96rem;
+}
+
+.game-score-hero .game-score-team-home .game-score-score {
+  left: 3.12rem !important;
+}
+
+@media (max-width: 420px) {
+  .game-score-hero {
+    --gt-side-score-inset: 2.70rem;
+  }
+
+  .game-score-hero .game-score-team-home .game-score-score {
+    left: 2.86rem !important;
+  }
+}
+
+/* Extra ascender room prevents the retro schedule font clipping on iOS. */
+.team-schedule-row .team-schedule-date > div,
+.team-schedule-row .team-schedule-status > div {
+  padding-top: .08rem !important;
+  padding-bottom: .02rem !important;
+  line-height: 1.2 !important;
+  overflow: visible !important;
+}

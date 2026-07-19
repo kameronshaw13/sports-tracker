@@ -412,9 +412,17 @@ function isBaserunningEventText(text: string, type?: string | null): boolean {
     /\bpick(?:ed)?\s+off\b/.test(value) ||
     /\bthrown\s+out\b.*\battempt(?:ing)?\s+to\s+steal\b/.test(value) ||
     /\battempt(?:ing)?\s+to\s+steal\b.*\bthrown\s+out\b/.test(value);
-  const hasWildPitchOrPassedBall = /\b(wild pitch|passed ball)\b/.test(value);
+  const hasAutomaticAdvance = /\b(wild pitch|passed ball|balk)\b/.test(value);
   const hasAdvance = /\b(advances?|advanced|scores?|scored)\b/.test(value) || /\bto\s+(second|third|home|2nd|3rd)\b/.test(value);
-  return steal || caught || (hasWildPitchOrPassedBall && hasAdvance);
+  return steal || caught || (hasAutomaticAdvance && hasAdvance);
+}
+
+function isScoringBaserunningText(text: string, type?: string | null): boolean {
+  const value = `${type || ""} ${text || ""}`.replace(/\s+/g, " ").trim().toLowerCase();
+  if (!value) return false;
+  if (/\b(stole|steals?)\s+(?:\(\d+\)\s*)?home\b/.test(value)) return true;
+  if (/\b(scores?|scored)\b/.test(value)) return true;
+  return /\b(wild pitch|passed ball|balk)\b/.test(value) && /\b(?:advances?|advanced|to)\s+home\b/.test(value);
 }
 
 function isInningTransitionText(text: string, type?: string | null): boolean {
@@ -649,7 +657,7 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
 
   function isLikelyScoringText(text: string, type?: string | null) {
     const value = `${type || ""} ${text || ""}`.toLowerCase();
-    return /home run|homerun|homer(?:ed|ing|s)|grand slam|\bscored\b|\bscores\b/.test(value);
+    return /home run|homerun|homer(?:ed|ing|s)|grand slam|\bscored\b|\bscores\b/.test(value) || isScoringBaserunningText(text, type);
   }
 
   function getOrCreateGroup(atBatKey: string, base: ReturnType<typeof getEventBase>, idx: number, sortKey: number): PendingGroup {
@@ -847,11 +855,11 @@ async function buildMlbAtBats(summary: any, home: TeamMeta | null, away: TeamMet
   for (const row of allRows) {
     const awayScore = typeof row.awayScore === "number" ? row.awayScore : null;
     const homeScore = typeof row.homeScore === "number" ? row.homeScore : null;
-    if (row.isAtBat && awayScore != null && homeScore != null) {
+    if (awayScore != null && homeScore != null) {
+      // Runner-only events (steals of home, balks, wild pitches, and passed
+      // balls) can change the score between at-bats. They need the same
+      // scoring treatment as a completed plate appearance.
       if (awayScore > lastAway || homeScore > lastHome) row.scoringPlay = true;
-      lastAway = awayScore;
-      lastHome = homeScore;
-    } else if (awayScore != null && homeScore != null) {
       lastAway = awayScore;
       lastHome = homeScore;
     }

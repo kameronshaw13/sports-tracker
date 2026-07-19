@@ -112,8 +112,10 @@ function indexTeamStats(source: any): Record<string, string | number> {
 }
 
 function buildLineScore(league: string, competitors: any[], extractTotal: (c: any, names: string[], fallback?: string | number) => any) {
-  const basePeriodCount = league === "nba" || league === "cbb"
+  const basePeriodCount = league === "nba"
     ? 4
+    : league === "cbb"
+      ? 2
     : league === "nhl"
       ? 3
       : 9;
@@ -126,7 +128,8 @@ function buildLineScore(league: string, competitors: any[], extractTotal: (c: an
   if (!periodCount) return null;
 
   const columns = Array.from({ length: periodCount }, (_, i) => {
-    if ((league === "nba" || league === "cbb") && i >= 4) return i === 4 ? "OT" : `${i - 3}OT`;
+    if (league === "nba" && i >= 4) return i === 4 ? "OT" : `${i - 3}OT`;
+    if (league === "cbb" && i >= 2) return i === 2 ? "OT" : `${i - 1}OT`;
     if (league === "nhl" && i >= 3) return i === 3 ? "OT" : `${i - 2}OT`;
     return String(i + 1);
   });

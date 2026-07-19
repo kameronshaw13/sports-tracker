@@ -415,6 +415,7 @@ function ordinal(n: number): string {
 
 function periodTitle(league: string, period: number): string {
   if (league === "nba") return `${ordinal(period)} Quarter`;
+  if (league === "cbb") return `Period ${period}`;
   if (league === "nhl") return `${ordinal(period)} Period`;
   if (league === "nfl") return `${ordinal(period)} Quarter`;
   return period ? `Period ${period}` : "Play";
