@@ -120,9 +120,7 @@ async function sha256Hex(value: string) {
 
 async function authOk(req: NextRequest) {
   const supplied = req.nextUrl.searchParams.get("secret") || req.headers.get("x-refresh-secret") || "";
-  const secret = process.env.ODDS_REFRESH_SECRET;
-  if (secret && supplied === secret) return true;
-  if (!supplied) return !secret && process.env.NODE_ENV !== "production";
+  if (!supplied) return process.env.NODE_ENV !== "production";
   return (await sha256Hex(supplied)) === SUPABASE_CRON_SECRET_SHA256;
 }
 
