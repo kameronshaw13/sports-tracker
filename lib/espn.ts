@@ -76,11 +76,28 @@ async function resolveTeamIdForEndpoint(league: string, teamId: string): Promise
 }
 
 async function fetchJson(url: string, revalidate = 30): Promise<any> {
-  const res = await fetch(url, {
+  const fetchOptions = {
     ...(revalidate <= 0 ? { cache: "no-store" as RequestCache } : { next: { revalidate } }),
-    headers: { "User-Agent": "Mozilla/5.0 SportsTracker/1.0" },
-  });
-  if (!res.ok) throw new Error(`ESPN API ${res.status}: ${url}`);
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "Accept": "application/json,text/plain,*/*",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Referer": "https://www.espn.com/",
+    },
+  };
+
+  let targetUrl = url;
+  let res = await fetch(targetUrl, fetchOptions);
+
+  // ESPN's site.api host can intermittently return Akamai 403s to server
+  // environments while the equivalent site.web.api host remains available.
+  // Retry the exact same Site API path on the web host before failing.
+  if (res.status === 403 && targetUrl.startsWith(`${SITE_API}/`)) {
+    targetUrl = targetUrl.replace(SITE_API, SITE_WEB_API);
+    res = await fetch(targetUrl, fetchOptions);
+  }
+
+  if (!res.ok) throw new Error(`ESPN API ${res.status}: ${targetUrl}`);
   return res.json();
 }
 
