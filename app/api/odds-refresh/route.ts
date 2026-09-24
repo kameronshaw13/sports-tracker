@@ -10,6 +10,7 @@ const VALID_LEAGUES = ["mlb", "nfl", "nba", "nhl", "cfb", "cbb"];
 const CENTRAL_TZ = "America/Chicago";
 const PULL_LEAD_MS = 15 * 60 * 1000;
 const MIN_WAVE_GAP_MS = 75 * 60 * 1000;
+const SUPABASE_CRON_SECRET_SHA256 = "f3cfbb0b87da5426914da4771ced5d44710b3f55df87467c07b5cad7e32f0525";
 
 function ymdInZone(date: Date, timeZone = CENTRAL_TZ) {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -110,10 +111,19 @@ function nextNightWindow(now: Date) {
   return new Date(now.getTime() + 36 * 60 * 60 * 1000);
 }
 
-function authOk(req: NextRequest) {
+async function sha256Hex(value: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function authOk(req: NextRequest) {
+  const supplied = req.nextUrl.searchParams.get("secret") || req.headers.get("x-refresh-secret") || "";
   const secret = process.env.ODDS_REFRESH_SECRET;
-  if (!secret) return process.env.NODE_ENV !== "production";
-  return req.nextUrl.searchParams.get("secret") === secret || req.headers.get("x-refresh-secret") === secret;
+  if (secret && supplied === secret) return true;
+  if (!supplied) return !secret && process.env.NODE_ENV !== "production";
+  return (await sha256Hex(supplied)) === SUPABASE_CRON_SECRET_SHA256;
 }
 
 function waveHasFuturePregame(wave: { games: EspnGame[] }, now: Date) {
@@ -126,7 +136,7 @@ function waveHasFuturePregame(wave: { games: EspnGame[] }, now: Date) {
 
 export async function GET(req: NextRequest) {
   try {
-    if (!authOk(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!(await authOk(req))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     if (!oddsStoreEnabled()) {
       return NextResponse.json({ error: "Odds database is not configured. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY." }, { status: 400 });
     }
