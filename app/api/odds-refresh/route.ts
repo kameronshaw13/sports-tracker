@@ -10,7 +10,7 @@ const VALID_LEAGUES = ["mlb", "nfl", "nba", "nhl", "cfb", "cbb"];
 const CENTRAL_TZ = "America/Chicago";
 const PULL_LEAD_MS = 15 * 60 * 1000;
 const MIN_WAVE_GAP_MS = 75 * 60 * 1000;
-const SUPABASE_CRON_SECRET_SHA256 = "7c5bb8a19be4794ef92018a863315bb996570ca46a4ccb60456606b824f2b0c3";
+const SUPABASE_CRON_SECRET_SHA256 = "8f84c9d5819480f9a325546402117a1b8fb298e912fef4e3dae0ccf45f97b0bd";
 
 function ymdInZone(date: Date, timeZone = CENTRAL_TZ) {
   const parts = new Intl.DateTimeFormat("en-CA", {
